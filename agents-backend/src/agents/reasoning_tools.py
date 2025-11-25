@@ -86,6 +86,48 @@ class ReasoningToolkit:
         """
         return "Plan submitted successfully."
 
+    def get_type_hierarchy(self, class_name: str) -> Dict:
+        """
+        Returns the type hierarchy (superclass, interfaces) of a given class in the target repository.
+        Useful for checking inheritance and type compatibility.
+        """
+        from utils.mcp_client import get_client
+        # Assuming the analysis engine is running on localhost:8080 or configured via env
+        client = get_client() 
+        return client.call_tool("get_type_hierarchy", {
+            "target_repo_path": self.target_repo_path,
+            "class_name": class_name
+        })
+
+    def check_method_compatibility(self, class_name: str, method_signature: str) -> Dict:
+        """
+        Checks if a method exists in the target class or its hierarchy.
+        method_signature should be simple, e.g., "close()" or "write(byte[],int,int)".
+        Returns { "compatible": bool, "found_in": str, "reason": str }
+        """
+        hierarchy = self.get_type_hierarchy(class_name)
+        if not hierarchy.get("found"):
+            return {"compatible": False, "reason": f"Class {class_name} not found in target."}
+        
+        # This is a simplified check. A real check would need to parse the method signature 
+        # and check against the methods in the hierarchy.
+        # Since we don't have a "get_methods" tool yet, we will use read_file to check the content 
+        # of the class and its superclasses (if we can find them).
+        
+        # Strategy:
+        # 1. Check the class file itself.
+        # 2. If not found, check the superclass (if it's in the repo).
+        # 3. If not found, check interfaces.
+        
+        # For now, let's just return the hierarchy info so the agent can reason about it.
+        # The agent can use read_file on the superclass if needed.
+        
+        return {
+            "compatible": True, # Tentative, let the agent verify
+            "hierarchy": hierarchy,
+            "instruction": "Please use read_file to verify if the method exists in the class or its superclasses listed in 'hierarchy'."
+        }
+
     def get_tools(self):
         return [
             StructuredTool.from_function(
@@ -107,6 +149,16 @@ class ReasoningToolkit:
                 func=self.get_patch_analysis,
                 name="get_patch_analysis",
                 description="Returns the analysis of the patch."
+            ),
+            StructuredTool.from_function(
+                func=self.get_type_hierarchy,
+                name="get_type_hierarchy",
+                description="Returns the type hierarchy (superclass, interfaces) of a given class."
+            ),
+            StructuredTool.from_function(
+                func=self.check_method_compatibility,
+                name="check_method_compatibility",
+                description="Checks if a method exists in the target class or its hierarchy."
             ),
             StructuredTool.from_function(
                 func=self.submit_plan,

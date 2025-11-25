@@ -1,17 +1,15 @@
 import asyncio
 import sys
 import os
-from mcp import ClientSession
-from mcp.client.sse import sse_client
 from graph import app
 
 # Add src to path if needed
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 async def main():
-    sse_url = os.getenv("MCP_SERVER_URL", "http://localhost:8080/mcp/sse")
-    
-    print(f"Connecting to Analysis Engine at {sse_url}...")
+    # sse_url = os.getenv("MCP_SERVER_URL", "http://localhost:8080/mcp/sse")
+    # print(f"Connecting to Analysis Engine at {sse_url}...")
+
 
     try:
         print("Running Orchestrator Graph...")

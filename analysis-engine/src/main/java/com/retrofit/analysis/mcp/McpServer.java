@@ -3,6 +3,7 @@ package com.retrofit.analysis.mcp;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.retrofit.analysis.tools.GetHierarchyTool;
 import com.retrofit.analysis.tools.GetJavaVersionTool;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -18,12 +19,15 @@ import java.util.concurrent.Executors;
 public class McpServer {
 
     private final GetJavaVersionTool getJavaVersionTool;
+    private final GetHierarchyTool getHierarchyTool;
     private final ObjectMapper objectMapper;
     private final Map<String, SseEmitter> emitters = new ConcurrentHashMap<>();
     private final ExecutorService executor = Executors.newCachedThreadPool();
 
-    public McpServer(GetJavaVersionTool getJavaVersionTool, ObjectMapper objectMapper) {
+    public McpServer(GetJavaVersionTool getJavaVersionTool, GetHierarchyTool getHierarchyTool,
+            ObjectMapper objectMapper) {
         this.getJavaVersionTool = getJavaVersionTool;
+        this.getHierarchyTool = getHierarchyTool;
         this.objectMapper = objectMapper;
     }
 
@@ -64,6 +68,12 @@ public class McpServer {
         return emitter;
     }
 
+    @PostMapping("/sync/call")
+    public JsonNode handleSyncCall(@RequestBody JsonNode request) {
+        System.out.println("Received SYNC request");
+        return processRequest(request);
+    }
+
     @PostMapping("/messages")
     public void handleMessage(@RequestParam String sessionId, @RequestBody JsonNode request) {
         SseEmitter emitter = emitters.get(sessionId);
@@ -74,7 +84,11 @@ public class McpServer {
 
         executor.submit(() -> {
             try {
-                handleRequest(sessionId, request, emitter);
+                JsonNode response = processRequest(request);
+                // Send response via SSE
+                String responseString = objectMapper.writeValueAsString(response);
+                System.out.println("Sending response [" + sessionId + "]");
+                emitter.send(SseEmitter.event().name("message").data(responseString));
             } catch (Exception e) {
                 System.out.println("Error handling request for " + sessionId + ": " + e.getMessage());
                 e.printStackTrace();
@@ -82,17 +96,14 @@ public class McpServer {
         });
     }
 
-    private void handleRequest(String sessionId, JsonNode request, SseEmitter emitter) throws Exception {
+    private ObjectNode processRequest(JsonNode request) {
         if (!request.has("id")) {
-            System.out.println("Received notification [" + sessionId + "]");
-            return;
+            System.out.println("Received notification (ignoring for sync)");
+            return objectMapper.createObjectNode();
         }
 
         JsonNode idNode = request.get("id");
-        String id = idNode.asText();
         String method = request.get("method").asText();
-
-        System.out.println("Received request [" + sessionId + "]: " + method + " (id: " + id + ")");
 
         ObjectNode response = objectMapper.createObjectNode();
         response.put("jsonrpc", "2.0");
@@ -109,19 +120,53 @@ public class McpServer {
         } else if ("tools/list".equals(method)) {
             ObjectNode result = response.putObject("result");
             var tools = result.putArray("tools");
-            var tool = tools.addObject();
-            tool.put("name", "get_java_version");
-            tool.put("description", "Returns the Java version of the analysis engine");
-            tool.putObject("inputSchema").put("type", "object");
+
+            var tool1 = tools.addObject();
+            tool1.put("name", "get_java_version");
+            tool1.put("description", "Returns the Java version of the analysis engine");
+            tool1.putObject("inputSchema").put("type", "object");
+
+            var tool2 = tools.addObject();
+            tool2.put("name", "get_type_hierarchy");
+            tool2.put("description", "Returns the type hierarchy (superclass, interfaces) of a given class");
+            var inputSchema = tool2.putObject("inputSchema");
+            inputSchema.put("type", "object");
+            var properties = inputSchema.putObject("properties");
+            properties.putObject("target_repo_path").put("type", "string");
+            properties.putObject("class_name").put("type", "string");
+            var required = inputSchema.putArray("required");
+            required.add("target_repo_path");
+            required.add("class_name");
+
         } else if ("tools/call".equals(method)) {
             JsonNode params = request.get("params");
             String name = params.get("name").asText();
+            JsonNode args = params.get("arguments");
+
             if ("get_java_version".equals(name)) {
                 ObjectNode result = response.putObject("result");
                 var contentArray = result.putArray("content");
                 var textContent = contentArray.addObject();
                 textContent.put("type", "text");
                 textContent.put("text", getJavaVersionTool.execute());
+            } else if ("get_type_hierarchy".equals(name)) {
+                String targetRepoPath = args.get("target_repo_path").asText();
+                String className = args.get("class_name").asText();
+
+                Map<String, Object> hierarchy = getHierarchyTool.execute(targetRepoPath, className);
+
+                try {
+                    ObjectNode result = response.putObject("result");
+                    var contentArray = result.putArray("content");
+                    var textContent = contentArray.addObject();
+                    textContent.put("type", "text");
+                    String jsonString = objectMapper.writeValueAsString(hierarchy);
+                    textContent.put("text", jsonString);
+                } catch (Exception e) {
+                    ObjectNode error = response.putObject("error");
+                    error.put("code", -32603);
+                    error.put("message", "Internal error: " + e.getMessage());
+                }
             } else {
                 ObjectNode error = response.putObject("error");
                 error.put("code", -32601);
@@ -129,18 +174,8 @@ public class McpServer {
             }
         } else {
             System.out.println("Unknown method: " + method);
-            // Ignore unknown methods
         }
 
-        // Send response via SSE
-        String responseString = objectMapper.writeValueAsString(response);
-        System.out.println("Sending response [" + sessionId + "] for id " + id);
-        try {
-            emitter.send(SseEmitter.event().name("message").data(responseString));
-            System.out.println("Response sent successfully.");
-        } catch (Exception e) {
-            System.out.println("Failed to send response: " + e.getMessage());
-            throw e;
-        }
+        return response;
     }
 }
