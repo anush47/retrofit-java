@@ -429,3 +429,4 @@ vscode-extension/out/
 datasets/*.csv
 temp_repo_storage/
 instructions/
+*.ipynb
