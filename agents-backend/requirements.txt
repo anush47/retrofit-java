@@ -6,3 +6,9 @@ qdrant-client
 fastapi            
 uvicorn
 unidiff
+gitpython
+scikit-learn
+pandas
+tree-sitter
+tree-sitter-java
+setuptools

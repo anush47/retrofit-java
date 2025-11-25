@@ -6,3 +6,8 @@ class AgentState(TypedDict):
     messages: Annotated[list[BaseMessage], operator.add]
     patch_path: str
     patch_analysis: list  # List[FileChange]
+    target_repo_path: str
+    mainline_repo_path: str
+    experiment_mode: bool
+    backport_commit: str
+    retrieval_results: dict  # Map: source_file -> list of candidates

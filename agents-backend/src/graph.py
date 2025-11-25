@@ -1,14 +1,14 @@
 from langgraph.graph import StateGraph, END
 from state import AgentState
 from agents import reasoning_agent, generation_agent, validation_agent
-from nodes import analysis_tool_node
+from nodes import analysis_node
 
 # Define the graph
 workflow = StateGraph(AgentState)
 
 # Add nodes
 workflow.add_node("reasoning", reasoning_agent)
-workflow.add_node("analysis_tool", analysis_tool_node)
+workflow.add_node("analysis_tool", analysis_node)
 workflow.add_node("generation", generation_agent)
 workflow.add_node("validation", validation_agent)
 
