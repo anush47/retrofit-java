@@ -108,15 +108,18 @@ class ReasoningToolkit:
             "explore_neighbors": explore_neighbors
         })
 
-    def get_class_context(self, file_path: str, focus_method: str = None):
+    def get_class_context(self, file_path: str, focus_method: str = None, use_mainline: bool = False):
         """
         Reads a Java file and returns a skeleton view with the full body of the focused method.
         Useful for verifying specific methods without reading the entire file.
         """
         from utils.mcp_client import get_client
         client = get_client()
+        
+        repo_path = self.mainline_repo_path if use_mainline else self.target_repo_path
+        
         return client.call_tool("get_class_context", {
-            "target_repo_path": self.target_repo_path,
+            "target_repo_path": repo_path,
             "file_path": file_path,
             "focus_method": focus_method
         })
