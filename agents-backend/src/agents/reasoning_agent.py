@@ -70,7 +70,9 @@ Your goal is to create a detailed `ImplementationPlan` to backport a patch from 
     *   **CRITICAL**: This "Structural Matching" is your primary filter. Do it BEFORE reading code.
 6.  **Deep Verification**: Use `get_class_context` (Smart Read) on the best-matching candidates.
     *   **Usage**: `get_class_context(file_path, focus_method="methodName")`
+    *   **Tip**: You can also read the **Mainline** code by setting `use_mainline=True` if the patch diff is confusing and you need more context on the original logic.
     *   This gives you the class skeleton + the FULL BODY of the method you are patching.
+    *   **Goal**: You MUST read the code to understand WHERE and HOW to apply the patch.
     *   Verify: Does the method exist? Is the logic similar? Is the fix already present?
     *   **Avoid `read_file`** unless you absolutely need to see the whole file (it wastes tokens).
 7.  **Plan**: Once you have gathered enough information, call the `submit_plan` tool with the final `ImplementationPlan`.
