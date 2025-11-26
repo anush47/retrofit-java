@@ -2,12 +2,16 @@ package com.retrofit.analysis.mcp;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.retrofit.analysis.tools.GetDependencyTool;
 import com.retrofit.analysis.tools.GetJavaVersionTool;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import java.io.IOException;
+import jakarta.annotation.PostConstruct;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -18,12 +22,15 @@ import java.util.concurrent.Executors;
 public class McpServer {
 
     private final GetJavaVersionTool getJavaVersionTool;
+    private final GetDependencyTool getDependencyTool;
     private final ObjectMapper objectMapper;
     private final Map<String, SseEmitter> emitters = new ConcurrentHashMap<>();
     private final ExecutorService executor = Executors.newCachedThreadPool();
 
-    public McpServer(GetJavaVersionTool getJavaVersionTool, ObjectMapper objectMapper) {
+    public McpServer(GetJavaVersionTool getJavaVersionTool, GetDependencyTool getDependencyTool,
+            ObjectMapper objectMapper) {
         this.getJavaVersionTool = getJavaVersionTool;
+        this.getDependencyTool = getDependencyTool;
         this.objectMapper = objectMapper;
     }
 
@@ -64,6 +71,12 @@ public class McpServer {
         return emitter;
     }
 
+    @PostMapping("/sync/call")
+    public JsonNode handleSyncCall(@RequestBody JsonNode request) {
+        System.out.println("Received SYNC request");
+        return processRequest(request);
+    }
+
     @PostMapping("/messages")
     public void handleMessage(@RequestParam String sessionId, @RequestBody JsonNode request) {
         SseEmitter emitter = emitters.get(sessionId);
@@ -74,7 +87,11 @@ public class McpServer {
 
         executor.submit(() -> {
             try {
-                handleRequest(sessionId, request, emitter);
+                JsonNode response = processRequest(request);
+                // Send response via SSE
+                String responseString = objectMapper.writeValueAsString(response);
+                System.out.println("Sending response [" + sessionId + "]");
+                emitter.send(SseEmitter.event().name("message").data(responseString));
             } catch (Exception e) {
                 System.out.println("Error handling request for " + sessionId + ": " + e.getMessage());
                 e.printStackTrace();
@@ -82,23 +99,19 @@ public class McpServer {
         });
     }
 
-    private void handleRequest(String sessionId, JsonNode request, SseEmitter emitter) throws Exception {
+    private JsonNode processRequest(JsonNode request) {
         if (!request.has("id")) {
-            System.out.println("Received notification [" + sessionId + "]");
-            return;
+            System.out.println("Received notification (ignoring for sync)");
+            return objectMapper.createObjectNode();
         }
 
-        JsonNode idNode = request.get("id");
-        String id = idNode.asText();
+        String id = request.get("id").asText();
         String method = request.get("method").asText();
 
-        System.out.println("Received request [" + sessionId + "]: " + method + " (id: " + id + ")");
-
-        ObjectNode response = objectMapper.createObjectNode();
-        response.put("jsonrpc", "2.0");
-        response.set("id", idNode);
-
         if ("initialize".equals(method)) {
+            ObjectNode response = objectMapper.createObjectNode();
+            response.put("jsonrpc", "2.0");
+            response.put("id", id);
             ObjectNode result = response.putObject("result");
             result.put("protocolVersion", "2024-11-05");
             ObjectNode capabilities = result.putObject("capabilities");
@@ -106,41 +119,99 @@ public class McpServer {
             ObjectNode serverInfo = result.putObject("serverInfo");
             serverInfo.put("name", "analysis-engine");
             serverInfo.put("version", "0.1.0");
+            return response;
         } else if ("tools/list".equals(method)) {
-            ObjectNode result = response.putObject("result");
-            var tools = result.putArray("tools");
-            var tool = tools.addObject();
-            tool.put("name", "get_java_version");
-            tool.put("description", "Returns the Java version of the analysis engine");
-            tool.putObject("inputSchema").put("type", "object");
+            return createToolsListResponse(id);
         } else if ("tools/call".equals(method)) {
-            JsonNode params = request.get("params");
-            String name = params.get("name").asText();
-            if ("get_java_version".equals(name)) {
-                ObjectNode result = response.putObject("result");
-                var contentArray = result.putArray("content");
-                var textContent = contentArray.addObject();
-                textContent.put("type", "text");
-                textContent.put("text", getJavaVersionTool.execute());
-            } else {
-                ObjectNode error = response.putObject("error");
-                error.put("code", -32601);
-                error.put("message", "Method not found: " + name);
-            }
+            return handleToolCall(request);
         } else {
-            System.out.println("Unknown method: " + method);
-            // Ignore unknown methods
+            return createErrorResponse(id, -32601, "Method not found");
         }
+    }
 
-        // Send response via SSE
-        String responseString = objectMapper.writeValueAsString(response);
-        System.out.println("Sending response [" + sessionId + "] for id " + id);
+    private JsonNode createToolsListResponse(String id) {
+        ObjectNode response = objectMapper.createObjectNode();
+        response.put("jsonrpc", "2.0");
+        response.put("id", id);
+
+        ObjectNode result = response.putObject("result");
+        ArrayNode tools = result.putArray("tools");
+
+        // Tool: get_java_version
+        ObjectNode tool1 = tools.addObject();
+        tool1.put("name", "get_java_version");
+        tool1.put("description", "Returns the Java version of the analysis engine");
+        tool1.putObject("inputSchema").put("type", "object");
+
+        // Tool: get_dependency_graph
+        ObjectNode depTool = tools.addObject();
+        depTool.put("name", "get_dependency_graph");
+        depTool.put("description", "Analyzes dependencies between a list of Java files.");
+        ObjectNode depSchema = depTool.putObject("inputSchema");
+        depSchema.put("type", "object");
+        ObjectNode depProps = depSchema.putObject("properties");
+        depProps.putObject("target_repo_path").put("type", "string");
+        depProps.putObject("file_paths").put("type", "array").putObject("items").put("type", "string");
+        depProps.putObject("explore_neighbors").put("type", "boolean").put("description",
+                "If true, also analyzes files in the same directory as the input files.");
+        ArrayNode depRequired = depSchema.putArray("required");
+        depRequired.add("target_repo_path");
+        depRequired.add("file_paths");
+
+        return response;
+    }
+
+    private JsonNode handleToolCall(JsonNode request) {
+        String id = request.get("id").asText();
+        JsonNode params = request.get("params");
+        String toolName = params.get("name").asText();
+        JsonNode arguments = params.get("arguments");
+
         try {
-            emitter.send(SseEmitter.event().name("message").data(responseString));
-            System.out.println("Response sent successfully.");
+            if ("get_java_version".equals(toolName)) {
+                return createToolResponse(id, getJavaVersionTool.execute());
+            } else if ("get_dependency_graph".equals(toolName)) {
+                String repoPath = arguments.get("target_repo_path").asText();
+                List<String> filePaths = new ArrayList<>();
+                if (arguments.has("file_paths")) {
+                    arguments.get("file_paths").forEach(node -> filePaths.add(node.asText()));
+                }
+                boolean exploreNeighbors = arguments.has("explore_neighbors")
+                        && arguments.get("explore_neighbors").asBoolean();
+
+                Map<String, Object> graph = getDependencyTool.execute(repoPath, filePaths, exploreNeighbors);
+                return createToolResponse(id, graph);
+            } else {
+                return createErrorResponse(id, -32601, "Tool not found: " + toolName);
+            }
         } catch (Exception e) {
-            System.out.println("Failed to send response: " + e.getMessage());
-            throw e;
+            return createErrorResponse(id, -32603, "Internal error: " + e.getMessage());
         }
+    }
+
+    private JsonNode createErrorResponse(String id, int code, String message) {
+        ObjectNode response = objectMapper.createObjectNode();
+        response.put("jsonrpc", "2.0");
+        response.put("id", id);
+        ObjectNode error = response.putObject("error");
+        error.put("code", code);
+        error.put("message", message);
+        return response;
+    }
+
+    private JsonNode createToolResponse(String id, Object resultData) {
+        ObjectNode response = objectMapper.createObjectNode();
+        response.put("jsonrpc", "2.0");
+        response.put("id", id);
+        try {
+            ObjectNode result = response.putObject("result");
+            var contentArray = result.putArray("content");
+            var textContent = contentArray.addObject();
+            textContent.put("type", "text");
+            textContent.put("text", objectMapper.writeValueAsString(resultData));
+        } catch (Exception e) {
+            return createErrorResponse(id, -32603, "Serialization error: " + e.getMessage());
+        }
+        return response;
     }
 }

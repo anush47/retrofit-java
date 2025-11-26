@@ -8,9 +8,10 @@ import re
 from utils.models import ImplementationPlan
 
 class ReasoningToolkit:
-    def __init__(self, retriever: EnsembleRetriever, target_repo_path: str, patch_analysis: List[FileChange]):
+    def __init__(self, retriever: EnsembleRetriever, target_repo_path: str, mainline_repo_path: str, patch_analysis: List[FileChange]):
         self.retriever = retriever
         self.target_repo_path = target_repo_path
+        self.mainline_repo_path = mainline_repo_path
         self.patch_analysis = patch_analysis
 
     def search_candidates(self, file_path: str) -> List[Dict]:
@@ -86,6 +87,27 @@ class ReasoningToolkit:
         """
         return "Plan submitted successfully."
 
+    def get_dependency_graph(self, file_paths: List[str], explore_neighbors: bool = False, use_mainline: bool = False) -> Dict:
+        """
+        Analyzes dependencies between a list of Java files.
+        Returns a graph where nodes are files and edges are dependencies (imports, inheritance, usage).
+        
+        Args:
+            file_paths: List of relative paths to Java files.
+            explore_neighbors: If True, also analyzes all other Java files in the same directory as the input files.
+            use_mainline: If True, analyzes the Mainline repository instead of the Target repository.
+        """
+        from utils.mcp_client import get_client
+        client = get_client()
+        
+        repo_path = self.mainline_repo_path if use_mainline else self.target_repo_path
+        
+        return client.call_tool("get_dependency_graph", {
+            "target_repo_path": repo_path,
+            "file_paths": file_paths,
+            "explore_neighbors": explore_neighbors
+        })
+
     def get_tools(self):
         return [
             StructuredTool.from_function(
@@ -107,6 +129,11 @@ class ReasoningToolkit:
                 func=self.get_patch_analysis,
                 name="get_patch_analysis",
                 description="Returns the analysis of the patch."
+            ),
+            StructuredTool.from_function(
+                func=self.get_dependency_graph,
+                name="get_dependency_graph",
+                description="Analyzes dependencies between a list of Java files."
             ),
             StructuredTool.from_function(
                 func=self.submit_plan,
