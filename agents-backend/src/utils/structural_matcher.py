@@ -100,38 +100,72 @@ def find_best_matches(mainline_data: Dict, candidates_data: List[Dict]) -> List[
     scored_candidates.sort(key=lambda x: x["score"], reverse=True)
     
     if not scored_candidates:
-        return []
+        return {
+            "matches": [],
+            "score": 0.0,
+            "completeness": {
+                "total_features": 0,
+                "covered": [],
+                "missing": [],
+                "ratio": 1.0
+            }
+        }
         
     top_candidate = scored_candidates[0]
+    final_matches = [top_candidate]
     
-    # Case 1: Strong individual match
-    if top_candidate["score"] > 0.6:
-        return [top_candidate]
-        
-    # Case 2: Multi-File Match (Refactoring)
-    # If the top score is weak, check if the top 2-3 candidates combined cover the features
     mainline_features = mainline_node.get_features()
+    
+    # Logic to decide if we need multi-file match
+    should_check_multi = True
+    if top_candidate["score"] > 0.6:
+        # Strong match found. Usually we stop here.
+        # But for correctness of the 'completeness' report, we might want to verify coverage?
+        # Standard logic: If it's a strong match, we assume 1-to-1 refactoring unless proven otherwise.
+        # BUT if features are missing, we might still want multi-file.
+        # For now, keep original logic structure but ensuring Dict return.
+        should_check_multi = False
+        
     if not mainline_features:
-        return [top_candidate] # Fallback if no features to cover
+        should_check_multi = False
+
+    if should_check_multi:
+        # Check Multi-File Match (Refactoring)
+        top_k = scored_candidates[:3]
+        combined_features = set()
+        selected_candidates = []
         
-    # Take top 3
-    top_k = scored_candidates[:3]
-    combined_features = set()
-    selected_candidates = []
-    
-    for cand in top_k:
-        cand_features = cand["node"].get_features()
-        # Calculate marginal gain
-        new_features = cand_features.intersection(mainline_features) - combined_features
-        if len(new_features) > 0:
-            selected_candidates.append(cand)
-            combined_features.update(new_features)
-            
-    # If combined coverage is significantly better than single coverage
-    single_coverage = len(top_candidate["node"].get_features().intersection(mainline_features))
-    combined_coverage = len(combined_features)
-    
-    if combined_coverage > single_coverage * 1.5:
-        return selected_candidates
+        for cand in top_k:
+            cand_features = cand["node"].get_features()
+            # Calculate marginal gain
+            new_features = cand_features.intersection(mainline_features) - combined_features
+            if len(new_features) > 0:
+                selected_candidates.append(cand)
+                combined_features.update(new_features)
+                
+        # If combined coverage is significantly better than single coverage
+        single_coverage = len(top_candidate["node"].get_features().intersection(mainline_features))
+        combined_coverage = len(combined_features)
         
-    return [top_candidate]
+        if combined_coverage > single_coverage * 1.5:
+             final_matches = selected_candidates
+
+    # [NEW] Generate Completeness Report
+    # What did we capture?
+    covered_features = set()
+    for m in final_matches:
+        covered_features.update(m["node"].get_features())
+    
+    missing_features = mainline_features - covered_features
+    
+    # Return Detailed Object
+    return {
+        "matches": final_matches,
+        "score": final_matches[0]["score"] if final_matches else 0.0,
+        "completeness": {
+            "total_features": len(mainline_features),
+            "covered": list(covered_features),
+            "missing": list(missing_features),
+            "ratio": len(covered_features) / len(mainline_features) if mainline_features else 1.0
+        }
+    }

@@ -168,7 +168,9 @@ class ReasoningToolkit:
              return json.dumps({"error": "No valid candidates to analyze."})
 
         # 3. Run Matcher
-        matches = find_best_matches(mainline_node_data, candidates_data)
+        result_dict = find_best_matches(mainline_node_data, candidates_data)
+        matches = result_dict["matches"]
+        completeness = result_dict["completeness"]
         
         # 4. Format Output
         results = []
@@ -179,7 +181,16 @@ class ReasoningToolkit:
                 "reasoning": "High structural similarity (Inheritance/Calls/Fields)"
             })
             
-        return json.dumps(results, indent=2)
+        return json.dumps({
+            "matches": results,
+            "verification": {
+                 "completeness_ratio": round(completeness["ratio"], 2),
+                 "missing_features": completeness["missing"],
+                 "status": "COMPLETE" if not completeness["missing"] else "PARTIAL_MATCH"
+            }
+        }, indent=2)
+            
+
 
     def find_method_match(self, target_file_path: str, old_method_name: str, old_signature: str, old_calls: List[str]) -> str:
         """
@@ -209,10 +220,42 @@ class ReasoningToolkit:
              if graph.get("nodes"):
                  candidate_methods = graph.get("nodes")[0].get("methods", [])
 
-        # 2. Run Fingerprinter
+        # 2. Tier 1: Git Tracing & Pickaxe
+        # We need the Mainline Commit ID to do tracing properly.
+        # But `find_method_match` doesn't currently take it.
+        # Ideally we'd modify the tool signature. For now, let's use Pickaxe (which works if we search "recently").
+        
+        from utils.method_discovery import GitMethodTracer, BodySimilarityMatcher
+        tracer = GitMethodTracer(self.target_repo_path)
+        
+        # Try finding where the signature moved
+        moved_file = tracer.find_moved_method_by_pickaxe(old_method_name, old_signature)
+        if moved_file and moved_file.endswith(target_file_path.split("/")[-1]): # Simple check if it points to our file
+             # It found it in this file! 
+             # Now find which method name it is?
+             # Pickaxe just says "The signature void foo() appeared in this file".
+             # It implies the method name is still 'foo'.
+             pass
+
+        # 3. Tier 2: Body Similarity (Content Diff)
+        # We need the BODY of the old method.
+        # Argument `old_code` is passed to this tool.
+        # We also need the BODY of the candidate methods.
+        # `get_dependency_graph` does NOT return bodies.
+        # We need `read_file` or `get_class_context` to get bodies.
+        # This is expensive (N reads).
+        # Optimization: Only read bodies of Top-3 candidates from Name/Signature match?
+        
+        body_matcher = BodySimilarityMatcher()
+        best_body_score = 0
+        best_body_cand = None
+        
+        # If we have old code, try to match it against candidates
+        # For now, we assume candidates don't have bodies unless we fetch them.
+        # Let's skip expensive N-fetches for this baseline step unless we are desperate.
+        
+        # 4. Tier 3: Call Graph (Existing Fingerprinter)
         fingerprinter = MethodFingerprinter()
-        # Note: We don't have old_code here easily without reading mainline file, 
-        # but our current implementation mostly uses calls/signature/name.
         result = fingerprinter.find_match(
             old_method_name=old_method_name,
             old_signature=old_signature,

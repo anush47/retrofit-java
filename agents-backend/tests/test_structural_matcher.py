@@ -25,8 +25,10 @@ class TestStructuralMatcher(unittest.TestCase):
         }
         
         results = find_best_matches(mainline, [target, other])
-        self.assertEqual(len(results), 1)
-        self.assertEqual(results[0]["data"]["className"], "com.example.User")
+        final_matches = results["matches"]
+        
+        self.assertEqual(len(final_matches), 1)
+        self.assertEqual(final_matches[0]["data"]["className"], "com.example.User")
 
     def test_refactoring_split(self):
         """Tests if the matcher detects 1-to-N split (Feature Coverage)."""
@@ -67,17 +69,23 @@ class TestStructuralMatcher(unittest.TestCase):
             "outgoingCalls": []
         }
         
-        results = find_best_matches(mainline, [auth_component, profile_component, garbage])
+        result_dict = find_best_matches(mainline, [auth_component, profile_component, garbage])
+        final_matches = result_dict["matches"]
         
         print("\nMulti-File Match Results:")
-        for r in results:
+        for r in final_matches:
             print(f"- {r['data']['simpleName']} (Score: {r['score']:.2f})")
             
         # Should return BOTH Auth and Profile
-        self.assertEqual(len(results), 2)
-        names = {r["data"]["simpleName"] for r in results}
+        self.assertEqual(len(final_matches), 2)
+        names = {r["data"]["simpleName"] for r in final_matches}
         self.assertTrue("UserAuth" in names)
         self.assertTrue("UserProfile" in names)
+        
+        # Verify Completeness
+        completeness = result_dict["completeness"]
+        self.assertEqual(completeness["ratio"], 1.0) # Should cover everything
+        self.assertEqual(len(completeness["missing"]), 0)
 
 if __name__ == '__main__':
     unittest.main()
