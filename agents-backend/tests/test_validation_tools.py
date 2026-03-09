@@ -167,5 +167,69 @@ class TestRestoreRepoState(unittest.TestCase):
             self.assertEqual(mock_run.call_count, 2)
 
 
+class TestRunBuildScript(unittest.TestCase):
+    def _make_toolkit(self):
+        with patch("agents.validation_tools.get_client", return_value=MagicMock()):
+            from agents.validation_tools import ValidationToolkit
+            return ValidationToolkit("/fake/repo")
+            
+    @patch("agents.validation_tools.os.path.exists", return_value=False)
+    @patch("agents.validation_tools.subprocess.run")
+    def test_maven_build(self, mock_run, mock_exists):
+        toolkit = self._make_toolkit()
+        mock_result = MagicMock()
+        mock_result.returncode = 0
+        mock_result.stdout = "BUILD SUCCESS"
+        mock_result.stderr = ""
+        mock_run.return_value = mock_result
+        
+        res = toolkit.run_build_script()
+        self.assertTrue(res["success"])
+        mock_run.assert_called_with(
+            ["mvn", "clean", "compile"],
+            capture_output=True, text=True, cwd="/fake/repo"
+        )
+        
+    @patch("agents.validation_tools.os.path.exists", return_value=True) # returns true for build.gradle
+    @patch("agents.validation_tools.subprocess.run")
+    def test_gradle_build(self, mock_run, mock_exists):
+        toolkit = self._make_toolkit()
+        mock_result = MagicMock()
+        mock_result.returncode = 0
+        mock_result.stdout = "BUILD SUCCESSFUL"
+        mock_result.stderr = ""
+        mock_run.return_value = mock_result
+        
+        res = toolkit.run_build_script()
+        self.assertTrue(res["success"])
+        mock_run.assert_called_with(
+            ["gradle", "build", "-x", "test"],
+            capture_output=True, text=True, cwd="/fake/repo"
+        )
+
+class TestRunTargetedTestsGradle(unittest.TestCase):
+    def _make_toolkit(self):
+        with patch("agents.validation_tools.get_client", return_value=MagicMock()):
+            from agents.validation_tools import ValidationToolkit
+            return ValidationToolkit("/fake/repo")
+            
+    @patch("agents.validation_tools.os.path.exists", return_value=True) # returns true for build.gradle
+    @patch("agents.validation_tools.subprocess.run")
+    def test_run_gradle_tests(self, mock_run, mock_exists):
+        toolkit = self._make_toolkit()
+        mock_result = MagicMock()
+        mock_result.returncode = 0
+        mock_result.stdout = "BUILD SUCCESSFUL"
+        mock_result.stderr = ""
+        mock_run.return_value = mock_result
+        
+        res = toolkit.run_targeted_tests(["org.example.TestA", "org.example.TestB"])
+        self.assertTrue(res["success"])
+        mock_run.assert_called_with(
+            ["gradle", "test", "--tests", "org.example.TestA", "--tests", "org.example.TestB"],
+            capture_output=True, text=True, cwd="/fake/repo"
+        )
+
+
 if __name__ == "__main__":
     unittest.main()

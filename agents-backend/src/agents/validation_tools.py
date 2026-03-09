@@ -161,9 +161,33 @@ class ValidationToolkit:
     # Phase 4 New Methods: Testing and Repo Management
     # ------------------------------------------------------------------
 
+    def run_build_script(self) -> Dict:
+        """
+        Runs the build script for the target repo.
+        Detects if it's Maven (pom.xml) or Gradle (build.gradle).
+        """
+        is_gradle = os.path.exists(os.path.join(self.target_repo_path, "build.gradle"))
+        cmd = ["gradle", "build", "-x", "test"] if is_gradle else ["mvn", "clean", "compile"]
+        
+        try:
+            result = subprocess.run(
+                cmd,
+                capture_output=True,
+                text=True,
+                cwd=self.target_repo_path,
+            )
+            output = result.stdout + "\n" + result.stderr
+            return {
+                "success": result.returncode == 0,
+                "output": output
+            }
+        except Exception as e:
+            return {"success": False, "output": f"Exception building repo: {e}"}
+
     def run_targeted_tests(self, test_classes: List[str]) -> Dict:
         """
-        Runs specific unit tests in the target repository using Maven.
+        Runs specific unit tests in the target repository.
+        Detects Maven vs Gradle automatically.
 
         Args:
             test_classes: List of test class names to run.
@@ -174,8 +198,15 @@ class ValidationToolkit:
         if not test_classes:
             return {"success": True, "compile_error": False, "output": "No tests to run.", "failed_tests": []}
 
-        test_args = ",".join(test_classes)
-        cmd = ["mvn", "test", f"-Dtest={test_args}"]
+        is_gradle = os.path.exists(os.path.join(self.target_repo_path, "build.gradle"))
+        
+        if is_gradle:
+            cmd = ["gradle", "test"]
+            for tc in test_classes:
+                cmd.extend(["--tests", tc])
+        else:
+            test_args = ",".join(test_classes)
+            cmd = ["mvn", "test", f"-Dtest={test_args}"]
 
         try:
             result = subprocess.run(
@@ -188,7 +219,7 @@ class ValidationToolkit:
             success = result.returncode == 0
             
             # Simple heuristic for compile error vs test failure
-            compile_error = "COMPILATION ERROR" in output or ("BUILD FAILURE" in output and "There are test failures" not in output)
+            compile_error = "COMPILATION ERROR" in output or ("BUILD FAILURE" in output and "There are test failures" not in output) or "Compilation failed" in output
 
             # We won't strictly parse failed tests from text for now, just return empty list. Phase 4 just needs success/fail stats.
             failed_tests = []

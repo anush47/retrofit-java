@@ -364,6 +364,72 @@ class ReasoningToolkit:
         # Return first class if name filter didn't hit
         return classes[0] if classes else {"error": f"Struct '{struct_name}' not found in {rel_path}."}
 
+    def get_function_body(self, file_path: str, function_name: str, use_mainline: bool = True) -> str:
+        """
+        Retrieves the exact body of a function from a file.
+        Useful for Agent 1 to isolate logic.
+        """
+        # We reuse get_class_context which already focuses on a specific method.
+        # It returns a string representation with the method body fully expanded and other methods stubbed.
+        # This is exactly what we need.
+        context = self.get_class_context(file_path, focus_method=function_name, use_mainline=use_mainline)
+        return str(context)
+
+    # ------------------------------------------------------------------
+    # Git & Diff Operators (Phase 5)
+    # ------------------------------------------------------------------
+
+    def git_log_follow(self, file_path: str, use_mainline: bool = False) -> str:
+        """
+        Retrieves the git history for a file, following renames.
+        Useful for Agent 2 to find where a file moved.
+        """
+        repo_path = self.mainline_repo_path if use_mainline else self.target_repo_path
+        try:
+            result = subprocess.run(
+                ["git", "log", "--follow", "--name-status", "--oneline", "--", file_path],
+                capture_output=True, text=True, cwd=repo_path, check=True
+            )
+            return result.stdout or "No history found."
+        except subprocess.CalledProcessError as e:
+            return f"Error running git log: {e.stderr}"
+
+    def git_blame_lines(self, file_path: str, start_line: int, end_line: int, use_mainline: bool = False) -> str:
+        """
+        Retrieves git blame for specific lines in a file.
+        Useful for Agent 1/2 to understand lineage of the code.
+        """
+        repo_path = self.mainline_repo_path if use_mainline else self.target_repo_path
+        try:
+            result = subprocess.run(
+                ["git", "blame", "-L", f"{start_line},{end_line}", "--", file_path],
+                capture_output=True, text=True, cwd=repo_path, check=True
+            )
+            return result.stdout or "No blame found."
+        except subprocess.CalledProcessError as e:
+            return f"Error running git blame: {e.stderr}"
+
+
+    def map_hunk_lines(self, mainline_hunk: str, target_method_body: str) -> int:
+        """
+        Programmatic helper to find the most likely 1-indexed insertion line 
+        in target_method_body matching the context lines of mainline_hunk.
+        Useful to verify LLM anchoring of diffs.
+        """
+        lines = target_method_body.splitlines()
+        hunk_lines = mainline_hunk.splitlines()
+        
+        # Extract context lines (lines starting with ' ' in the hunk)
+        context_lines = [h[1:].strip() for h in hunk_lines if h.startswith(" ") and len(h) > 1 and h[1:].strip()]
+        if not context_lines:
+            return 1
+            
+        for i, t_line in enumerate(lines):
+            if context_lines[0] in t_line:
+                return i + 1 # 1-indexed
+        return 1
+
+
     def get_tools(self):
         return [
             StructuredTool.from_function(
@@ -422,5 +488,25 @@ class ReasoningToolkit:
                 func=self.get_struct_definition,
                 name="get_struct_definition",
                 description="Retrieves the full class/struct definition by name from the mainline or target repo. Useful for understanding dependent types referenced in the patch.",
+            ),
+            StructuredTool.from_function(
+                func=self.get_function_body,
+                name="get_function_body",
+                description="Retrieves the exact body of a function/method from a file. Useful for isolating logic.",
+            ),
+            StructuredTool.from_function(
+                func=self.git_log_follow,
+                name="git_log_follow",
+                description="Retrieves the git history for a file, following renames.",
+            ),
+            StructuredTool.from_function(
+                func=self.git_blame_lines,
+                name="git_blame_lines",
+                description="Retrieves git blame for specific lines in a file.",
+            ),
+            StructuredTool.from_function(
+                func=self.map_hunk_lines,
+                name="map_hunk_lines",
+                description="Finds the most likely 1-indexed insertion line in target_method_body matching the context lines of mainline_hunk.",
             ),
         ]
