@@ -19,13 +19,27 @@ Pipeline for each modified file in the patch:
 import json
 import os
 from langchain_core.messages import HumanMessage, SystemMessage
-from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_core.language_models.chat_models import BaseChatModel
+from langchain_openai import ChatOpenAI
 from langgraph.prebuilt import create_react_agent
 from state import AgentState, SemanticBlueprint
 from utils.patch_analyzer import PatchAnalyzer
 from utils.mcp_client import get_client
 from langchain_core.tools import tool
-import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+def _get_llm() -> BaseChatModel:
+    """Factory to get the configured LLM."""
+    model_name = os.getenv("LLM_MODEL", "gemini-2.0-flash")
+    
+    # All providers including Google Gemini via the OpenAI-compatible endpoint
+    # should declare their base URL and API key via OPENAI_BASE_URL and OPENAI_API_KEY
+    base_url = os.getenv("OPENAI_BASE_URL")
+    api_key = os.getenv("OPENAI_API_KEY") 
+    
+    return ChatOpenAI(model=model_name, temperature=0, base_url=base_url, api_key=api_key)
 
 
 # ---------------------------------------------------------------------------
@@ -140,7 +154,7 @@ async def context_analyzer_node(state: AgentState, config) -> dict:
     # ------------------------------------------------------------------
     # Setup
     # ------------------------------------------------------------------
-    llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash", temperature=0)
+    llm = _get_llm()
     analyzer = PatchAnalyzer()
     raw_hunks_by_file = analyzer.extract_raw_hunks(patch_diff)
     trace = "# Context Analyzer Trace\n\n"
@@ -203,7 +217,7 @@ async def context_analyzer_node(state: AgentState, config) -> dict:
         get_struct_definition
     ]
     
-    agent = create_react_agent(llm, tools=tools, state_modifier=_AGENT_SYSTEM)
+    agent = create_react_agent(llm, tools=tools, prompt=_AGENT_SYSTEM)
 
     # Filter to non-test code changes only
     code_changes = [fc for fc in patch_analysis if not fc.is_test_file]
@@ -338,7 +352,7 @@ async def context_analyzer_node(state: AgentState, config) -> dict:
 # Helpers
 # ---------------------------------------------------------------------------
 
-async def _self_reflect(llm: ChatGoogleGenerativeAI, code_body: str, blueprint: SemanticBlueprint) -> bool:
+async def _self_reflect(llm: BaseChatModel, code_body: str, blueprint: SemanticBlueprint) -> bool:
     """
     Sends a verification prompt to the LLM to check that the blueprint is
     internally consistent with the code. Returns True if verified.
