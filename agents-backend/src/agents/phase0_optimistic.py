@@ -1,7 +1,7 @@
 """
 Phase 0: Optimistic Fast-Path Patching Node
 
-Before spinning up the expensive 4-agent LLM pipeline, H-MABS first tries
+Before spinning up the expensive 4-agent LLM pipeline, Retrofit first tries
 a direct `git apply --check` on the mainline patch against the target repo.
 If it applies cleanly *and* builds/tests pass, we exit immediately without
 burning any LLM tokens.
@@ -13,7 +13,6 @@ a standalone pre-graph node so the graph can route on `fast_path_success`.
 import os
 from langchain_core.messages import HumanMessage
 from state import AgentState
-from utils.patch_analyzer import PatchAnalyzer
 from utils.patch_analyzer import PatchAnalyzer
 
 
