@@ -53,7 +53,7 @@ def get_actual_backport_locations(repo_path, backport_commit):
             # target_start and target_length correspond to the file AFTER the patch (the backport state)
             # source_start and source_length correspond to the file BEFORE the patch (the backport parent)
             # Structural locator aims to find locations in the backport parent.
-            ranges.append((hunk.source_start, hunk.source_start + hunk.source_length))
+            ranges.append((hunk.source_start, hunk.source_start + hunk.source_length - 1))
         locations[file_path] = ranges
         
     return locations

@@ -29,9 +29,8 @@ import re
 from langchain_core.messages import HumanMessage
 from state import AgentState
 from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain_openai import AzureChatOpenAI
+from langchain_openai import AzureChatOpenAI, ChatOpenAI
 from langgraph.prebuilt import create_react_agent
-from state import AgentState
 from utils.retrieval.ensemble_retriever import EnsembleRetriever
 from agents.reasoning_tools import ReasoningToolkit
 
@@ -193,7 +192,7 @@ async def structural_locator_node(state: AgentState, config) -> dict:
         llm = ChatGoogleGenerativeAI(model=model_name, temperature=0)
     tools = [
         t for t in toolkit.get_tools() if t.name in [
-            "search_candidates", "get_dependency_graph",
+            "search_candidates", "match_structure", "get_dependency_graph",
             "read_file", "get_class_context", "git_log_follow", "git_blame_lines"
         ]
     ] if toolkit else []
