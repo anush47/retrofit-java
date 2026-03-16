@@ -26,6 +26,9 @@ class EnsembleRetriever:
         self.vectorizer = None
         self.target_matrix = None
         
+        # Lazy initialization flag
+        self._index_built = False
+        
         # Tree-sitter Setup
         self.JAVA_LANGUAGE = Language(tree_sitter_java.language())
         self.parser = Parser(self.JAVA_LANGUAGE)
@@ -62,6 +65,16 @@ class EnsembleRetriever:
         code = re.sub(r"/\*.*?\*/|//.*?$", "", code, flags=re.DOTALL | re.MULTILINE)
         tokens = re.findall(r"\b[a-zA-Z_][a-zA-Z0-9_]{2,}\b", code)
         return " ".join(tokens)
+
+    def _ensure_index_built(self, commit_sha: str = "HEAD"):
+        """
+        Lazy initialization: Builds index only if not already built.
+        Called by Phase 2 methods before they use the index.
+        """
+        if self._index_built:
+            return
+        self.build_index(commit_sha)
+        self._index_built = True
 
     def build_index(self, commit_sha: str = "HEAD"):
         """
@@ -186,6 +199,9 @@ class EnsembleRetriever:
 
     # --- SIGNAL 2: SYMBOL MATCHING ---
     def get_symbol_candidates(self, file_path, commit, top_k=5):
+        # Lazy build index only when Phase 2 is needed
+        self._ensure_index_built()
+        
         content = self._get_content(self.main_repo, commit, file_path)
         if not content: return []
 
@@ -215,6 +231,9 @@ class EnsembleRetriever:
 
     # --- SIGNAL 3: TF-IDF ---
     def get_tfidf_candidates(self, file_path, commit, top_k=5):
+        # Lazy build index only when Phase 2 is needed
+        self._ensure_index_built()
+        
         content = self._get_content(self.main_repo, commit, file_path)
         if not content or self.vectorizer is None: return []
 
@@ -396,13 +415,10 @@ class EnsembleRetriever:
         # 3. [NEW] Blob Hunting (Content Match)
         blob_path = self.find_file_by_blob_hash(file_path, original_commit)
         if blob_path:
-             # Even if the path equals the original file_path (and wasn't found in step 1),
-             # checking self.target_files again in step 1 should have caught it. 
-             # So this likely implies a rename or move that Step 1 & 2 missed.
-             if blob_path in self.target_files:
-                 return [{"file": blob_path, "score": 1.0, "method": "GIT_BLOB", "reason": f"Content (Blob) match found at {blob_path}"}]
-             else:
-                 pass
+             # Blob hunting verified the content exists in the target repo.
+             # Trust the git result directly - don't depend on self.target_files which
+             # is only populated after index build (which is lazy).
+             return [{"file": blob_path, "score": 1.0, "method": "GIT_BLOB", "reason": f"Content (Blob) match found at {blob_path}"}]
 
         # 4. [NEW] Neighbor Inference (Sibling Logic)
         neighbor_path = self.find_file_by_neighbor_inference(file_path, original_commit)
@@ -461,8 +477,8 @@ class EnsembleRetriever:
     def find_candidates(self, file_path: str, original_commit: str) -> List[Dict]:
         """
         Orchestrates the retrieval process using Split Flow (PORTGPT Style).
-        Phase 1: Git Precision (Deterministic)
-        Phase 2: Ensemble Search (Probabilistic)
+        Phase 1: Git Precision (Deterministic) - no index needed
+        Phase 2: Ensemble Search (Probabilistic) - builds index lazily on demand
         """
         # --- PHASE 1: Deterministic Git Resolution ---
         git_match = self.resolve_git_path(file_path, original_commit)
@@ -472,6 +488,7 @@ class EnsembleRetriever:
 
         # --- PHASE 2: Probabilistic Ensemble Fallback ---
         print(f"Phase 1 failed for {file_path}. Falling back to Ensemble Search...")
+        print(f"Building index for Phase 2 ensemble search...")
         
         # Note: We skip 'get_git_candidates' inside here because Phase 1 covers it better.
         # We perform the expensive search now.

@@ -20,26 +20,15 @@ import json
 import os
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_core.language_models.chat_models import BaseChatModel
-from langchain_openai import ChatOpenAI
 from langgraph.prebuilt import create_react_agent
 from state import AgentState, SemanticBlueprint
 from utils.patch_analyzer import PatchAnalyzer
 from utils.mcp_client import get_client
+from utils.llm_provider import get_llm
 from langchain_core.tools import tool
 from dotenv import load_dotenv
 
 load_dotenv()
-
-def _get_llm() -> BaseChatModel:
-    """Factory to get the configured LLM."""
-    model_name = os.getenv("LLM_MODEL", "gemini-2.0-flash")
-    
-    # All providers including Google Gemini via the OpenAI-compatible endpoint
-    # should declare their base URL and API key via OPENAI_BASE_URL and OPENAI_API_KEY
-    base_url = os.getenv("OPENAI_BASE_URL")
-    api_key = os.getenv("OPENAI_API_KEY") 
-    
-    return ChatOpenAI(model=model_name, temperature=0, base_url=base_url, api_key=api_key)
 
 
 # ---------------------------------------------------------------------------
@@ -185,7 +174,7 @@ async def context_analyzer_node(state: AgentState, config) -> dict:
     # ------------------------------------------------------------------
     # Setup
     # ------------------------------------------------------------------
-    llm = _get_llm()
+    llm = get_llm(temperature=0)
     analyzer = PatchAnalyzer()
     raw_hunks_by_file = analyzer.extract_raw_hunks(patch_diff)
     trace = "# Context Analyzer Trace\n\n"

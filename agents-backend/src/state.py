@@ -88,6 +88,10 @@ class AgentState(TypedDict):
     backport_commit: str             # Commit hash of the backport in the target repo
     original_commit: str             # Commit hash in the mainline repo
 
+    # --- Phase 0: Control flags ---
+    skip_phase_0: bool               # If True, skip phase 0 and go directly to context analyzer
+    compile_only: bool               # If True, validation only applies patch and compiles (no tests)
+
     # --- Phase 0: Pre-computed analysis ---
     patch_analysis: list             # List[FileChange] — from PatchAnalyzer
 

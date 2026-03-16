@@ -1,21 +1,17 @@
 # Validation Trace
 
 ## Blueprint Summary
-- **Root Cause**: 
-- **Fix Logic**: 
-- **Dependent APIs**: []
+- **Root Cause**: The controller built the list of worker IDs from *all* Druid servers, including non‑historical types (e.g., broker, coordinator). Those servers cannot execute query stages, causing task assignment failures or runtime errors.
+- **Fix Logic**: Imported `org.apache.druid.server.coordination.ServerType` and wrapped the worker‑ID addition with a guard `if (server.getType() == ServerType.HISTORICAL) { … }` so only historical servers are added to `workerIds`.
+- **Dependent APIs**: ['DruidServerMetadata.getType()', 'ServerType.HISTORICAL', 'WorkerId.fromDruidServerMetadata']
 
 ## Hunk Segregation
-- Code files: 1
-- Test files: 4
+- Code files: 0
+- Test files: 0
 
 ## Agent Tool Steps
 
-  - `Agent calls apply_adapted_hunks` with `{"code_count": 1, "test_count": 9}`
-  - `Tool: apply_adapted_hunks` -> {'success': True, 'output': 'Applied successfully.', 'applied_files': ['processing/src/main/java/org/apache/druid/frame/allocation/AppendableMemory.java', 'extensions-core/multi-stage-query/src/test/java/org/apache/druid/msq/exec/MSQWindowTest.java', 'extensions-core/multi-stage-query/src/test/java/org/apache/druid/msq/test/MSQTestBase.java', 'processing/src/test/java/org/apache/druid/frame/allocation/AppendableMemoryTest.java', 'processing/src/test/java/org/apache/druid/frame/write/FrameWriterTest.java']}
-  - `Agent calls compile_files` with `{"files": ["processing/src/main/java/org/apache/druid/frame/allocation/AppendableMemory.java", "extensions-core/multi-stage-query/src/test/java/org/apache/druid/msq/exec/MSQWindowTest.java", "extensions-core/multi-stage-query/src/test/java/org/apache/druid/msq/test/MSQTestBase.java", "processing/src/test/java/org/apache/druid/frame/allocation/AppendableMemoryTest.java", "processing/src/test/java/org/apache/druid/frame/write/FrameWriterTest.java"]}`
-  - `Tool: compile_files` -> {'success': True, 'output': 'Module-level compilation successful.', 'modules': ['processing', 'extensions-core/multi-stage-query']}
-  - `Agent calls run_spotbugs` with `{"paths": ["/Users/anush/Projects/university/retrofit-java/temp_repo_storage/druid/processing/target/classes", "/Users/anush/Projects/university/retrofit-java/temp_repo_storage/druid/extensions-core/multi-stage-query/target/classes"]}`
-  - `Tool: run_spotbugs` -> {'success': False, 'message': 'Error during SpotBugs programmatic execution: Could not initialize class edu.umd.cs.findbugs.ba.AnalysisContext\nDebug Log:\n  SpotBugs: Checking DetectorFactoryCollection initialization...\n  SpotBugs: DetectorFactoryCollection initialized.\n  SpotBugs: Loaded 1 plugins.\nExecuting SpotBugs programmatically on: /Users/anush/Projects/university/retrofit-java/temp_repo_storage/druid/processing/target/classes, /Users/anush/Projects/university/retrofit-java/temp_repo_storage/druid/extensions-core/multi-stage-query/target/classes\n'}
+  - `Agent calls apply_adapted_hunks` with `{"code_count": 0, "test_count": 0}`
+  - `Tool: apply_adapted_hunks` -> {'success': False, 'output': 'No hunks to apply.', 'applied_files': []}
 
-**Final Status: STATIC VALIDATION FAILED**
+**Final Status: HUNK APPLICATION FAILED**
