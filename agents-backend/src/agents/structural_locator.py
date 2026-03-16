@@ -154,12 +154,11 @@ async def structural_locator_node(state: AgentState, config) -> dict:
     consistency_map: dict[str, str] = {}
     mapped_target_context: dict[str, dict] = {}
 
-    # Setup a lightweight retriever (no index build — Agent 2 uses the already-built index from Phase 0)
+    # Setup a lightweight retriever (lazy index build — only when Phase 2 git methods fail)
     try:
         retriever = EnsembleRetriever(mainline_repo_path, target_repo_path)
-        # CRITICAL: Build index for retrieval to work
-        print("  Agent 2: Building repository index...")
-        retriever.build_index("HEAD")
+        # NOTE: Index building is now lazy - it will only be built when Phase 2 ensemble search
+        # is actually needed (i.e., when Phase 1 git-based retrieval fails)
         
         toolkit = ReasoningToolkit(retriever, target_repo_path, mainline_repo_path, patch_analysis)
     except Exception as e:
@@ -188,8 +187,22 @@ async def structural_locator_node(state: AgentState, config) -> dict:
         print(f"  Agent 2: Locating target for {mainline_file}...")
 
         trace += f"### `{mainline_file}`\n\n"
+        
+        # STEP 1: Try git-based resolution first (no LLM call)
+        git_candidates = None
+        if toolkit:
+            try:
+                git_candidates = toolkit.search_candidates(mainline_file)
+                if git_candidates:
+                    git_target = git_candidates[0]["file"]
+                    print(f"  Agent 2: Git resolution found target: {git_target}")
+                    trace += f"**Git Resolution**: Found `{git_target}`\n\n"
+            except Exception as e:
+                print(f"  Agent 2: Git resolution failed: {e}")
+                trace += f"⚠️ Git resolution failed: {e}\n\n"
+        
+        # STEP 2: Try LLM refinement to get method-level details
         modified_methods = _infer_modified_methods(change)
-        # Get the diff for this specific file
         file_diff = ""
         try:
             from utils.patch_analyzer import PatchAnalyzer
@@ -209,6 +222,7 @@ async def structural_locator_node(state: AgentState, config) -> dict:
         input_data = {"messages": [("user", input_msg)]}
         
         mapping_result = None
+        llm_failed = False
         for attempt in range(2):
             try:
                 result = await agent.ainvoke(input_data)
@@ -228,8 +242,9 @@ async def structural_locator_node(state: AgentState, config) -> dict:
                     try:
                         mapping_result = json.loads(text_clean)
                     except json.JSONDecodeError:
-                        trace += f"⚠️ **Mapping Extraction Failed**\n\nRaw Response:\n```\n{raw_content}\n```\n\n"
+                        trace += f"⚠️ **LLM Mapping Extraction Failed**\n\nRaw Response:\n```\n{raw_content}\n```\n\n"
                         mapping_result = None
+                        llm_failed = True
                 
                 if mapping_result:
                     trace += f"**Agent Tool Steps:**\n\n"
@@ -243,11 +258,14 @@ async def structural_locator_node(state: AgentState, config) -> dict:
                 break
             except Exception as e:
                 print(f"  Agent 2: LLM call error (attempt {attempt+1}/2): {e}")
+                llm_failed = True
                 if attempt == 0:
                     print("  Waiting 30 seconds before retry...")
                     time.sleep(30)
 
+        # STEP 3: Use LLM result if successful, otherwise fallback to git resolution
         if mapping_result and isinstance(mapping_result, dict):
+            # LLM provided detailed mappings
             for k, v in mapping_result.get("consistency_map_entries", {}).items():
                 consistency_map[k] = v
                 
@@ -267,8 +285,21 @@ async def structural_locator_node(state: AgentState, config) -> dict:
                     "end_line": m.get("end_line"),
                     "code_snippet": m.get("code_snippet", ""),
                 }
+        elif git_candidates:
+            # LLM failed, but git resolution succeeded — use it as fallback
+            git_target = git_candidates[0]["file"]
+            trace += f"**Fallback**: Using git resolution result (LLM refinement failed).\n\n"
+            mapped_target_context[mainline_file] = {
+                "target_file": git_target,
+                "method": None,  # Method details unknown
+                "start_line": None,
+                "end_line": None,
+                "code_snippet": "",
+            }
+            print(f"  Agent 2: Using fallback mapping: {mainline_file} → {git_target}")
         else:
-            trace += f"❌ Failed to extract mapping.\n\n"
+            trace += f"❌ Failed to locate target — neither LLM nor git resolution provided results.\n\n"
+            print(f"  Agent 2: Could not map {mainline_file} — skipping.")
 
     # ------------------------------------------------------------------
     # 3. Process test files

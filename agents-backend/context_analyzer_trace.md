@@ -1,38 +1,42 @@
 # Context Analyzer Trace
 
-## File: `processing/src/main/java/org/apache/druid/frame/allocation/AppendableMemory.java`
+## File: `extensions-core/multi-stage-query/src/main/java/org/apache/druid/msq/dart/controller/DartControllerContext.java`
 
 **Method focused**: `Unknown`
-**Hunk count**: 1
+**Hunk count**: 2
 
 **Agent Tool Steps:**
 
-  - `Tool: get_class_context` -> {'error': '[Errno 111] Connection refused'}...
-**Patch Intent**: Allow allocation to succeed when the current memory block can satisfy the request despite the allocator reporting insufficient free bytes.
+**Patch Intent**: Restrict the controller’s worker list to historical servers only, preventing invalid task placement.
 
-**Root Cause**: The method returned false whenever the allocator reported insufficient available bytes, even if the currently allocated block still had enough capacity to satisfy the request, causing premature allocation failures.
+**Root Cause**: The controller built the list of worker IDs from *all* Druid servers, including non‑historical types (e.g., broker, coordinator). Those servers cannot execute query stages, causing task assignment failures or runtime errors.
 
-**Fix Logic**: Moved the retrieval of the current block index (`idx = currentBlockNumber()`) before the allocator‑availability check and added a nested condition: if the allocator lacks enough bytes, verify whether the current block can still accommodate the request; only return false when both the allocator and the current block are insufficient.
+**Fix Logic**: Imported `org.apache.druid.server.coordination.ServerType` and wrapped the worker‑ID addition with a guard `if (server.getType() == ServerType.HISTORICAL) { … }` so only historical servers are added to `workerIds`.
 
-**Dependent APIs**: allocator.available(), currentBlockNumber(), limits.getInt(int), blockHolders.get(int).get().getCapacity()
+**Dependent APIs**: DruidServerMetadata.getType(), ServerType.HISTORICAL, WorkerId.fromDruidServerMetadata
 
 **Hunk Chain**:
 
-  - H1 [core_fix]: Reordered computation of the current block index and added a guard that checks the current block's capacity when the allocator's available bytes are insufficient, returning false only if both checks fail.
+  - H1 [declaration]: Added an import for `ServerType` to make the server‑type enum available in this file.
+    → *Provides the `ServerType` symbol needed for the conditional check introduced in the next hunk.*
+  - H2 [core_fix]: Wrapped the addition of each server’s worker ID in a guard that checks `server.getType() == ServerType.HISTORICAL`, thereby excluding non‑historical servers from the `workerIds` list.
 
 **Self-Reflection**: FAILED ❌ (used anyway)
 
 
 ## Consolidated Blueprint
 
-**Patch Intent**: Allow allocation to succeed when the current memory block can satisfy the request despite the allocator reporting insufficient free bytes.
+**Patch Intent**: Restrict the controller’s worker list to historical servers only, preventing invalid task placement.
 
-- **Root Cause**: The method returned false whenever the allocator reported insufficient available bytes, even if the currently allocated block still had enough capacity to satisfy the request, causing premature allocation failures.
-- **Fix Logic**: Moved the retrieval of the current block index (`idx = currentBlockNumber()`) before the allocator‑availability check and added a nested condition: if the allocator lacks enough bytes, verify whether the current block can still accommodate the request; only return false when both the allocator and the current block are insufficient.
-- **Dependent APIs**: ['allocator.available()', 'currentBlockNumber()', 'limits.getInt(int)', 'blockHolders.get(int).get().getCapacity()']
+- **Root Cause**: The controller built the list of worker IDs from *all* Druid servers, including non‑historical types (e.g., broker, coordinator). Those servers cannot execute query stages, causing task assignment failures or runtime errors.
+- **Fix Logic**: Imported `org.apache.druid.server.coordination.ServerType` and wrapped the worker‑ID addition with a guard `if (server.getType() == ServerType.HISTORICAL) { … }` so only historical servers are added to `workerIds`.
+- **Dependent APIs**: ['DruidServerMetadata.getType()', 'ServerType.HISTORICAL', 'WorkerId.fromDruidServerMetadata']
 
 ### Full Hunk Chain (Cross-File)
 
-**[G1] processing/src/main/java/org/apache/druid/frame/allocation/AppendableMemory.java — H1** `[core_fix]`
-  Reordered computation of the current block index and added a guard that checks the current block's capacity when the allocator's available bytes are insufficient, returning false only if both checks fail.
+**[G1] extensions-core/multi-stage-query/src/main/java/org/apache/druid/msq/dart/controller/DartControllerContext.java — H1** `[declaration]`
+  Added an import for `ServerType` to make the server‑type enum available in this file.
+  → Provides the `ServerType` symbol needed for the conditional check introduced in the next hunk.
+**[G2] extensions-core/multi-stage-query/src/main/java/org/apache/druid/msq/dart/controller/DartControllerContext.java — H2** `[core_fix]`
+  Wrapped the addition of each server’s worker ID in a guard that checks `server.getType() == ServerType.HISTORICAL`, thereby excluding non‑historical servers from the `workerIds` list.
 

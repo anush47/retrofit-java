@@ -320,6 +320,19 @@ async def hunk_generator_node(state: AgentState, config) -> dict:
 
     print(f"  Agent 3: {len(code_changes)} code file(s), {len(test_changes)} test file(s) to process.")
 
+    # --- Early Exit: If Agent 2 produced no mappings and we're on a retry, abort ---
+    # If there are code files but no mapped context, and this is a retry, don't loop endlessly.
+    if code_changes and not mapped_target_context and validation_attempts > 0:
+        print(f"  Agent 3: Aborting retry — Agent 2 has no target context and retrying won't help.")
+        return {
+            "messages": [HumanMessage(content="Agent 3: No target context from Agent 2. Cannot proceed.")],
+            "adapted_code_hunks": [],
+            "adapted_test_hunks": [],
+            "validation_passed": False,  # Signal validation failure to exit loop
+            "validation_attempts": validation_attempts,
+            "validation_error_context": "Agent 3 Early Exit: Agent 2 failed to map files. No source context available for hunk generation."
+        }
+
     adapted_code_hunks: list[AdaptedHunk] = []
     adapted_test_hunks: list[AdaptedHunk] = []
     trace = "# Hunk Generator Trace\n\n"
