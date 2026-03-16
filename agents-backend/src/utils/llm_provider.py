@@ -66,6 +66,8 @@ def get_llm(
         return _get_groq(llm_model, temperature)
     elif llm_provider == "google":
         return _get_google_gemini(llm_model, temperature)
+    elif llm_provider == "cerebras":
+        return _get_cerebras(llm_model, temperature)
     elif llm_provider == "custom" or llm_provider == "openai":
         # Try OpenAI-compatible endpoint first, then fallback to direct OpenAI
         base_url = os.getenv("OPENAI_BASE_URL")
@@ -76,7 +78,7 @@ def get_llm(
     else:
         raise ValueError(
             f"Unsupported LLM provider: {llm_provider}. "
-            f"Supported: 'openai', 'azure', 'groq', 'google', 'custom'"
+            f"Supported: 'openai', 'azure', 'groq', 'google', 'cerebras', 'custom'"
         )
 
 
@@ -180,4 +182,26 @@ def _get_google_gemini(model: str, temperature: float) -> BaseChatModel:
         model=model,
         temperature=temperature,
         google_api_key=api_key,
+    )
+
+
+def _get_cerebras(model: str, temperature: float) -> BaseChatModel:
+    """Get Cerebras instance using langchain_cerebras ChatCerebras."""
+    try:
+        from langchain_cerebras import ChatCerebras
+    except ImportError:
+        raise ImportError(
+            "langchain_cerebras is required for Cerebras provider. "
+            "Install with: pip install langchain_cerebras"
+        )
+    
+    api_key = os.getenv("CEREBRAS_API_KEY")
+    if not api_key:
+        raise ValueError("CEREBRAS_API_KEY environment variable is required for Cerebras provider")
+    
+    return ChatCerebras(
+        model=model,
+        temperature=temperature,
+        max_tokens=1024,
+        api_key=api_key,
     )
