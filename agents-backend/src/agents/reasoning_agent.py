@@ -1,6 +1,6 @@
 from langchain_core.messages import HumanMessage, SystemMessage
-from langchain_google_genai import ChatGoogleGenerativeAI
 from langgraph.prebuilt import create_react_agent
+from utils.llm_provider import get_llm
 from state import AgentState
 from utils.patch_analyzer import PatchAnalyzer
 from utils.retrieval.ensemble_retriever import EnsembleRetriever
@@ -105,7 +105,7 @@ async def reasoning_agent(state: AgentState, config):
         hint_msg = f"\n\n[HINT]: I tried `git apply --check` and it FAILED with:\n{applicability['output']}\nUse this to locate the target file or specific conflict lines."
     
     # 4. Setup LLM & Agent
-    llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash", temperature=0)
+    llm = get_llm(temperature=0)
     
     system_prompt = """You are an expert Java Backporting Architect.
 Your goal is to create a detailed `ImplementationPlan` to backport a patch from a Mainline version to a Target version.

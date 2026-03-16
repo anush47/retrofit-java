@@ -28,10 +28,9 @@ import os
 import re
 from langchain_core.messages import HumanMessage
 from state import AgentState
-from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain_openai import AzureChatOpenAI, ChatOpenAI
 from langgraph.prebuilt import create_react_agent
 from utils.retrieval.ensemble_retriever import EnsembleRetriever
+from utils.llm_provider import get_llm
 from agents.reasoning_tools import ReasoningToolkit
 
 _AGENT_SYSTEM = """You are an expert software engineer mapping code from a new mainline patch to an older target repository.
@@ -169,27 +168,7 @@ async def structural_locator_node(state: AgentState, config) -> dict:
         toolkit = None
 
     # Setup LLM Agent
-    model_name = os.getenv("STRUCTURAL_LOCATOR_MODEL", "gemini-2.0-flash")
-    provider = os.getenv("STRUCTURAL_LOCATOR_PROVIDER", "google").lower()
-    
-    if provider == "azure":
-        llm = AzureChatOpenAI(
-            azure_deployment=os.getenv("AZURE_CHAT_DEPLOYMENT", "apim-4o-mini"),
-            openai_api_version=os.getenv("AZURE_CHAT_VERSION", "2024-02-01"),
-            azure_endpoint=os.getenv("AZURE_ENDPOINT", os.getenv("OPENAI_BASE_URL")),
-            api_key=os.getenv("AZURE_OPENAI_API_KEY", os.getenv("OPENAI_API_KEY")),
-            temperature=0
-        )
-    elif provider == "openai":
-        llm = ChatOpenAI(
-            model=model_name,
-            temperature=0,
-            openai_api_key=os.getenv("OPENAI_API_KEY"),
-            openai_api_base=os.getenv("OPENAI_BASE_URL"),
-            openai_proxy=os.getenv("OPENAI_PROXY")
-        )
-    else:
-        llm = ChatGoogleGenerativeAI(model=model_name, temperature=0)
+    llm = get_llm(temperature=0)
     tools = [
         t for t in toolkit.get_tools() if t.name in [
             "search_candidates", "match_structure", "get_dependency_graph",

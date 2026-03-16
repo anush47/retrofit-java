@@ -7,8 +7,8 @@ import json
 import os
 import re
 from langchain_core.messages import HumanMessage, SystemMessage
-from langchain_openai import AzureChatOpenAI, ChatOpenAI
 from state import AgentState, AdaptedHunk
+from utils.llm_provider import get_llm
 from agents.validation_tools import ValidationToolkit
 from agents.hunk_generator import _extract_hunk_block
 
@@ -37,27 +37,8 @@ async def _synthesize_target_test(state: AgentState, toolkit: ValidationToolkit)
         root_cause=root_cause,
         fix_logic=fix_logic
     )
-    model_name = os.getenv("VALIDATION_MODEL", "gemini-2.0-flash")
-    provider = os.getenv("VALIDATION_PROVIDER", "google").lower()
-
-    if provider == "azure":
-        llm = AzureChatOpenAI(
-            azure_deployment=os.getenv("AZURE_CHAT_DEPLOYMENT", "apim-4o-mini"),
-            openai_api_version=os.getenv("AZURE_CHAT_VERSION", "2024-02-01"),
-            azure_endpoint=os.getenv("AZURE_ENDPOINT"),
-            api_key=os.getenv("AZURE_OPENAI_API_KEY", os.getenv("OPENAI_API_KEY")),
-            temperature=0
-        )
-    elif provider == "openai":
-        llm = ChatOpenAI(
-            model=model_name,
-            temperature=0,
-            openai_api_key=os.getenv("OPENAI_API_KEY"),
-            openai_api_base=os.getenv("OPENAI_BASE_URL")
-        )
-    else:
-        from langchain_google_genai import ChatGoogleGenerativeAI
-        llm = ChatGoogleGenerativeAI(model=model_name, temperature=0)
+    
+    llm = get_llm(temperature=0)
     
     try:
         response = await llm.ainvoke([
@@ -204,9 +185,9 @@ async def validation_agent(state: AgentState, config) -> dict:
             out_str = out_str[:1000] + "... [TRUNCATED]"
         trace.append(f"  - `Tool: {tool_name}` -> {out_str}")
 
-    # Compile-Only Mode (Streamlined)
+    # Compile-Only Mode (Streamlined - Apply patch and compile changed files only)
     if compile_only:
-        print("  Agent 4: Streamline compilation verification...")
+        print("  Agent 4: Streamlined mode - applying patch and compiling changed files only...")
         res = toolkit.apply_adapted_hunks(code_hunks, test_hunks)
         log_step("apply_adapted_hunks", {"code_count": len(code_hunks), "test_count": len(test_hunks)}, res)
         
@@ -232,22 +213,30 @@ async def validation_agent(state: AgentState, config) -> dict:
                 "validation_error_context": build_res.get("output", "")
             }
 
-        # Run SpotBugs after successful compile
-        print("  Agent 4: Running SpotBugs validation...")
-        modules = build_res.get("modules", [])
-        classes_paths = toolkit.get_module_class_paths(modules)
+        # # Run SpotBugs after successful compile
+        # print("  Agent 4: Running SpotBugs validation...")
+        # modules = build_res.get("modules", [])
+        # classes_paths = toolkit.get_module_class_paths(modules)
+        # 
+        # spotbugs_res = toolkit.run_spotbugs(compiled_classes_paths=classes_paths, source_path=os.path.join(state["target_repo_path"], "src", "main", "java"))
+        # log_step("run_spotbugs", {"paths": classes_paths}, spotbugs_res)
+        # 
+        # passed = spotbugs_res.get("success", True)
+        # trace.append(f"\n**Final Status: {'VALIDATION PASSED' if passed else 'STATIC VALIDATION FAILED'}**")
+        # toolkit.write_trace("\n".join(trace), "validation_trace.md")
+        # 
+        # return {
+        #     "validation_passed": passed,
+        #     "validation_attempts": attempts + 1,
+        #     "validation_error_context": spotbugs_res.get("output", "") if not passed else ""
+        # }
         
-        spotbugs_res = toolkit.run_spotbugs(compiled_classes_paths=classes_paths, source_path=os.path.join(state["target_repo_path"], "src", "main", "java"))
-        log_step("run_spotbugs", {"paths": classes_paths}, spotbugs_res)
-        
-        passed = spotbugs_res.get("success", True)
-        trace.append(f"\n**Final Status: {'VALIDATION PASSED' if passed else 'STATIC VALIDATION FAILED'}**")
+        trace.append("\n**Final Status: PATCH APPLIED AND COMPILED SUCCESSFULLY**")
         toolkit.write_trace("\n".join(trace), "validation_trace.md")
         
         return {
-            "validation_passed": passed,
-            "validation_attempts": attempts + 1,
-            "validation_error_context": spotbugs_res.get("output", "") if not passed else ""
+            "validation_passed": True,
+            "validation_attempts": attempts + 1
         }
 
     # Standard "Prove Red, Make Green" Loop

@@ -33,6 +33,19 @@ MAX_VALIDATION_ATTEMPTS = 3
 # Conditional routing functions
 # ---------------------------------------------------------------------------
 
+def route_start(state: AgentState) -> str:
+    """
+    Route from START: check if phase 0 should be skipped.
+    If skip_phase_0=True, go directly to context_analyzer.
+    Otherwise, run phase_0_optimistic.
+    """
+    if state.get("skip_phase_0", False):
+        print("Router: Skipping Phase 0 — entering full 4-agent pipeline directly.")
+        return "context_analyzer"
+    print("Router: Running Phase 0.")
+    return "phase_0_optimistic"
+
+
 def route_phase_0(state: AgentState) -> str:
     """
     After Phase 0: if the fast-path succeeded, go straight to END.
@@ -88,8 +101,15 @@ workflow.add_node("validation",          validation_agent)
 
 # --- Wire edges ---
 
-# Entry point
-workflow.add_edge(START, "phase_0_optimistic")
+# Entry point with conditional routing
+workflow.add_conditional_edges(
+    START,
+    route_start,
+    {
+        "phase_0_optimistic": "phase_0_optimistic",
+        "context_analyzer": "context_analyzer",
+    },
+)
 
 # Phase 0 conditional branch: fast-path exit OR full pipeline
 workflow.add_conditional_edges(

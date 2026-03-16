@@ -24,10 +24,9 @@ import re
 import json
 import os
 from langchain_core.messages import HumanMessage, SystemMessage
-from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain_openai import AzureChatOpenAI, ChatOpenAI
 from state import AgentState, AdaptedHunk, SemanticBlueprint
 from utils.patch_analyzer import PatchAnalyzer
+from utils.llm_provider import get_llm
 from agents.validation_tools import ValidationToolkit
 
 
@@ -169,7 +168,7 @@ def _extract_hunk_block(raw: str) -> str | None:
 
 
 async def _check_intent(
-    llm: ChatGoogleGenerativeAI,
+    llm,
     hunk_text: str,
     blueprint: SemanticBlueprint,
 ) -> bool:
@@ -299,28 +298,8 @@ async def hunk_generator_node(state: AgentState, config) -> dict:
     # ------------------------------------------------------------------
     # Setup tools
     # ------------------------------------------------------------------
-    # Setup LLM with provider selection
-    model_name = os.getenv("HUNK_GENERATOR_MODEL", "gemini-2.0-flash")
-    provider = os.getenv("HUNK_GENERATOR_PROVIDER", "azure").lower()
-    
-    if provider == "azure":
-        llm = AzureChatOpenAI(
-            azure_deployment=os.getenv("AZURE_CHAT_DEPLOYMENT", "apim-4o-mini"),
-            openai_api_version=os.getenv("AZURE_CHAT_VERSION", "2024-02-01"),
-            azure_endpoint=os.getenv("AZURE_ENDPOINT", os.getenv("OPENAI_BASE_URL")),
-            api_key=os.getenv("AZURE_OPENAI_API_KEY", os.getenv("OPENAI_API_KEY")),
-            temperature=0
-        )
-    elif provider == "openai":
-        llm = ChatOpenAI(
-            model=model_name,
-            temperature=0,
-            openai_api_key=os.getenv("OPENAI_API_KEY"),
-            openai_api_base=os.getenv("OPENAI_BASE_URL"),
-            openai_proxy=os.getenv("OPENAI_PROXY")
-        )
-    else:
-        llm = ChatGoogleGenerativeAI(model=model_name, temperature=0)
+    # Setup LLM
+    llm = get_llm(temperature=0)
     
     analyzer = PatchAnalyzer()
     raw_hunks_by_file = analyzer.extract_raw_hunks(patch_diff) if patch_diff else {}
