@@ -1,9 +1,9 @@
 # Validation Trace
 
 ## Blueprint Summary
-- **Root Cause**: Insufficient check for available memory before allocation, potentially leading to out-of-bounds access.
-- **Fix Logic**: Added a check to ensure that the last allocated block has enough memory to satisfy the request before returning false.
-- **Dependent APIs**: ['allocator', 'blockHolders', 'limits']
+- **Root Cause**: The code previously added all server types to the workerIds list, potentially including non-historical servers, which could lead to incorrect worker assignment or processing errors.
+- **Fix Logic**: Introduced a conditional check to only add servers of type ServerType.HISTORICAL to the workerIds list, ensuring only appropriate servers are considered as workers.
+- **Dependent APIs**: ['DruidServerMetadata', 'ServerType', 'WorkerId.fromDruidServerMetadata', 'getType']
 
 ## Hunk Segregation
 - Code files: 1
@@ -11,9 +11,9 @@
 
 ## Agent Tool Steps
 
-  - `Agent calls apply_adapted_hunks` with `{"code_count": 1, "test_count": 0}`
-  - `Tool: apply_adapted_hunks` -> {'success': True, 'output': 'Applied successfully.', 'applied_files': ['processing/src/main/java/org/apache/druid/frame/allocation/AppendableMemory.java']}
-  - `Agent calls compile_files` with `{"files": ["processing/src/main/java/org/apache/druid/frame/allocation/AppendableMemory.java"]}`
-  - `Tool: compile_files` -> {'success': True, 'output': 'Module-level compilation successful.', 'modules': ['processing']}
+  - `Agent calls apply_adapted_hunks` with `{"code_count": 2, "test_count": 0}`
+  - `Tool: apply_adapted_hunks` -> {'success': True, 'output': 'Applied successfully via git-apply-strict.', 'applied_files': ['extensions-core/multi-stage-query/src/main/java/org/apache/druid/msq/dart/controller/DartControllerContext.java'], 'apply_strategy': 'git-apply-strict'}
 
-**Final Status: PATCH APPLIED AND COMPILED SUCCESSFULLY**
+**Final Status: VALIDATION PASSED (APPLY-ONLY MODE)**
+
+**Note:** Compilation, tests, and static-analysis phases are disabled.
