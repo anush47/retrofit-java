@@ -38,7 +38,7 @@ REPOS_DIR = os.path.join(BASE_DIR, "temp_repo_storage")
 RESULTS_DIR = os.path.join(os.path.dirname(__file__), "results")
 
 TARGET_PROJECTS = ["druid"]
-MAX_PATCHES_PER_PROJECT = 5  # Limit for testing; set to None for all
+MAX_PATCHES_PER_PROJECT = 6  # Limit for testing; set to None for all
 
 
 def ensure_dirs():
