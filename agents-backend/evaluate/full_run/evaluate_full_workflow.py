@@ -51,7 +51,7 @@ RESULTS_DIR = os.path.join(os.path.dirname(__file__), "results")
 PHASE0_CACHE_DIR = os.path.join(os.path.dirname(__file__), "phase0_cache")
 
 TARGET_PROJECTS = ["druid"]
-MAX_PATCHES_PER_PROJECT = 1
+MAX_PATCHES_PER_PROJECT = None
 
 
 def ensure_dirs() -> None:
@@ -693,6 +693,7 @@ async def run_full_pipeline(
             inputs["phase_0_test_targets"] = phase0_cache.get("phase_0_test_targets", {})
             inputs["phase_0_baseline_test_result"] = phase0_cache.get("phase_0_baseline_test_result", {})
             phase0_cache_transition = phase0_cache.get("phase_0_transition_evaluation")
+            phase0_cached_success = bool(phase0_cache.get("fast_path_success", False))
             save_pipeline_log(
                 project,
                 patch_id,
@@ -702,6 +703,47 @@ async def run_full_pipeline(
                 f"- Reused targets: {phase0_cache.get('phase_0_test_targets', {})}\n"
                 f"- Reused baseline mode: {(phase0_cache.get('phase_0_baseline_test_result') or {}).get('mode', 'unknown')}\n",
             )
+
+            if phase0_cached_success:
+                print(f"[{project}/{patch_id}] Cached Phase 0 fast-path success. Skipping agentic workflow.")
+                save_pipeline_log(
+                    project,
+                    patch_id,
+                    "transition_summary",
+                    _build_transition_summary_markdown(phase0_cache_transition, "phase0_cache"),
+                )
+
+                results["phases"] = {
+                    "phase0_cache": {
+                        "phase_0_optimistic": {
+                            "outputs": {
+                                "fast_path_success": True,
+                                "phase_0_test_targets": phase0_cache.get("phase_0_test_targets", {}),
+                                "phase_0_baseline_test_result": phase0_cache.get("phase_0_baseline_test_result", {}),
+                                "phase_0_post_patch_test_result": phase0_cache.get("phase_0_post_patch_test_result", {}),
+                                "phase_0_transition_evaluation": phase0_cache_transition,
+                            }
+                        }
+                    }
+                }
+                results["status"] = "completed"
+                results["cache_decision"] = {
+                    "phase0_cache_used": True,
+                    "phase0_fast_path_success": True,
+                    "agentic_workflow_skipped": True,
+                }
+                results["exact_developer_patch"] = None
+                results["developer_patch_comparison"] = {
+                    "skipped": True,
+                    "reason": "Skipped: cached Phase 0 fast-path success.",
+                }
+
+                results_file = os.path.join(RESULTS_DIR, project, patch_id, "pipeline_results.json")
+                with open(results_file, "w", encoding="utf-8") as f:
+                    json.dump(results, f, indent=2, default=str)
+
+                print(f"[{project}/{patch_id}] Completed from cache without agentic workflow.")
+                return results
 
         print(f"[{project}/{patch_id}] Running full workflow graph...")
         phase_outputs = defaultdict(dict)
