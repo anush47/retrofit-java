@@ -19,6 +19,23 @@ from utils.patch_analyzer import PatchAnalyzer
 from agents.validation_tools import ValidationToolkit
 
 
+def _format_transition_summary(transition_eval: dict) -> str:
+    if not transition_eval:
+        return "No transition evaluation available."
+
+    fail_to_pass = transition_eval.get("fail_to_pass", []) or []
+    newly_passing = transition_eval.get("newly_passing", []) or []
+    pass_to_fail = transition_eval.get("pass_to_fail", []) or []
+    reason = transition_eval.get("reason", "Unknown reason.")
+
+    return (
+        f"reason={reason}; "
+        f"fail->pass({len(fail_to_pass)}): {fail_to_pass}; "
+        f"newly_passing({len(newly_passing)}): {newly_passing}; "
+        f"pass->fail({len(pass_to_fail)}): {pass_to_fail}"
+    )
+
+
 def _phase0_cache_dir() -> str:
     root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
     default_dir = os.path.join(root_dir, "evaluate", "full_run", "phase0_cache")
@@ -111,16 +128,25 @@ async def phase_0_optimistic(state: AgentState, config) -> dict:
     if use_phase0_cache and experiment_mode and backport_commit and original_commit:
         cached = _load_phase0_cache(project_name, backport_commit, original_commit)
         if cached:
+            cached_transition = cached.get("phase_0_transition_evaluation", {})
+            transition_summary = _format_transition_summary(cached_transition)
             print("Phase 0: Using cached Phase 0 results.")
             return {
-                "messages": [HumanMessage(content="Phase 0: Loaded cached results.")],
+                "messages": [
+                    HumanMessage(
+                        content=(
+                            "Phase 0: Loaded cached results. "
+                            f"Transition summary: {transition_summary}"
+                        )
+                    )
+                ],
                 "patch_analysis": java_code_changes,
                 "patch_diff": diff_text,
                 "fast_path_success": bool(cached.get("fast_path_success", False)),
                 "phase_0_test_targets": cached.get("phase_0_test_targets", test_targets),
                 "phase_0_baseline_test_result": cached.get("phase_0_baseline_test_result", {}),
                 "phase_0_post_patch_test_result": cached.get("phase_0_post_patch_test_result", {}),
-                "phase_0_transition_evaluation": cached.get("phase_0_transition_evaluation", {}),
+                "phase_0_transition_evaluation": cached_transition,
             }
 
     if experiment_mode and backport_commit:
@@ -291,6 +317,8 @@ async def phase_0_optimistic(state: AgentState, config) -> dict:
             phase0_baseline_test_result,
             test_result,
         )
+        transition_summary = _format_transition_summary(transition_eval)
+        print(f"Phase 0: Transition summary -> {transition_summary}")
 
         fast_path_success = (
             not test_result.get("compile_error", False)
@@ -350,7 +378,14 @@ async def phase_0_optimistic(state: AgentState, config) -> dict:
             )
 
             return {
-                "messages": [HumanMessage(content="Phase 0: Fast-path success. Skipping LLM agents.")],
+                "messages": [
+                    HumanMessage(
+                        content=(
+                            "Phase 0: Fast-path success. Skipping LLM agents. "
+                            f"Transition summary: {transition_summary}"
+                        )
+                    )
+                ],
                 "patch_analysis": java_code_changes,
                 "patch_diff": diff_text,
                 "fast_path_success": True,
@@ -364,7 +399,14 @@ async def phase_0_optimistic(state: AgentState, config) -> dict:
             print("Phase 0: Transition-based test validation failed. Rolling back.")
             validation_toolkit.restore_repo_state()
             return {
-                "messages": [HumanMessage(content=f"Phase 0: Transition validation failed after patch. Reason: {transition_eval.get('reason', '')}")],
+                "messages": [
+                    HumanMessage(
+                        content=(
+                            "Phase 0: Transition validation failed after patch. "
+                            f"Transition summary: {transition_summary}"
+                        )
+                    )
+                ],
                 "patch_analysis": java_code_changes,
                 "patch_diff": diff_text,
                 "fast_path_success": False,

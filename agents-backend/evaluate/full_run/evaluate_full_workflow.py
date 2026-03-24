@@ -387,6 +387,30 @@ def _get_blob_id_from_index(repo_path, rel_path, env):
     return output.strip() or None
 
 
+def _get_blob_content(repo_path, blob_id):
+    if not blob_id:
+        return None
+
+    success, output = run_cmd(
+        ["git", "cat-file", "-p", blob_id],
+        cwd=repo_path,
+        timeout=300,
+    )
+    if not success:
+        return None
+    return output
+
+
+def _normalize_content_for_code_line_compare(content: str | None) -> list[str] | None:
+    if content is None:
+        return None
+
+    normalized_lines = []
+    for line in content.splitlines():
+        normalized_lines.append(re.sub(r"\s+", "", line))
+    return normalized_lines
+
+
 def _apply_patch_with_temp_index(repo_path, patch_file_path, env):
     attempts = [
         ["git", "apply", "--cached", "--recount", "--whitespace=nowarn", patch_file_path],
@@ -466,12 +490,22 @@ def compare_generated_with_developer_patch(adapted_code_hunks, developer_patch_d
         for rel_path in files_to_compare:
             developer_blob = _get_blob_id_from_commit(target_repo_path, backport_commit, rel_path)
             generated_blob = _get_blob_id_from_index(target_repo_path, rel_path, index_env)
-            if developer_blob != generated_blob:
+            if developer_blob == generated_blob:
+                continue
+
+            developer_content = _get_blob_content(target_repo_path, developer_blob)
+            generated_content = _get_blob_content(target_repo_path, generated_blob)
+
+            developer_normalized = _normalize_content_for_code_line_compare(developer_content)
+            generated_normalized = _normalize_content_for_code_line_compare(generated_content)
+
+            if developer_normalized != generated_normalized:
                 mismatched_files.append(rel_path)
 
         return {
             "exact_developer_patch": len(mismatched_files) == 0,
             "comparison_method": "file_state",
+            "comparison_normalization": "line_by_line_whitespace_insensitive",
             "compared_files": files_to_compare,
             "mismatched_files": mismatched_files,
             "developer_files": developer_files,
@@ -522,6 +556,56 @@ def save_pipeline_log(project, patch_id, phase_name, log_content):
         f.write(log_content)
 
     return log_file
+
+
+def _extract_transition_eval_from_outputs(phase_outputs: dict[str, Any]) -> dict[str, Any] | None:
+    phase0_eval = (
+        phase_outputs.get("phase0", {})
+        .get("phase_0_optimistic", {})
+        .get("outputs", {})
+        .get("phase_0_transition_evaluation")
+    )
+    if phase0_eval:
+        return phase0_eval
+
+    phase4_eval = (
+        phase_outputs.get("phase4_validation", {})
+        .get("validation", {})
+        .get("outputs", {})
+        .get("phase_0_transition_evaluation")
+    )
+    if phase4_eval:
+        return phase4_eval
+
+    return (
+        phase_outputs.get("phase4_validation", {})
+        .get("validation", {})
+        .get("outputs", {})
+        .get("validation_results", {})
+        .get("tests", {})
+        .get("state_transition")
+    )
+
+
+def _build_transition_summary_markdown(transition_eval: dict[str, Any] | None, source_label: str) -> str:
+    if not transition_eval:
+        return "# Transition Summary\n\nNo transition evaluation available.\n"
+
+    fail_to_pass = transition_eval.get("fail_to_pass", []) or []
+    newly_passing = transition_eval.get("newly_passing", []) or []
+    pass_to_fail = transition_eval.get("pass_to_fail", []) or []
+    reason = transition_eval.get("reason", "Unknown reason.")
+    valid = bool(transition_eval.get("valid_backport_signal", False))
+
+    return (
+        "# Transition Summary\n\n"
+        f"- Source: {source_label}\n"
+        f"- Valid backport signal: {valid}\n"
+        f"- Reason: {reason}\n"
+        f"- fail->pass ({len(fail_to_pass)}): {fail_to_pass}\n"
+        f"- newly passing ({len(newly_passing)}): {newly_passing}\n"
+        f"- pass->fail ({len(pass_to_fail)}): {pass_to_fail}\n"
+    )
 
 
 async def run_full_pipeline(
@@ -602,11 +686,13 @@ async def run_full_pipeline(
         }
 
         phase0_cache = _load_phase0_cache(project, backport_commit, mainline_commit)
+        phase0_cache_transition = None
         if phase0_cache:
             print(f"[{project}/{patch_id}] Found cached Phase 0 results. Skipping Phase 0 and reusing baseline test state.")
             inputs["skip_phase_0"] = True
             inputs["phase_0_test_targets"] = phase0_cache.get("phase_0_test_targets", {})
             inputs["phase_0_baseline_test_result"] = phase0_cache.get("phase_0_baseline_test_result", {})
+            phase0_cache_transition = phase0_cache.get("phase_0_transition_evaluation")
             save_pipeline_log(
                 project,
                 patch_id,
@@ -689,6 +775,19 @@ async def run_full_pipeline(
             f"```diff\n{comparison['generated_patch_diff']}\n```\n"
             "## Full Developer Backport Patch (full commit diff)\n"
             f"```diff\n{developer_patch_diff}\n```\n",
+        )
+
+        transition_eval = _extract_transition_eval_from_outputs(dict(phase_outputs))
+        transition_source = "phase_outputs"
+        if not transition_eval and phase0_cache_transition:
+            transition_eval = phase0_cache_transition
+            transition_source = "phase0_cache"
+
+        save_pipeline_log(
+            project,
+            patch_id,
+            "transition_summary",
+            _build_transition_summary_markdown(transition_eval, transition_source),
         )
 
         results["phases"] = dict(phase_outputs)

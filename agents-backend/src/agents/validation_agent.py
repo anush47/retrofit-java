@@ -46,6 +46,23 @@ Provide concise diagnosis and fix suggestion:"""
 
 MAX_VALIDATION_ATTEMPTS = 3
 
+
+def _format_transition_summary(transition_eval: dict) -> str:
+    if not transition_eval:
+        return "No transition evaluation available."
+
+    fail_to_pass = transition_eval.get("fail_to_pass", []) or []
+    newly_passing = transition_eval.get("newly_passing", []) or []
+    pass_to_fail = transition_eval.get("pass_to_fail", []) or []
+    reason = transition_eval.get("reason", "Unknown reason.")
+
+    return (
+        f"reason={reason}; "
+        f"fail->pass({len(fail_to_pass)}): {fail_to_pass}; "
+        f"newly_passing({len(newly_passing)}): {newly_passing}; "
+        f"pass->fail({len(pass_to_fail)}): {pass_to_fail}"
+    )
+
 async def _analyze_failure(step_name: str, error_output: str, state: AgentState) -> str:
     """Uses LLM to evaluate and explain a validation failure."""
     # Truncate long errors to save tokens
@@ -299,6 +316,7 @@ async def validation_agent(state: AgentState, config) -> dict:
         test_res = toolkit.run_relevant_tests(project="druid", target_info=test_targets)
         log_step("run_relevant_tests", {"targets": test_targets}, test_res)
         transition_eval = toolkit.evaluate_test_state_transition(phase_0_baseline_test_result, test_res)
+        transition_summary = _format_transition_summary(transition_eval)
         log_step(
             "evaluate_test_state_transition",
             {
@@ -336,12 +354,13 @@ async def validation_agent(state: AgentState, config) -> dict:
         if not transition_eval.get("valid_backport_signal", False):
             analysis = (
                 "Relevant-test state transition check failed. "
-                f"Reason: {transition_eval.get('reason', 'Unknown reason.')}"
+                f"Transition summary: {transition_summary}"
             )
             validation_results["tests"]["agent_evaluation"] = analysis
             validation_results["tests"]["error_context"] = analysis
             trace.append(
                 "\n**Final Status: TEST STATE TRANSITION FAILED**\n\n"
+                f"**Transition Summary:**\n{transition_summary}\n\n"
                 f"**Transition Evaluation:**\n{json.dumps(transition_eval, default=str)}"
             )
             toolkit.write_trace("\n".join(trace), "validation_trace.md")
@@ -355,10 +374,14 @@ async def validation_agent(state: AgentState, config) -> dict:
 
         validation_results["tests"]["agent_evaluation"] = (
             "Relevant-test transition check passed: no pass->fail regressions and "
-            "at least one fail->pass or newly passing test observed."
+            "at least one fail->pass or newly passing test observed. "
+            f"Transition summary: {transition_summary}"
         )
 
-        trace.append("\n**Final Status: VALIDATION PASSED (FULL EVALUATION WORKFLOW)**")
+        trace.append(
+            "\n**Final Status: VALIDATION PASSED (FULL EVALUATION WORKFLOW)**\n\n"
+            f"**Transition Summary:**\n{transition_summary}"
+        )
         toolkit.write_trace("\n".join(trace), "validation_trace.md")
         return {
             "validation_passed": True,
