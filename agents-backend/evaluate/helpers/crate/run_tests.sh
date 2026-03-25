@@ -36,7 +36,7 @@ else
     MAVEN_ARGS=""
 fi
 
-MVN_CMD="mvn test ${MAVEN_ARGS} -DfailIfNoTests=false -Dmaven.javadoc.skip=true -Dcheckstyle.skip=true -Dpmd.skip=true -Dforbiddenapis.skip=true -Denforcer.skip=true -DskipITs"
+MVN_CMD="mvn test ${MAVEN_ARGS} -DfailIfNoTests=false -Dsurefire.failIfNoSpecifiedTests=false -Dmaven.javadoc.skip=true -Dcheckstyle.skip=true -Dpmd.skip=true -Dforbiddenapis.skip=true -Denforcer.skip=true -DskipITs"
 
 DOCKER_CMD="docker"
 if ! docker info > /dev/null 2>&1; then
