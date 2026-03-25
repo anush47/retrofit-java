@@ -91,8 +91,9 @@ class ValidationToolkit:
         self.target_repo_path = target_repo_path
         self.client = get_client()
 
-    def _is_druid_project(self) -> bool:
-        return os.path.basename(self.target_repo_path).strip().lower() == "druid"
+    def _is_known_project_with_helper(self, project: str) -> bool:
+        project_dir = self._get_project_helper_dir(project)
+        return os.path.isdir(project_dir)
 
     def _find_maven_module_for_path(self, rel_path: str) -> str:
         """Find nearest parent directory containing pom.xml for a repo-relative path."""
@@ -319,9 +320,9 @@ class ValidationToolkit:
             "reason": reason,
         }
 
-    def _get_druid_helper_dir(self) -> str:
+    def _get_project_helper_dir(self, project: str) -> str:
         root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-        return os.path.join(root_dir, "evaluate", "helpers", "druid")
+        return os.path.join(root_dir, "evaluate", "helpers", project.strip().lower())
 
     def _get_current_head(self) -> str:
         res = self._run_cmd_capture(["git", "rev-parse", "--short", "HEAD"], cwd=self.target_repo_path)
@@ -329,13 +330,13 @@ class ValidationToolkit:
             return (res.get("output") or "worktree").strip().splitlines()[0]
         return "worktree"
 
-    def _ensure_druid_builder_image(self) -> tuple[str | None, str | None]:
-        helper_dir = self._get_druid_helper_dir()
+    def _ensure_project_builder_image(self, project: str) -> tuple[str | None, str | None]:
+        helper_dir = self._get_project_helper_dir(project)
         dockerfile = os.path.join(helper_dir, "Dockerfile")
         if not os.path.exists(dockerfile):
-            return None, f"Druid helper Dockerfile not found: {dockerfile}"
+            return None, f"Helper Dockerfile not found for project {project}: {dockerfile}"
 
-        image_tag = os.getenv("DRUID_BUILDER_IMAGE_TAG", "retrofit-druid-builder:local")
+        image_tag = os.getenv(f"{project.upper()}_BUILDER_IMAGE_TAG", f"retrofit-{project.lower()}-builder:local")
 
         inspect_res = self._run_cmd_capture(["docker", "image", "inspect", image_tag], cwd=self.target_repo_path)
         if inspect_res.get("success"):
@@ -346,7 +347,7 @@ class ValidationToolkit:
             cwd=self.target_repo_path,
         )
         if not build_res.get("success"):
-            return None, f"Failed to build Druid helper image {image_tag}: {build_res.get('output', '')}"
+            return None, f"Failed to build helper image for {project} ({image_tag}): {build_res.get('output', '')}"
 
         return image_tag, None
 
@@ -383,9 +384,9 @@ class ValidationToolkit:
         """
         normalized_project = (project or "").strip().lower()
         if not normalized_project:
-            normalized_project = os.path.basename(self.target_repo_path).lower()
+            normalized_project = self._detect_project_name()
 
-        if normalized_project != "druid":
+        if not self._is_known_project_with_helper(normalized_project):
             return {
                 "test_targets": [],
                 "source_modules": [],
@@ -393,8 +394,8 @@ class ValidationToolkit:
                 "raw": {},
             }
 
-        root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-        helper_script = os.path.join(root_dir, "evaluate", "helpers", "druid", "get_test_targets.py")
+        helper_dir = self._get_project_helper_dir(normalized_project)
+        helper_script = os.path.join(helper_dir, "get_test_targets.py")
         if not os.path.exists(helper_script):
             return {
                 "test_targets": [],
@@ -502,24 +503,26 @@ class ValidationToolkit:
 
         self._clear_previous_junit_reports()
 
-        normalized_project = (project or "").strip().lower() or os.path.basename(self.target_repo_path).strip().lower()
-        if normalized_project == "druid":
-            helper_script = os.path.join(self._get_druid_helper_dir(), "run_tests.sh")
+        normalized_project = (project or "").strip().lower() or self._detect_project_name()
+        if self._is_known_project_with_helper(normalized_project):
+            helper_script = os.path.join(self._get_project_helper_dir(normalized_project), "run_tests.sh")
             if os.path.exists(helper_script):
-                image_tag, image_err = self._ensure_druid_builder_image()
+                image_tag, image_err = self._ensure_project_builder_image(normalized_project)
                 if image_tag:
                     helper_env = os.environ.copy()
                     helper_env.update(
                         {
+                            "PROJECT_NAME": normalized_project,
                             "PROJECT_DIR": self.target_repo_path,
                             "BUILDER_IMAGE_TAG": image_tag,
+                            "IMAGE_TAG": image_tag, # For backward compatibility with some scripts
                             "COMMIT_SHA": self._get_current_head(),
                             "WORKTREE_MODE": "1",
                             "TEST_TARGETS": " ".join(sorted(set(test_targets))) if test_targets else "NONE",
                             "TEST_MODULES": ",".join(sorted(set(source_modules))) if source_modules else "",
                         }
                     )
-                    print(f"    Agent 4: Executing Druid helper test script: {helper_script}")
+                    print(f"    Agent 4: Executing {normalized_project} helper test script: {helper_script}")
                     result = self._run_cmd_capture(["bash", helper_script], cwd=self.target_repo_path, env=helper_env)
                     output_text = result.get("output", "")
                     return {
@@ -527,12 +530,12 @@ class ValidationToolkit:
                         "compile_error": (not bool(result.get("success"))) and ("compilation error" in output_text.lower()),
                         "output": output_text,
                         "failed_tests": [],
-                        "mode": "druid-helper-script",
+                        "mode": f"{normalized_project}-helper-script",
                         "targets": info,
                         "test_state": self._extract_test_state(info, output_text),
                     }
                 else:
-                    print(f"    Agent 4 Warning: Druid helper image unavailable for tests. Falling back. Details: {image_err}")
+                    print(f"    Agent 4 Warning: {normalized_project} helper image unavailable for tests. Falling back. Details: {image_err}")
 
         is_gradle = os.path.exists(os.path.join(self.target_repo_path, "build.gradle"))
         java_compat_args = ["-Djdk.security.manager.allow.argLine="]

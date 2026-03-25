@@ -1,0 +1,71 @@
+#!/bin/bash
+set -e
+
+echo "=== Running Tests for ${COMMIT_SHA:0:7} ==="
+echo "Target: ${TEST_TARGETS}"
+
+IMAGE_TAG="${IMAGE_TAG:-crate-${BUILD_TYPE}-${COMMIT_SHA:0:7}}"
+
+echo "--- Using Docker Image: ${IMAGE_TAG} ---"
+
+# 1. Configure Test Command
+if [ "${TEST_TARGETS:-}" == "ALL" ]; then
+    MAVEN_ARGS="-T 1C"
+elif [ -n "${TEST_MODULES:-}" ]; then
+    # Module-targeted fallback
+    MAVEN_ARGS="-pl ${TEST_MODULES} -am"
+elif [ "${TEST_TARGETS:-}" == "NONE" ]; then
+    echo "No relevant source code changes found. Skipping tests."
+    exit 0
+else
+    # TEST_TARGETS is a space-separated list of "module:class"
+    MODULES=""
+    TESTS=""
+    for target in ${TEST_TARGETS}; do
+        mod="${target%%:*}"
+        cls="${target#*:}"
+        if [ -z "$MODULES" ]; then MODULES="$mod"; else
+            if [[ ",$MODULES," != *",$mod,"* ]]; then MODULES="$MODULES,$mod"; fi
+        fi
+        if [ -z "$TESTS" ]; then TESTS="$cls"; else TESTS="$TESTS,$cls"; fi
+    done
+    MAVEN_ARGS="-pl ${MODULES} -am -Dtest=${TESTS}"
+fi
+
+MVN_CMD="mvn ${MAVEN_ARGS} -DfailIfNoTests=false -Dmaven.javadoc.skip=true -Dcheckstyle.skip=true -Dpmd.skip=true -Dforbiddenapis.skip=true -Denforcer.skip=true -DskipITs"
+
+DOCKER_CMD="docker"
+if ! docker info > /dev/null 2>&1; then
+    if sudo docker info > /dev/null 2>&1; then
+        echo "Docker requires sudo. Using 'sudo docker'."
+        DOCKER_CMD="sudo docker"
+    else
+        echo "Warning: Docker command failed. Continuing with 'docker' but expect errors."
+    fi
+fi
+
+${DOCKER_CMD} volume create maven-cache-crate 2>/dev/null || true
+
+echo "--- Executing: ${MVN_CMD} ---"
+
+if ${DOCKER_CMD} run --rm \
+    --dns=8.8.8.8 \
+    -v "maven-cache-crate:/root/.m2" \
+    -v "${PROJECT_DIR}:/repo" \
+    -w /repo \
+    "${IMAGE_TAG}" \
+    bash -c "git config --global --add safe.directory /repo && \
+    rm -rf /repo/build/all-test-results && \
+    ${MVN_CMD}; \
+    MVN_EXIT_CODE=\$?; \
+    echo '--- Copying test reports ---'; \
+    mkdir -p /repo/build/all-test-results; \
+    find . -name 'TEST-*.xml' -exec cp {} /repo/build/all-test-results/ \;; \
+    exit \$MVN_EXIT_CODE"; then
+    
+    echo "✅ Tests Passed"
+    exit 0
+else
+    echo "❌ Tests Failed"
+    exit 1
+fi
