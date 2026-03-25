@@ -3,6 +3,8 @@ set -e
 
 echo "=== Running Tests for ${COMMIT_SHA:0:7} ==="
 echo "Target: ${TEST_TARGETS}"
+BUILD_DIR="${BUILD_DIR:-${PROJECT_DIR}/build_outputs}"
+mkdir -p "${BUILD_DIR}"
 
 IMAGE_TAG="${IMAGE_TAG:-crate-${BUILD_TYPE}-${COMMIT_SHA:0:7}}"
 

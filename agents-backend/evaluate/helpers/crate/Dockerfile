@@ -13,7 +13,9 @@ WORKDIR /repo
 WORKDIR /repo
 
 # Inject toolchains.xml to satisfy Maven plugins system-wide
-RUN echo '<toolchains><toolchain><type>jdk</type><provides><version>24.0.2</version><vendor>temurin</vendor></provides><configuration><jdkHome>/opt/java/openjdk</jdkHome></configuration></toolchain></toolchains>' > /usr/share/maven/conf/toolchains.xml
+RUN mkdir -p /root/.m2 && \
+    echo '<toolchains><toolchain><type>jdk</type><provides><version>24.0.2</version><vendor>temurin</vendor></provides><configuration><jdkHome>/opt/java/openjdk</jdkHome></configuration></toolchain></toolchains>' > /usr/share/maven/conf/toolchains.xml && \
+    cp /usr/share/maven/conf/toolchains.xml /root/.m2/toolchains.xml
 
 # Set environment variables
 ENV MAVEN_OPTS="-Xmx4g -XX:+UseG1GC"

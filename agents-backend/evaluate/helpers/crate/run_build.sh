@@ -3,6 +3,8 @@
 set -e # Exit on error
 
 echo "--- Building code for ${COMMIT_SHA:0:7} ---"
+BUILD_DIR="${BUILD_DIR:-${PROJECT_DIR}/build_outputs}"
+mkdir -p "${BUILD_DIR}"
 
 echo "--- Changing directory to ${PROJECT_DIR} ---"
 cd "${PROJECT_DIR}"
@@ -31,7 +33,7 @@ ${DOCKER_CMD} build -t ${IMAGE_TAG} -f ${TOOLKIT_DIR}/Dockerfile .
 echo "--- Setting cache permissions... ---"
 ${DOCKER_CMD} run --rm -u root \
     -v "maven-cache-crate:/root/.m2" \
-    -v "${BUILD_DIR}:/repo/build_outputs/build" \
+    -v "${BUILD_DIR}/build:/repo/build_outputs/build" \
     ${IMAGE_TAG} \
     chown -R root:root /root/.m2
 
@@ -40,7 +42,7 @@ echo "--- Building with Maven... ---"
 if ${DOCKER_CMD} run --rm \
     --dns=8.8.8.8 \
     -v "maven-cache-crate:/root/.m2" \
-    -v "${BUILD_DIR}:/repo/build_outputs/build" \
+    -v "${BUILD_DIR}/build:/repo/build_outputs/build" \
     -v "${PROJECT_DIR}:/repo" \
     -w /repo \
     ${IMAGE_TAG} \
