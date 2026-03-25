@@ -45,7 +45,6 @@ echo "--- Building with Maven... ---"
 if ${DOCKER_CMD} run --rm \
     --dns=8.8.8.8 \
     -v "maven-cache-crate:/root/.m2" \
-    -v "${BUILD_DIR}/build:/repo/build_outputs/build" \
     -v "${PROJECT_DIR}:/repo" \
     -w /repo \
     ${IMAGE_TAG} \
@@ -53,9 +52,11 @@ if ${DOCKER_CMD} run --rm \
     mkdir -p /root/.m2 && \
     echo '<toolchains><toolchain><type>jdk</type><provides><version>24.0.2</version><vendor>temurin</vendor></provides><configuration><jdkHome>/opt/java/openjdk</jdkHome></configuration></toolchain></toolchains>' > /root/.m2/toolchains.xml && \
     mvn clean install -DskipTests -T 1C --global-toolchains /root/.m2/toolchains.xml"; then
-    echo "Success" > $BUILD_STATUS_FILE
+    echo "✅ Build Succeeded"
+    exit 0
 else
-    echo "Fail" > $BUILD_STATUS_FILE
+    echo "❌ Build Failed"
+    exit 1
 fi
 
 echo "--- Build complete for ${COMMIT_SHA:0:7} ---"
