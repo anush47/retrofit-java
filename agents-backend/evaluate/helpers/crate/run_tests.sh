@@ -11,13 +11,10 @@ echo "--- Using Docker Image: ${IMAGE_TAG} ---"
 # 1. Configure Test Command
 if [ "${TEST_TARGETS:-}" == "ALL" ]; then
     MAVEN_ARGS="-T 1C"
-elif [ -n "${TEST_MODULES:-}" ]; then
-    # Module-targeted fallback
-    MAVEN_ARGS="-pl ${TEST_MODULES} -am"
 elif [ "${TEST_TARGETS:-}" == "NONE" ]; then
     echo "No relevant source code changes found. Skipping tests."
     exit 0
-else
+elif [ -n "${TEST_TARGETS:-}" ]; then
     # TEST_TARGETS is a space-separated list of "module:class"
     MODULES=""
     TESTS=""
@@ -30,9 +27,14 @@ else
         if [ -z "$TESTS" ]; then TESTS="$cls"; else TESTS="$TESTS,$cls"; fi
     done
     MAVEN_ARGS="-pl ${MODULES} -am -Dtest=${TESTS}"
+elif [ -n "${TEST_MODULES:-}" ]; then
+    # Module-targeted fallback
+    MAVEN_ARGS="-pl ${TEST_MODULES} -am"
+else
+    MAVEN_ARGS=""
 fi
 
-MVN_CMD="mvn ${MAVEN_ARGS} -DfailIfNoTests=false -Dmaven.javadoc.skip=true -Dcheckstyle.skip=true -Dpmd.skip=true -Dforbiddenapis.skip=true -Denforcer.skip=true -DskipITs"
+MVN_CMD="mvn test ${MAVEN_ARGS} -DfailIfNoTests=false -Dmaven.javadoc.skip=true -Dcheckstyle.skip=true -Dpmd.skip=true -Dforbiddenapis.skip=true -Denforcer.skip=true -DskipITs"
 
 DOCKER_CMD="docker"
 if ! docker info > /dev/null 2>&1; then
