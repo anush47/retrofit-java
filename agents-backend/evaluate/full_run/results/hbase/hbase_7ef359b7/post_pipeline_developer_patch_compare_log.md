@@ -40,7 +40,7 @@ Generated
  package org.apache.hadoop.hbase.backup.master;
  
  import java.io.IOException;
-+import java.time.Duration;
++import java.util.concurrent.TimeUnit;
  import java.util.ArrayList;
  import java.util.Collections;
  import java.util.HashMap;
@@ -49,7 +49,14 @@ Generated
 
 Developer -> Generated (Unified Diff)
 ```diff
-(No textual difference)
+--- developer+++ generated@@ -2,7 +2,7 @@  package org.apache.hadoop.hbase.backup.master;
+  
+  import java.io.IOException;
+-+import java.time.Duration;
+++import java.util.concurrent.TimeUnit;
+  import java.util.ArrayList;
+  import java.util.Collections;
+  import java.util.HashMap;
 
 ```
 
@@ -160,7 +167,7 @@ Generated
  @InterfaceAudience.LimitedPrivate(HBaseInterfaceAudience.CONFIG)
  public class BackupLogCleaner extends BaseLogCleanerDelegate {
    private static final Logger LOG = LoggerFactory.getLogger(BackupLogCleaner.class);
-+  private static final long TS_BUFFER_DEFAULT = 3600000L; // 1 hour in milliseconds
++  private static final long TS_BUFFER_DEFAULT = 3600000L;
 +  static final String TS_BUFFER_KEY = "hbase.backup.log.cleaner.timestamp.buffer.ms";
  
    private boolean stopped = false;
@@ -176,7 +183,7 @@ Developer -> Generated (Unified Diff)
   public class BackupLogCleaner extends BaseLogCleanerDelegate {
     private static final Logger LOG = LoggerFactory.getLogger(BackupLogCleaner.class);
 -+  private static final long TS_BUFFER_DEFAULT = Duration.ofHours(1).toMillis();
-++  private static final long TS_BUFFER_DEFAULT = 3600000L; // 1 hour in milliseconds
+++  private static final long TS_BUFFER_DEFAULT = 3600000L;
  +  static final String TS_BUFFER_KEY = "hbase.backup.log.cleaner.timestamp.buffer.ms";
   
     private boolean stopped = false;
@@ -396,7 +403,7 @@ Generated
      }
      for (FileStatus file : files) {
 -      if (canDeleteFile(serverToPreservationBoundaryTs, file.getPath())) {
-+      if (canDeleteFile(boundaries, file.getPath())) {
++      if (canDeleteFile(BackupBoundaries, file.getPath())) {
          filteredFiles.add(file);
        }
      }
@@ -405,11 +412,17 @@ Generated
 
 Developer -> Generated (Unified Diff)
 ```diff
---- developer+++ generated@@ -1,4 +1,4 @@-@@ -165,7 +166,7 @@
+--- developer+++ generated@@ -1,9 +1,9 @@-@@ -165,7 +166,7 @@
 +@@ -166,7 +166,7 @@
         return Collections.emptyList();
       }
       for (FileStatus file : files) {
+ -      if (canDeleteFile(serverToPreservationBoundaryTs, file.getPath())) {
+-+      if (canDeleteFile(boundaries, file.getPath())) {
+++      if (canDeleteFile(BackupBoundaries, file.getPath())) {
+          filteredFiles.add(file);
+        }
+      }
 
 ```
 
@@ -899,7 +912,7 @@ diff --git a/hbase-backup/src/main/java/org/apache/hadoop/hbase/backup/master/Ba
  package org.apache.hadoop.hbase.backup.master;
  
  import java.io.IOException;
-+import java.time.Duration;
++import java.util.concurrent.TimeUnit;
  import java.util.ArrayList;
  import java.util.Collections;
  import java.util.HashMap;
@@ -925,7 +938,7 @@ diff --git a/hbase-backup/src/main/java/org/apache/hadoop/hbase/backup/master/Ba
  @InterfaceAudience.LimitedPrivate(HBaseInterfaceAudience.CONFIG)
  public class BackupLogCleaner extends BaseLogCleanerDelegate {
    private static final Logger LOG = LoggerFactory.getLogger(BackupLogCleaner.class);
-+  private static final long TS_BUFFER_DEFAULT = 3600000L; // 1 hour in milliseconds
++  private static final long TS_BUFFER_DEFAULT = 3600000L;
 +  static final String TS_BUFFER_KEY = "hbase.backup.log.cleaner.timestamp.buffer.ms";
  
    private boolean stopped = false;
@@ -997,7 +1010,7 @@ diff --git a/hbase-backup/src/main/java/org/apache/hadoop/hbase/backup/master/Ba
      }
      for (FileStatus file : files) {
 -      if (canDeleteFile(serverToPreservationBoundaryTs, file.getPath())) {
-+      if (canDeleteFile(boundaries, file.getPath())) {
++      if (canDeleteFile(BackupBoundaries, file.getPath())) {
          filteredFiles.add(file);
        }
      }

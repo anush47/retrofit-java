@@ -3,7 +3,7 @@
     {
       "target_file": "hbase-backup/src/main/java/org/apache/hadoop/hbase/backup/master/BackupLogCleaner.java",
       "mainline_file": "hbase-backup/src/main/java/org/apache/hadoop/hbase/backup/master/BackupLogCleaner.java",
-      "hunk_text": "@@ -18,6 +18,7 @@\n package org.apache.hadoop.hbase.backup.master;\n \n import java.io.IOException;\n+import java.time.Duration;\n import java.util.ArrayList;\n import java.util.Collections;\n import java.util.HashMap;\n",
+      "hunk_text": "@@ -18,6 +18,7 @@\n package org.apache.hadoop.hbase.backup.master;\n \n import java.io.IOException;\n+import java.util.concurrent.TimeUnit;\n import java.util.ArrayList;\n import java.util.Collections;\n import java.util.HashMap;\n",
       "insertion_line": 18,
       "intent_verified": false,
       "file_operation": "MODIFIED"
@@ -27,7 +27,7 @@
     {
       "target_file": "hbase-backup/src/main/java/org/apache/hadoop/hbase/backup/master/BackupLogCleaner.java",
       "mainline_file": "hbase-backup/src/main/java/org/apache/hadoop/hbase/backup/master/BackupLogCleaner.java",
-      "hunk_text": "@@ -57,6 +57,8 @@\n @InterfaceAudience.LimitedPrivate(HBaseInterfaceAudience.CONFIG)\n public class BackupLogCleaner extends BaseLogCleanerDelegate {\n   private static final Logger LOG = LoggerFactory.getLogger(BackupLogCleaner.class);\n+  private static final long TS_BUFFER_DEFAULT = 3600000L; // 1 hour in milliseconds\n+  static final String TS_BUFFER_KEY = \"hbase.backup.log.cleaner.timestamp.buffer.ms\";\n \n   private boolean stopped = false;\n   private Connection conn;\n",
+      "hunk_text": "@@ -57,6 +57,8 @@\n @InterfaceAudience.LimitedPrivate(HBaseInterfaceAudience.CONFIG)\n public class BackupLogCleaner extends BaseLogCleanerDelegate {\n   private static final Logger LOG = LoggerFactory.getLogger(BackupLogCleaner.class);\n+  private static final long TS_BUFFER_DEFAULT = 3600000L;\n+  static final String TS_BUFFER_KEY = \"hbase.backup.log.cleaner.timestamp.buffer.ms\";\n \n   private boolean stopped = false;\n   private Connection conn;\n",
       "insertion_line": 57,
       "intent_verified": false,
       "file_operation": "MODIFIED"
@@ -59,9 +59,9 @@
     {
       "target_file": "hbase-backup/src/main/java/org/apache/hadoop/hbase/backup/master/BackupLogCleaner.java",
       "mainline_file": "hbase-backup/src/main/java/org/apache/hadoop/hbase/backup/master/BackupLogCleaner.java",
-      "hunk_text": "@@ -166,7 +166,7 @@\n       return Collections.emptyList();\n     }\n     for (FileStatus file : files) {\n-      if (canDeleteFile(serverToPreservationBoundaryTs, file.getPath())) {\n+      if (canDeleteFile(boundaries, file.getPath())) {\n         filteredFiles.add(file);\n       }\n     }\n",
+      "hunk_text": "@@ -166,7 +166,7 @@\n       return Collections.emptyList();\n     }\n     for (FileStatus file : files) {\n-      if (canDeleteFile(serverToPreservationBoundaryTs, file.getPath())) {\n+      if (canDeleteFile(BackupBoundaries, file.getPath())) {\n         filteredFiles.add(file);\n       }\n     }\n",
       "insertion_line": 166,
-      "intent_verified": false,
+      "intent_verified": true,
       "file_operation": "MODIFIED"
     },
     {

@@ -3,7 +3,7 @@
   "patch_id": "hbase_7ef359b7",
   "mainline_commit": "7ef359b7ffc8ca792c5bcfd70659cd01fd7e57c7",
   "backport_commit": "eda1fc4455726a838902adf2ceca770b1e4516b2",
-  "timestamp": "2026-03-26T10:35:40.364607",
+  "timestamp": "2026-03-26T10:48:00.576259",
   "phases": {
     "phase0": {
       "phase_0_optimistic": {
@@ -77,7 +77,7 @@
         "outputs": {
           "semantic_blueprint": {
             "root_cause_hypothesis": "The method `serverToPreservationBoundaryTs` was inefficient and potentially incorrect in determining the preservation boundaries for WAL files, leading to incorrect log deletions. | Lack of a mechanism to track and determine the deletability of WAL files based on backup boundaries, potentially leading to premature deletion of WAL files necessary for backup integrity.",
-            "fix_logic": "Refactored `serverToPreservationBoundaryTs` to use `BackupBoundaries` for more accurate and efficient boundary calculations, and updated `canDeleteFile` to use this new structure. | Introduced a new class `BackupBoundaries` that tracks the oldest timestamp per RegionServer included in any backup, allowing safe determination of which WAL files can be deleted.",
+            "fix_logic": "Refactored `serverToPreservationBoundaryTs` to use `BackupBoundaries` for more accurate and efficient boundary calculations, and updated `canDeleteFile` to utilize this new structure. | Introduced a new class `BackupBoundaries` that tracks the oldest timestamp per RegionServer included in any backup, allowing safe determination of which WAL files can be deleted.",
             "dependent_apis": [
               "serverToPreservationBoundaryTs",
               "BackupBoundaries",
@@ -92,71 +92,71 @@
               {
                 "hunk_index": 1,
                 "file": "hbase-backup/src/main/java/org/apache/hadoop/hbase/backup/master/BackupLogCleaner.java",
-                "summary": "Added import for `java.time.Duration`.",
+                "summary": "Imports `Duration` for time calculations.",
                 "role": "declaration",
-                "connects_to_next": "Introduces the ability to use `Duration` for time calculations, which is utilized in the next hunk.",
+                "connects_to_next": "Sets up for defining a default timestamp buffer using `Duration`.",
                 "global_index": 1
               },
               {
                 "hunk_index": 2,
                 "file": "hbase-backup/src/main/java/org/apache/hadoop/hbase/backup/master/BackupLogCleaner.java",
-                "summary": "Added imports for `BackupSystemTable` and `BackupBoundaries`, removed unused import.",
+                "summary": "Imports `BackupSystemTable` and `BackupBoundaries`.",
                 "role": "declaration",
-                "connects_to_next": "Prepares for the use of `BackupSystemTable` and `BackupBoundaries` in the refactored method.",
+                "connects_to_next": "Prepares for using `BackupSystemTable` and `BackupBoundaries` in the refactored method.",
                 "global_index": 2
               },
               {
                 "hunk_index": 3,
                 "file": "hbase-backup/src/main/java/org/apache/hadoop/hbase/backup/master/BackupLogCleaner.java",
-                "summary": "Removed unused import `AbstractFSWALProvider`.",
+                "summary": "Removes unused import `AbstractFSWALProvider`.",
                 "role": "cleanup",
-                "connects_to_next": "Cleans up imports, setting the stage for the refactoring of the method logic.",
+                "connects_to_next": "Cleans up imports to focus on the new logic using `BackupBoundaries`.",
                 "global_index": 3
               },
               {
                 "hunk_index": 4,
                 "file": "hbase-backup/src/main/java/org/apache/hadoop/hbase/backup/master/BackupLogCleaner.java",
-                "summary": "Declared constants for timestamp buffer configuration.",
+                "summary": "Defines a default timestamp buffer and its configuration key.",
                 "role": "declaration",
-                "connects_to_next": "Introduces constants that will be used in the refactored method to handle timestamp buffers.",
+                "connects_to_next": "Introduces a configurable buffer for timestamp calculations in the new logic.",
                 "global_index": 4
               },
               {
                 "hunk_index": 5,
                 "file": "hbase-backup/src/main/java/org/apache/hadoop/hbase/backup/master/BackupLogCleaner.java",
-                "summary": "Changed method signature to use `BackupBoundaries` and `BackupSystemTable`, and moved backup history retrieval inside the method.",
+                "summary": "Changes the method signature to use `BackupSystemTable` and initializes backup history retrieval.",
                 "role": "core_fix",
-                "connects_to_next": "Refactors the method to use a new data structure, setting up for further logic changes.",
+                "connects_to_next": "Begins the refactoring of `serverToPreservationBoundaryTs` to use `BackupBoundaries`.",
                 "global_index": 5
               },
               {
                 "hunk_index": 6,
                 "file": "hbase-backup/src/main/java/org/apache/hadoop/hbase/backup/master/BackupLogCleaner.java",
-                "summary": "Refactored logic to use `BackupBoundariesBuilder` for calculating boundaries.",
+                "summary": "Refactors the logic to build `BackupBoundaries` instead of a simple map.",
                 "role": "core_fix",
-                "connects_to_next": "Completes the core logic change by using a builder pattern for boundary calculations.",
+                "connects_to_next": "Completes the refactoring of boundary calculation, setting up for its use in log deletion.",
                 "global_index": 6
               },
               {
                 "hunk_index": 7,
                 "file": "hbase-backup/src/main/java/org/apache/hadoop/hbase/backup/master/BackupLogCleaner.java",
-                "summary": "Updated method call to use `BackupSystemTable` and adjusted logic accordingly.",
+                "summary": "Updates the method call to use `BackupSystemTable` and `BackupBoundaries`.",
                 "role": "propagation",
-                "connects_to_next": "Propagates the changes to the method call site, ensuring compatibility with the new logic.",
+                "connects_to_next": "Ensures the new boundary logic is used in the main log cleaning process.",
                 "global_index": 7
               },
               {
                 "hunk_index": 8,
                 "file": "hbase-backup/src/main/java/org/apache/hadoop/hbase/backup/master/BackupLogCleaner.java",
-                "summary": "Updated `canDeleteFile` call to use `BackupBoundaries`.",
+                "summary": "Updates the call to `canDeleteFile` to use `BackupBoundaries`.",
                 "role": "propagation",
-                "connects_to_next": "Ensures that the file deletion logic uses the new boundary structure.",
+                "connects_to_next": "Propagates the use of `BackupBoundaries` to the file deletion logic.",
                 "global_index": 8
               },
               {
                 "hunk_index": 9,
                 "file": "hbase-backup/src/main/java/org/apache/hadoop/hbase/backup/master/BackupLogCleaner.java",
-                "summary": "Refactored `canDeleteFile` to use `BackupBoundaries` for decision making.",
+                "summary": "Refactors `canDeleteFile` to use `BackupBoundaries` for deletion decisions.",
                 "role": "core_fix",
                 "connects_to_next": "",
                 "global_index": 9
@@ -276,7 +276,7 @@
             {
               "target_file": "hbase-backup/src/main/java/org/apache/hadoop/hbase/backup/master/BackupLogCleaner.java",
               "mainline_file": "hbase-backup/src/main/java/org/apache/hadoop/hbase/backup/master/BackupLogCleaner.java",
-              "hunk_text": "@@ -18,6 +18,7 @@\n package org.apache.hadoop.hbase.backup.master;\n \n import java.io.IOException;\n+import java.time.Duration;\n import java.util.ArrayList;\n import java.util.Collections;\n import java.util.HashMap;\n",
+              "hunk_text": "@@ -18,6 +18,7 @@\n package org.apache.hadoop.hbase.backup.master;\n \n import java.io.IOException;\n+import java.util.concurrent.TimeUnit;\n import java.util.ArrayList;\n import java.util.Collections;\n import java.util.HashMap;\n",
               "insertion_line": 18,
               "intent_verified": false,
               "file_operation": "MODIFIED"
@@ -300,7 +300,7 @@
             {
               "target_file": "hbase-backup/src/main/java/org/apache/hadoop/hbase/backup/master/BackupLogCleaner.java",
               "mainline_file": "hbase-backup/src/main/java/org/apache/hadoop/hbase/backup/master/BackupLogCleaner.java",
-              "hunk_text": "@@ -57,6 +57,8 @@\n @InterfaceAudience.LimitedPrivate(HBaseInterfaceAudience.CONFIG)\n public class BackupLogCleaner extends BaseLogCleanerDelegate {\n   private static final Logger LOG = LoggerFactory.getLogger(BackupLogCleaner.class);\n+  private static final long TS_BUFFER_DEFAULT = 3600000L; // 1 hour in milliseconds\n+  static final String TS_BUFFER_KEY = \"hbase.backup.log.cleaner.timestamp.buffer.ms\";\n \n   private boolean stopped = false;\n   private Connection conn;\n",
+              "hunk_text": "@@ -57,6 +57,8 @@\n @InterfaceAudience.LimitedPrivate(HBaseInterfaceAudience.CONFIG)\n public class BackupLogCleaner extends BaseLogCleanerDelegate {\n   private static final Logger LOG = LoggerFactory.getLogger(BackupLogCleaner.class);\n+  private static final long TS_BUFFER_DEFAULT = 3600000L;\n+  static final String TS_BUFFER_KEY = \"hbase.backup.log.cleaner.timestamp.buffer.ms\";\n \n   private boolean stopped = false;\n   private Connection conn;\n",
               "insertion_line": 57,
               "intent_verified": false,
               "file_operation": "MODIFIED"
@@ -332,9 +332,9 @@
             {
               "target_file": "hbase-backup/src/main/java/org/apache/hadoop/hbase/backup/master/BackupLogCleaner.java",
               "mainline_file": "hbase-backup/src/main/java/org/apache/hadoop/hbase/backup/master/BackupLogCleaner.java",
-              "hunk_text": "@@ -166,7 +166,7 @@\n       return Collections.emptyList();\n     }\n     for (FileStatus file : files) {\n-      if (canDeleteFile(serverToPreservationBoundaryTs, file.getPath())) {\n+      if (canDeleteFile(boundaries, file.getPath())) {\n         filteredFiles.add(file);\n       }\n     }\n",
+              "hunk_text": "@@ -166,7 +166,7 @@\n       return Collections.emptyList();\n     }\n     for (FileStatus file : files) {\n-      if (canDeleteFile(serverToPreservationBoundaryTs, file.getPath())) {\n+      if (canDeleteFile(BackupBoundaries, file.getPath())) {\n         filteredFiles.add(file);\n       }\n     }\n",
               "insertion_line": 166,
-              "intent_verified": false,
+              "intent_verified": true,
               "file_operation": "MODIFIED"
             },
             {
@@ -356,13 +356,13 @@
         "outputs": {
           "validation_passed": false,
           "validation_attempts": 3,
-          "validation_error_context": "Hunk application failed: The error indicates a patch application failure due to mismatched file content or context in `BackupLogCleaner.java` at line 201, likely caused by differences between the target branch and the patch's expected state. The patch also attempts to create files that already exist, suggesting a possible misalignment in file structure or patch content. To resolve, ensure the target branch is up-to-date and matches the patch's expected state, then regenerate the patch with correct file paths and context.",
+          "validation_error_context": "Hunk application failed: The error indicates a patch application failure due to mismatched file content or context in `BackupLogCleaner.java` at line 201, likely caused by differences in the target file's structure or content compared to the patch's expectations. The patch also attempts to create files that already exist, suggesting a potential misalignment between the patch and the current codebase. To resolve this, manually inspect and adjust the patch to align with the current state of the files, ensuring that the changes are correctly applied to the existing code structure.",
           "validation_results": {
             "hunk_application": {
               "success": false,
               "raw": "[git-apply-strict] error: patch failed: hbase-backup/src/main/java/org/apache/hadoop/hbase/backup/master/BackupLogCleaner.java:201\nerror: hbase-backup/src/main/java/org/apache/hadoop/hbase/backup/master/BackupLogCleaner.java: patch does not apply\n\n[git-apply-whitespace-tolerant] error: patch failed: hbase-backup/src/main/java/org/apache/hadoop/hbase/backup/master/BackupLogCleaner.java:201\nerror: hbase-backup/src/main/java/org/apache/hadoop/hbase/backup/master/BackupLogCleaner.java: patch does not apply\n\n[gnu-patch-dry-run] The next patch would create the file hbase-backup/src/main/java/org/apache/hadoop/hbase/backup/master/BackupLogCleaner.java,\nwhich already exists!  Skipping patch.\n9 out of 9 hunks ignored\nThe next patch would create the file hbase-backup/src/test/java/org/apache/hadoop/hbase/backup/master/TestBackupLogCleaner.java,\nwhich already exists!  Skipping patch.\n4 out of 4 hunks ignored",
-              "agent_evaluation": "The error indicates a patch application failure due to mismatched file content or context in `BackupLogCleaner.java` at line 201, likely caused by differences between the target branch and the patch's expected state. The patch also attempts to create files that already exist, suggesting a possible misalignment in file structure or patch content. To resolve, ensure the target branch is up-to-date and matches the patch's expected state, then regenerate the patch with correct file paths and context.",
-              "error_context": "The error indicates a patch application failure due to mismatched file content or context in `BackupLogCleaner.java` at line 201, likely caused by differences between the target branch and the patch's expected state. The patch also attempts to create files that already exist, suggesting a possible misalignment in file structure or patch content. To resolve, ensure the target branch is up-to-date and matches the patch's expected state, then regenerate the patch with correct file paths and context."
+              "agent_evaluation": "The error indicates a patch application failure due to mismatched file content or context in `BackupLogCleaner.java` at line 201, likely caused by differences in the target file's structure or content compared to the patch's expectations. The patch also attempts to create files that already exist, suggesting a potential misalignment between the patch and the current codebase. To resolve this, manually inspect and adjust the patch to align with the current state of the files, ensuring that the changes are correctly applied to the existing code structure.",
+              "error_context": "The error indicates a patch application failure due to mismatched file content or context in `BackupLogCleaner.java` at line 201, likely caused by differences in the target file's structure or content compared to the patch's expectations. The patch also attempts to create files that already exist, suggesting a potential misalignment between the patch and the current codebase. To resolve this, manually inspect and adjust the patch to align with the current state of the files, ensuring that the changes are correctly applied to the existing code structure."
             }
           }
         }
