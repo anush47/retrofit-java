@@ -95,13 +95,18 @@ class ValidationToolkit:
         project_dir = self._get_project_helper_dir(project)
         return os.path.isdir(project_dir)
 
-    def _find_maven_module_for_path(self, rel_path: str) -> str:
-        """Find nearest parent directory containing pom.xml for a repo-relative path."""
+    def _find_module_for_path(self, rel_path: str) -> str:
+        """Find nearest parent directory containing a build file for a repo-relative path."""
         head = (rel_path or "").replace("\\", "/")
         while head:
             head, _ = os.path.split(head)
-            if os.path.exists(os.path.join(self.target_repo_path, head, "pom.xml")):
-                return head
+            for build_file in ("pom.xml", "build.gradle", "build.gradle.kts"):
+                if os.path.exists(os.path.join(self.target_repo_path, head, build_file)):
+                    return head
+        # Check root
+        for build_file in ("pom.xml", "build.gradle", "build.gradle.kts"):
+            if os.path.exists(os.path.join(self.target_repo_path, build_file)):
+                return ""
         return ""
 
     def _clear_previous_junit_reports(self) -> None:
@@ -444,32 +449,60 @@ class ValidationToolkit:
         Infer relevant tests/modules directly from changed file paths.
         This avoids relying on worktree diff state during Phase 0 baseline runs.
         """
-        ignored_modules = {"web-console", "distribution", "docs", "examples"}
+        ignored_modules = {"web-console", "distribution", "docs", "examples", "benchmarks", "qa"}
 
         test_targets = set()
         source_modules = set()
         all_modules = set()
+
+        test_source_sets = (
+            "/src/test/java/", "/src/internalClusterTest/java/", 
+            "/src/javaRestTest/java/", "/src/yamlRestTest/java/", 
+            "/src/integTest/java/", "/src/integrationTest/java/"
+        )
+        test_suffixes = ("Test.java", "Tests.java", "IT.java", "TestCase.java")
 
         for rel_path in changed_files or []:
             p = (rel_path or "").replace("\\", "/")
             if not p:
                 continue
 
-            module_path = self._find_maven_module_for_path(p)
-            if not module_path or module_path in ignored_modules:
+            module_path = self._find_module_for_path(p)
+            top_level = module_path.split("/")[0] if module_path else ""
+            if top_level in ignored_modules:
                 continue
 
-            all_modules.add(module_path)
+            if module_path:
+                all_modules.add(module_path)
+            
             if p.endswith(".java") and "src/main/java/" in p:
-                source_modules.add(module_path)
+                if module_path:
+                    source_modules.add(module_path)
 
-            if p.endswith("Test.java") and "src/test/java/" in p:
-                try:
-                    class_path = p.split("src/test/java/", 1)[1]
-                    class_name = class_path.replace("/", ".").replace(".java", "")
-                    test_targets.add(f"{module_path}:{class_name}")
-                except Exception:
-                    continue
+            is_test_file = False
+            for src_set in test_source_sets:
+                if src_set in p:
+                    is_test_file = True
+                    break
+            if not is_test_file and any(p.endswith(s) for s in test_suffixes):
+                is_test_file = True
+
+            if is_test_file and p.endswith(".java"):
+                class_name = ""
+                for src_set in test_source_sets:
+                    if src_set in p:
+                        class_part = p.split(src_set, 1)[1]
+                        class_name = class_part.replace("/", ".").replace(".java", "")
+                        break
+                if not class_name and "/java/" in p:
+                    class_part = p.split("/java/", 1)[1]
+                    class_name = class_part.replace("/", ".").replace(".java", "")
+                
+                if not class_name:
+                    class_name = os.path.basename(p).replace(".java", "")
+
+                target = f"{module_path}:{class_name}" if module_path else class_name
+                test_targets.add(target)
 
         return {
             "test_targets": sorted(test_targets),
