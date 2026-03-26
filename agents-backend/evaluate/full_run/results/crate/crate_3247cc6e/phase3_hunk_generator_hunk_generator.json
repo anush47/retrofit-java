@@ -1,0 +1,13 @@
+{
+  "adapted_code_hunks": [
+    {
+      "target_file": "extensions/functions/src/main/java/io/crate/operation/aggregation/HyperLogLogDistinctAggregation.java",
+      "mainline_file": "extensions/functions/src/main/java/io/crate/operation/aggregation/HyperLogLogDistinctAggregation.java",
+      "hunk_text": "@@ -167,10 +167,7 @@\n \n     @Override\n     public Long terminatePartial(RamAccounting ramAccounting, HllState state) {\n-        if (state.isInitialized()) {\n-            return state.value();\n-        }\n-        return null;\n+        return state.isInitialized() ? state.value() : 0L;\n     }\n \n \n",
+      "insertion_line": 167,
+      "intent_verified": true,
+      "file_operation": "MODIFIED"
+    }
+  ],
+  "adapted_test_hunks": []
+}

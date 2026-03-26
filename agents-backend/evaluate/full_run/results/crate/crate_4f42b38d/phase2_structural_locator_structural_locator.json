@@ -1,0 +1,25 @@
+{
+  "consistency_map": {},
+  "mapped_target_context": {
+    "server/src/main/java/io/crate/planner/optimizer/joinorder/JoinGraph.java": [
+      {
+        "hunk_index": 1,
+        "mainline_method": "<import>",
+        "target_file": "server/src/main/java/io/crate/planner/optimizer/joinorder/JoinGraph.java",
+        "target_method": "<import>",
+        "start_line": 24,
+        "end_line": 24,
+        "code_snippet": "import static io.crate.planner.operators.EquiJoinDetector.isEquiJoin;"
+      },
+      {
+        "hunk_index": 2,
+        "mainline_method": "createJoinGraph",
+        "target_file": "server/src/main/java/io/crate/planner/optimizer/joinorder/JoinGraph.java",
+        "target_method": "createJoinGraph",
+        "start_line": 191,
+        "end_line": 196,
+        "code_snippet": "if (entry.getKey().size() == 2 && isEquiJoin(entry.getValue())) {\n    entry.getValue().accept(edgeCollector, context);\n} else {\n    filters.add(entry.getValue());\n}"
+      }
+    ]
+  }
+}
