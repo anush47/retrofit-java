@@ -1,0 +1,21 @@
+{
+  "adapted_code_hunks": [
+    {
+      "target_file": "server/src/main/java/io/crate/planner/optimizer/joinorder/JoinGraph.java",
+      "mainline_file": "server/src/main/java/io/crate/planner/optimizer/joinorder/JoinGraph.java",
+      "hunk_text": "@@ -21,6 +21,8 @@\n \n package io.crate.planner.optimizer.joinorder;\n \n+import static io.crate.planner.operators.EquiJoinDetector.isEquiJoin;\n+\n import java.util.ArrayList;\n import java.util.HashMap;\n import java.util.LinkedHashMap;\n",
+      "insertion_line": 21,
+      "intent_verified": false,
+      "file_operation": "MODIFIED"
+    },
+    {
+      "target_file": "server/src/main/java/io/crate/planner/optimizer/joinorder/JoinGraph.java",
+      "mainline_file": "server/src/main/java/io/crate/planner/optimizer/joinorder/JoinGraph.java",
+      "hunk_text": "@@ -191,7 +191,7 @@\n                     // (a,b) -> (a.x = b.y) and we can ignore any other\n                     // filters. Therefore, we only want entries where we have\n                     // two keys.\n-                    if (entry.getKey().size() == 2) {\n+                    if (entry.getKey().size() == 2 && isEquiJoin(entry.getValue())) {\n                         entry.getValue().accept(edgeCollector, context);\n                     } else {\n                         filters.add(entry.getValue());\n",
+      "insertion_line": 191,
+      "intent_verified": true,
+      "file_operation": "MODIFIED"
+    }
+  ],
+  "adapted_test_hunks": []
+}

@@ -1,0 +1,16 @@
+{
+  "consistency_map": {},
+  "mapped_target_context": {
+    "extensions/functions/src/main/java/io/crate/operation/aggregation/HyperLogLogDistinctAggregation.java": [
+      {
+        "hunk_index": 1,
+        "mainline_method": "hunk_1",
+        "target_file": "extensions/functions/src/main/java/io/crate/operation/aggregation/HyperLogLogDistinctAggregation.java",
+        "target_method": null,
+        "start_line": null,
+        "end_line": null,
+        "code_snippet": ""
+      }
+    ]
+  }
+}
