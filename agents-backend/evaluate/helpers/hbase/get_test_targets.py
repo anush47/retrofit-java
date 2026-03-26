@@ -77,7 +77,13 @@ def main():
             source_modules.add(module_path)
 
         # Strict filtering: Only process Test files for targeted test class execution
-        if not f.endswith("Test.java"):
+        # Support both XXXTest.java (Crate/Druid) and TestXXX.java (HBase) patterns
+        filename = os.path.basename(f)
+        is_test_file = (
+            f.endswith("Test.java") or  # XXXTest.java pattern
+            filename.startswith("Test") and f.endswith(".java")  # TestXXX.java pattern
+        )
+        if not is_test_file or "src/test/java/" not in f:
             continue
 
         # Extract class name
