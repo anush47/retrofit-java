@@ -192,7 +192,7 @@ async def phase_0_optimistic(state: AgentState, config) -> dict:
         baseline_apply = validation_toolkit.apply_adapted_hunks(code_hunks=[], test_hunks=developer_test_hunks)
         if baseline_apply.get("success"):
             phase0_baseline_test_result = validation_toolkit.run_relevant_tests(
-                project="druid",
+                project=project_name,
                 target_info=test_targets,
             )
         else:
@@ -312,7 +312,7 @@ async def phase_0_optimistic(state: AgentState, config) -> dict:
                 "phase_0_transition_evaluation": transition_eval,
             }
 
-        test_result = validation_toolkit.run_relevant_tests(project="druid", target_info=test_targets)
+        test_result = validation_toolkit.run_relevant_tests(project=project_name, target_info=test_targets)
         transition_eval = validation_toolkit.evaluate_test_state_transition(
             phase0_baseline_test_result,
             test_result,

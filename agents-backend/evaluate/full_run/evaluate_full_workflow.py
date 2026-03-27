@@ -1,5 +1,5 @@
 """
-Full Workflow Evaluation Script (Phase 0-4) for Druid.
+Full Workflow Evaluation Script (Phase 0-4) for Multiple Projects (Druid, CrateDB).
 
 This evaluator differs from evaluate/pipeline/evaluate_full_pipeline.py:
 - Uses the full workflow (does NOT skip phase 0).
@@ -50,8 +50,8 @@ REPOS_DIR = os.path.join(BASE_DIR, "temp_repo_storage")
 RESULTS_DIR = os.path.join(os.path.dirname(__file__), "results")
 PHASE0_CACHE_DIR = os.path.join(os.path.dirname(__file__), "phase0_cache")
 
-TARGET_PROJECTS = ["druid"]
-MAX_PATCHES_PER_PROJECT = None
+TARGET_PROJECTS = ["hbase"]
+MAX_PATCHES_PER_PROJECT = 3
 
 
 def ensure_dirs() -> None:
@@ -858,7 +858,7 @@ def is_patch_processed(project, patch_id):
 async def main():
     configure_logging()
     print("=" * 80)
-    print("FULL WORKFLOW EVALUATION (Phase 0-4, DRUID)")
+    print(f"FULL WORKFLOW EVALUATION (Phase 0-4, {', '.join(TARGET_PROJECTS)})")
     print("=" * 80)
 
     ensure_dirs()
