@@ -1437,7 +1437,7 @@ class ValidationToolkit:
                     print(f"    Agent 4 Warning: {project_name} helper image unavailable. Falling back. Details: {image_err}")
 
         if is_gradle:
-            cmd = ["gradle", "build", "-x", "test"]
+            cmd = ["gradle", "testClasses"]
         else:
             # Druid can fail on `mvn clean compile` because some modules depend on
             # classifier artifacts (e.g., tests-jar) that are not produced at compile phase.

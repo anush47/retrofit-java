@@ -57,7 +57,7 @@ if ${DOCKER_CMD} run --rm \
     -w /repo \
     "${IMAGE_TAG}" \
     bash -c "git config --global --add safe.directory /repo && \
-    ./gradlew assemble testClasses \
+    ./gradlew classes testClasses \
         -x :benchmarks:classes \
         -x :benchmarks:testClasses \
         --no-daemon \
