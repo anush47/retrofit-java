@@ -60,6 +60,9 @@ _HUNK_REWRITE_USER = """\
 {target_method_body}
 ```
 
+## Current Imports in Target File (for import hunks only)
+{target_imports_context}
+
 ## ConsistencyMap (apply these renames to + lines)
 {consistency_map}
 
@@ -308,6 +311,52 @@ def _extract_added_lines(hunk_text: str) -> list[str]:
     return [line for line in lines[1:] if line.startswith("+")]
 
 
+def _is_import_only_hunk(hunk_text: str) -> bool:
+    """
+    Detects if a hunk contains ONLY import statements (no other code).
+    Used to identify hunks that should be handled conservatively without LLM rewriting.
+    """
+    if not hunk_text:
+        return False
+    lines = hunk_text.splitlines()
+    if not lines or not lines[0].startswith("@@"):
+        return False
+    
+    # Check if all non-header, non-whitespace lines are import statements or empty
+    for line in lines[1:]:
+        stripped = line.lstrip()
+        if not stripped:  # empty line
+            continue
+        if stripped.startswith("//"):  # comment
+            continue
+        # Check if line is an import statement (in any of +, -, or space formats)
+        content = stripped[1:].strip() if len(stripped) > 1 and stripped[0] in {'+', '-', ' '} else stripped
+        if content and not content.startswith("import "):
+            return False
+    
+    return True
+
+
+def _extract_imports_from_body(target_body: str) -> str:
+    """
+    Extracts all import statements from a Java file body snippet for reference.
+    This provides context to the LLM so it knows what imports already exist.
+    """
+    if not target_body:
+        return "(No imports found in target context)"
+    
+    imports = []
+    for line in target_body.splitlines():
+        stripped = line.strip()
+        if stripped.startswith("import "):
+            imports.append(stripped)
+    
+    if not imports:
+        return "(No imports found in target context)"
+    
+    return "Existing imports:\n- " + "\n- ".join(imports)
+
+
 def _stabilize_hunk_structure(base_hunk: str, candidate_hunk: str) -> str:
     """
     Keeps the original hunk structure and replaces only '+' lines with candidate '+'.
@@ -351,6 +400,14 @@ def _normalize_rel_path(path: str) -> str:
     if p.startswith("a/") or p.startswith("b/"):
         p = p[2:]
     return p
+
+
+def _is_test_file(file_path: str) -> bool:
+    """
+    Simple heuristic to determine if a file is a test file.
+    """
+    lower_path = (file_path or "").lower()
+    return "test" in lower_path or lower_path.endswith("test.java")
 
 
 def _exists_file(repo_path: str, rel_path: str) -> bool:
@@ -761,44 +818,51 @@ async def hunk_generator_node(state: AgentState, config) -> dict:
             # Deterministic symbol substitution pre-pass
             pre_rewritten = _rewrite_hunk_symbols(raw_hunk, consistency_map)
 
-            # LLM rewrite (up to 2 attempts)
-            adapted_hunk_text = None
-            for attempt in range(2):
-                # Use full method body context (no truncation)
-                # The LLM needs complete context to properly understand method structure,
-                # boundaries, and surrounding code patterns for accurate hunk adaptation.
-                # If token budget is a concern, this can be adjusted, but complete context
-                # produces more accurate hunks.
-                prompt = _HUNK_REWRITE_USER.format(
-                    mainline_hunk=pre_rewritten,
-                    target_method_body=target_body,  # Use full body, not truncated
-                    consistency_map=cm_formatted,
-                    fix_logic=fix_logic,
-                    dependent_apis=", ".join(dependent_apis),
-                    insertion_line=insertion_line,
-                    target_file=target_file,
-                    retry_context=retry_context_str,
-                )
-                try:
-                    response = await llm.ainvoke([
-                        SystemMessage(content=_HUNK_REWRITE_SYSTEM),
-                        HumanMessage(content=prompt),
-                    ])
-                    raw_content = response.content if hasattr(response, "content") else str(response)
-                    extracted = _extract_hunk_block(raw_content)
-                    if extracted:
-                        # Preserve original diff structure and allow model to vary only '+' lines.
-                        stabilized = _stabilize_hunk_structure(pre_rewritten, extracted)
-                        adapted_hunk_text = _adjust_hunk_header(stabilized, insertion_line)
-                        break
-                    print(f"    Agent 3: Hunk parse failed (attempt {attempt+1}/2)")
-                except Exception as e:
-                    print(f"    Agent 3: LLM error on hunk {hunk_idx} (attempt {attempt+1}/2): {e}")
-
-            if not adapted_hunk_text:
-                # Fallback: use the deterministic pre-rewrite with adjusted header
+            # For import-only hunks, skip LLM rewriting to avoid corruption
+            # Import statements are fragile and LLM tends to duplicate existing imports
+            if _is_import_only_hunk(raw_hunk):
                 adapted_hunk_text = _adjust_hunk_header(pre_rewritten, insertion_line)
-                print(f"    Agent 3: Fallback — using deterministic pre-rewrite for hunk {hunk_idx}")
+                print(f"    Agent 3: Skipped LLM rewrite for import-only hunk {hunk_idx}")
+            else:
+                # LLM rewrite (up to 2 attempts) for non-import hunks
+                adapted_hunk_text = None
+                for attempt in range(2):
+                    # Use full method body context (no truncation)
+                    # The LLM needs complete context to properly understand method structure,
+                    # boundaries, and surrounding code patterns for accurate hunk adaptation.
+                    # If token budget is a concern, this can be adjusted, but complete context
+                    # produces more accurate hunks.
+                    prompt = _HUNK_REWRITE_USER.format(
+                        mainline_hunk=pre_rewritten,
+                        target_method_body=target_body,  # Use full body, not truncated
+                        target_imports_context=_extract_imports_from_body(target_body),
+                        consistency_map=cm_formatted,
+                        fix_logic=fix_logic,
+                        dependent_apis=", ".join(dependent_apis),
+                        insertion_line=insertion_line,
+                        target_file=target_file,
+                        retry_context=retry_context_str,
+                    )
+                    try:
+                        response = await llm.ainvoke([
+                            SystemMessage(content=_HUNK_REWRITE_SYSTEM),
+                            HumanMessage(content=prompt),
+                        ])
+                        raw_content = response.content if hasattr(response, "content") else str(response)
+                        extracted = _extract_hunk_block(raw_content)
+                        if extracted:
+                            # Preserve original diff structure and allow model to vary only '+' lines.
+                            stabilized = _stabilize_hunk_structure(pre_rewritten, extracted)
+                            adapted_hunk_text = _adjust_hunk_header(stabilized, insertion_line)
+                            break
+                        print(f"    Agent 3: Hunk parse failed (attempt {attempt+1}/2)")
+                    except Exception as e:
+                        print(f"    Agent 3: LLM error on hunk {hunk_idx} (attempt {attempt+1}/2): {e}")
+
+                if not adapted_hunk_text:
+                    # Fallback: use the deterministic pre-rewrite with adjusted header
+                    adapted_hunk_text = _adjust_hunk_header(pre_rewritten, insertion_line)
+                    print(f"    Agent 3: Fallback — using deterministic pre-rewrite for hunk {hunk_idx}")
 
             # Dry-run validation
             dry_run_ok = False
