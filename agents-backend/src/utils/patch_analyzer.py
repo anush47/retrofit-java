@@ -10,6 +10,7 @@ class FileChange:
     added_lines: List[str]
     removed_lines: List[str]
     is_test_file: bool
+    previous_file_path: Optional[str] = None  # old path for RENAMED files
 
 class PatchAnalyzer:
     def __init__(self):
@@ -38,12 +39,16 @@ class PatchAnalyzer:
 
         for patched_file in patch_set:
             change_type = "MODIFIED"
+            previous_file_path = None
             if patched_file.is_added_file:
                 change_type = "ADDED"
             elif patched_file.is_removed_file:
                 change_type = "DELETED"
             elif patched_file.is_rename:
                 change_type = "RENAMED"
+                source_file = getattr(patched_file, "source_file", None)
+                if source_file:
+                    previous_file_path = source_file.lstrip("a/").lstrip("b/")
 
             added_lines = []
             removed_lines = []
@@ -67,7 +72,8 @@ class PatchAnalyzer:
                 change_type=change_type,
                 added_lines=added_lines,
                 removed_lines=removed_lines,
-                is_test_file=is_test_file
+                is_test_file=is_test_file,
+                previous_file_path=previous_file_path,
             ))
 
         return changes

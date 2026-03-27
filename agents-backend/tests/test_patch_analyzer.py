@@ -143,6 +143,22 @@ class TestExtractRawHunks(unittest.TestCase):
         self.assertEqual(len(tests_with_tests), 1)
         self.assertEqual(tests_with_tests[0].file_path, "src/test/java/com/example/AppTest.java")
 
+    def test_rename_records_previous_file_path(self):
+        diff_text = """\
+diff --git a/src/main/java/com/example/LegacyFoo.java b/src/main/java/com/example/NewFoo.java
+similarity index 95%
+rename from src/main/java/com/example/LegacyFoo.java
+rename to src/main/java/com/example/NewFoo.java
+@@ -10,3 +10,3 @@ public class NewFoo {
+-    void readLegacy() {}
++    void readNew() {}
+ }"""
+        changes = self.analyzer.analyze(diff_text)
+        self.assertEqual(len(changes), 1)
+        self.assertEqual(changes[0].change_type, "RENAMED")
+        self.assertEqual(changes[0].file_path, "src/main/java/com/example/NewFoo.java")
+        self.assertEqual(changes[0].previous_file_path, "src/main/java/com/example/LegacyFoo.java")
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -1,100 +1,120 @@
 # Structural Locator Trace
 
 ## Blueprint Summary
-- **Root Cause**: The ExportResultsFrameProcessorFactory was not being provided with columnMappings, potentially leading to incorrect or missing column mapping during export operations. | Exported result columns could be mismatched or inconsistent due to reliance on input row signature and lack of explicit column mapping, especially across upgrades or schema changes. | The class did not support passing or serializing column mappings, which are necessary for correct export and downstream processing of query results.
+- **Root Cause**: The method `computeLagForAutoScaler` was incorrectly returning a lag value based on potentially null `LagStats`, which could lead to unexpected behavior if `computeLagStats` fails. | The previous implementation did not handle the case where lag statistics could be null, potentially leading to a NullPointerException. | The class LagBasedAutoScalerConfig did not have a property to hold the lag aggregate function, which is necessary for scaling decisions. | The method computeLagForAutoScaler was returning a lag value based on potentially null LagStats, which could lead to unexpected behavior if computeLagStats() fails or returns null. | The file was missing, indicating that the AggregateFunction enum was not defined, which could lead to compilation errors or missing functionality. | Lack of a mechanism to specify the aggregation function for scaling metrics in LagStats.
 
 ## Hunk Segregation
-- Code files: 3
+- Code files: 6
 - Test files: 0
 
 ## Code File Mappings
 
-### `extensions-core/multi-stage-query/src/main/java/org/apache/druid/msq/exec/ControllerImpl.java`
+### `extensions-core/kinesis-indexing-service/src/main/java/org/apache/druid/indexing/kinesis/supervisor/KinesisSupervisor.java`
 
 **Hunks in this file**: 1
 
-**Git Resolution**: Found `extensions-core/multi-stage-query/src/main/java/org/apache/druid/msq/exec/ControllerImpl.java`
+**Git Resolution**: Found `extensions-core/kinesis-indexing-service/src/main/java/org/apache/druid/indexing/kinesis/supervisor/KinesisSupervisor.java`
 
 **Agent Tool Steps:**
 
-  - `Agent calls get_class_context` with `{"file_path": "extensions-core/multi-stage-query/src/main/java/org/apache/druid/msq/exec/ControllerImpl.java", "focus_method": "processorFactory", "use_mainline": false}`
-  - `Tool: get_class_context` -> {"context": "package org.apache.druid.msq.exec;\n\n// Line 245\npublic class ControllerImpl implements Controller {\n    // Line 247: private static final org.apache.druid.java.util.common.logger.Logg...
-  - `Agent calls read_file` with `{"file_path": "extensions-core/multi-stage-query/src/main/java/org/apache/druid/msq/exec/ControllerImpl.java"}`
-  - `Tool: read_file` -> package org.apache.druid.msq.exec;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Preconditions;
-import co...
-  - `Agent calls get_class_context` with `{"file_path": "extensions-core/multi-stage-query/src/main/java/org/apache/druid/msq/exec/ControllerImpl.java", "focus_method": "makeQueryDefinition", "use_mainline": false}`
-  - `Tool: get_class_context` -> {"context": "package org.apache.druid.msq.exec;\n\n// Line 245\npublic class ControllerImpl implements Controller {\n    // Line 247: private static final org.apache.druid.java.util.common.logger.Logg...
-  - `Agent calls git_blame_lines` with `{"file_path": "extensions-core/multi-stage-query/src/main/java/org/apache/druid/msq/exec/ControllerImpl.java", "start_line": 1905, "end_line": 1917, "use_mainline": false}`
-  - `Tool: git_blame_lines` -> bf8b9818bec (Adarsh Sanjeev 2024-02-08 14:38:01 +0530 1905)       final ResultFormat resultFormat = exportMSQDestination.getResultFormat();
-bf8b9818bec (Adarsh Sanjeev 2024-02-08 14:38:01 +0530 1906) ...
-  - `Agent calls get_class_context` with `{"file_path": "extensions-core/multi-stage-query/src/main/java/org/apache/druid/msq/exec/ControllerImpl.java", "focus_method": "ExportResultsFrameProcessorFactory", "use_mainline": false}`
-  - `Tool: get_class_context` -> {"context": "package org.apache.druid.msq.exec;\n\n// Line 245\npublic class ControllerImpl implements Controller {\n    // Line 247: private static final org.apache.druid.java.util.common.logger.Logg...
+  - `Agent calls get_class_context` with `{"file_path": "extensions-core/kinesis-indexing-service/src/main/java/org/apache/druid/indexing/kinesis/supervisor/KinesisSupervisor.java", "focus_method": "computeLagForAutoScaler"}`
+  - `Agent calls get_class_context` with `{"file_path": "extensions-core/kinesis-indexing-service/src/main/java/org/apache/druid/indexing/kinesis/supervisor/KinesisSupervisor.java"}`
+  - `Tool: get_class_context` -> {"context": "package org.apache.druid.indexing.kinesis.supervisor;\n\n// Line 77\npublic class KinesisSupervisor extends SeekableStreamSupervisor {\n    // Line 79: private static final org.apache.dru...
+  - `Tool: get_class_context` -> {"context": "package org.apache.druid.indexing.kinesis.supervisor;\n\n// Line 77\npublic class KinesisSupervisor extends SeekableStreamSupervisor {\n    // Line 79: private static final org.apache.dru...
 
 | Hunk Idx | Role | Mainline Method | Target Method | Lines |
 |---|---|---|---|---|
-| 1 | core_fix | `makeQueryDefinition` | `makeQueryDefinition` | 1754–1923 |
-### `extensions-core/multi-stage-query/src/main/java/org/apache/druid/msq/querykit/results/ExportResultsFrameProcessor.java`
+| 1 | cleanup | `computeLagForAutoScaler` | `None` | 431–435 |
+### `indexing-service/src/main/java/org/apache/druid/indexing/seekablestream/supervisor/autoscaler/LagBasedAutoScaler.java`
 
-**Hunks in this file**: 9
+**Hunks in this file**: 2
 
-**Git Resolution**: Found `extensions-core/multi-stage-query/src/main/java/org/apache/druid/msq/querykit/results/ExportResultsFrameProcessor.java`
+**Git Resolution**: Found `indexing-service/src/main/java/org/apache/druid/indexing/seekablestream/supervisor/autoscaler/LagBasedAutoScaler.java`
 
 **Agent Tool Steps:**
 
-  - `Agent calls get_class_context` with `{"file_path": "extensions-core/multi-stage-query/src/main/java/org/apache/druid/msq/querykit/results/ExportResultsFrameProcessor.java", "focus_method": "ExportResultsFrameProcessor", "use_mainline": false}`
-  - `Agent calls get_class_context` with `{"file_path": "extensions-core/multi-stage-query/src/main/java/org/apache/druid/msq/querykit/results/ExportResultsFrameProcessor.java", "focus_method": "exportFrame", "use_mainline": false}`
-  - `Agent calls get_class_context` with `{"file_path": "extensions-core/multi-stage-query/src/main/java/org/apache/druid/msq/querykit/results/ExportResultsFrameProcessor.java", "focus_method": "createRowSignatureForExport", "use_mainline": false}`
-  - `Tool: get_class_context` -> {"context": "package org.apache.druid.msq.querykit.results;\n\n// Line 54\npublic class ExportResultsFrameProcessor implements FrameProcessor {\n    // Line 56: private final org.apache.druid.frame.ch...
-  - `Tool: get_class_context` -> {"context": "package org.apache.druid.msq.querykit.results;\n\n// Line 54\npublic class ExportResultsFrameProcessor implements FrameProcessor {\n    // Line 56: private final org.apache.druid.frame.ch...
-  - `Tool: get_class_context` -> {"context": "package org.apache.druid.msq.querykit.results;\n\n// Line 54\npublic class ExportResultsFrameProcessor implements FrameProcessor {\n    // Line 56: private final org.apache.druid.frame.ch...
-  - `Agent calls read_file` with `{"file_path": "extensions-core/multi-stage-query/src/main/java/org/apache/druid/msq/querykit/results/ExportResultsFrameProcessor.java"}`
-  - `Tool: read_file` -> package org.apache.druid.msq.querykit.results;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import it.unimi.dsi.fastutil.ints.IntSet;
-import org.apache.druid.error.DruidException;
-import org.ap...
+  - `Agent calls get_class_context` with `{"file_path": "indexing-service/src/main/java/org/apache/druid/indexing/seekablestream/supervisor/autoscaler/LagBasedAutoScaler.java", "focus_method": "<import>"}`
+  - `Agent calls get_class_context` with `{"file_path": "indexing-service/src/main/java/org/apache/druid/indexing/seekablestream/supervisor/autoscaler/LagBasedAutoScaler.java", "focus_method": "computeLagForAutoScaler"}`
+  - `Tool: get_class_context` -> {"context": "package org.apache.druid.indexing.seekablestream.supervisor.autoscaler;\n\n// Line 40\npublic class LagBasedAutoScaler implements SupervisorTaskAutoScaler {\n    // Line 42: private stati...
+  - `Tool: get_class_context` -> {"context": "package org.apache.druid.indexing.seekablestream.supervisor.autoscaler;\n\n// Line 40\npublic class LagBasedAutoScaler implements SupervisorTaskAutoScaler {\n    // Line 42: private stati...
+  - `Agent calls get_class_context` with `{"file_path": "indexing-service/src/main/java/org/apache/druid/indexing/overlord/supervisor/autoscaler/AggregateFunction.java", "focus_method": null}`
+  - `Agent calls get_class_context` with `{"file_path": "indexing-service/src/main/java/org/apache/druid/indexing/overlord/supervisor/autoscaler/LagStats.java", "focus_method": null}`
+  - `Tool: get_class_context` -> Error invoking tool 'get_class_context' with kwargs {'file_path': 'indexing-service/src/main/java/org/apache/druid/indexing/overlord/supervisor/autoscaler/AggregateFunction.java', 'focus_method': None...
+  - `Tool: get_class_context` -> Error invoking tool 'get_class_context' with kwargs {'file_path': 'indexing-service/src/main/java/org/apache/druid/indexing/overlord/supervisor/autoscaler/LagStats.java', 'focus_method': None} with er...
+  - `Agent calls read_file` with `{"file_path": "indexing-service/src/main/java/org/apache/druid/indexing/overlord/supervisor/autoscaler/AggregateFunction.java"}`
+  - `Agent calls read_file` with `{"file_path": "indexing-service/src/main/java/org/apache/druid/indexing/overlord/supervisor/autoscaler/LagStats.java"}`
+  - `Tool: read_file` -> Error: File not found at indexing-service/src/main/java/org/apache/druid/indexing/overlord/supervisor/autoscaler/AggregateFunction.java...
+  - `Tool: read_file` -> Error: File not found at indexing-service/src/main/java/org/apache/druid/indexing/overlord/supervisor/autoscaler/LagStats.java...
+  - `Agent calls git_log_follow` with `{"file_path": "indexing-service/src/main/java/org/apache/druid/indexing/overlord/supervisor/autoscaler/AggregateFunction.java"}`
+  - `Agent calls git_log_follow` with `{"file_path": "indexing-service/src/main/java/org/apache/druid/indexing/overlord/supervisor/autoscaler/LagStats.java"}`
+  - `Tool: git_log_follow` -> No history found....
+  - `Tool: git_log_follow` -> No history found....
+  - `Agent calls get_class_context` with `{"file_path": "indexing-service/src/main/java/org/apache/druid/indexing/overlord/supervisor/autoscaler/LagBasedAutoScaler.java", "focus_method": "getLagAggregate"}`
+  - `Agent calls get_class_context` with `{"file_path": "indexing-service/src/main/java/org/apache/druid/indexing/overlord/supervisor/autoscaler/LagBasedAutoScaler.java", "focus_method": "getAggregateForScaling"}`
+  - `Tool: get_class_context` -> {"error": "File not found: indexing-service/src/main/java/org/apache/druid/indexing/overlord/supervisor/autoscaler/LagBasedAutoScaler.java"}...
+  - `Tool: get_class_context` -> {"error": "File not found: indexing-service/src/main/java/org/apache/druid/indexing/overlord/supervisor/autoscaler/LagBasedAutoScaler.java"}...
 
 | Hunk Idx | Role | Mainline Method | Target Method | Lines |
 |---|---|---|---|---|
-| 1 | declaration | `<import>` | `<import>` | 2–25 |
-| 2 | declaration | `<import>` | `<import>` | 17–18 |
-| 3 | declaration | `ExportResultsFrameProcessor` | `ExportResultsFrameProcessor` | 62–62 |
-| 4 | propagation | `ExportResultsFrameProcessor` | `ExportResultsFrameProcessor` | 64–78 |
-| 5 | core_fix | `ExportResultsFrameProcessor` | `ExportResultsFrameProcessor` | 79–79 |
-| 6 | cleanup | `exportFrame` | `exportFrame` | 112–112 |
-| 7 | refactor | `exportFrame` | `exportFrame` | 138–142 |
-| 8 | core_fix | `exportFrame` | `exportFrame` | 146–148 |
-| 9 | cleanup | `createRowSignatureForExport` | `createRowSignatureForExport` | 165–173 |
-### `extensions-core/multi-stage-query/src/main/java/org/apache/druid/msq/querykit/results/ExportResultsFrameProcessorFactory.java`
+| 1 | declaration | `<import>` | `<import>` | 21–23 |
+| 2 | core_fix | `computeLagForAutoScaler` | `None` | 154–156 |
+### `indexing-service/src/main/java/org/apache/druid/indexing/seekablestream/supervisor/autoscaler/LagBasedAutoScalerConfig.java`
 
-**Hunks in this file**: 5
+**Hunks in this file**: 6
 
-**Git Resolution**: Found `extensions-core/multi-stage-query/src/main/java/org/apache/druid/msq/querykit/results/ExportResultsFrameProcessorFactory.java`
+**Git Resolution**: Found `indexing-service/src/main/java/org/apache/druid/indexing/seekablestream/supervisor/autoscaler/LagBasedAutoScalerConfig.java`
+
+**Fallback**: Using git resolution result (LLM refinement failed).
+
+### `server/src/main/java/org/apache/druid/indexing/overlord/supervisor/Supervisor.java`
+
+**Hunks in this file**: 1
+
+**Git Resolution**: Found `server/src/main/java/org/apache/druid/indexing/overlord/supervisor/Supervisor.java`
 
 **Agent Tool Steps:**
 
-  - `Agent calls get_class_context` with `{"file_path": "extensions-core/multi-stage-query/src/main/java/org/apache/druid/msq/querykit/results/ExportResultsFrameProcessorFactory.java", "focus_method": "ExportResultsFrameProcessorFactory", "use_mainline": false}`
-  - `Agent calls get_class_context` with `{"file_path": "extensions-core/multi-stage-query/src/main/java/org/apache/druid/msq/querykit/results/ExportResultsFrameProcessorFactory.java", "focus_method": "getColumnMappings", "use_mainline": false}`
-  - `Agent calls get_class_context` with `{"file_path": "extensions-core/multi-stage-query/src/main/java/org/apache/druid/msq/querykit/results/ExportResultsFrameProcessorFactory.java", "focus_method": "makeProcessors", "use_mainline": false}`
-  - `Tool: get_class_context` -> {"context": "package org.apache.druid.msq.querykit.results;\n\n@com.fasterxml.jackson.annotation.JsonTypeName(\"exportResults\")\n// Line 53\npublic class ExportResultsFrameProcessorFactory extends Ba...
-  - `Tool: get_class_context` -> {"context": "package org.apache.druid.msq.querykit.results;\n\n@com.fasterxml.jackson.annotation.JsonTypeName(\"exportResults\")\n// Line 53\npublic class ExportResultsFrameProcessorFactory extends Ba...
-  - `Tool: get_class_context` -> {"context": "package org.apache.druid.msq.querykit.results;\n\n@com.fasterxml.jackson.annotation.JsonTypeName(\"exportResults\")\n// Line 53\npublic class ExportResultsFrameProcessorFactory extends Ba...
-  - `Agent calls read_file` with `{"file_path": "extensions-core/multi-stage-query/src/main/java/org/apache/druid/msq/querykit/results/ExportResultsFrameProcessorFactory.java"}`
-  - `Tool: read_file` -> package org.apache.druid.msq.querykit.results;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonTy...
+  - `Agent calls get_class_context` with `{"file_path": "server/src/main/java/org/apache/druid/indexing/overlord/supervisor/Supervisor.java", "focus_method": "computeLagForAutoScaler"}`
+  - `Agent calls get_class_context` with `{"file_path": "server/src/main/java/org/apache/druid/indexing/overlord/supervisor/Supervisor.java"}`
+  - `Tool: get_class_context` -> {"context": "package org.apache.druid.indexing.overlord.supervisor;\n\n// Line 33\npublic interface Supervisor {\n    // Line 88: public abstract void checkpoint(int taskGroupId, DataSourceMetadata ch...
+  - `Tool: get_class_context` -> {"context": "package org.apache.druid.indexing.overlord.supervisor;\n\n// Line 33\npublic interface Supervisor {\n    // Line 88: public abstract void checkpoint(int taskGroupId, DataSourceMetadata ch...
 
 | Hunk Idx | Role | Mainline Method | Target Method | Lines |
 |---|---|---|---|---|
-| 1 | declaration | `<import>` | `<import>` | 2–2 |
-| 2 | declaration | `<import>` | `<import>` | 24–24 |
-| 3 | declaration | `ExportResultsFrameProcessorFactory` | `ExportResultsFrameProcessorFactory` | 41–54 |
-| 4 | propagation | `getColumnMappings` | `None` | None–None |
-| 5 | propagation | `makeProcessors` | `makeProcessors` | 91–133 |
+| 1 | cleanup | `computeLagForAutoScaler` | `computeLagForAutoScaler` | 98–102 |
+### `server/src/main/java/org/apache/druid/indexing/overlord/supervisor/autoscaler/AggregateFunction.java`
+
+**Hunks in this file**: 1
+
+**Agent Tool Steps:**
+
+  - `Agent calls get_class_context` with `{"file_path": "server/src/main/java/org/apache/druid/indexing/overlord/supervisor/autoscaler/AggregateFunction.java", "focus_method": null}`
+  - `Agent calls get_class_context` with `{"file_path": "server/src/main/java/org/apache/druid/indexing/overlord/supervisor/autoscaler/AggregateFunction.java", "focus_method": "AggregateFunction"}`
+  - `Tool: get_class_context` -> Error invoking tool 'get_class_context' with kwargs {'file_path': 'server/src/main/java/org/apache/druid/indexing/overlord/supervisor/autoscaler/AggregateFunction.java', 'focus_method': None} with err...
+  - `Tool: get_class_context` -> {"error": "File not found: server/src/main/java/org/apache/druid/indexing/overlord/supervisor/autoscaler/AggregateFunction.java"}...
+  - `Agent calls read_file` with `{"file_path": "server/src/main/java/org/apache/druid/indexing/overlord/supervisor/autoscaler/AggregateFunction.java"}`
+  - `Tool: read_file` -> Error: File not found at server/src/main/java/org/apache/druid/indexing/overlord/supervisor/autoscaler/AggregateFunction.java...
+  - `Agent calls search_candidates` with `{"file_path": "server/src/main/java/org/apache/druid/indexing/overlord/supervisor/autoscaler/AggregateFunction.java"}`
+  - `Tool: search_candidates` -> []...
+  - `Agent calls git_log_follow` with `{"file_path": "server/src/main/java/org/apache/druid/indexing/overlord/supervisor/autoscaler/AggregateFunction.java"}`
+  - `Tool: git_log_follow` -> No history found....
+  - `Agent calls get_dependency_graph` with `{"file_paths": ["server/src/main/java/org/apache/druid/indexing/overlord/supervisor/autoscaler/AggregateFunction.java"]}`
+  - `Tool: get_dependency_graph` -> {"error": "No valid files found to analyze."}...
+  - `Agent calls search_candidates` with `{"file_path": "server/src/main/java/org/apache/druid/indexing/overlord/supervisor/autoscaler/AggregateFunction.java"}`
+  - `Tool: search_candidates` -> []...
+
+| Hunk Idx | Role | Mainline Method | Target Method | Lines |
+|---|---|---|---|---|
+  ⚠️ Import hunk 1 has no target start_line. Hunk generator will extract from hunk header.
+| 1 | declaration | `AggregateFunction` | `None` | None–None |
+### `server/src/main/java/org/apache/druid/indexing/overlord/supervisor/autoscaler/LagStats.java`
+
+**Hunks in this file**: 2
+
+**Git Resolution**: Found `server/src/main/java/org/apache/druid/indexing/overlord/supervisor/autoscaler/LagStats.java`
+
+**Fallback**: Using git resolution result (LLM refinement failed).
+
 ## Test File Mappings
 
 
