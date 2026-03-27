@@ -81,7 +81,7 @@ def main():
         filename = os.path.basename(f)
         is_test_file = (
             f.endswith("Test.java") or  # XXXTest.java pattern
-            filename.startswith("Test") and f.endswith(".java")  # TestXXX.java pattern
+            (filename.startswith("Test") and f.endswith(".java"))  # TestXXX.java pattern
         )
         if not is_test_file or "src/test/java/" not in f:
             continue
