@@ -6,10 +6,10 @@
         "hunk_index": 1,
         "mainline_method": "computeLagForAutoScaler",
         "target_file": "extensions-core/kinesis-indexing-service/src/main/java/org/apache/druid/indexing/kinesis/supervisor/KinesisSupervisor.java",
-        "target_method": "computeLagForAutoScaler",
-        "start_line": 431,
-        "end_line": 435,
-        "code_snippet": "public long computeLagForAutoScaler()\n  {\n    LagStats lagStats = computeLagStats();\n    return lagStats == null ? 0L : lagStats.getMaxLag();\n  }"
+        "target_method": null,
+        "start_line": null,
+        "end_line": null,
+        "code_snippet": null
       }
     ],
     "indexing-service/src/main/java/org/apache/druid/indexing/seekablestream/supervisor/autoscaler/LagBasedAutoScaler.java": [
@@ -26,10 +26,10 @@
         "hunk_index": 2,
         "mainline_method": "computeLagForAutoScaler",
         "target_file": "indexing-service/src/main/java/org/apache/druid/indexing/seekablestream/supervisor/autoscaler/LagBasedAutoScaler.java",
-        "target_method": "computeLagStats",
-        "start_line": 154,
-        "end_line": 154,
-        "code_snippet": "LagStats lagStats = supervisor.computeLagStats();"
+        "target_method": null,
+        "start_line": null,
+        "end_line": null,
+        "code_snippet": null
       }
     ],
     "indexing-service/src/main/java/org/apache/druid/indexing/seekablestream/supervisor/autoscaler/LagBasedAutoScalerConfig.java": [
@@ -58,7 +58,7 @@
         "target_method": "LagBasedAutoScalerConfig",
         "start_line": 61,
         "end_line": 63,
-        "code_snippet": "@JsonCreator\npublic LagBasedAutoScalerConfig(\n          @Nullable @JsonProperty(\"lagAggregate\") AggregateFunction lagAggregate"
+        "code_snippet": "@JsonCreator\n  public LagBasedAutoScalerConfig("
       },
       {
         "hunk_index": 4,
@@ -76,7 +76,7 @@
         "target_method": "getLagAggregate",
         "start_line": 186,
         "end_line": 190,
-        "code_snippet": "@JsonProperty\n@Nullable\npublic AggregateFunction getLagAggregate()"
+        "code_snippet": "@JsonProperty\n  @Nullable\n  public AggregateFunction getLagAggregate()"
       },
       {
         "hunk_index": 6,
@@ -85,7 +85,7 @@
         "target_method": "toString",
         "start_line": 204,
         "end_line": 215,
-        "code_snippet": "toString() {\n            \", lagAggregate=\" + lagAggregate +"
+        "code_snippet": "toString() {\n    return super.toString() + \", lagAggregate=\" + lagAggregate;"
       }
     ],
     "server/src/main/java/org/apache/druid/indexing/overlord/supervisor/Supervisor.java": [
@@ -104,7 +104,7 @@
         "hunk_index": 1,
         "mainline_method": "AggregateFunction",
         "target_file": "server/src/main/java/org/apache/druid/indexing/overlord/supervisor/autoscaler/AggregateFunction.java",
-        "target_method": "AggregateFunction",
+        "target_method": null,
         "start_line": 1,
         "end_line": 27,
         "code_snippet": "public enum AggregateFunction\n{\n  MAX,\n  SUM,\n  AVERAGE\n}"
@@ -118,7 +118,7 @@
         "target_method": "LagStats",
         "start_line": 25,
         "end_line": 29,
-        "code_snippet": "public LagStats(long maxLag, long totalLag, long avgLag, AggregateFunction aggregateForScaling) {\n    this.maxLag = maxLag;\n    this.totalLag = totalLag;\n    this.avgLag = avgLag;\n    this.aggregateForScaling = aggregateForScaling == null ? AggregateFunction.SUM : aggregateForScaling;\n  }"
+        "code_snippet": "public LagStats(long maxLag, long totalLag, long avgLag, AggregateFunction aggregateForScaling)\n  {\n    this.maxLag = maxLag;\n    this.totalLag = totalLag;\n    this.avgLag = avgLag;\n    this.aggregateForScaling = aggregateForScaling == null ? AggregateFunction.SUM : aggregateForScaling;\n  }"
       },
       {
         "hunk_index": 2,
@@ -126,8 +126,8 @@
         "target_file": "server/src/main/java/org/apache/druid/indexing/overlord/supervisor/autoscaler/LagStats.java",
         "target_method": "getAggregateForScaling",
         "start_line": 54,
-        "end_line": 60,
-        "code_snippet": "public AggregateFunction getAggregateForScaling() {\n    return aggregateForScaling;\n  }"
+        "end_line": 58,
+        "code_snippet": "public AggregateFunction getAggregateForScaling()\n  {\n    return aggregateForScaling;\n  }"
       }
     ]
   }
