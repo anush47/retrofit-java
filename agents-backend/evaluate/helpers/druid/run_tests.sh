@@ -23,25 +23,23 @@ echo "Surefire forks: ${SUREFIRE_FORKS}"
 if [ "${TEST_TARGETS:-}" == "ALL" ]; then
     # Run standard unit tests for everything (skipping broken modules)
     MAVEN_ARGS="-pl '!web-console,!distribution'"
-elif [ -n "${TEST_MODULES:-}" ]; then
-    # Module-targeted fallback when no specific test classes are available.
-    MAVEN_ARGS="-pl ${TEST_MODULES} -am"
 elif [ "${TEST_TARGETS:-}" == "NONE" ]; then
     echo "No relevant source code changes found. Skipping tests."
     exit 0
-else
+elif [ -n "${TEST_TARGETS:-}" ]; then
     # TEST_TARGETS is a space-separated list of "module:class"
     # Example: processing:org.apache.druid.FooTest server:org.apache.druid.BarTest
-    
+    # IMPORTANT: TEST_TARGETS must take precedence over TEST_MODULES.
+
     MODULES=""
     TESTS=""
-    
+
     # Split by space
     for target in ${TEST_TARGETS}; do
         # Split by colon
         mod="${target%%:*}"
         cls="${target#*:}"
-        
+
         # Append to lists (comma separated)
         if [ -z "$MODULES" ]; then
             MODULES="$mod"
@@ -51,15 +49,21 @@ else
                 MODULES="$MODULES,$mod"
             fi
         fi
-        
+
         if [ -z "$TESTS" ]; then
             TESTS="$cls"
         else
             TESTS="$TESTS,$cls"
         fi
     done
-    
-    MAVEN_ARGS="-pl ${MODULES} -Dtest=${TESTS}"
+
+    MAVEN_ARGS="-pl ${MODULES} -am -Dtest=${TESTS}"
+elif [ -n "${TEST_MODULES:-}" ]; then
+    # Module-targeted fallback when no specific test classes are available.
+    MAVEN_ARGS="-pl ${TEST_MODULES} -am"
+else
+    echo "No test targets/modules provided. Skipping tests."
+    exit 0
 fi
 
 echo "--- Starting Test Execution ---"
@@ -80,7 +84,7 @@ if docker run --rm \
     bash -c "if [ \"${WORKTREE_MODE}\" != \"1\" ]; then git checkout -f ${COMMIT_SHA}; fi && \
              export MAVEN_OPTS=\"\${MAVEN_OPTS:-} -XX:ActiveProcessorCount=${MAX_CPU}\" && \
              rm -rf /repo/build/all-test-results && \
-             mvn test -T ${MAVEN_THREADS} ${MAVEN_ARGS} -DforkCount=${SUREFIRE_FORKS} -DreuseForks=true -DfailIfNoTests=false -Dmaven.javadoc.skip=true -Dcheckstyle.skip=true -Dpmd.skip=true -Dforbiddenapis.skip=true -Denforcer.skip=true -DskipITs; \
+             mvn test -T ${MAVEN_THREADS} ${MAVEN_ARGS} -DforkCount=${SUREFIRE_FORKS} -DreuseForks=true -DfailIfNoTests=false -Dsurefire.failIfNoSpecifiedTests=false -Dmaven.javadoc.skip=true -Dcheckstyle.skip=true -Dpmd.skip=true -Dforbiddenapis.skip=true -Denforcer.skip=true -DskipITs; \
              MVN_EXIT_CODE=\$?; \
              mkdir -p /repo/build/all-test-results; \
              find . -name 'TEST-*.xml' -exec cp {} /repo/build/all-test-results/ \;; \
