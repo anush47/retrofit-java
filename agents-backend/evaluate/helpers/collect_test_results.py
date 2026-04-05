@@ -46,6 +46,7 @@ def discover_xml_files(repo: str, project: str) -> list[str]:
     paths = set(glob.glob(os.path.join(repo, pattern), recursive=True))
     # Also include the shared aggregate location used by helper scripts.
     paths.update(glob.glob(os.path.join(repo, "build", "all-test-results", "*.xml"), recursive=True))
+    paths.update(glob.glob(os.path.join(repo, "target", "all-test-results", "*.xml"), recursive=True))
     paths.update(glob.glob(os.path.join(repo, "all-test-results", "*.xml"), recursive=True))
 
     return sorted(p for p in paths if p.endswith(".xml"))

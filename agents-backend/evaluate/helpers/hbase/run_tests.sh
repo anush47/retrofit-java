@@ -53,8 +53,8 @@ else
         echo "Test Classes: $CLASSES"
         echo "Number of test classes: $(echo $CLASSES | tr ',' '\n' | wc -l)"
         
-        # Use -Dtest to run specific tests, -am to build dependencies
-        MAVEN_ARGS="-pl ${MODULES} -Dtest=${CLASSES} -am -DfailIfNoTests=false"
+        # Use -Dtest and -Dit.test, -am to build dependencies
+        MAVEN_ARGS="-pl ${MODULES} -Dtest=${CLASSES} -Dit.test=${CLASSES} -am -DfailIfNoTests=false"
     else
         echo "--- Module Test Mode: Running all tests in affected modules ---"
         
@@ -89,20 +89,20 @@ if docker run --rm \
     bash -c "set -e; \
              echo 'Maven version:'; mvn --version; \
              ${CHECKOUT_CMD}; \
-             echo 'Running: mvn test ${MAVEN_ARGS}'; \
-             mvn test ${MAVEN_ARGS} \
+             echo 'Running: mvn verify ${MAVEN_ARGS}'; \
+             mvn verify ${MAVEN_ARGS} \
                  -DfailIfNoTests=false \
                  -Dmaven.javadoc.skip=true \
                  -Dcheckstyle.skip=true \
                  -Dfindbugs.skip=true \
                  -Dspotbugs.skip=true \
                  -Denforcer.skip=true; \
-             MVN_EXIT_CODE=\$?; \
+             MVN_EXIT_CODE=$?; \
              echo 'Collecting test results...'; \
-             mkdir -p /repo/all-test-results; \
-             find . -type f \( -path '*/target/surefire-reports/*.xml' -o -path '*/target/failsafe-reports/*.xml' \) -not -path '*/all-test-results/*' -exec cp {} /repo/all-test-results/ \; 2>/dev/null || true; \
-             echo \"Found \$(ls /repo/all-test-results/*.xml 2>/dev/null | wc -l) test result files\"; \
-             exit \$MVN_EXIT_CODE"; then
+             mkdir -p /repo/target/all-test-results; \
+             find . -type f \( -path '*/target/surefire-reports/*.xml' -o -path '*/target/failsafe-reports/*.xml' \) -not -path '*/target/all-test-results/*' -exec cp {} /repo/target/all-test-results/ \; 2>/dev/null || true; \
+             echo "Found $(ls /repo/target/all-test-results/*.xml 2>/dev/null | wc -l) test result files"; \
+             exit $MVN_EXIT_CODE"; then
     
     echo "✅ Tests Passed"
     exit 0
