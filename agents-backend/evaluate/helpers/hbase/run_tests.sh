@@ -100,7 +100,7 @@ if docker run --rm \
              MVN_EXIT_CODE=\$?; \
              echo 'Collecting test results...'; \
              mkdir -p /repo/all-test-results; \
-             find . -type f -path '*/target/surefire-reports/*.xml' -not -path '*/all-test-results/*' -exec cp {} /repo/all-test-results/ \; 2>/dev/null || true; \
+             find . -type f \( -path '*/target/surefire-reports/*.xml' -o -path '*/target/failsafe-reports/*.xml' \) -not -path '*/all-test-results/*' -exec cp {} /repo/all-test-results/ \; 2>/dev/null || true; \
              echo \"Found \$(ls /repo/all-test-results/*.xml 2>/dev/null | wc -l) test result files\"; \
              exit \$MVN_EXIT_CODE"; then
     
