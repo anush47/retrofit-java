@@ -3,7 +3,7 @@ project=crate
 mainline_commit=f110187717d7d702d7f16abdf9bced3a62a5d90e
 backport_commit=ee82e9c66ddd5cc1474ef91801693b5849b92b96
 mode=full
-started_at=2026-04-05T11:33:49.272446
+started_at=2026-04-05T13:31:31.739296
 ----------------------------------------
 Running full workflow graph
 Completed node=phase_0_optimistic
@@ -20,7 +20,7 @@ Phase 0 (Optimistic): Checking direct patch applicability...
 Phase 0: Experiment mode — checking out parent of ee82e9c66ddd5cc1474ef91801693b5849b92b96...
 Phase 0: Building baseline by applying developer backport test hunks only...
   Validation: server/src/test/java/io/crate/integrationtests/InsertIntoIntegrationTest.java - applying 1 hunk(s) one by one in bottom-to-top order: [2843]
-    Agent 4: Executing crate helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_tests.sh
+    Agent 4: Executing crate helper test script: /home/kaushal/retrofit-java/agents-backend/evaluate/helpers/crate/run_tests.sh
 Phase 0: git apply --check FAILED. Escalating to full pipeline.
   Hint: error: docs/appendices/release-notes/6.1.1.rst: No such file or directory
 
@@ -35,8 +35,6 @@ Agent 2 (Structural Locator): Starting target location mapping...
 LLM Provider: azure, Model: gpt-4.1-mini, Temperature: 0
   Agent 2: Found 1 hunk(s) in hunk_chain
   Agent 2: Locating target for server/src/main/java/io/crate/planner/operators/InsertFromValues.java (1 hunk(s))...
-Blob Hunting: Searching for SHA 4aac71b0261a749f9f40f6ec6cf293e83e73114f (server/src/main/java/io/crate/planner/operators/InsertFromValues.java)
-Blob Hunting: Found EXACT match in HEAD at server/src/main/java/io/crate/planner/operators/InsertFromValues.java
 Phase 1 (Git) Match Found: server/src/main/java/io/crate/planner/operators/InsertFromValues.java
   Agent 2: Git resolution found target: server/src/main/java/io/crate/planner/operators/InsertFromValues.java
   Agent 2: Mapped hunk 1 (hunk_1) to None at lines 134-134
@@ -58,8 +56,8 @@ Agent 4 (Validation): Starting 'Prove Red, Make Green' loop...
   Validation: server/src/main/java/io/crate/planner/operators/InsertFromValues.java - applying 1 hunk(s) one by one in bottom-to-top order: [1]
   Validation: docs/appendices/release-notes/6.0.4.rst - applying 1 hunk(s) one by one in bottom-to-top order: [90]
   Validation: server/src/test/java/io/crate/integrationtests/InsertIntoIntegrationTest.java - applying 1 hunk(s) one by one in bottom-to-top order: [2843]
-    Agent 4: Executing crate helper build script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_build.sh
-    Agent 4: Executing crate helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_tests.sh
+    Agent 4: Executing crate helper build script: /home/kaushal/retrofit-java/agents-backend/evaluate/helpers/crate/run_build.sh
+    Agent 4: Executing crate helper test script: /home/kaushal/retrofit-java/agents-backend/evaluate/helpers/crate/run_tests.sh
 Trace saved to validation_trace.md
 Router: Validation PASSED after 1 attempt(s). Done.
   Completed: validation
