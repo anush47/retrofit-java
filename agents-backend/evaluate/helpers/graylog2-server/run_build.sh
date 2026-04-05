@@ -17,7 +17,7 @@ fi
 
 # 2. Build Docker image
 echo "--- Building Docker image... ---"
-docker build -t ${IMAGE_TAG} -f ${TOOLKIT_DIR}/Dockerfile .
+docker build -t ${IMAGE_TAG} -f ${TOOLKIT_DIR}/Dockerfile ${TOOLKIT_DIR}
 
 # 3. Run Build
 # We mount the repo and the maven cache
