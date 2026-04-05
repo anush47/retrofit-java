@@ -1,14 +1,28 @@
 #!/bin/bash
-set -e
+set -euo pipefail
 
-echo "=== Running Tests for ${COMMIT_SHA:0:7} ==="
-echo "Targets: ${TEST_TARGETS}"
+WORKTREE_MODE="${WORKTREE_MODE:-0}"
+SHORT_SHA="${COMMIT_SHA:-worktree}"
+if [ "${WORKTREE_MODE}" != "1" ] && [ -n "${COMMIT_SHA:-}" ]; then
+    SHORT_SHA="${COMMIT_SHA:0:7}"
+fi
+
+echo "=== Running Tests for ${SHORT_SHA} ==="
+echo "Targets: ${TEST_TARGETS:-}"
+
+MAX_CPU="${MAX_CPU:-$(getconf _NPROCESSORS_ONLN 2>/dev/null || nproc 2>/dev/null || echo 1)}"
+MAVEN_THREADS="${MAVEN_THREADS:-${MAX_CPU}}"
+SUREFIRE_FORKS="${SUREFIRE_FORKS:-${MAX_CPU}}"
+
+echo "CPU detected: ${MAX_CPU}"
+echo "Maven threads: ${MAVEN_THREADS}"
+echo "Surefire forks: ${SUREFIRE_FORKS}"
 
 # 1. Configure Test Command
-if [ "${TEST_TARGETS}" == "ALL" ]; then
-    # Run standard unit tests for everything
+if [ "${TEST_TARGETS:-}" == "ALL" ]; then
+    # Run unit tests for everything
     MAVEN_ARGS=""
-elif [ "${TEST_TARGETS}" == "NONE" ]; then
+elif [ "${TEST_TARGETS:-}" == "NONE" ]; then
     echo "No relevant source code changes found. Skipping tests."
     exit 0
 else
@@ -40,7 +54,7 @@ else
         fi
     done
     
-    MAVEN_ARGS="-pl ${MODULES} -Dtest=${TESTS}"
+    MAVEN_ARGS="-pl ${MODULES} -Dtest=${TESTS} -am"
 fi
 
 echo "--- Starting Test Execution ---"
@@ -55,12 +69,6 @@ DOCKER_GID=$(stat -c '%g' /var/run/docker.sock 2>/dev/null || echo 0)
 # BUILDER_IMAGE_TAG is the primary tag, IMAGE_TAG is the fallback
 IMAGE_TAG="${BUILDER_IMAGE_TAG:-${IMAGE_TAG}}"
 
-# Worktree mode logic for inside the container
-CHECKOUT_CMD="git checkout -f ${COMMIT_SHA}"
-if [ "${WORKTREE_MODE:-0}" == "1" ]; then
-    CHECKOUT_CMD="echo 'Skipping checkout (WORKTREE_MODE=1)'"
-fi
-
 if docker run --rm \
     --privileged \
     -v "${PROJECT_DIR}:/repo" \
@@ -72,8 +80,10 @@ if docker run --rm \
     --group-add "${DOCKER_GID}" \
     -w /repo \
     "${IMAGE_TAG}" \
-    bash -c "chmod 666 /var/run/docker.sock 2>/dev/null || true && docker info && ${CHECKOUT_CMD} && \
-             mvn clean test ${MAVEN_ARGS} -T 1C -Dmaven.compile.fork=true -Dswagger.skip=true -DfailIfNoTests=false -Denforcer.skip=true -Dskip.yarn -Dskip.npm -Dskip.installnodenpm -Dmaven.antrun.skip=true -Dmaven.javadoc.skip=true -Dcheckstyle.skip=true -Dforbiddenapis.skip=true -Dpmd.skip=true -Drat.skip=true -Dspotbugs.skip=true; \
+    bash -c "chmod 666 /var/run/docker.sock 2>/dev/null || true; \
+             if [ \"${WORKTREE_MODE}\" != \"1\" ]; then git checkout -f ${COMMIT_SHA}; fi; \
+             export MAVEN_OPTS='-Xmx4g -Xms2g -XX:ActiveProcessorCount=${MAX_CPU}'; \
+             mvn clean test ${MAVEN_ARGS} -T ${MAVEN_THREADS} -DforkCount=${SUREFIRE_FORKS} -DreuseForks=true -Dmaven.compile.fork=true -Dswagger.skip=true -DfailIfNoTests=false -Denforcer.skip=true -Dskip.yarn -Dskip.npm -Dskip.installnodenpm -Dmaven.antrun.skip=true -Dmaven.javadoc.skip=true -Dcheckstyle.skip=true -Dforbiddenapis.skip=true -Dpmd.skip=true -Drat.skip=true -Dspotbugs.skip=true -Djacoco.skip=true; \
              MVN_EXIT_CODE=\$?; \
              mkdir -p /repo/build/all-test-results; \
              find . -name 'TEST-*.xml' -exec cp {} /repo/build/all-test-results/ \;; \
@@ -84,4 +94,4 @@ if docker run --rm \
 else
     echo "❌ Tests Failed"
     exit 1
-fi
+fi

@@ -1,54 +1,56 @@
 #!/bin/bash
-set -e # Exit on error
+set -euo pipefail
 
-echo "--- Building code for ${COMMIT_SHA:0:7} ---"
+WORKTREE_MODE="${WORKTREE_MODE:-0}"
+SHORT_SHA="${COMMIT_SHA:-worktree}"
+if [ "${WORKTREE_MODE}" != "1" ] && [ -n "${COMMIT_SHA:-}" ]; then
+    SHORT_SHA="${COMMIT_SHA:0:7}"
+fi
 
-# 1. Checkout commit
-echo "--- Changing directory to ${PROJECT_DIR} ---"
+echo "=== Building Graylog for ${SHORT_SHA} ==="
+
+MAX_CPU="${MAX_CPU:-$(getconf _NPROCESSORS_ONLN 2>/dev/null || nproc 2>/dev/null || echo 1)}"
+MAVEN_THREADS="${MAVEN_THREADS:-${MAX_CPU}}"
+
+echo "CPU detected: ${MAX_CPU}"
+echo "Maven threads: ${MAVEN_THREADS}"
+
 cd "${PROJECT_DIR}"
 
-# BUILDER_IMAGE_TAG is the primary tag, IMAGE_TAG is the fallback
-IMAGE_TAG="${BUILDER_IMAGE_TAG:-${IMAGE_TAG}}"
-
-if [ "${WORKTREE_MODE:-0}" != "1" ]; then
-    echo "--- Checking out commit... ---"
+if [ "${WORKTREE_MODE}" != "1" ]; then
+    echo "--- Checking out commit ${COMMIT_SHA}... ---"
     git checkout -f ${COMMIT_SHA}
 fi
 
 # 2. Build Docker image
 echo "--- Building Docker image... ---"
+IMAGE_TAG="${BUILDER_IMAGE_TAG:-${IMAGE_TAG}}"
 docker build -t ${IMAGE_TAG} -f ${TOOLKIT_DIR}/Dockerfile ${TOOLKIT_DIR}
 
 # 3. Run Build
-# We mount the repo and the maven cache
-# We use 'mvn clean install -DskipTests' to build everything needed for tests
-# We might need to skip frontend builds if they are flaky, similar to Druid
 echo "--- Running Maven Build... ---"
 
 # Create volume for maven repo if not exists
 docker volume create maven-repo 2>/dev/null || true
 
 # Run build
-# We add -Dskip.npm -Dskip.installnodenpm just in case Graylog uses frontend-maven-plugin too
-docker run --rm \
+if docker run --rm \
     -v "${PROJECT_DIR}:/repo" \
     -v "maven-repo:/root/.m2/repository" \
     -w /repo \
     ${IMAGE_TAG} \
-    bash -c "mvn clean install -DskipTests -Dskip.yarn -Dskip.npm -Dskip.installnodenpm -Dmaven.antrun.skip=true -Dmaven.javadoc.skip=true -Dcheckstyle.skip=true -Dpmd.skip=true -Dforbiddenapis.skip=true -Denforcer.skip=true -Drat.skip=true -T 1C" \
-    || BUILD_EXIT_CODE=$?
-
-# Save build status
-if [ -z "${BUILD_EXIT_CODE:-}" ] || [ "${BUILD_EXIT_CODE}" -eq 0 ]; then
+    bash -c "export MAVEN_OPTS='-Xmx4g -Xms2g -XX:ActiveProcessorCount=${MAX_CPU}'; mvn clean install -DskipTests -Dskip.yarn -Dskip.npm -Dskip.installnodenpm -Dmaven.antrun.skip=true -Dmaven.javadoc.skip=true -Dcheckstyle.skip=true -Dpmd.skip=true -Dforbiddenapis.skip=true -Denforcer.skip=true -Drat.skip=true -Dspotbugs.skip=true -Djacoco.skip=true -Dswagger.skip=true -Dmaven.source.skip=true -T ${MAVEN_THREADS}"; then
+    
     if [ -n "${BUILD_STATUS_FILE:-}" ]; then
-        echo "Success" > "${BUILD_STATUS_FILE}"
+        echo "Success" > "${BUILD_STATUS_FILE}" || true
     fi
-    echo "✅ Build succeeded for ${COMMIT_SHA:0:7}"
+    echo "✅ Build succeeded for ${SHORT_SHA}"
 else
     if [ -n "${BUILD_STATUS_FILE:-}" ]; then
-        echo "Fail" > "${BUILD_STATUS_FILE}"
+        echo "Fail" > "${BUILD_STATUS_FILE}" || true
     fi
-    echo "❌ Build failed for ${COMMIT_SHA:0:7}"
+    echo "❌ Build failed for ${SHORT_SHA}"
+    exit 1
 fi
 
-echo "--- Build complete for ${COMMIT_SHA:0:7} ---"
+echo "--- Build complete for ${SHORT_SHA} ---"
