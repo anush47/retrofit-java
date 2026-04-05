@@ -56,13 +56,14 @@ def configure_logging() -> None:
 
 
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
-DATASET_PATH = os.path.join(BASE_DIR, "datasets", "all_projects_final.csv")
+# DATASET_PATH = os.path.join(BASE_DIR, "datasets", "all_projects_final.csv")
+DATASET_PATH = os.path.join(BASE_DIR, "datasets", "all_projects_final_no_5.csv")
 REPOS_DIR = os.path.join(BASE_DIR, "temp_repo_storage")
 RESULTS_DIR = os.path.join(os.path.dirname(__file__), "results")
 PHASE0_CACHE_DIR = os.path.join(os.path.dirname(__file__), "phase0_cache")
 
 TARGET_PROJECTS = ["elasticsearch", "crate"]
-MAX_PATCHES_PER_PROJECT = 10
+MAX_PATCHES_PER_PROJECT = None
 
 RUN_MODE_FULL = "full"
 RUN_MODE_PHASE1 = "phase1"
