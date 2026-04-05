@@ -73,7 +73,7 @@ if docker run --rm \
     -w /repo \
     "${IMAGE_TAG}" \
     bash -c "chmod 666 /var/run/docker.sock 2>/dev/null || true && docker info && ${CHECKOUT_CMD} && \
-             mvn test ${MAVEN_ARGS} -DfailIfNoTests=false -Denforcer.skip=true -Dskip.yarn -Dskip.npm -Dskip.installnodenpm -Dmaven.antrun.skip=true -Dmaven.javadoc.skip=true -Dcheckstyle.skip=true -Dforbiddenapis.skip=true -Dpmd.skip=true -Drat.skip=true -Dspotbugs.skip=true; \
+             mvn clean test ${MAVEN_ARGS} -DfailIfNoTests=false -Denforcer.skip=true -Dskip.yarn -Dskip.npm -Dskip.installnodenpm -Dmaven.antrun.skip=true -Dmaven.javadoc.skip=true -Dcheckstyle.skip=true -Dforbiddenapis.skip=true -Dpmd.skip=true -Drat.skip=true -Dspotbugs.skip=true; \
              MVN_EXIT_CODE=\$?; \
              mkdir -p /repo/build/all-test-results; \
              find . -name 'TEST-*.xml' -exec cp {} /repo/build/all-test-results/ \;; \
