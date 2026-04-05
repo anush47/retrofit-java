@@ -39,10 +39,16 @@ docker run --rm \
     || BUILD_EXIT_CODE=$?
 
 # Save build status
-if [ -z "$BUILD_EXIT_CODE" ] || [ "$BUILD_EXIT_CODE" -eq 0 ]; then
-    echo "Success" > $BUILD_STATUS_FILE
+if [ -z "${BUILD_EXIT_CODE:-}" ] || [ "${BUILD_EXIT_CODE}" -eq 0 ]; then
+    if [ -n "${BUILD_STATUS_FILE:-}" ]; then
+        echo "Success" > "${BUILD_STATUS_FILE}"
+    fi
+    echo "✅ Build succeeded for ${COMMIT_SHA:0:7}"
 else
-    echo "Fail" > $BUILD_STATUS_FILE
+    if [ -n "${BUILD_STATUS_FILE:-}" ]; then
+        echo "Fail" > "${BUILD_STATUS_FILE}"
+    fi
+    echo "❌ Build failed for ${COMMIT_SHA:0:7}"
 fi
 
 echo "--- Build complete for ${COMMIT_SHA:0:7} ---"
