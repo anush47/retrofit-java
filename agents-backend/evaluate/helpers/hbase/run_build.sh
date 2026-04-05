@@ -1,72 +1,56 @@
 #!/bin/bash
-# Builds (compiles) the HBase project inside Docker.
-# Compatible with evaluate_full_workflow.py — honours WORKTREE_MODE.
-set -euo pipefail
+# This script compiles HBase code using pre-built Docker image (Maven project)
+set -e # Exit on error
 
 WORKTREE_MODE="${WORKTREE_MODE:-0}"
-SHORT_SHA="${COMMIT_SHA:-worktree}"
-if [ "${WORKTREE_MODE}" != "1" ] && [ -n "${COMMIT_SHA:-}" ]; then
-    SHORT_SHA="${COMMIT_SHA:0:7}"
-fi
-
-echo "--- Building HBase for commit ${SHORT_SHA} ---"
-
-MAX_CPU="${MAX_CPU:-$(getconf _NPROCESSORS_ONLN 2>/dev/null || nproc 2>/dev/null || echo 1)}"
-MAVEN_THREADS="${MAVEN_THREADS:-${MAX_CPU}}"
-
-echo "CPU detected: ${MAX_CPU}"
-echo "Maven threads: ${MAVEN_THREADS}"
-
-# Initialize build exit code
-BUILD_EXIT_CODE=0
+echo "--- Building HBase for commit ${COMMIT_SHA:0:7} --- (WORKTREE_MODE=${WORKTREE_MODE})"
 
 echo "--- Changing directory to ${PROJECT_DIR} ---"
 cd "${PROJECT_DIR}"
 
-# Only reset repo state when NOT in worktree/patch-applied mode.
-# When WORKTREE_MODE=1, the ValidationToolkit has already applied patches
-# to the working tree — do NOT wipe them with git checkout/clean.
 if [ "${WORKTREE_MODE}" != "1" ]; then
-    echo "--- Checking out commit: ${COMMIT_SHA} ---"
-    git checkout -f "${COMMIT_SHA}"
-else
-    echo "--- WORKTREE_MODE=1: preserving current worktree state ---"
+    echo "--- Checking out commit... ---"
+    git checkout -f ${COMMIT_SHA}
 fi
 
-# Create persistent Maven cache volume (reuse across builds)
+# 2. Build Docker image
+echo "--- Building Docker image... ---"
+# Use TOOLKIT_DIR as context to avoid permission errors in target/ folders
+docker build -t ${BUILDER_IMAGE_TAG} -f ${TOOLKIT_DIR}/Dockerfile ${TOOLKIT_DIR}
+
+# 3. Create persistent Maven cache volume
 docker volume create maven-cache-hbase 2>/dev/null || true
 
 echo "--- Running Maven build (compile only, no tests) ---"
 
 # Build without tests, skip documentation and code quality checks
-BUILD_COMMAND="mvn clean install -DskipTests -T ${MAVEN_THREADS} \
+BUILD_COMMAND="mvn clean install -DskipTests \
   -Dmaven.javadoc.skip=true \
   -Dcheckstyle.skip=true \
   -Dfindbugs.skip=true \
   -Dspotbugs.skip=true \
   -Denforcer.skip=true"
 
-docker run --rm \
+if docker run --rm \
     --dns=8.8.8.8 \
     -v "${PROJECT_DIR}:/repo" \
     -v "maven-cache-hbase:/root/.m2" \
     -w /repo \
     ${BUILDER_IMAGE_TAG} \
-    bash -c "export MAVEN_OPTS=\"\${MAVEN_OPTS:-} -XX:ActiveProcessorCount=${MAX_CPU}\" && rm -rf /root/.m2/repository/org/apache/hbase && ${BUILD_COMMAND}" \
-    || BUILD_EXIT_CODE=$?
-
-# Save build status (only if BUILD_STATUS_FILE is set)
-if [ ${BUILD_EXIT_CODE} -eq 0 ]; then
-    if [ -n "${BUILD_STATUS_FILE:-}" ]; then
-        echo "Success" > "${BUILD_STATUS_FILE}"
-    fi
-    echo "✅ Build succeeded for ${SHORT_SHA}"
+    bash -c "rm -rf /root/.m2/repository/org/apache/hbase && ${BUILD_COMMAND}"; then
+    BUILD_EXIT_CODE=0
 else
-    if [ -n "${BUILD_STATUS_FILE:-}" ]; then
-        echo "Fail" > "${BUILD_STATUS_FILE}"
-    fi
-    echo "❌ Build failed for ${SHORT_SHA}"
+    BUILD_EXIT_CODE=1
 fi
 
-echo "--- Build complete for ${SHORT_SHA} ---"
+# Save build status
+if [ -n "${BUILD_STATUS_FILE:-}" ]; then
+    if [ "${BUILD_EXIT_CODE}" -eq 0 ]; then
+        echo "Success" > "${BUILD_STATUS_FILE}"
+    else
+        echo "Fail" > "${BUILD_STATUS_FILE}"
+    fi
+fi
+
+echo "--- Build complete for ${COMMIT_SHA:0:7} ---"
 exit ${BUILD_EXIT_CODE}

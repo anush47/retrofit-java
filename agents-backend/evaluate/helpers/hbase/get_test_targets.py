@@ -50,11 +50,20 @@ def extract_test_class(filepath):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo", required=True, help="Path to the git repository")
-    parser.add_argument("--commit", required=True, help="Commit hash to analyze")
+    parser.add_argument("--commit", required=False, help="Commit hash to analyze")
+    parser.add_argument("--worktree", action="store_true", help="Analyze current worktree changes")
     args = parser.parse_args()
 
-    # 1. Get list of changed files with status
-    cmd = ["git", "diff-tree", "--no-commit-id", "--name-status", "-r", args.commit]
+    if args.worktree:
+        # Get changes in the worktree vs HEAD
+        cmd = ["git", "diff", "--name-status", "HEAD"]
+    elif args.commit:
+        # Get changes in a specific commit
+        cmd = ["git", "diff-tree", "--no-commit-id", "--name-status", "-r", args.commit]
+    else:
+        print("Error: Either --commit or --worktree must be specified")
+        sys.exit(1)
+        
     try:
         output = subprocess.check_output(cmd, cwd=args.repo, text=True)
     except subprocess.CalledProcessError:
