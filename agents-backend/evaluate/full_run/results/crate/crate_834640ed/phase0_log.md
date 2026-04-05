@@ -5,6 +5,14 @@
 - Java-only files for agentic phases: 2
 - Developer auxiliary hunks (test + non-Java): 2
 
+## Commit Pair Consistency
+- Pair mismatch: False
+- Reason: scope_overlap_ok
+- Mainline Java files: ['server/src/main/java/io/crate/netty/AccountedByteBuf.java', 'server/src/main/java/org/elasticsearch/monitor/jvm/JvmInfo.java']
+- Developer Java files: ['server/src/main/java/io/crate/netty/AccountedByteBuf.java', 'server/src/main/java/org/elasticsearch/monitor/jvm/JvmInfo.java']
+- Overlap Java files: ['server/src/main/java/io/crate/netty/AccountedByteBuf.java', 'server/src/main/java/org/elasticsearch/monitor/jvm/JvmInfo.java']
+- Overlap ratio (mainline): 1.0
+
 ## Mainline Patch
 ```diff
 From 834640ed7b3fee5d11a6433ee42ef66115e5f316 Mon Sep 17 00:00:00 2001

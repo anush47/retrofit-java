@@ -1,0 +1,52 @@
+{
+  "consistency_map": {},
+  "mapped_target_context": {
+    "server/src/main/java/io/crate/execution/dml/Indexer.java": [
+      {
+        "hunk_index": 1,
+        "mainline_method": "hunk_1",
+        "target_file": "server/src/main/java/io/crate/execution/dml/Indexer.java",
+        "target_method": null,
+        "start_line": 862,
+        "end_line": 862,
+        "code_snippet": "\n\n    /**\n     * Looks for new columns in the values of the given IndexItem and returns them.\n     */\n    @SuppressWarnings(\"unchecked\")\n    public List<Reference> collectSchemaUpdates(IndexItem item) throws IOException {\n        LinkedHashSet<Reference> newColumns = new LinkedHashSet<>();\n        Consumer<? super Reference> onDynamicColumn = ref -> {\n            ref.column().validForCreate();\n            newColumns.add(ref);\n        };\n\n        for (var expression : expressions) {\n            expression.setNextRow(item);\n        }\n\n        Object[] values = item.insertValues();\n        for (int i = 0; i < values.length; i++) {\n            Reference reference = columns.get(i);\n            Object value = valueForInsert(reference.valueType(), values[i]);\n            // No granularity check since PARTITIONED BY columns cannot be added dynamically.\n            if (value == null) {\n                continue;\n            }\n            ValueIndexer<Object> valueIndexer = (ValueIndexer<Object>) valueIndexers.get(i);\n            valueIndexer.collectSchemaUpdates(reference.valueType().sanitizeValue(value), onDynamicColumn, synthetics::get);\n        }\n        // Generated columns can result in new columns. For example: details object generated always as {\\\"a1\\\" = {\\\"b1\\\" = 'test'}},\n        for (var entry : synthetics.entrySet()) {\n            ColumnIdent column = entry.getKey();\n            if (!column.isRoot()) {\n                continue;\n            }\n            Synthetic synthetic = entry.getValue();\n            ValueIndexer<Object> indexer = synthetic.indexer();\n            Object value = synthetic.value();\n            if (value == null) {\n                continue;\n            }\n            indexer.collectSchemaUpdates(",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      }
+    ],
+    "server/src/main/java/io/crate/types/ArrayType.java": [
+      {
+        "hunk_index": 1,
+        "mainline_method": "valueForInsert",
+        "target_file": "server/src/main/java/io/crate/types/ArrayType.java",
+        "target_method": "valueForInsert",
+        "start_line": 247,
+        "end_line": 247,
+        "code_snippet": "\n    public final DataType<T> innerType() {\n        return innerType;\n    }\n\n    @Override\n    public List<T> implicitCast(Object value) throws IllegalArgumentException, ClassCastException {\n        return convert(value, innerType, innerType::implicitCast, CoordinatorTxnCtx.systemTransactionContext().sessionSettings());\n    }\n\n    @Override\n    public List<T> explicitCast(Object value, SessionSettings sessionSettings) throws IllegalArgumentException, ClassCastException {\n        return convert(value, innerType, val -> innerType.explicitCast(val, sessionSettings), sessionSettings);\n    }\n\n    @Override\n    public List<T> sanitizeValue(Object value) {\n        return convert(value, innerType, innerType::sanitizeValue, CoordinatorTxnCtx.systemTransactionContext().sessionSettings());\n    }\n\n    public static List<String> fromAnyArray(Object[] values) throws IllegalArgumentException {\n        if (values == null) {\n            return null;\n        } else {\n            ArrayList<String> array = new ArrayList<>(values.length);\n            for (var value : values) {\n                array.add(anyValueToString(value));\n            }\n            return array;\n        }\n    }\n\n    public static List<String> fromAnyArray(List<?> values) throws IllegalArgumentException {\n        if (values == null) {\n            return null;\n        } else {\n            ArrayList<String> array = new ArrayList<>(values.size());\n            for (var value : values) {\n                array.add(anyValueToString(value));\n            }\n            return array;",
+        "anchor_confidence": "high",
+        "anchor_reason": "line_and_method_resolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 2,
+        "mainline_method": "hunk_2",
+        "target_file": "server/src/main/java/io/crate/types/ArrayType.java",
+        "target_method": null,
+        "start_line": 278,
+        "end_line": 278,
+        "code_snippet": "\n    public static List<String> fromAnyArray(List<?> values) throws IllegalArgumentException {\n        if (values == null) {\n            return null;\n        } else {\n            ArrayList<String> array = new ArrayList<>(values.size());\n            for (var value : values) {\n                array.add(anyValueToString(value));\n            }\n            return array;\n        }\n    }\n\n    @SuppressWarnings(\"unchecked\")\n    private static String anyValueToString(Object value) {\n        if (value == null) {\n            return null;\n        }\n        try {\n            if (value instanceof Map) {\n                //noinspection unchecked\n                return\n                    Strings.toString(\n                        JsonXContent.builder().map((Map<String, ?>) value));\n            } else if (value instanceof Collection) {\n                var array = JsonXContent.builder().startArray();\n                for (var element : (Collection<?>) value) {\n                    array.value(element);\n                }\n                array.endArray();\n                return Strings.toString(array);\n            } else {\n                return value.toString();\n            }\n        } catch (IOException e) {\n            throw new UncheckedIOException(e);\n        }\n    }\n\n    @Nullable\n    @SuppressWarnings(\"unchecked\")",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      }
+    ]
+  },
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "reason": "llm_usage_not_collected_in_this_node"
+  }
+}

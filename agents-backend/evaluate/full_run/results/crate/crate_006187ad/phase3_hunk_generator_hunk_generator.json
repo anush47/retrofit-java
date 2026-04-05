@@ -1,0 +1,169 @@
+{
+  "adapted_file_edits": [
+    {
+      "target_file": "server/src/main/java/io/crate/rest/action/RestResultSetReceiver.java",
+      "mainline_file": "server/src/main/java/io/crate/rest/action/RestResultSetReceiver.java",
+      "old_string": "<developer patch fast path>",
+      "new_string": "diff --git a/server/src/main/java/io/crate/rest/action/RestResultSetReceiver.java b/server/src/main/java/io/crate/rest/action/RestResultSetReceiver.java\nindex 94d5284b68..eabd791484 100644\n--- a/server/src/main/java/io/crate/rest/action/RestResultSetReceiver.java\n+++ b/server/src/main/java/io/crate/rest/action/RestResultSetReceiver.java\n@@ -31,7 +31,6 @@ import org.jetbrains.annotations.Nullable;\n \n import io.crate.session.ResultReceiver;\n import io.crate.data.Row;\n-import io.crate.data.breaker.RowAccounting;\n import io.crate.expression.symbol.Symbol;\n \n class RestResultSetReceiver implements ResultReceiver<XContentBuilder> {\n@@ -39,7 +38,6 @@ class RestResultSetReceiver implements ResultReceiver<XContentBuilder> {\n     private final List<Symbol> outputFields;\n     private final ResultToXContentBuilder builder;\n     private final long startTimeNs;\n-    private final RowAccounting<Row> rowAccounting;\n     private final CompletableFuture<XContentBuilder> result = new CompletableFuture<>();\n \n     private long rowCount;\n@@ -47,11 +45,9 @@ class RestResultSetReceiver implements ResultReceiver<XContentBuilder> {\n     RestResultSetReceiver(XContentBuilder builder,\n                           List<Symbol> outputFields,\n                           long startTimeNs,\n-                          RowAccounting<Row> rowAccounting,\n                           boolean includeTypesOnResponse) throws IOException {\n         this.outputFields = outputFields;\n         this.startTimeNs = startTimeNs;\n-        this.rowAccounting = rowAccounting;\n         this.builder = ResultToXContentBuilder.builder(builder);\n         this.builder.cols(outputFields);\n         if (includeTypesOnResponse) {\n@@ -64,7 +60,6 @@ class RestResultSetReceiver implements ResultReceiver<XContentBuilder> {\n     @Nullable\n     public CompletableFuture<Void> setNextRow(Row row) {\n         try {\n-            rowAccounting.accountForAndMaybeBreak(row);\n             builder.addRow(row, outputFields.size());\n             rowCount++;\n             return null;",
+      "edit_type": "replace",
+      "verified": true,
+      "verification_result": "developer_fast_path_ok",
+      "applied": true,
+      "apply_result": "SUCCESS"
+    },
+    {
+      "target_file": "server/src/main/java/io/crate/rest/action/SqlHttpHandler.java",
+      "mainline_file": "server/src/main/java/io/crate/rest/action/SqlHttpHandler.java",
+      "old_string": "<developer patch fast path>",
+      "new_string": "diff --git a/server/src/main/java/io/crate/rest/action/SqlHttpHandler.java b/server/src/main/java/io/crate/rest/action/SqlHttpHandler.java\nindex 960d55615f..863afd6e39 100644\n--- a/server/src/main/java/io/crate/rest/action/SqlHttpHandler.java\n+++ b/server/src/main/java/io/crate/rest/action/SqlHttpHandler.java\n@@ -29,6 +29,7 @@ import static io.crate.session.Session.UNNAMED;\n import static java.util.Collections.emptyList;\n import static java.util.Collections.singletonList;\n \n+import java.io.ByteArrayOutputStream;\n import java.io.IOException;\n import java.util.List;\n import java.util.Map;\n@@ -56,8 +57,6 @@ import io.crate.auth.AuthSettings;\n import io.crate.auth.Credentials;\n import io.crate.auth.HttpAuthUpstreamHandler;\n import io.crate.auth.Protocol;\n-import io.crate.breaker.TypedRowAccounting;\n-import io.crate.common.collections.Lists;\n import io.crate.data.breaker.BlockBasedRamAccounting;\n import io.crate.data.breaker.RamAccounting;\n import io.crate.exceptions.SQLExceptions;\n@@ -259,13 +258,9 @@ public class SqlHttpHandler extends SimpleChannelInboundHandler<FullHttpRequest>\n                 b -> breaker.addEstimateBytesAndMaybeBreak(b, \"http-result\"),\n                 MAX_BLOCK_SIZE_IN_BYTES);\n             resultReceiver = new RestResultSetReceiver(\n-                JsonXContent.builder(),\n+                new XContentBuilder(JsonXContent.JSON_XCONTENT, new RamAccountingOutputStream(ramAccounting)),\n                 resultFields,\n                 startTimeInNs,\n-                new TypedRowAccounting(\n-                    Lists.map(resultFields, Symbol::valueType),\n-                    ramAccounting\n-                ),\n                 includeTypes\n             );\n             resultReceiver.completionFuture().whenComplete((result, error) -> ramAccounting.close());\n@@ -336,4 +331,32 @@ public class SqlHttpHandler extends SimpleChannelInboundHandler<FullHttpRequest>\n     private static boolean bothProvided(@Nullable List<Object> args, @Nullable List<List<Object>> bulkArgs) {\n         return args != null && !args.isEmpty() && bulkArgs != null && !bulkArgs.isEmpty();\n     }\n+\n+    static final class RamAccountingOutputStream extends ByteArrayOutputStream {\n+\n+        private final RamAccounting ramAccounting;\n+\n+        public RamAccountingOutputStream(RamAccounting ramAccounting) {\n+            super();\n+            this.ramAccounting = ramAccounting;\n+        }\n+\n+        @Override\n+        public void write(byte[] b, int off, int len) {\n+            ramAccounting.addBytes(len);\n+            super.write(b, off, len);\n+        }\n+\n+        @Override\n+        public void write(int b) {\n+            ramAccounting.addBytes(1);\n+            super.write(b);\n+        }\n+\n+        @Override\n+        public void close() throws IOException {\n+            ramAccounting.release();\n+            super.close();\n+        }\n+    }\n }",
+      "edit_type": "replace",
+      "verified": true,
+      "verification_result": "developer_fast_path_ok",
+      "applied": true,
+      "apply_result": "SUCCESS"
+    }
+  ],
+  "all_adapted_file_edits": [
+    [
+      {
+        "target_file": "server/src/main/java/io/crate/rest/action/RestResultSetReceiver.java",
+        "mainline_file": "server/src/main/java/io/crate/rest/action/RestResultSetReceiver.java",
+        "old_string": "<developer patch fast path>",
+        "new_string": "diff --git a/server/src/main/java/io/crate/rest/action/RestResultSetReceiver.java b/server/src/main/java/io/crate/rest/action/RestResultSetReceiver.java\nindex 94d5284b68..eabd791484 100644\n--- a/server/src/main/java/io/crate/rest/action/RestResultSetReceiver.java\n+++ b/server/src/main/java/io/crate/rest/action/RestResultSetReceiver.java\n@@ -31,7 +31,6 @@ import org.jetbrains.annotations.Nullable;\n \n import io.crate.session.ResultReceiver;\n import io.crate.data.Row;\n-import io.crate.data.breaker.RowAccounting;\n import io.crate.expression.symbol.Symbol;\n \n class RestResultSetReceiver implements ResultReceiver<XContentBuilder> {\n@@ -39,7 +38,6 @@ class RestResultSetReceiver implements ResultReceiver<XContentBuilder> {\n     private final List<Symbol> outputFields;\n     private final ResultToXContentBuilder builder;\n     private final long startTimeNs;\n-    private final RowAccounting<Row> rowAccounting;\n     private final CompletableFuture<XContentBuilder> result = new CompletableFuture<>();\n \n     private long rowCount;\n@@ -47,11 +45,9 @@ class RestResultSetReceiver implements ResultReceiver<XContentBuilder> {\n     RestResultSetReceiver(XContentBuilder builder,\n                           List<Symbol> outputFields,\n                           long startTimeNs,\n-                          RowAccounting<Row> rowAccounting,\n                           boolean includeTypesOnResponse) throws IOException {\n         this.outputFields = outputFields;\n         this.startTimeNs = startTimeNs;\n-        this.rowAccounting = rowAccounting;\n         this.builder = ResultToXContentBuilder.builder(builder);\n         this.builder.cols(outputFields);\n         if (includeTypesOnResponse) {\n@@ -64,7 +60,6 @@ class RestResultSetReceiver implements ResultReceiver<XContentBuilder> {\n     @Nullable\n     public CompletableFuture<Void> setNextRow(Row row) {\n         try {\n-            rowAccounting.accountForAndMaybeBreak(row);\n             builder.addRow(row, outputFields.size());\n             rowCount++;\n             return null;",
+        "edit_type": "replace",
+        "verified": true,
+        "verification_result": "developer_fast_path_ok",
+        "applied": true,
+        "apply_result": "SUCCESS"
+      },
+      {
+        "target_file": "server/src/main/java/io/crate/rest/action/SqlHttpHandler.java",
+        "mainline_file": "server/src/main/java/io/crate/rest/action/SqlHttpHandler.java",
+        "old_string": "<developer patch fast path>",
+        "new_string": "diff --git a/server/src/main/java/io/crate/rest/action/SqlHttpHandler.java b/server/src/main/java/io/crate/rest/action/SqlHttpHandler.java\nindex 960d55615f..863afd6e39 100644\n--- a/server/src/main/java/io/crate/rest/action/SqlHttpHandler.java\n+++ b/server/src/main/java/io/crate/rest/action/SqlHttpHandler.java\n@@ -29,6 +29,7 @@ import static io.crate.session.Session.UNNAMED;\n import static java.util.Collections.emptyList;\n import static java.util.Collections.singletonList;\n \n+import java.io.ByteArrayOutputStream;\n import java.io.IOException;\n import java.util.List;\n import java.util.Map;\n@@ -56,8 +57,6 @@ import io.crate.auth.AuthSettings;\n import io.crate.auth.Credentials;\n import io.crate.auth.HttpAuthUpstreamHandler;\n import io.crate.auth.Protocol;\n-import io.crate.breaker.TypedRowAccounting;\n-import io.crate.common.collections.Lists;\n import io.crate.data.breaker.BlockBasedRamAccounting;\n import io.crate.data.breaker.RamAccounting;\n import io.crate.exceptions.SQLExceptions;\n@@ -259,13 +258,9 @@ public class SqlHttpHandler extends SimpleChannelInboundHandler<FullHttpRequest>\n                 b -> breaker.addEstimateBytesAndMaybeBreak(b, \"http-result\"),\n                 MAX_BLOCK_SIZE_IN_BYTES);\n             resultReceiver = new RestResultSetReceiver(\n-                JsonXContent.builder(),\n+                new XContentBuilder(JsonXContent.JSON_XCONTENT, new RamAccountingOutputStream(ramAccounting)),\n                 resultFields,\n                 startTimeInNs,\n-                new TypedRowAccounting(\n-                    Lists.map(resultFields, Symbol::valueType),\n-                    ramAccounting\n-                ),\n                 includeTypes\n             );\n             resultReceiver.completionFuture().whenComplete((result, error) -> ramAccounting.close());\n@@ -336,4 +331,32 @@ public class SqlHttpHandler extends SimpleChannelInboundHandler<FullHttpRequest>\n     private static boolean bothProvided(@Nullable List<Object> args, @Nullable List<List<Object>> bulkArgs) {\n         return args != null && !args.isEmpty() && bulkArgs != null && !bulkArgs.isEmpty();\n     }\n+\n+    static final class RamAccountingOutputStream extends ByteArrayOutputStream {\n+\n+        private final RamAccounting ramAccounting;\n+\n+        public RamAccountingOutputStream(RamAccounting ramAccounting) {\n+            super();\n+            this.ramAccounting = ramAccounting;\n+        }\n+\n+        @Override\n+        public void write(byte[] b, int off, int len) {\n+            ramAccounting.addBytes(len);\n+            super.write(b, off, len);\n+        }\n+\n+        @Override\n+        public void write(int b) {\n+            ramAccounting.addBytes(1);\n+            super.write(b);\n+        }\n+\n+        @Override\n+        public void close() throws IOException {\n+            ramAccounting.release();\n+            super.close();\n+        }\n+    }\n }",
+        "edit_type": "replace",
+        "verified": true,
+        "verification_result": "developer_fast_path_ok",
+        "applied": true,
+        "apply_result": "SUCCESS"
+      }
+    ]
+  ],
+  "agent_trajectory_edits": [
+    []
+  ],
+  "adapted_code_hunks": [
+    {
+      "target_file": "server/src/main/java/io/crate/rest/action/RestResultSetReceiver.java",
+      "mainline_file": "server/src/main/java/io/crate/rest/action/RestResultSetReceiver.java",
+      "hunk_text": "diff --git a/server/src/main/java/io/crate/rest/action/RestResultSetReceiver.java b/server/src/main/java/io/crate/rest/action/RestResultSetReceiver.java\nindex 94d5284b68..eabd791484 100644\n--- a/server/src/main/java/io/crate/rest/action/RestResultSetReceiver.java\n+++ b/server/src/main/java/io/crate/rest/action/RestResultSetReceiver.java\n@@ -31,7 +31,6 @@ import org.jetbrains.annotations.Nullable;\n \n import io.crate.session.ResultReceiver;\n import io.crate.data.Row;\n-import io.crate.data.breaker.RowAccounting;\n import io.crate.expression.symbol.Symbol;\n \n class RestResultSetReceiver implements ResultReceiver<XContentBuilder> {\n@@ -39,7 +38,6 @@ class RestResultSetReceiver implements ResultReceiver<XContentBuilder> {\n     private final List<Symbol> outputFields;\n     private final ResultToXContentBuilder builder;\n     private final long startTimeNs;\n-    private final RowAccounting<Row> rowAccounting;\n     private final CompletableFuture<XContentBuilder> result = new CompletableFuture<>();\n \n     private long rowCount;\n@@ -47,11 +45,9 @@ class RestResultSetReceiver implements ResultReceiver<XContentBuilder> {\n     RestResultSetReceiver(XContentBuilder builder,\n                           List<Symbol> outputFields,\n                           long startTimeNs,\n-                          RowAccounting<Row> rowAccounting,\n                           boolean includeTypesOnResponse) throws IOException {\n         this.outputFields = outputFields;\n         this.startTimeNs = startTimeNs;\n-        this.rowAccounting = rowAccounting;\n         this.builder = ResultToXContentBuilder.builder(builder);\n         this.builder.cols(outputFields);\n         if (includeTypesOnResponse) {\n@@ -64,7 +60,6 @@ class RestResultSetReceiver implements ResultReceiver<XContentBuilder> {\n     @Nullable\n     public CompletableFuture<Void> setNextRow(Row row) {\n         try {\n-            rowAccounting.accountForAndMaybeBreak(row);\n             builder.addRow(row, outputFields.size());\n             rowCount++;\n             return null;\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    },
+    {
+      "target_file": "server/src/main/java/io/crate/rest/action/SqlHttpHandler.java",
+      "mainline_file": "server/src/main/java/io/crate/rest/action/SqlHttpHandler.java",
+      "hunk_text": "diff --git a/server/src/main/java/io/crate/rest/action/SqlHttpHandler.java b/server/src/main/java/io/crate/rest/action/SqlHttpHandler.java\nindex 960d55615f..863afd6e39 100644\n--- a/server/src/main/java/io/crate/rest/action/SqlHttpHandler.java\n+++ b/server/src/main/java/io/crate/rest/action/SqlHttpHandler.java\n@@ -29,6 +29,7 @@ import static io.crate.session.Session.UNNAMED;\n import static java.util.Collections.emptyList;\n import static java.util.Collections.singletonList;\n \n+import java.io.ByteArrayOutputStream;\n import java.io.IOException;\n import java.util.List;\n import java.util.Map;\n@@ -56,8 +57,6 @@ import io.crate.auth.AuthSettings;\n import io.crate.auth.Credentials;\n import io.crate.auth.HttpAuthUpstreamHandler;\n import io.crate.auth.Protocol;\n-import io.crate.breaker.TypedRowAccounting;\n-import io.crate.common.collections.Lists;\n import io.crate.data.breaker.BlockBasedRamAccounting;\n import io.crate.data.breaker.RamAccounting;\n import io.crate.exceptions.SQLExceptions;\n@@ -259,13 +258,9 @@ public class SqlHttpHandler extends SimpleChannelInboundHandler<FullHttpRequest>\n                 b -> breaker.addEstimateBytesAndMaybeBreak(b, \"http-result\"),\n                 MAX_BLOCK_SIZE_IN_BYTES);\n             resultReceiver = new RestResultSetReceiver(\n-                JsonXContent.builder(),\n+                new XContentBuilder(JsonXContent.JSON_XCONTENT, new RamAccountingOutputStream(ramAccounting)),\n                 resultFields,\n                 startTimeInNs,\n-                new TypedRowAccounting(\n-                    Lists.map(resultFields, Symbol::valueType),\n-                    ramAccounting\n-                ),\n                 includeTypes\n             );\n             resultReceiver.completionFuture().whenComplete((result, error) -> ramAccounting.close());\n@@ -336,4 +331,32 @@ public class SqlHttpHandler extends SimpleChannelInboundHandler<FullHttpRequest>\n     private static boolean bothProvided(@Nullable List<Object> args, @Nullable List<List<Object>> bulkArgs) {\n         return args != null && !args.isEmpty() && bulkArgs != null && !bulkArgs.isEmpty();\n     }\n+\n+    static final class RamAccountingOutputStream extends ByteArrayOutputStream {\n+\n+        private final RamAccounting ramAccounting;\n+\n+        public RamAccountingOutputStream(RamAccounting ramAccounting) {\n+            super();\n+            this.ramAccounting = ramAccounting;\n+        }\n+\n+        @Override\n+        public void write(byte[] b, int off, int len) {\n+            ramAccounting.addBytes(len);\n+            super.write(b, off, len);\n+        }\n+\n+        @Override\n+        public void write(int b) {\n+            ramAccounting.addBytes(1);\n+            super.write(b);\n+        }\n+\n+        @Override\n+        public void close() throws IOException {\n+            ramAccounting.release();\n+            super.close();\n+        }\n+    }\n }\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    }
+  ],
+  "validation_repeated_patch_detected": false,
+  "validation_repeated_plan_detected": false,
+  "best_effort_adapted_code_hunks": [
+    {
+      "target_file": "server/src/main/java/io/crate/rest/action/RestResultSetReceiver.java",
+      "mainline_file": "server/src/main/java/io/crate/rest/action/RestResultSetReceiver.java",
+      "hunk_text": "diff --git a/server/src/main/java/io/crate/rest/action/RestResultSetReceiver.java b/server/src/main/java/io/crate/rest/action/RestResultSetReceiver.java\nindex 94d5284b68..eabd791484 100644\n--- a/server/src/main/java/io/crate/rest/action/RestResultSetReceiver.java\n+++ b/server/src/main/java/io/crate/rest/action/RestResultSetReceiver.java\n@@ -31,7 +31,6 @@ import org.jetbrains.annotations.Nullable;\n \n import io.crate.session.ResultReceiver;\n import io.crate.data.Row;\n-import io.crate.data.breaker.RowAccounting;\n import io.crate.expression.symbol.Symbol;\n \n class RestResultSetReceiver implements ResultReceiver<XContentBuilder> {\n@@ -39,7 +38,6 @@ class RestResultSetReceiver implements ResultReceiver<XContentBuilder> {\n     private final List<Symbol> outputFields;\n     private final ResultToXContentBuilder builder;\n     private final long startTimeNs;\n-    private final RowAccounting<Row> rowAccounting;\n     private final CompletableFuture<XContentBuilder> result = new CompletableFuture<>();\n \n     private long rowCount;\n@@ -47,11 +45,9 @@ class RestResultSetReceiver implements ResultReceiver<XContentBuilder> {\n     RestResultSetReceiver(XContentBuilder builder,\n                           List<Symbol> outputFields,\n                           long startTimeNs,\n-                          RowAccounting<Row> rowAccounting,\n                           boolean includeTypesOnResponse) throws IOException {\n         this.outputFields = outputFields;\n         this.startTimeNs = startTimeNs;\n-        this.rowAccounting = rowAccounting;\n         this.builder = ResultToXContentBuilder.builder(builder);\n         this.builder.cols(outputFields);\n         if (includeTypesOnResponse) {\n@@ -64,7 +60,6 @@ class RestResultSetReceiver implements ResultReceiver<XContentBuilder> {\n     @Nullable\n     public CompletableFuture<Void> setNextRow(Row row) {\n         try {\n-            rowAccounting.accountForAndMaybeBreak(row);\n             builder.addRow(row, outputFields.size());\n             rowCount++;\n             return null;\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    },
+    {
+      "target_file": "server/src/main/java/io/crate/rest/action/SqlHttpHandler.java",
+      "mainline_file": "server/src/main/java/io/crate/rest/action/SqlHttpHandler.java",
+      "hunk_text": "diff --git a/server/src/main/java/io/crate/rest/action/SqlHttpHandler.java b/server/src/main/java/io/crate/rest/action/SqlHttpHandler.java\nindex 960d55615f..863afd6e39 100644\n--- a/server/src/main/java/io/crate/rest/action/SqlHttpHandler.java\n+++ b/server/src/main/java/io/crate/rest/action/SqlHttpHandler.java\n@@ -29,6 +29,7 @@ import static io.crate.session.Session.UNNAMED;\n import static java.util.Collections.emptyList;\n import static java.util.Collections.singletonList;\n \n+import java.io.ByteArrayOutputStream;\n import java.io.IOException;\n import java.util.List;\n import java.util.Map;\n@@ -56,8 +57,6 @@ import io.crate.auth.AuthSettings;\n import io.crate.auth.Credentials;\n import io.crate.auth.HttpAuthUpstreamHandler;\n import io.crate.auth.Protocol;\n-import io.crate.breaker.TypedRowAccounting;\n-import io.crate.common.collections.Lists;\n import io.crate.data.breaker.BlockBasedRamAccounting;\n import io.crate.data.breaker.RamAccounting;\n import io.crate.exceptions.SQLExceptions;\n@@ -259,13 +258,9 @@ public class SqlHttpHandler extends SimpleChannelInboundHandler<FullHttpRequest>\n                 b -> breaker.addEstimateBytesAndMaybeBreak(b, \"http-result\"),\n                 MAX_BLOCK_SIZE_IN_BYTES);\n             resultReceiver = new RestResultSetReceiver(\n-                JsonXContent.builder(),\n+                new XContentBuilder(JsonXContent.JSON_XCONTENT, new RamAccountingOutputStream(ramAccounting)),\n                 resultFields,\n                 startTimeInNs,\n-                new TypedRowAccounting(\n-                    Lists.map(resultFields, Symbol::valueType),\n-                    ramAccounting\n-                ),\n                 includeTypes\n             );\n             resultReceiver.completionFuture().whenComplete((result, error) -> ramAccounting.close());\n@@ -336,4 +331,32 @@ public class SqlHttpHandler extends SimpleChannelInboundHandler<FullHttpRequest>\n     private static boolean bothProvided(@Nullable List<Object> args, @Nullable List<List<Object>> bulkArgs) {\n         return args != null && !args.isEmpty() && bulkArgs != null && !bulkArgs.isEmpty();\n     }\n+\n+    static final class RamAccountingOutputStream extends ByteArrayOutputStream {\n+\n+        private final RamAccounting ramAccounting;\n+\n+        public RamAccountingOutputStream(RamAccounting ramAccounting) {\n+            super();\n+            this.ramAccounting = ramAccounting;\n+        }\n+\n+        @Override\n+        public void write(byte[] b, int off, int len) {\n+            ramAccounting.addBytes(len);\n+            super.write(b, off, len);\n+        }\n+\n+        @Override\n+        public void write(int b) {\n+            ramAccounting.addBytes(1);\n+            super.write(b);\n+        }\n+\n+        @Override\n+        public void close() throws IOException {\n+            ramAccounting.release();\n+            super.close();\n+        }\n+    }\n }\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    }
+  ],
+  "adapted_test_hunks": [],
+  "generation_checklist": [
+    {
+      "mainline_file": "server/src/main/java/io/crate/rest/action/RestResultSetReceiver.java",
+      "target_file": "server/src/main/java/io/crate/rest/action/RestResultSetReceiver.java",
+      "hunk_index": 0,
+      "adaptation_type": "TYPE_II",
+      "execution_types": [
+        "TYPE_II"
+      ],
+      "status": "success",
+      "reason": "developer_fast_path",
+      "todo_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ],
+      "completed_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ]
+    },
+    {
+      "mainline_file": "server/src/main/java/io/crate/rest/action/SqlHttpHandler.java",
+      "target_file": "server/src/main/java/io/crate/rest/action/SqlHttpHandler.java",
+      "hunk_index": 0,
+      "adaptation_type": "TYPE_II",
+      "execution_types": [
+        "TYPE_II"
+      ],
+      "status": "success",
+      "reason": "developer_fast_path",
+      "todo_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ],
+      "completed_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ]
+    }
+  ],
+  "generated_patch_hash": "ed2a55f4872c5b82d5514fd7cb0bfe0387574cc2944b727cb26356ce57cb1d94",
+  "force_type_v_until_success": false,
+  "force_type_v_reason": "",
+  "force_type_v_retry_files": [],
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "sources": []
+  }
+}

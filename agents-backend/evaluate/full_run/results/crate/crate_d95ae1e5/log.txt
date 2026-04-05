@@ -1,0 +1,164 @@
+patch_id=crate_d95ae1e5
+project=crate
+mainline_commit=d95ae1e55eea54e273f47a25b3514b6da52faa9e
+backport_commit=c717f1504838a6d6b00fbb3a42084f0ee9809293
+mode=full
+started_at=2026-04-05T12:39:32.190509
+----------------------------------------
+Running full workflow graph
+Completed node=phase_0_optimistic
+Completed node=context_analyzer
+Completed node=structural_locator
+Completed node=planning_agent
+
+[crate/crate_d95ae1e5] Setting up repositories for mode=full...
+[crate/crate_d95ae1e5] Running full workflow graph...
+Router: Running Phase 0.
+Phase 0 (Optimistic): Checking direct patch applicability...
+Phase 0: Experiment mode — checking out parent of c717f1504838a6d6b00fbb3a42084f0ee9809293...
+Phase 0: Building baseline by applying developer backport test hunks only...
+  Validation: server/src/test/java/io/crate/protocols/postgres/DelayableWriteChannelTest.java - applying 1 hunk(s) one by one in bottom-to-top order: [1]
+  Validation: server/src/test/java/io/crate/protocols/postgres/PostgresWireProtocolTest.java - applying 2 hunk(s) one by one in bottom-to-top order: [865, 139]
+  Validation: server/src/test/java/io/crate/protocols/postgres/ResultSetReceiverTest.java - applying 4 hunk(s) one by one in bottom-to-top order: [107, 71, 51, 35]
+  Validation: ADDED operation for server/src/test/java/io/crate/protocols/postgres/DelayableWriteChannelTest.java
+    Agent 4: Executing crate helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_tests.sh
+Phase 0: git apply --check FAILED. Escalating to full pipeline.
+  Hint: error: patch failed: server/src/main/java/io/crate/protocols/postgres/PostgresNetty.java:189
+error: server/src/main/java/io/crate/protocols/postgres/PostgresNetty.java: patch does not apply
+error: pat
+Router: Phase 0 failed - entering full 4-agent pipeline.
+  Completed: phase_0_optimistic
+Agent 1 (Context Analyzer): Deterministic blueprint generation...
+Agent 1: Complete. Files=6 hunks=35 (deterministic).
+Agent 1: Detected 21 hunk(s) with variants.
+  Completed: context_analyzer
+Agent 2 (Structural Locator): Starting target location mapping...
+  Agent 2: 6 code file(s), 0 test file(s)
+LLM Provider: azure, Model: gpt-4.1-mini, Temperature: 0
+  Agent 2: Found 35 hunk(s) in hunk_chain
+  Agent 2: Locating target for server/src/main/java/io/crate/protocols/postgres/DelayableWriteChannel.java (1 hunk(s))...
+Blob Hunting failed: Cmd('git') failed due to: exit code(128)
+  cmdline: git rev-parse HEAD:server/src/main/java/io/crate/protocols/postgres/DelayableWriteChannel.java
+  stdout: 'HEAD:server/src/main/java/io/crate/protocols/postgres/DelayableWriteChannel.java'
+  stderr: 'fatal: path 'server/src/main/java/io/crate/protocols/postgres/DelayableWriteChannel.java' does not exist in 'HEAD''
+Neighbor Inference: Siblings of server/src/main/java/io/crate/protocols/postgres/DelayableWriteChannel.java: []
+Phase 1 failed for server/src/main/java/io/crate/protocols/postgres/DelayableWriteChannel.java. Falling back to Ensemble Search...
+Building index for Phase 2 ensemble search...
+Loading index from cache: /home/cseroot/.cache/agents-backend/retrieval/index_92ad5539d09f_HEAD.pkl
+Index loaded from cache.
+  Agent 2: Mapped hunk 1 (<class_declaration>) to <class_declaration> at lines 1-1
+  Agent 2: Locating target for server/src/main/java/io/crate/protocols/postgres/PostgresNetty.java (4 hunk(s))...
+Phase 1 (Git) Match Found: server/src/main/java/io/crate/protocols/postgres/PostgresNetty.java
+  Agent 2: Git resolution found target: server/src/main/java/io/crate/protocols/postgres/PostgresNetty.java
+  Agent 2: Mapped hunk 1 (<import>) to <import> at lines 58-58
+  Agent 2: Mapped hunk 2 (hunk_2) to None at lines 68-68
+  Agent 2: Mapped hunk 3 (hunk_3) to None at lines 171-171
+  Agent 2: Mapped hunk 4 (hunk_4) to None at lines 193-193
+  Agent 2: Locating target for server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java (21 hunk(s))...
+Phase 1 (Git) Match Found: server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java
+  Agent 2: Git resolution found target: server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java
+  Agent 2: Mapped hunk 1 (<import>) to <import> at lines 61-61
+  Agent 2: Mapped hunk 2 (hunk_2) to None at lines 208-208
+  Agent 2: Mapped hunk 3 (hunk_3) to None at lines 268-268
+  Agent 2: Mapped hunk 4 (accept) to accept at lines 279-279
+  Agent 2: Mapped hunk 5 (hunk_5) to None at lines 287-287
+  Agent 2: Mapped hunk 6 (hunk_6) to None at lines 276-276
+  Agent 2: Mapped hunk 7 (dispatchState) to dispatchState at lines 298-298
+  Agent 2: Mapped hunk 8 (dispatchMessage) to dispatchMessage at lines 298-298
+  Agent 2: Mapped hunk 9 (hunk_9) to None at lines 298-298
+  Agent 2: Mapped hunk 10 (hunk_10) to None at lines 482-482
+  Agent 2: Mapped hunk 11 (handleExecute) to handleExecute at lines 707-707
+  Agent 2: Mapped hunk 12 (hunk_12) to None at lines 326-326
+  Agent 2: Mapped hunk 13 (hunk_13) to None at lines 722-722
+  Agent 2: Mapped hunk 14 (handleSync) to handleSync at lines 229-229
+  Agent 2: Mapped hunk 15 (hunk_15) to None at lines 298-298
+  Agent 2: Mapped hunk 16 (hunk_16) to None at lines 784-784
+  Agent 2: Mapped hunk 17 (hunk_17) to None at lines 279-279
+  Agent 2: Mapped hunk 18 (hunk_18) to None at lines 810-810
+  Agent 2: Mapped hunk 19 (hunk_19) to None at lines 831-831
+  Agent 2: Mapped hunk 20 (hunk_20) to None at lines 841-841
+  Agent 2: Mapped hunk 21 (hunk_21) to None at lines 869-869
+  Agent 2: Locating target for server/src/main/java/io/crate/protocols/postgres/ResultSetReceiver.java (5 hunk(s))...
+Phase 1 (Git) Match Found: server/src/main/java/io/crate/protocols/postgres/ResultSetReceiver.java
+  Agent 2: Git resolution found target: server/src/main/java/io/crate/protocols/postgres/ResultSetReceiver.java
+  Agent 2: Mapped hunk 1 (<import>) to <import> at lines 30-30
+  Agent 2: Mapped hunk 2 (<class_declaration>) to <class_declaration> at lines 40-40
+  Agent 2: Mapped hunk 3 (hunk_3) to None at lines 50-50
+  Agent 2: Mapped hunk 4 (setNextRow) to setNextRow at lines 70-70
+  Agent 2: Mapped hunk 5 (batchFinished) to batchFinished at lines 92-92
+  Agent 2: Locating target for server/src/main/java/io/crate/protocols/postgres/RowCountReceiver.java (2 hunk(s))...
+Phase 1 (Git) Match Found: server/src/main/java/io/crate/protocols/postgres/RowCountReceiver.java
+  Agent 2: Git resolution found target: server/src/main/java/io/crate/protocols/postgres/RowCountReceiver.java
+  Agent 2: Mapped hunk 1 (<class_declaration>) to <class_declaration> at lines 31-31
+  Agent 2: Mapped hunk 2 (allFinished) to allFinished at lines 66-66
+  Agent 2: Locating target for server/src/main/java/org/elasticsearch/transport/netty4/Netty4Transport.java (2 hunk(s))...
+Phase 1 (Git) Match Found: server/src/main/java/org/elasticsearch/transport/netty4/Netty4Transport.java
+  Agent 2: Git resolution found target: server/src/main/java/org/elasticsearch/transport/netty4/Netty4Transport.java
+  Agent 2: Mapped hunk 1 (hunk_1) to None at lines 280-280
+  Agent 2: Mapped hunk 2 (hunk_2) to None at lines 280-280
+  Agent 2: Trace written to structural_locator_trace.md
+Agent 2: Complete. Mapped 6 file(s). Total hunk mappings: 35. ConsistencyMap has 0 rename(s).
+Router: complexity=REWRITE -> planning_agent.
+  Completed: structural_locator
+Planning Agent: Building per-hunk str_replace edit plans...
+LLM Provider: azure, Model: gpt-4.1-mini, Temperature: 0
+Planning Agent: Complete. Planned 79 adapted edit(s).
+  Completed: planning_agent
+Agent 3 (File Editor): Starting direct file-edit workflow...
+LLM Provider: azure, Model: gpt-4.1-mini, Temperature: 0
+Blob Hunting: Searching for SHA d7fd559f2c43859a34f6c60f1c7c755430f34b62 (server/src/main/java/io/crate/protocols/postgres/DelayableWriteChannel.java)
+Blob Hunting: Checking deep history...
+Blob Hunting: Found match in history at server/src/main/java/io/crate/protocols/postgres/DelayableWriteChannel.java
+Phase 1 (Git) Match Found: server/src/main/java/io/crate/protocols/postgres/DelayableWriteChannel.java
+  Agent 3: Processing 1 edit(s) for server/src/main/java/io/crate/protocols/postgres/DelayableWriteChannel.java (op=ADDED)
+    Agent 3: Classified server/src/main/java/io/crate/protocols/postgres/DelayableWriteChannel.java as TYPE_I (deterministic path)
+    Agent 3: base_types=['TYPE_I'] execution_types=['TYPE_I']
+    Agent 3: Warning - could not reset server/src/main/java/io/crate/protocols/postgres/DelayableWriteChannel.java to HEAD.
+Completed node=hunk_generator
+Completed node=validation
+Workflow completed successfully
+    Agent 3: PLAN_PREFLIGHT_FAILED server/src/main/java/io/crate/protocols/postgres/DelayableWriteChannel.java: PLAN_DRY_APPLY_FAILED:dry_apply_failed[0]:empty_old_string — falling back to ReAct (stale anchors after build failure or eval mode).
+    Agent 3: Invoking ReAct agent for server/src/main/java/io/crate/protocols/postgres/DelayableWriteChannel.java
+    Agent 3: Agent finished. Last msg: DONE
+    Agent 3: Captured diff for server/src/main/java/io/crate/protocols/postgres/DelayableWriteChannel.java (358 lines)
+    Agent 3: Blueprint intent check FAILED for server/src/main/java/io/crate/protocols/postgres/DelayableWriteChannel.java - flagging.
+  Agent 3: Processing 5 edit(s) for server/src/main/java/io/crate/protocols/postgres/PostgresNetty.java (op=MODIFIED)
+    Agent 3: Classified server/src/main/java/io/crate/protocols/postgres/PostgresNetty.java as TYPE_I (deterministic path)
+    Agent 3: base_types=['TYPE_I'] execution_types=['TYPE_I']
+    Agent 3: Developer patch fast path for server/src/main/java/io/crate/protocols/postgres/PostgresNetty.java (developer_fast_path_ok)
+  Agent 3: Processing 47 edit(s) for server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java (op=MODIFIED)
+    Agent 3: Classified server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java as TYPE_II (deterministic path)
+    Agent 3: base_types=['TYPE_I', 'TYPE_II'] execution_types=['TYPE_I', 'TYPE_II']
+    Agent 3: Developer patch fast path for server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java (developer_fast_path_ok)
+  Agent 3: Processing 14 edit(s) for server/src/main/java/io/crate/protocols/postgres/ResultSetReceiver.java (op=MODIFIED)
+    Agent 3: Classified server/src/main/java/io/crate/protocols/postgres/ResultSetReceiver.java as TYPE_I (deterministic path)
+    Agent 3: base_types=['TYPE_I'] execution_types=['TYPE_I']
+    Agent 3: Developer patch fast path for server/src/main/java/io/crate/protocols/postgres/ResultSetReceiver.java (developer_fast_path_ok)
+  Agent 3: Processing 10 edit(s) for server/src/main/java/io/crate/protocols/postgres/RowCountReceiver.java (op=MODIFIED)
+    Agent 3: Classified server/src/main/java/io/crate/protocols/postgres/RowCountReceiver.java as TYPE_I (deterministic path)
+    Agent 3: base_types=['TYPE_I'] execution_types=['TYPE_I']
+    Agent 3: Developer patch fast path for server/src/main/java/io/crate/protocols/postgres/RowCountReceiver.java (developer_fast_path_ok)
+  Agent 3: Processing 2 edit(s) for server/src/main/java/org/elasticsearch/transport/netty4/Netty4Transport.java (op=MODIFIED)
+    Agent 3: Classified server/src/main/java/org/elasticsearch/transport/netty4/Netty4Transport.java as TYPE_II (deterministic path)
+    Agent 3: base_types=['TYPE_I', 'TYPE_II'] execution_types=['TYPE_I', 'TYPE_II']
+    Agent 3: Developer patch fast path for server/src/main/java/org/elasticsearch/transport/netty4/Netty4Transport.java (developer_fast_path_ok)
+  Agent 3 (File Editor): Done. 6 file(s) adapted, 6 edit record(s).
+  Completed: hunk_generator
+Agent 4 (Validation): Starting 'Prove Red, Make Green' loop...
+  Agent 4: Evaluation full-workflow mode (apply -> build -> relevant tests)...
+  Validation: server/src/main/java/io/crate/protocols/postgres/DelayableWriteChannel.java - applying 1 hunk(s) one by one in bottom-to-top order: [1]
+  Validation: server/src/main/java/io/crate/protocols/postgres/PostgresNetty.java - applying 1 hunk(s) one by one in bottom-to-top order: [1]
+  Validation: server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java - applying 1 hunk(s) one by one in bottom-to-top order: [1]
+  Validation: server/src/main/java/io/crate/protocols/postgres/ResultSetReceiver.java - applying 1 hunk(s) one by one in bottom-to-top order: [1]
+  Validation: server/src/main/java/io/crate/protocols/postgres/RowCountReceiver.java - applying 1 hunk(s) one by one in bottom-to-top order: [1]
+  Validation: server/src/main/java/org/elasticsearch/transport/netty4/Netty4Transport.java - applying 1 hunk(s) one by one in bottom-to-top order: [1]
+  Validation: server/src/test/java/io/crate/protocols/postgres/DelayableWriteChannelTest.java - applying 1 hunk(s) one by one in bottom-to-top order: [1]
+  Validation: server/src/test/java/io/crate/protocols/postgres/PostgresWireProtocolTest.java - applying 2 hunk(s) one by one in bottom-to-top order: [865, 139]
+  Validation: server/src/test/java/io/crate/protocols/postgres/ResultSetReceiverTest.java - applying 4 hunk(s) one by one in bottom-to-top order: [107, 71, 51, 35]
+  Validation: ADDED operation for server/src/test/java/io/crate/protocols/postgres/DelayableWriteChannelTest.java
+    Agent 4: Executing crate helper build script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_build.sh
+    Agent 4: Executing crate helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_tests.sh
+Trace saved to validation_trace.md
+Router: Validation PASSED after 1 attempt(s). Done.
+  Completed: validation
+[crate/crate_d95ae1e5] Full workflow completed!

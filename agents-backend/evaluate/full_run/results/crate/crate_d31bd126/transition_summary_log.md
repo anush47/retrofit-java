@@ -1,0 +1,89 @@
+# Transition Summary
+
+- Source: phase0_cache
+- Valid backport signal: True
+- Reason: Valid: Observed fail-to-pass and/or newly passing relevant tests with no regressions.
+- fail->pass (1): ['io.crate.integrationtests.JoinIntegrationTest#test_left_outer_join_emits_non_matching_rows_having_hash_collisions']
+- newly passing (0): []
+- pass->fail (0): []
+
+## Touched Test States
+- Touched tests (from patch): ['io.crate.integrationtests.JoinIntegrationTest']
+  - io.crate.integrationtests.JoinIntegrationTest#test3TableCrossJoin: baseline=passed, patched=passed
+  - io.crate.integrationtests.JoinIntegrationTest#test3TableJoinWithFunctionOrderBy: baseline=passed, patched=passed
+  - io.crate.integrationtests.JoinIntegrationTest#test3TableJoinWithJoinFilters: baseline=passed, patched=passed
+  - io.crate.integrationtests.JoinIntegrationTest#testAggOnJoin: baseline=passed, patched=passed
+  - io.crate.integrationtests.JoinIntegrationTest#testAggOnJoinWithHaving: baseline=passed, patched=passed
+  - io.crate.integrationtests.JoinIntegrationTest#testAggOnJoinWithLimit: baseline=passed, patched=passed
+  - io.crate.integrationtests.JoinIntegrationTest#testAggOnJoinWithScalarAfterAggregation: baseline=passed, patched=passed
+  - io.crate.integrationtests.JoinIntegrationTest#testCrossJoinFromInformationSchemaTable: baseline=passed, patched=passed
+  - io.crate.integrationtests.JoinIntegrationTest#testCrossJoinJoinUnordered: baseline=passed, patched=passed
+  - io.crate.integrationtests.JoinIntegrationTest#testCrossJoinOrderByOnBothTables: baseline=passed, patched=passed
+  - io.crate.integrationtests.JoinIntegrationTest#testCrossJoinOrderByOnOneTableWithLimit: baseline=passed, patched=passed
+  - io.crate.integrationtests.JoinIntegrationTest#testCrossJoinSysTablesOnly: baseline=passed, patched=passed
+  - io.crate.integrationtests.JoinIntegrationTest#testCrossJoinWithFunction: baseline=passed, patched=passed
+  - io.crate.integrationtests.JoinIntegrationTest#testCrossJoinWithSysTable: baseline=passed, patched=passed
+  - io.crate.integrationtests.JoinIntegrationTest#testCrossJoinWithoutLimitAndOrderByAndCrossJoinSyntax: baseline=passed, patched=passed
+  - io.crate.integrationtests.JoinIntegrationTest#testFailureOfJoinDownstream: baseline=passed, patched=passed
+  - io.crate.integrationtests.JoinIntegrationTest#testFetchArrayAndAnalyzedColumnsWithJoin: baseline=passed, patched=passed
+  - io.crate.integrationtests.JoinIntegrationTest#testFetchWithoutOrder: baseline=passed, patched=passed
+  - io.crate.integrationtests.JoinIntegrationTest#testFilteredJoin: baseline=passed, patched=passed
+  - io.crate.integrationtests.JoinIntegrationTest#testFilteredJoinWithPartitionsAndSelectFromOnlyOneTable: baseline=passed, patched=passed
+  - io.crate.integrationtests.JoinIntegrationTest#testFilteredSelfJoin: baseline=passed, patched=passed
+  - io.crate.integrationtests.JoinIntegrationTest#testFilteredSelfJoinWithFilterOnBothRelations: baseline=passed, patched=passed
+  - io.crate.integrationtests.JoinIntegrationTest#testGlobalAggregateMultiTableJoin: baseline=passed, patched=passed
+  - io.crate.integrationtests.JoinIntegrationTest#testInnerEquiJoinUsingHashJoin: baseline=passed, patched=passed
+  - io.crate.integrationtests.JoinIntegrationTest#testInnerJoinOnPreSortedRightRelation: baseline=passed, patched=passed
+  - io.crate.integrationtests.JoinIntegrationTest#testInnerJoinWithPushDownOptimizations: baseline=passed, patched=passed
+  - io.crate.integrationtests.JoinIntegrationTest#testInsertFromCrossJoin: baseline=passed, patched=passed
+  - io.crate.integrationtests.JoinIntegrationTest#testInsertFromInnerJoin: baseline=passed, patched=passed
+  - io.crate.integrationtests.JoinIntegrationTest#testInsertFromInnerJoinUsing: baseline=passed, patched=passed
+  - io.crate.integrationtests.JoinIntegrationTest#testJoinBranchReorderingOnMultipleTables: baseline=passed, patched=passed
+  - io.crate.integrationtests.JoinIntegrationTest#testJoinOnAggWithOrderBy: baseline=passed, patched=passed
+  - io.crate.integrationtests.JoinIntegrationTest#testJoinOnComplexVirtualTable: baseline=passed, patched=passed
+  - io.crate.integrationtests.JoinIntegrationTest#testJoinOnEmptyPartitionedTablesWithAndWithoutJoinCondition: baseline=passed, patched=passed
+  - io.crate.integrationtests.JoinIntegrationTest#testJoinOnInformationSchema: baseline=passed, patched=passed
+  - io.crate.integrationtests.JoinIntegrationTest#testJoinOnSimpleVirtualTables: baseline=passed, patched=passed
+  - io.crate.integrationtests.JoinIntegrationTest#testJoinOnSysTables: baseline=passed, patched=passed
+  - io.crate.integrationtests.JoinIntegrationTest#testJoinOnVirtualTableWithQTF: baseline=passed, patched=passed
+  - io.crate.integrationtests.JoinIntegrationTest#testJoinOnVirtualTableWithSingleRowSubselect: baseline=passed, patched=passed
+  - io.crate.integrationtests.JoinIntegrationTest#testJoinTableWithEmptyRouting: baseline=passed, patched=passed
+  - io.crate.integrationtests.JoinIntegrationTest#testJoinUsingSubscriptInQuerySpec: baseline=passed, patched=passed
+  - io.crate.integrationtests.JoinIntegrationTest#testJoinWithFilterAndJoinCriteriaNotInOutputs: baseline=passed, patched=passed
+  - io.crate.integrationtests.JoinIntegrationTest#testJoinWithFunctionInOutputAndOrderBy: baseline=passed, patched=passed
+  - io.crate.integrationtests.JoinIntegrationTest#testJoinWithIndexMissingExceptions: baseline=passed, patched=passed
+  - io.crate.integrationtests.JoinIntegrationTest#testJoinWithLargerRightBranch: baseline=passed, patched=passed
+  - io.crate.integrationtests.JoinIntegrationTest#testJoinWithWhereOnPartitionColumnThatDoesNotMatch: baseline=passed, patched=passed
+  - io.crate.integrationtests.JoinIntegrationTest#testLimitIsAppliedPostJoin: baseline=passed, patched=passed
+  - io.crate.integrationtests.JoinIntegrationTest#testOrderByExpressionWithMultiRelationSymbol: baseline=passed, patched=passed
+  - io.crate.integrationtests.JoinIntegrationTest#testOrderByNoneSelectedField: baseline=passed, patched=passed
+  - io.crate.integrationtests.JoinIntegrationTest#testOrderByWithMixedRelationOrder: baseline=passed, patched=passed
+  - io.crate.integrationtests.JoinIntegrationTest#testOutputFromOnlyOneTable: baseline=passed, patched=passed
+  - io.crate.integrationtests.JoinIntegrationTest#testSelfJoin: baseline=passed, patched=passed
+  - io.crate.integrationtests.JoinIntegrationTest#testSelfJoinWithOrder: baseline=passed, patched=passed
+  - io.crate.integrationtests.JoinIntegrationTest#testSimpleOrderByNonUniqueValues: baseline=passed, patched=passed
+  - io.crate.integrationtests.JoinIntegrationTest#test_alias_in_left_join_condition: baseline=passed, patched=passed
+  - io.crate.integrationtests.JoinIntegrationTest#test_block_NestedLoop_or_HashJoin__with_group_by_on_right_side: baseline=passed, patched=passed
+  - io.crate.integrationtests.JoinIntegrationTest#test_cross_join_on_top_of_fetch: baseline=passed, patched=passed
+  - io.crate.integrationtests.JoinIntegrationTest#test_cross_join_with_order_by_alias_and_order: baseline=passed, patched=passed
+  - io.crate.integrationtests.JoinIntegrationTest#test_eliminate_cross_join: baseline=passed, patched=passed
+  - io.crate.integrationtests.JoinIntegrationTest#test_eliminate_cross_join_with_filter: baseline=passed, patched=passed
+  - io.crate.integrationtests.JoinIntegrationTest#test_ensure_hash_symbols_match_after_hash_join_is_reordered: baseline=passed, patched=passed
+  - io.crate.integrationtests.JoinIntegrationTest#test_explicit_joins_are_bind_before_implicit_joins: baseline=passed, patched=passed
+  - io.crate.integrationtests.JoinIntegrationTest#test_group_by_on_cross_join_on_system_tables: baseline=passed, patched=passed
+  - io.crate.integrationtests.JoinIntegrationTest#test_inner_join_on_empty_system_tables: baseline=passed, patched=passed
+  - io.crate.integrationtests.JoinIntegrationTest#test_join_two_explicit_outer_joins_as_implicit_join: baseline=passed, patched=passed
+  - io.crate.integrationtests.JoinIntegrationTest#test_join_using_on_nested_join: baseline=passed, patched=passed
+  - io.crate.integrationtests.JoinIntegrationTest#test_join_with_ambiguios_column_lookups: baseline=passed, patched=passed
+  - io.crate.integrationtests.JoinIntegrationTest#test_join_with_and_false_in_where_clause_returns_empty_result: baseline=passed, patched=passed
+  - io.crate.integrationtests.JoinIntegrationTest#test_joins_with_constant_conditions_with_unions_and_renames: baseline=passed, patched=passed
+  - io.crate.integrationtests.JoinIntegrationTest#test_left_outer_hash_join_with_filters: baseline=passed, patched=passed
+  - io.crate.integrationtests.JoinIntegrationTest#test_left_outer_join_emits_non_matching_rows_having_hash_collisions: baseline=failed, patched=passed
+  - io.crate.integrationtests.JoinIntegrationTest#test_many_table_join_with_filter_pushdown: baseline=passed, patched=passed
+  - io.crate.integrationtests.JoinIntegrationTest#test_nested_join_with_primary_key_lookup: baseline=passed, patched=passed
+  - io.crate.integrationtests.JoinIntegrationTest#test_nested_join_with_primary_key_lookup_on_each_join: baseline=passed, patched=passed
+  - io.crate.integrationtests.JoinIntegrationTest#test_nested_joins: baseline=passed, patched=passed
+  - io.crate.integrationtests.JoinIntegrationTest#test_nested_left_outer_hash_join: baseline=passed, patched=passed
+  - io.crate.integrationtests.JoinIntegrationTest#test_nested_loop_join_works_as_the_left_side_of_another_join: baseline=passed, patched=passed
+  - io.crate.integrationtests.JoinIntegrationTest#test_number_of_hash_symbol_match_lhs_rhs_with_nested_joins_with_three_tuples: baseline=passed, patched=passed
+  - io.crate.integrationtests.JoinIntegrationTest#test_self_join_with_order_and_limit_is_executed_with_qtf: baseline=passed, patched=passed

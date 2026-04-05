@@ -1,0 +1,27 @@
+patch_id=crate_0ec94296
+project=crate
+mainline_commit=0ec94296803b0265f30cd2c039781069c10fba5e
+backport_commit=89dd62899e80c0f7de9820abe22a32b388ab4dac
+mode=full
+started_at=2026-04-05T12:57:25.920278
+----------------------------------------
+Running full workflow graph
+Completed node=phase_0_optimistic
+Workflow completed successfully
+
+[crate/crate_0ec94296] Setting up repositories for mode=full...
+[crate/crate_0ec94296] Running full workflow graph...
+Router: Running Phase 0.
+Phase 0 (Optimistic): Checking direct patch applicability...
+Phase 0: Experiment mode — checking out parent of 89dd62899e80c0f7de9820abe22a32b388ab4dac...
+Phase 0: Building baseline by applying developer backport test hunks only...
+  Validation: server/src/test/java/io/crate/execution/dml/IndexerTest.java - applying 1 hunk(s) one by one in bottom-to-top order: [1096]
+    Agent 4: Executing crate helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_tests.sh
+Phase 0: git apply --check SUCCEEDED. Attempting actual patch application and test run.
+    Agent 4: Executing crate helper build script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_build.sh
+    Agent 4: Executing crate helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_tests.sh
+Phase 0: Transition summary -> reason=Valid: Observed fail-to-pass and/or newly passing relevant tests with no regressions.; fail->pass(1): ['io.crate.execution.dml.IndexerTest#test_does_not_add_non_deterministic_child_when_parent_is_assigned_to_null']; newly_passing(0): []; pass->fail(0): []
+Phase 0: Transition-based test validation passed. Fast-path success.
+Router: Phase 0 succeeded - taking fast-path exit.
+  Completed: phase_0_optimistic
+[crate/crate_0ec94296] Full workflow completed!

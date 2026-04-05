@@ -1,0 +1,29 @@
+{
+  "semantic_blueprint": {
+    "root_cause_hypothesis": "Deterministic inference: target branch diverges from mainline; adapt hunks with exact target context.",
+    "fix_logic": "Apply each source hunk with target-verified context and symbol consistency while preserving behavior.",
+    "dependent_apis": [
+      "if",
+      "consumeIt"
+    ],
+    "patch_intent_summary": "Backport patch behavior to target branch with minimal, context-correct edits.",
+    "hunk_chain": [
+      {
+        "hunk_index": 1,
+        "file": "server/src/main/java/io/crate/session/RowConsumerToResultReceiver.java",
+        "summary": "Modifies logic (+11/-5 lines).",
+        "role": "guard",
+        "connects_to_next": "",
+        "global_index": 1
+      }
+    ]
+  },
+  "patch_diff": "diff --git a/a/server/src/main/java/io/crate/session/RowConsumerToResultReceiver.java b/b/server/src/main/java/io/crate/session/RowConsumerToResultReceiver.java\nindex 0000000..0000000 100644\n--- a/a/server/src/main/java/io/crate/session/RowConsumerToResultReceiver.java\n+++ b/b/server/src/main/java/io/crate/session/RowConsumerToResultReceiver.java\n@@ -89,11 +89,17 @@\n                     if (writeFuture != null) {\n                         LOGGER.trace(\"Suspended execution after {} rows as the receiver is not writable anymore\", rowCount);\n                         waitingForWrite = true;\n-                        writeFuture.thenRun(() -> {\n-                            LOGGER.trace(\"Resume execution after {} rows\", rowCount);\n-                            waitingForWrite = false;\n-                            rowCount = 0;\n-                            consumeIt(iterator);\n+                        writeFuture.whenComplete((_, t) -> {\n+                            if (t == null) {\n+                                LOGGER.trace(\"Resume execution after {} rows\", rowCount);\n+                                waitingForWrite = false;\n+                                rowCount = 0;\n+                                consumeIt(iterator);\n+                            } else {\n+                                iterator.close();\n+                                completionFuture.completeExceptionally(t);\n+                                resultReceiver.fail(t);\n+                            }\n                         });\n                         return;\n                     }\n",
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "reason": "deterministic_no_llm"
+  }
+}

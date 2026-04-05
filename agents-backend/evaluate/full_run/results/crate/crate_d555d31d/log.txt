@@ -1,0 +1,27 @@
+patch_id=crate_d555d31d
+project=crate
+mainline_commit=d555d31dd8c2ba07fdf04439a644bb2f99f79416
+backport_commit=dfb822a63738eaac98f4e239cdb3ac1fc230d483
+mode=full
+started_at=2026-04-05T13:19:31.373901
+----------------------------------------
+Running full workflow graph
+Completed node=phase_0_optimistic
+Workflow completed successfully
+
+[crate/crate_d555d31d] Setting up repositories for mode=full...
+[crate/crate_d555d31d] Running full workflow graph...
+Router: Running Phase 0.
+Phase 0 (Optimistic): Checking direct patch applicability...
+Phase 0: Experiment mode — checking out parent of dfb822a63738eaac98f4e239cdb3ac1fc230d483...
+Phase 0: Building baseline by applying developer backport test hunks only...
+  Validation: server/src/test/java/io/crate/role/metadata/RolesMetadataTest.java - applying 1 hunk(s) one by one in bottom-to-top order: [254]
+    Agent 4: Executing crate helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_tests.sh
+Phase 0: git apply --check SUCCEEDED. Attempting actual patch application and test run.
+    Agent 4: Executing crate helper build script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_build.sh
+    Agent 4: Executing crate helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_tests.sh
+Phase 0: Transition summary -> reason=Valid: Observed fail-to-pass and/or newly passing relevant tests with no regressions.; fail->pass(0): []; newly_passing(10): ['io.crate.role.metadata.RolesMetadataTest#test_add_old_users_metadata_to_roles_metadata', 'io.crate.role.metadata.RolesMetadataTest#test_cannot_grant_already_granted_role_by_different_grantor', 'io.crate.role.metadata.RolesMetadataTest#test_grant_roles_do_not_loose_existing_privileges', 'io.crate.role.metadata.RolesMetadataTest#test_grant_roles_to_user', 'io.crate.role.metadata.RolesMetadataTest#test_jwt_properties_from_invalid_x_content', 'io.crate.role.metadata.RolesMetadataTest#test_revoke_roles_from_user', 'io.crate.role.metadata.RolesMetadataTest#test_roles_metadata_from_cluster_state', 'io.crate.role.metadata.RolesMetadataTest#test_roles_metadata_streaming', 'io.crate.role.metadata.RolesMetadataTest#test_roles_metadata_with_attributes_streaming', 'io.crate.role.metadata.RolesMetadataTest#test_superuser_crate_can_revoke_any_granted_roles']; pass->fail(0): []
+Phase 0: Transition-based test validation passed. Fast-path success.
+Router: Phase 0 succeeded - taking fast-path exit.
+  Completed: phase_0_optimistic
+[crate/crate_d555d31d] Full workflow completed!

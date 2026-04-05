@@ -1,0 +1,126 @@
+# Phase 0 Inputs
+
+- Mainline commit: 06f4a8491123c8c38af1a63e39d2120fa3879528
+- Backport commit: ebb73c5d5984e5aaa23908ec77837510db5eb734
+- Java-only files for agentic phases: 1
+- Developer auxiliary hunks (test + non-Java): 2
+
+## Commit Pair Consistency
+- Pair mismatch: False
+- Reason: scope_overlap_ok
+- Mainline Java files: ['server/src/main/java/io/crate/execution/IncrementalPageBucketReceiver.java']
+- Developer Java files: ['server/src/main/java/io/crate/execution/IncrementalPageBucketReceiver.java']
+- Overlap Java files: ['server/src/main/java/io/crate/execution/IncrementalPageBucketReceiver.java']
+- Overlap ratio (mainline): 1.0
+
+## Mainline Patch
+```diff
+From 06f4a8491123c8c38af1a63e39d2120fa3879528 Mon Sep 17 00:00:00 2001
+From: baur <baurzhansahariev@gmail.com>
+Date: Mon, 16 Jun 2025 15:35:53 +0200
+Subject: [PATCH] Complete IncrementalPageBucketReceiver's future when
+ finalizing state throws
+
+---
+ docs/appendices/release-notes/5.10.10.rst     |  3 +-
+ .../IncrementalPageBucketReceiver.java        |  6 +-
+ .../IncrementalPageBucketReceiverTest.java    | 57 +++++++++++++++++++
+ 3 files changed, 64 insertions(+), 2 deletions(-)
+ create mode 100644 server/src/test/java/io/crate/execution/IncrementalPageBucketReceiverTest.java
+
+diff --git a/docs/appendices/release-notes/5.10.10.rst b/docs/appendices/release-notes/5.10.10.rst
+index 625874ec11..1c922ce4ed 100644
+--- a/docs/appendices/release-notes/5.10.10.rst
++++ b/docs/appendices/release-notes/5.10.10.rst
+@@ -47,4 +47,5 @@ See the :ref:`version_5.10.0` release notes for a full list of changes in the
+ Fixes
+ =====
+ 
+-None
++- Fixed an issue that caused queries with aggregations to get stuck under
++  memory pressure.
+diff --git a/server/src/main/java/io/crate/execution/IncrementalPageBucketReceiver.java b/server/src/main/java/io/crate/execution/IncrementalPageBucketReceiver.java
+index ba8f757f31..636e957742 100644
+--- a/server/src/main/java/io/crate/execution/IncrementalPageBucketReceiver.java
++++ b/server/src/main/java/io/crate/execution/IncrementalPageBucketReceiver.java
+@@ -126,7 +126,11 @@ public class IncrementalPageBucketReceiver<T> implements PageBucketReceiver {
+ 
+     @Override
+     public void consumeRows() {
+-        processingFuture.complete(finisher.apply(state));
++        try {
++            processingFuture.complete(finisher.apply(state));
++        } catch (Exception e) {
++            processingFuture.completeExceptionally(e);
++        }
+     }
+ 
+     @Override
+diff --git a/server/src/test/java/io/crate/execution/IncrementalPageBucketReceiverTest.java b/server/src/test/java/io/crate/execution/IncrementalPageBucketReceiverTest.java
+new file mode 100644
+index 0000000000..4e8b9ddefd
+--- /dev/null
++++ b/server/src/test/java/io/crate/execution/IncrementalPageBucketReceiverTest.java
+@@ -0,0 +1,57 @@
++/*
++ * Licensed to Crate.io GmbH ("Crate") under one or more contributor
++ * license agreements.  See the NOTICE file distributed with this work for
++ * additional information regarding copyright ownership.  Crate licenses
++ * this file to you under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.  You may
++ * obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
++ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
++ * License for the specific language governing permissions and limitations
++ * under the License.
++ *
++ * However, if you have executed another commercial license agreement
++ * with Crate these terms will supersede the license and you may use the
++ * software solely pursuant to the terms of the relevant commercial agreement.
++ */
++
++package io.crate.execution;
++
++import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
++
++import java.util.concurrent.TimeUnit;
++import java.util.stream.Collector;
++import java.util.stream.Collectors;
++
++import org.elasticsearch.common.breaker.CircuitBreakingException;
++import org.junit.Test;
++
++import io.crate.Streamer;
++import io.crate.data.Bucket;
++import io.crate.data.Row;
++import io.crate.data.testing.TestingRowConsumer;
++
++public class IncrementalPageBucketReceiverTest {
++
++    @Test
++    public void test_processing_future_completed_when_finisher_throws() {
++        TestingRowConsumer batchConsumer = new TestingRowConsumer();
++        Collector<Row, Object, Iterable<Row>> collector = Collectors.collectingAndThen(Collectors.toList(), _ -> {
++            throw new CircuitBreakingException("dummy"); // Failing finisher
++        });
++        var pageBucketReceiver = new IncrementalPageBucketReceiver<>(
++            collector,
++            batchConsumer,
++            Runnable::run,
++            new Streamer[1],
++            1
++        );
++        pageBucketReceiver.setBucket(0, Bucket.EMPTY, true, _ -> {});
++        assertThat(pageBucketReceiver.completionFuture()).completesExceptionallyWithin(1, TimeUnit.SECONDS);
++        assertThat(batchConsumer.completionFuture()).completesExceptionallyWithin(1, TimeUnit.SECONDS);
++    }
++}
+-- 
+2.43.0
+
+
+```

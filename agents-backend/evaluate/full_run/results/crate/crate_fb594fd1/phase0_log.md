@@ -1,0 +1,78 @@
+# Phase 0 Inputs
+
+- Mainline commit: fb594fd1890034181af9696e97184ef0ba2ae000
+- Backport commit: 99336f5c40c8769e17db257376d708fcbf183b60
+- Java-only files for agentic phases: 1
+- Developer auxiliary hunks (test + non-Java): 1
+
+## Commit Pair Consistency
+- Pair mismatch: False
+- Reason: scope_overlap_ok
+- Mainline Java files: ['server/src/main/java/io/crate/execution/dml/Indexer.java']
+- Developer Java files: ['server/src/main/java/io/crate/execution/dml/Indexer.java']
+- Overlap Java files: ['server/src/main/java/io/crate/execution/dml/Indexer.java']
+- Overlap ratio (mainline): 1.0
+
+## Mainline Patch
+```diff
+From fb594fd1890034181af9696e97184ef0ba2ae000 Mon Sep 17 00:00:00 2001
+From: jeeminso <jeeminso@gmail.com>
+Date: Sun, 28 Sep 2025 19:34:16 -0400
+Subject: [PATCH] Do not stream null values when replicating upsert requests
+
+Reverts #18323 partially
+---
+ .../java/io/crate/execution/dml/Indexer.java  |  3 +++
+ .../InsertIntoIntegrationTest.java            | 20 +++++++++++++++++++
+ 2 files changed, 23 insertions(+)
+
+diff --git a/server/src/main/java/io/crate/execution/dml/Indexer.java b/server/src/main/java/io/crate/execution/dml/Indexer.java
+index a204f69db4..1115415eac 100644
+--- a/server/src/main/java/io/crate/execution/dml/Indexer.java
++++ b/server/src/main/java/io/crate/execution/dml/Indexer.java
+@@ -1048,6 +1048,9 @@ public class Indexer {
+ 
+     public Object[] addGeneratedValues(IndexItem item) {
+         Object[] insertValues = item.insertValues();
++        if (onConflictIndexer() == null && undeterministic.isEmpty()) {
++            return insertValues;
++        }
+         assert onConflictIndexer() == null || new HashSet<>(onConflictIndexer().insertColumns().stream().map(Reference::column).toList())
+             .containsAll(insertColumns().stream().map(Reference::column).toList()) : "onConflictIndexer().insertColumns() is a superset of this.insertColumns()";
+         List<Reference> insertColumns = onConflictIndexer() == null ? insertColumns() : onConflictIndexer().insertColumns();
+diff --git a/server/src/test/java/io/crate/integrationtests/InsertIntoIntegrationTest.java b/server/src/test/java/io/crate/integrationtests/InsertIntoIntegrationTest.java
+index b019997a5d..345421267c 100644
+--- a/server/src/test/java/io/crate/integrationtests/InsertIntoIntegrationTest.java
++++ b/server/src/test/java/io/crate/integrationtests/InsertIntoIntegrationTest.java
+@@ -2415,6 +2415,26 @@ public class InsertIntoIntegrationTest extends IntegTestCase {
+         assertThat(response.rows()[0][2]).isEqualTo(oob);
+     }
+ 
++    @Test
++    public void test_insert_on_conflict_does_not_modify_unassigned_deterministic_default_columns() {
++        execute("""
++            create table t (
++                a int default -1,
++                i int,
++                c int primary key
++            )
++            """);
++        execute("insert into t(c,i) values (0, 1) on conflict (c) do update set i=11");
++        execute("refresh table t");
++        execute("select c, i, a from t");
++        assertThat(response).hasRows("0| 1| -1");
++
++        execute("insert into t(c,i) values (6, 7), (0, 1), (5, 6) on conflict (c) do update set i=11");
++        execute("refresh table t");
++        execute("select c, i, a from t order by c");
++        assertThat(response).hasRows("0| 11| -1", "5| 6| -1", "6| 7| -1");
++    }
++
+     @Test
+     public void test_insert_on_conflict_can_assign_to_default_columns() {
+         execute("""
+-- 
+2.43.0
+
+
+```

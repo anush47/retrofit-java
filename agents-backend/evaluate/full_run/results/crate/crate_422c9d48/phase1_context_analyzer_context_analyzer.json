@@ -1,0 +1,29 @@
+{
+  "semantic_blueprint": {
+    "root_cause_hypothesis": "Deterministic inference: target branch diverges from mainline; adapt hunks with exact target context.",
+    "fix_logic": "Apply each source hunk with target-verified context and symbol consistency while preserving behavior.",
+    "dependent_apis": [
+      "for",
+      "if"
+    ],
+    "patch_intent_summary": "Backport patch behavior to target branch with minimal, context-correct edits.",
+    "hunk_chain": [
+      {
+        "hunk_index": 1,
+        "file": "server/src/main/java/io/crate/expression/symbol/GroupAndAggregateSemantics.java",
+        "summary": "Adds logic (+6 lines).",
+        "role": "guard",
+        "connects_to_next": "",
+        "global_index": 1
+      }
+    ]
+  },
+  "patch_diff": "From 422c9d48ae8aee46e0e7550e26d8d326cfa6468d Mon Sep 17 00:00:00 2001\nFrom: Marios Trivyzas <matriv@gmail.com>\nDate: Tue, 26 Aug 2025 19:30:50 +0300\nSubject: [PATCH] Fix partition by cols not in group by\n\nThe symbols in `partition by` clause of a window function must also\nappear in the `group by` clause of the query, (matching psql behavior).\nPreviously, this validation was not applied, therefore a confusing\nmessage was thrown later on from the planner, e.g.:\n```\nSELECT sum(x) over(partition by x, y)\nFROM unnest([1], [6]) as t (x, y)\nGROUP BY x\n```\nthew:\n```\nUnsupportedFeatureException[Can't handle Symbol [SimpleReference: y]]\n```\n\nFixes: #18283\n---\n docs/appendices/release-notes/5.10.12.rst              |  8 ++++++++\n docs/appendices/release-notes/6.0.1.rst                |  8 ++++++++\n .../expression/symbol/GroupAndAggregateSemantics.java  |  6 ++++++\n .../analyze/SelectWindowFunctionAnalyzerTest.java      | 10 ++++++++++\n 4 files changed, 32 insertions(+)\n\ndiff --git a/docs/appendices/release-notes/5.10.12.rst b/docs/appendices/release-notes/5.10.12.rst\nindex c18e6b5051..78d1480a10 100644\n--- a/docs/appendices/release-notes/5.10.12.rst\n+++ b/docs/appendices/release-notes/5.10.12.rst\n@@ -68,3 +68,11 @@ Fixes\n \n - Fixed an issue that could lead to an ``OutOfMemoryError`` when running a\n   query with aggregations under memory pressure in a multi-node cluster.\n+\n+- Improved error message when attempting to use a column in ``PARTITION BY``\n+  clause of a :ref:`window function <window-functions>`, which is not also\n+  included in the ``GROUP BY``, e.g.::\n+\n+    SELECT sum(x) OVER(PARTITION BY x, y)\n+    FROM unnest([1], [6]) AS t (x, y)\n+    GROUP BY x\ndiff --git a/docs/appendices/release-notes/6.0.1.rst b/docs/appendices/release-notes/6.0.1.rst\nindex aa9c4480c0..1f37ff73ec 100644\n--- a/docs/appendices/release-notes/6.0.1.rst\n+++ b/docs/appendices/release-notes/6.0.1.rst\n@@ -71,3 +71,11 @@ Fixes\n \n - Fixed an issue that could lead to an ``OutOfMemoryError`` when running a\n   query with aggregations under memory pressure in a multi-node cluster.\n+\n+- Improved error message when attempting to use a column in ``PARTITION BY``\n+  clause of a :ref:`window function <window-functions>`, which is not also\n+  included in the ``GROUP BY``, e.g.::\n+\n+    SELECT sum(x) OVER(PARTITION BY x, y)\n+    FROM unnest([1], [6]) AS t (x, y)\n+    GROUP BY x\ndiff --git a/server/src/main/java/io/crate/expression/symbol/GroupAndAggregateSemantics.java b/server/src/main/java/io/crate/expression/symbol/GroupAndAggregateSemantics.java\nindex 5424e6f310..13a0ab2758 100644\n--- a/server/src/main/java/io/crate/expression/symbol/GroupAndAggregateSemantics.java\n+++ b/server/src/main/java/io/crate/expression/symbol/GroupAndAggregateSemantics.java\n@@ -231,6 +231,12 @@ public final class GroupAndAggregateSemantics {\n                     return offender;\n                 }\n             }\n+            for (Symbol partition : function.windowDefinition().partitions()) {\n+                Symbol offender = partition.accept(this, groupBy);\n+                if (offender != null) {\n+                    return offender;\n+                }\n+            }\n             return null;\n         }\n \ndiff --git a/server/src/test/java/io/crate/analyze/SelectWindowFunctionAnalyzerTest.java b/server/src/test/java/io/crate/analyze/SelectWindowFunctionAnalyzerTest.java\nindex ad6a85dda0..9051eab805 100644\n--- a/server/src/test/java/io/crate/analyze/SelectWindowFunctionAnalyzerTest.java\n+++ b/server/src/test/java/io/crate/analyze/SelectWindowFunctionAnalyzerTest.java\n@@ -209,4 +209,14 @@ public class SelectWindowFunctionAnalyzerTest extends CrateDummyClusterServiceUn\n             .isExactlyInstanceOf(IllegalArgumentException.class)\n             .hasMessageStartingWith(\"'x' must appear in the GROUP BY clause or be used in an aggregation function.\");\n     }\n+\n+    @Test\n+    public void test_window_function_partition_symbols_not_in_grouping_raises_an_error() {\n+        assertThatThrownBy(() -> e.analyze(\n+            \"select sum(x) over(partition by x, y) \" +\n+                \"FROM unnest([1], [6]) as t (x, y) \" +\n+                \"group by x\"))\n+            .isExactlyInstanceOf(IllegalArgumentException.class)\n+            .hasMessageStartingWith(\"'y' must appear in the GROUP BY clause or be used in an aggregation function.\");\n+    }\n }\n-- \n2.43.0\n\n",
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "reason": "deterministic_no_llm"
+  }
+}

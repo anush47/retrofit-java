@@ -1,0 +1,81 @@
+{
+  "adapted_file_edits": [],
+  "all_adapted_file_edits": [
+    [
+      {
+        "target_file": "server/src/main/java/io/crate/expression/reference/doc/lucene/SourceParser.java",
+        "mainline_file": "server/src/main/java/io/crate/expression/reference/doc/lucene/SourceParser.java",
+        "old_string": "<developer patch fast path>",
+        "new_string": "diff --git a/server/src/main/java/io/crate/expression/reference/doc/lucene/SourceParser.java b/server/src/main/java/io/crate/expression/reference/doc/lucene/SourceParser.java\nindex b3f57a89c1..d7e77b924f 100644\n--- a/server/src/main/java/io/crate/expression/reference/doc/lucene/SourceParser.java\n+++ b/server/src/main/java/io/crate/expression/reference/doc/lucene/SourceParser.java\n@@ -27,6 +27,8 @@ import static org.elasticsearch.common.xcontent.XContentParser.Token.VALUE_NULL;\n import java.io.IOException;\n import java.io.InputStream;\n import java.io.UncheckedIOException;\n+import java.math.BigDecimal;\n+import java.math.BigInteger;\n import java.util.ArrayList;\n import java.util.BitSet;\n import java.util.HashMap;\n@@ -288,7 +290,7 @@ public final class SourceParser {\n             case START_ARRAY -> parseArray(parser, type, requiredColumns, colPath);\n             case START_OBJECT -> parseObject(parser, requiredColumns, colPath, includeUnknown);\n             case VALUE_STRING -> isUndefined(type) ? parser.text() : parseByType(parser, type);\n-            case VALUE_NUMBER -> isUndefined(type) ? parser.numberValue() : parseByType(parser, type);\n+            case VALUE_NUMBER -> isUndefined(type) ? numberValue(parser.numberValue()) : parseByType(parser, type);\n             case VALUE_BOOLEAN -> isUndefined(type) ? parser.booleanValue() : parseByType(parser, type);\n             case VALUE_EMBEDDED_OBJECT -> isUndefined(type) ? parser.binaryValue() : parseByType(parser, type);\n             default -> throw new UnsupportedOperationException(\"Unsupported token encountered, expected a value, got \"\n@@ -296,6 +298,20 @@ public final class SourceParser {\n         };\n     }\n \n+    /**\n+     * For the undefined case, Number's concrete types is guessed by the parser.\n+     * ParserBase.getNumberValue always returns BigInteger for integral big numbers.\n+     * We must use BigDecimal for NUMERIC even for integral values, otherwise streaming will be broken.\n+     * @param number is a Number returned by the parser.\n+     */\n+    private static Number numberValue(Number number) {\n+        if (number instanceof BigInteger bigInt) {\n+            return new BigDecimal(bigInt);\n+        }\n+        return number;\n+    }\n+\n+\n     private static boolean isUndefined(@Nullable DataType<?> type) {\n         return type == null || type.id() == DataTypes.UNDEFINED.id();\n     }",
+        "edit_type": "replace",
+        "verified": true,
+        "verification_result": "developer_fast_path_ok",
+        "applied": true,
+        "apply_result": "SUCCESS"
+      }
+    ],
+    [],
+    []
+  ],
+  "agent_trajectory_edits": [
+    [],
+    [],
+    []
+  ],
+  "adapted_code_hunks": [
+    {
+      "target_file": "server/src/main/java/io/crate/expression/reference/doc/lucene/SourceParser.java",
+      "mainline_file": "server/src/main/java/io/crate/expression/reference/doc/lucene/SourceParser.java",
+      "hunk_text": "diff --git a/server/src/main/java/io/crate/expression/reference/doc/lucene/SourceParser.java b/server/src/main/java/io/crate/expression/reference/doc/lucene/SourceParser.java\nindex b3f57a89c1..d7e77b924f 100644\n--- a/server/src/main/java/io/crate/expression/reference/doc/lucene/SourceParser.java\n+++ b/server/src/main/java/io/crate/expression/reference/doc/lucene/SourceParser.java\n@@ -27,6 +27,8 @@ import static org.elasticsearch.common.xcontent.XContentParser.Token.VALUE_NULL;\n import java.io.IOException;\n import java.io.InputStream;\n import java.io.UncheckedIOException;\n+import java.math.BigDecimal;\n+import java.math.BigInteger;\n import java.util.ArrayList;\n import java.util.BitSet;\n import java.util.HashMap;\n@@ -288,7 +290,7 @@ public final class SourceParser {\n             case START_ARRAY -> parseArray(parser, type, requiredColumns, colPath);\n             case START_OBJECT -> parseObject(parser, requiredColumns, colPath, includeUnknown);\n             case VALUE_STRING -> isUndefined(type) ? parser.text() : parseByType(parser, type);\n-            case VALUE_NUMBER -> isUndefined(type) ? parser.numberValue() : parseByType(parser, type);\n+            case VALUE_NUMBER -> isUndefined(type) ? numberValue(parser.numberValue()) : parseByType(parser, type);\n             case VALUE_BOOLEAN -> isUndefined(type) ? parser.booleanValue() : parseByType(parser, type);\n             case VALUE_EMBEDDED_OBJECT -> isUndefined(type) ? parser.binaryValue() : parseByType(parser, type);\n             default -> throw new UnsupportedOperationException(\"Unsupported token encountered, expected a value, got \"\n@@ -296,6 +298,20 @@ public final class SourceParser {\n         };\n     }\n \n+    /**\n+     * For the undefined case, Number's concrete types is guessed by the parser.\n+     * ParserBase.getNumberValue always returns BigInteger for integral big numbers.\n+     * We must use BigDecimal for NUMERIC even for integral values, otherwise streaming will be broken.\n+     * @param number is a Number returned by the parser.\n+     */\n+    private static Number numberValue(Number number) {\n+        if (number instanceof BigInteger bigInt) {\n+            return new BigDecimal(bigInt);\n+        }\n+        return number;\n+    }\n+\n+\n     private static boolean isUndefined(@Nullable DataType<?> type) {\n         return type == null || type.id() == DataTypes.UNDEFINED.id();\n     }\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    }
+  ],
+  "best_effort_adapted_code_hunks": [
+    {
+      "target_file": "server/src/main/java/io/crate/expression/reference/doc/lucene/SourceParser.java",
+      "mainline_file": "server/src/main/java/io/crate/expression/reference/doc/lucene/SourceParser.java",
+      "hunk_text": "diff --git a/server/src/main/java/io/crate/expression/reference/doc/lucene/SourceParser.java b/server/src/main/java/io/crate/expression/reference/doc/lucene/SourceParser.java\nindex b3f57a89c1..d7e77b924f 100644\n--- a/server/src/main/java/io/crate/expression/reference/doc/lucene/SourceParser.java\n+++ b/server/src/main/java/io/crate/expression/reference/doc/lucene/SourceParser.java\n@@ -27,6 +27,8 @@ import static org.elasticsearch.common.xcontent.XContentParser.Token.VALUE_NULL;\n import java.io.IOException;\n import java.io.InputStream;\n import java.io.UncheckedIOException;\n+import java.math.BigDecimal;\n+import java.math.BigInteger;\n import java.util.ArrayList;\n import java.util.BitSet;\n import java.util.HashMap;\n@@ -288,7 +290,7 @@ public final class SourceParser {\n             case START_ARRAY -> parseArray(parser, type, requiredColumns, colPath);\n             case START_OBJECT -> parseObject(parser, requiredColumns, colPath, includeUnknown);\n             case VALUE_STRING -> isUndefined(type) ? parser.text() : parseByType(parser, type);\n-            case VALUE_NUMBER -> isUndefined(type) ? parser.numberValue() : parseByType(parser, type);\n+            case VALUE_NUMBER -> isUndefined(type) ? numberValue(parser.numberValue()) : parseByType(parser, type);\n             case VALUE_BOOLEAN -> isUndefined(type) ? parser.booleanValue() : parseByType(parser, type);\n             case VALUE_EMBEDDED_OBJECT -> isUndefined(type) ? parser.binaryValue() : parseByType(parser, type);\n             default -> throw new UnsupportedOperationException(\"Unsupported token encountered, expected a value, got \"\n@@ -296,6 +298,20 @@ public final class SourceParser {\n         };\n     }\n \n+    /**\n+     * For the undefined case, Number's concrete types is guessed by the parser.\n+     * ParserBase.getNumberValue always returns BigInteger for integral big numbers.\n+     * We must use BigDecimal for NUMERIC even for integral values, otherwise streaming will be broken.\n+     * @param number is a Number returned by the parser.\n+     */\n+    private static Number numberValue(Number number) {\n+        if (number instanceof BigInteger bigInt) {\n+            return new BigDecimal(bigInt);\n+        }\n+        return number;\n+    }\n+\n+\n     private static boolean isUndefined(@Nullable DataType<?> type) {\n         return type == null || type.id() == DataTypes.UNDEFINED.id();\n     }\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    }
+  ],
+  "adapted_test_hunks": [],
+  "generation_checklist": [
+    {
+      "mainline_file": "<all>",
+      "target_file": "<all>",
+      "hunk_index": 0,
+      "status": "failed",
+      "reason": "generation_contract_failed",
+      "todo_steps": [
+        "replan"
+      ],
+      "completed_steps": []
+    }
+  ],
+  "validation_failed_stage": "generation_contract_failed",
+  "validation_repeated_patch_detected": true,
+  "validation_repeated_plan_detected": false,
+  "generated_patch_hash": "0a5472d6eaae868c1a8e182104eaad2c618bf763ef044c7606a1c8a79cbdeed8",
+  "force_type_v_until_success": true,
+  "force_type_v_reason": "failed_stage_generation_contract",
+  "force_type_v_retry_files": [
+    "server/src/main/java/io/crate/expression/reference/doc/lucene/SourceParser.java"
+  ],
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "sources": []
+  }
+}

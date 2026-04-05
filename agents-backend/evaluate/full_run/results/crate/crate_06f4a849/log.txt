@@ -1,0 +1,8 @@
+patch_id=crate_06f4a849
+project=crate
+mainline_commit=06f4a8491123c8c38af1a63e39d2120fa3879528
+backport_commit=ebb73c5d5984e5aaa23908ec77837510db5eb734
+mode=full
+started_at=2026-04-05T13:49:57.639042
+----------------------------------------
+Running full workflow graph

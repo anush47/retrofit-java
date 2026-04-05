@@ -4,48 +4,30 @@
 
 **Comparison Method**: file_state
 
+## Commit Pair Consistency
+- Pair mismatch: False
+- Reason: scope_overlap_ok
+- Mainline Java files: ['server/src/main/java/io/crate/execution/engine/aggregation/impl/TDigestState.java']
+- Developer Java files: ['server/src/main/java/io/crate/execution/engine/aggregation/impl/TDigestState.java']
+- Overlap Java files: ['server/src/main/java/io/crate/execution/engine/aggregation/impl/TDigestState.java']
+- Overlap ratio (mainline): 1.0
+- Compare files scope used: ['server/src/main/java/io/crate/execution/engine/aggregation/impl/TDigestState.java']
+
 ## File State Comparison
-- Compared files: ['docs/appendices/release-notes/6.1.2.rst', 'server/src/main/java/io/crate/execution/engine/aggregation/impl/TDigestState.java']
-- Mismatched files: ['docs/appendices/release-notes/6.1.2.rst', 'server/src/main/java/io/crate/execution/engine/aggregation/impl/TDigestState.java']
+- Compared files: ['server/src/main/java/io/crate/execution/engine/aggregation/impl/TDigestState.java']
+- Mismatched files: ['server/src/main/java/io/crate/execution/engine/aggregation/impl/TDigestState.java']
 - Error: None
 
-## Hunk-by-Hunk Comparison
+## Comparison Scope
+- Agent-only patch: code hunks produced by Agent 3
+- Final effective patch: agent code hunks + developer auxiliary hunks (still code-only for this report)
 
-### docs/appendices/release-notes/6.1.2.rst
-
-#### Hunk 1
-
-Developer
-```diff
-@@ -60,3 +60,6 @@
-   Example::
- 
-     SELECT * FROM t1 LEFT JOIN t2 ON t1.id = t2.id;
-+
-+- Fixed ``EOFException`` and ``unexpected byte`` errors that could be raised
-+  when using the :ref:`percentile aggregation <aggregation-percentile>`.
-
-```
-
-Generated
-```diff
-*No hunk*
-```
-
-Developer -> Generated (Unified Diff)
-```diff
---- developer+++ generated@@ -1,7 +1 @@-@@ -60,3 +60,6 @@
--   Example::
-- 
--     SELECT * FROM t1 LEFT JOIN t2 ON t1.id = t2.id;
--+
--+- Fixed ``EOFException`` and ``unexpected byte`` errors that could be raised
--+  when using the :ref:`percentile aggregation <aggregation-percentile>`.
-+*No hunk*
-```
-
+## Agent-Only Hunk Comparison (code files)
 
 ### server/src/main/java/io/crate/execution/engine/aggregation/impl/TDigestState.java
+
+- Developer hunks: 2
+- Generated hunks: 0
 
 #### Hunk 1
 
@@ -127,7 +109,12 @@ Developer -> Generated (Unified Diff)
 
 
 
-## Full Generated Patch (code-only)
+## Full Generated Patch (Agent-Only, code-only)
+```diff
+
+```
+
+## Full Generated Patch (Final Effective, code-only)
 ```diff
 
 ```

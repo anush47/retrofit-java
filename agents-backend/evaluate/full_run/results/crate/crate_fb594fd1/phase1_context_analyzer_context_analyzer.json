@@ -1,0 +1,28 @@
+{
+  "semantic_blueprint": {
+    "root_cause_hypothesis": "Deterministic inference: target branch diverges from mainline; adapt hunks with exact target context.",
+    "fix_logic": "Apply each source hunk with target-verified context and symbol consistency while preserving behavior.",
+    "dependent_apis": [
+      "if"
+    ],
+    "patch_intent_summary": "Backport patch behavior to target branch with minimal, context-correct edits.",
+    "hunk_chain": [
+      {
+        "hunk_index": 1,
+        "file": "server/src/main/java/io/crate/execution/dml/Indexer.java",
+        "summary": "Adds logic (+3 lines).",
+        "role": "guard",
+        "connects_to_next": "",
+        "global_index": 1
+      }
+    ]
+  },
+  "patch_diff": "From fb594fd1890034181af9696e97184ef0ba2ae000 Mon Sep 17 00:00:00 2001\nFrom: jeeminso <jeeminso@gmail.com>\nDate: Sun, 28 Sep 2025 19:34:16 -0400\nSubject: [PATCH] Do not stream null values when replicating upsert requests\n\nReverts #18323 partially\n---\n .../java/io/crate/execution/dml/Indexer.java  |  3 +++\n .../InsertIntoIntegrationTest.java            | 20 +++++++++++++++++++\n 2 files changed, 23 insertions(+)\n\ndiff --git a/server/src/main/java/io/crate/execution/dml/Indexer.java b/server/src/main/java/io/crate/execution/dml/Indexer.java\nindex a204f69db4..1115415eac 100644\n--- a/server/src/main/java/io/crate/execution/dml/Indexer.java\n+++ b/server/src/main/java/io/crate/execution/dml/Indexer.java\n@@ -1048,6 +1048,9 @@ public class Indexer {\n \n     public Object[] addGeneratedValues(IndexItem item) {\n         Object[] insertValues = item.insertValues();\n+        if (onConflictIndexer() == null && undeterministic.isEmpty()) {\n+            return insertValues;\n+        }\n         assert onConflictIndexer() == null || new HashSet<>(onConflictIndexer().insertColumns().stream().map(Reference::column).toList())\n             .containsAll(insertColumns().stream().map(Reference::column).toList()) : \"onConflictIndexer().insertColumns() is a superset of this.insertColumns()\";\n         List<Reference> insertColumns = onConflictIndexer() == null ? insertColumns() : onConflictIndexer().insertColumns();\ndiff --git a/server/src/test/java/io/crate/integrationtests/InsertIntoIntegrationTest.java b/server/src/test/java/io/crate/integrationtests/InsertIntoIntegrationTest.java\nindex b019997a5d..345421267c 100644\n--- a/server/src/test/java/io/crate/integrationtests/InsertIntoIntegrationTest.java\n+++ b/server/src/test/java/io/crate/integrationtests/InsertIntoIntegrationTest.java\n@@ -2415,6 +2415,26 @@ public class InsertIntoIntegrationTest extends IntegTestCase {\n         assertThat(response.rows()[0][2]).isEqualTo(oob);\n     }\n \n+    @Test\n+    public void test_insert_on_conflict_does_not_modify_unassigned_deterministic_default_columns() {\n+        execute(\"\"\"\n+            create table t (\n+                a int default -1,\n+                i int,\n+                c int primary key\n+            )\n+            \"\"\");\n+        execute(\"insert into t(c,i) values (0, 1) on conflict (c) do update set i=11\");\n+        execute(\"refresh table t\");\n+        execute(\"select c, i, a from t\");\n+        assertThat(response).hasRows(\"0| 1| -1\");\n+\n+        execute(\"insert into t(c,i) values (6, 7), (0, 1), (5, 6) on conflict (c) do update set i=11\");\n+        execute(\"refresh table t\");\n+        execute(\"select c, i, a from t order by c\");\n+        assertThat(response).hasRows(\"0| 11| -1\", \"5| 6| -1\", \"6| 7| -1\");\n+    }\n+\n     @Test\n     public void test_insert_on_conflict_can_assign_to_default_columns() {\n         execute(\"\"\"\n-- \n2.43.0\n\n",
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "reason": "deterministic_no_llm"
+  }
+}

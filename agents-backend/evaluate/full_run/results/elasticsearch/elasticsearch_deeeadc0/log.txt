@@ -1,9 +1,0 @@
-patch_id=elasticsearch_deeeadc0
-project=elasticsearch
-mainline_commit=deeeadc01f86d08f887cbfcb0dc40caf3b7374f4
-backport_commit=655e3ce1310196a95b154773106699d36d9fc8cb
-mode=full
-started_at=2026-04-03T14:24:45.621108
-----------------------------------------
-
-[elasticsearch/elasticsearch_deeeadc0] Setting up repositories for mode=full...

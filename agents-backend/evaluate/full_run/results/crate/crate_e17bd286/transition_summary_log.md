@@ -6,3 +6,12 @@
 - fail->pass (0): []
 - newly passing (6): ['io.crate.rest.action.SqlHttpHandlerTest#testDefaultUserIfHttpHeaderNotPresent', 'io.crate.rest.action.SqlHttpHandlerTest#testSessionSettingsArePreservedAcrossRequests', 'io.crate.rest.action.SqlHttpHandlerTest#testSettingUserIfHttpHeaderNotPresent', 'io.crate.rest.action.SqlHttpHandlerTest#testUserIfHttpBasicAuthIsPresent', 'io.crate.rest.action.SqlHttpHandlerTest#test_partial_result_is_cleared_when_sending_an_error', 'io.crate.rest.action.SqlHttpHandlerTest#test_resolve_user_from_jwt_token']
 - pass->fail (0): []
+
+## Touched Test States
+- Touched tests (from patch): ['io.crate.rest.action.SqlHttpHandlerTest']
+  - io.crate.rest.action.SqlHttpHandlerTest#testDefaultUserIfHttpHeaderNotPresent: baseline=absent, patched=passed
+  - io.crate.rest.action.SqlHttpHandlerTest#testSessionSettingsArePreservedAcrossRequests: baseline=absent, patched=passed
+  - io.crate.rest.action.SqlHttpHandlerTest#testSettingUserIfHttpHeaderNotPresent: baseline=absent, patched=passed
+  - io.crate.rest.action.SqlHttpHandlerTest#testUserIfHttpBasicAuthIsPresent: baseline=absent, patched=passed
+  - io.crate.rest.action.SqlHttpHandlerTest#test_partial_result_is_cleared_when_sending_an_error: baseline=absent, patched=passed
+  - io.crate.rest.action.SqlHttpHandlerTest#test_resolve_user_from_jwt_token: baseline=absent, patched=passed

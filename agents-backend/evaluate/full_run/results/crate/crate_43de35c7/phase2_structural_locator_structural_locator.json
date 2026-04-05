@@ -1,0 +1,50 @@
+{
+  "consistency_map": {},
+  "mapped_target_context": {
+    "server/src/main/java/io/crate/expression/reference/doc/lucene/SourceParser.java": [
+      {
+        "hunk_index": 1,
+        "mainline_method": "<import>",
+        "target_file": "server/src/main/java/io/crate/expression/reference/doc/lucene/SourceParser.java",
+        "target_method": "<import>",
+        "start_line": 27,
+        "end_line": 27,
+        "code_snippet": " * obtain a copy of the License at\n *\n *   http://www.apache.org/licenses/LICENSE-2.0\n *\n * Unless required by applicable law or agreed to in writing, software\n * distributed under the License is distributed on an \"AS IS\" BASIS, WITHOUT\n * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the\n * License for the specific language governing permissions and limitations\n * under the License.\n *\n * However, if you have executed another commercial license agreement\n * with Crate these terms will supersede the license and you may use the\n * software solely pursuant to the terms of the relevant commercial agreement.\n */\n\npackage io.crate.expression.reference.doc.lucene;\n\nimport static org.elasticsearch.common.xcontent.XContentParser.Token.START_ARRAY;\nimport static org.elasticsearch.common.xcontent.XContentParser.Token.VALUE_NULL;\n\nimport java.io.IOException;\nimport java.io.InputStream;\nimport java.io.UncheckedIOException;\nimport java.util.ArrayList;\nimport java.util.BitSet;\nimport java.util.HashMap;\nimport java.util.List;\nimport java.util.Map;\nimport java.util.Set;\nimport java.util.function.UnaryOperator;\nimport java.util.stream.Collectors;\n\nimport org.apache.logging.log4j.LogManager;\nimport org.apache.logging.log4j.Logger;\nimport org.elasticsearch.common.bytes.BytesReference;\nimport org.elasticsearch.common.xcontent.DeprecationHandler;\nimport org.elasticsearch.common.xcontent.NamedXContentRegistry;\nimport org.elasticsearch.common.xcontent.XContentParser;\nimport org.elasticsearch.common.xcontent.XContentParser.Token;\nimport org.elasticsearch.common.xcontent.XContentType;\nimport org.jetbrains.annotations.Nullable;",
+        "anchor_confidence": "high",
+        "anchor_reason": "line_and_method_resolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 2,
+        "mainline_method": "hunk_2",
+        "target_file": "server/src/main/java/io/crate/expression/reference/doc/lucene/SourceParser.java",
+        "target_method": null,
+        "start_line": 291,
+        "end_line": 291,
+        "code_snippet": "        colPath.append(fieldName);\n        return prevLength;\n    }\n\n    /**\n     * Parsing should preferable happen based on a non-null given data type even if the value is a string\n     * inside the source.\n     * Non-string values could be stored as strings inside the _source because we do not sanitize\n     * the input on COPY FROM.\n     */\n    private Object parseValue(XContentParser parser,\n                              @Nullable DataType<?> type,\n                              @Nullable Map<String, Object> requiredColumns,\n                              StringBuilder colPath,\n                              boolean includeUnknown) throws IOException {\n        return switch (parser.currentToken()) {\n            case VALUE_NULL -> null;\n            case START_ARRAY -> parseArray(parser, type, requiredColumns, colPath);\n            case START_OBJECT -> parseObject(parser, requiredColumns, colPath, includeUnknown);\n            case VALUE_STRING -> isUndefined(type) ? parser.text() : parseByType(parser, type);\n            case VALUE_NUMBER -> isUndefined(type) ? parser.numberValue() : parseByType(parser, type);\n            case VALUE_BOOLEAN -> isUndefined(type) ? parser.booleanValue() : parseByType(parser, type);\n            case VALUE_EMBEDDED_OBJECT -> isUndefined(type) ? parser.binaryValue() : parseByType(parser, type);\n            default -> throw new UnsupportedOperationException(\"Unsupported token encountered, expected a value, got \"\n                + parser.currentToken());\n        };\n    }\n\n    private static boolean isUndefined(@Nullable DataType<?> type) {\n        return type == null || type.id() == DataTypes.UNDEFINED.id();\n    }\n\n    private static Object parseByType(XContentParser parser, DataType<?> type) throws IOException {\n        assert type != null : \"Type must no be null when parsing data type aware\";\n\n        // Type could be an array if traversed into an object array \u2192 unnest to get the inner type\n        var elementType = ArrayType.unnest(type);\n        return switch (elementType.id()) {\n            case BooleanType.ID -> parser.booleanValue();\n            case ByteType.ID -> (byte) parser.intValue();\n            case ShortType.ID -> parser.shortValue(true);",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 3,
+        "mainline_method": "<class_declaration>",
+        "target_file": "server/src/main/java/io/crate/expression/reference/doc/lucene/SourceParser.java",
+        "target_method": "<class_declaration>",
+        "start_line": 296,
+        "end_line": 296,
+        "code_snippet": "     * Parsing should preferable happen based on a non-null given data type even if the value is a string\n     * inside the source.\n     * Non-string values could be stored as strings inside the _source because we do not sanitize\n     * the input on COPY FROM.\n     */\n    private Object parseValue(XContentParser parser,\n                              @Nullable DataType<?> type,\n                              @Nullable Map<String, Object> requiredColumns,\n                              StringBuilder colPath,\n                              boolean includeUnknown) throws IOException {\n        return switch (parser.currentToken()) {\n            case VALUE_NULL -> null;\n            case START_ARRAY -> parseArray(parser, type, requiredColumns, colPath);\n            case START_OBJECT -> parseObject(parser, requiredColumns, colPath, includeUnknown);\n            case VALUE_STRING -> isUndefined(type) ? parser.text() : parseByType(parser, type);\n            case VALUE_NUMBER -> isUndefined(type) ? parser.numberValue() : parseByType(parser, type);\n            case VALUE_BOOLEAN -> isUndefined(type) ? parser.booleanValue() : parseByType(parser, type);\n            case VALUE_EMBEDDED_OBJECT -> isUndefined(type) ? parser.binaryValue() : parseByType(parser, type);\n            default -> throw new UnsupportedOperationException(\"Unsupported token encountered, expected a value, got \"\n                + parser.currentToken());\n        };\n    }\n\n    private static boolean isUndefined(@Nullable DataType<?> type) {\n        return type == null || type.id() == DataTypes.UNDEFINED.id();\n    }\n\n    private static Object parseByType(XContentParser parser, DataType<?> type) throws IOException {\n        assert type != null : \"Type must no be null when parsing data type aware\";\n\n        // Type could be an array if traversed into an object array \u2192 unnest to get the inner type\n        var elementType = ArrayType.unnest(type);\n        return switch (elementType.id()) {\n            case BooleanType.ID -> parser.booleanValue();\n            case ByteType.ID -> (byte) parser.intValue();\n            case ShortType.ID -> parser.shortValue(true);\n            case IntegerType.ID -> parser.intValue();\n            case LongType.ID -> parser.longValue();\n            case TimestampType.ID_WITH_TZ -> parser.longValue();\n            case TimestampType.ID_WITHOUT_TZ -> parser.longValue();\n            case FloatType.ID -> parser.floatValue();",
+        "anchor_confidence": "high",
+        "anchor_reason": "line_and_method_resolved",
+        "anchor_strategy": "deterministic_realign"
+      }
+    ]
+  },
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "reason": "llm_usage_not_collected_in_this_node"
+  }
+}

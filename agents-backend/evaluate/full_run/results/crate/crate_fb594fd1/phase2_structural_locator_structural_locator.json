@@ -1,0 +1,26 @@
+{
+  "consistency_map": {},
+  "mapped_target_context": {
+    "server/src/main/java/io/crate/execution/dml/Indexer.java": [
+      {
+        "hunk_index": 1,
+        "mainline_method": "addGeneratedValues",
+        "target_file": "server/src/main/java/io/crate/execution/dml/Indexer.java",
+        "target_method": "addGeneratedValues",
+        "start_line": 1056,
+        "end_line": 1056,
+        "code_snippet": "            if (synthetic.ref.column().isRoot()) {\n                if (newColumns.contains(synthetic.ref) == false) {\n                    newColumns.add(synthetic.ref);\n                }\n            } else {\n                var rootIdent = synthetic.ref.column().getRoot();\n                int rootIndex = Reference.indexOf(newColumns, rootIdent);\n                if (rootIndex == -1) {\n                    // Synthetic is a generated/default sub-column with root not listed in the insert/upsert targets.\n                    // We need to add the root to replica targets\n                    // since we will generate object value in addGeneratedValues().\n                    Reference rootRef = getRef.apply(rootIdent);\n                    assert rootRef != null : \"Root must exist in the table\";\n                    newColumns.add(rootRef);\n                }\n            }\n        }\n        return newColumns;\n    }\n\n    public Object[] addGeneratedValues(IndexItem item) {\n        Object[] insertValues = item.insertValues();\n        assert onConflictIndexer() == null || new HashSet<>(onConflictIndexer().insertColumns().stream().map(Reference::column).toList())\n            .containsAll(insertColumns().stream().map(Reference::column).toList()) : \"onConflictIndexer().insertColumns() is a superset of this.insertColumns()\";\n        List<Reference> insertColumns = onConflictIndexer() == null ? insertColumns() : onConflictIndexer().insertColumns();\n        List<Object> extendedValues = new ArrayList<>(insertValues.length);\n        Collections.addAll(extendedValues, insertValues);\n        for (int i = insertValues.length; i < insertColumns.size(); i++) {\n            extendedValues.add(null);\n        }\n\n        // insert-on-conflict: insert path may need to insert a value so the column must be streamed then update path must stream the correct value\n        if (onConflictIndexer() != null) {\n            for (var synthetic : synthetics.values()) {\n                Reference ref = synthetic.ref;\n                if (ref.column().isRoot() && ref.defaultExpression() != null && ref.defaultExpression().isDeterministic() && synthetic.isComputed()) {\n                    int idx = insertColumns.indexOf(ref);\n                    assert idx >= 0 && idx < extendedValues.size() : \"We know how many values are to be streamed: insertColumns()\";\n                    extendedValues.set(idx, synthetic.computedValue);\n                }\n            }",
+        "anchor_confidence": "high",
+        "anchor_reason": "line_and_method_resolved",
+        "anchor_strategy": "deterministic_realign"
+      }
+    ]
+  },
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "reason": "llm_usage_not_collected_in_this_node"
+  }
+}

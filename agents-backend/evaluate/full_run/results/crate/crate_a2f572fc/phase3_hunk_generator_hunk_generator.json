@@ -1,0 +1,100 @@
+{
+  "adapted_file_edits": [
+    {
+      "target_file": "server/src/main/java/io/crate/execution/engine/indexing/BatchIteratorBackpressureExecutor.java",
+      "mainline_file": "server/src/main/java/io/crate/execution/engine/indexing/BatchIteratorBackpressureExecutor.java",
+      "old_string": "<developer patch fast path>",
+      "new_string": "diff --git a/server/src/main/java/io/crate/execution/engine/indexing/BatchIteratorBackpressureExecutor.java b/server/src/main/java/io/crate/execution/engine/indexing/BatchIteratorBackpressureExecutor.java\nindex 8870ceab13..dae080d57f 100644\n--- a/server/src/main/java/io/crate/execution/engine/indexing/BatchIteratorBackpressureExecutor.java\n+++ b/server/src/main/java/io/crate/execution/engine/indexing/BatchIteratorBackpressureExecutor.java\n@@ -35,10 +35,9 @@ import java.util.function.BinaryOperator;\n import java.util.function.Function;\n import java.util.function.Predicate;\n \n-import org.jetbrains.annotations.Nullable;\n-\n import org.apache.logging.log4j.LogManager;\n import org.apache.logging.log4j.Logger;\n+import org.jetbrains.annotations.Nullable;\n \n import io.crate.data.BatchIterator;\n import io.crate.exceptions.JobKilledException;\n@@ -179,7 +178,10 @@ public class BatchIteratorBackpressureExecutor<T, R> {\n                         scheduler.schedule(this::resumeConsumption, delayInMs, TimeUnit.MILLISECONDS);\n                         return;\n                     }\n-                    // fall through to execute\n+                    // No delay available, execute and let any response continue (release semaphore)\n+                    execute(item);\n+                    semaphore.release();\n+                    return;\n                 }\n                 execute(item);\n             }",
+      "edit_type": "replace",
+      "verified": true,
+      "verification_result": "developer_fast_path_ok",
+      "applied": true,
+      "apply_result": "SUCCESS"
+    }
+  ],
+  "all_adapted_file_edits": [
+    [
+      {
+        "target_file": "server/src/main/java/io/crate/execution/engine/indexing/BatchIteratorBackpressureExecutor.java",
+        "mainline_file": "server/src/main/java/io/crate/execution/engine/indexing/BatchIteratorBackpressureExecutor.java",
+        "old_string": "<developer patch fast path>",
+        "new_string": "diff --git a/server/src/main/java/io/crate/execution/engine/indexing/BatchIteratorBackpressureExecutor.java b/server/src/main/java/io/crate/execution/engine/indexing/BatchIteratorBackpressureExecutor.java\nindex 8870ceab13..dae080d57f 100644\n--- a/server/src/main/java/io/crate/execution/engine/indexing/BatchIteratorBackpressureExecutor.java\n+++ b/server/src/main/java/io/crate/execution/engine/indexing/BatchIteratorBackpressureExecutor.java\n@@ -35,10 +35,9 @@ import java.util.function.BinaryOperator;\n import java.util.function.Function;\n import java.util.function.Predicate;\n \n-import org.jetbrains.annotations.Nullable;\n-\n import org.apache.logging.log4j.LogManager;\n import org.apache.logging.log4j.Logger;\n+import org.jetbrains.annotations.Nullable;\n \n import io.crate.data.BatchIterator;\n import io.crate.exceptions.JobKilledException;\n@@ -179,7 +178,10 @@ public class BatchIteratorBackpressureExecutor<T, R> {\n                         scheduler.schedule(this::resumeConsumption, delayInMs, TimeUnit.MILLISECONDS);\n                         return;\n                     }\n-                    // fall through to execute\n+                    // No delay available, execute and let any response continue (release semaphore)\n+                    execute(item);\n+                    semaphore.release();\n+                    return;\n                 }\n                 execute(item);\n             }",
+        "edit_type": "replace",
+        "verified": true,
+        "verification_result": "developer_fast_path_ok",
+        "applied": true,
+        "apply_result": "SUCCESS"
+      }
+    ]
+  ],
+  "agent_trajectory_edits": [
+    []
+  ],
+  "adapted_code_hunks": [
+    {
+      "target_file": "server/src/main/java/io/crate/execution/engine/indexing/BatchIteratorBackpressureExecutor.java",
+      "mainline_file": "server/src/main/java/io/crate/execution/engine/indexing/BatchIteratorBackpressureExecutor.java",
+      "hunk_text": "diff --git a/server/src/main/java/io/crate/execution/engine/indexing/BatchIteratorBackpressureExecutor.java b/server/src/main/java/io/crate/execution/engine/indexing/BatchIteratorBackpressureExecutor.java\nindex 8870ceab13..dae080d57f 100644\n--- a/server/src/main/java/io/crate/execution/engine/indexing/BatchIteratorBackpressureExecutor.java\n+++ b/server/src/main/java/io/crate/execution/engine/indexing/BatchIteratorBackpressureExecutor.java\n@@ -35,10 +35,9 @@ import java.util.function.BinaryOperator;\n import java.util.function.Function;\n import java.util.function.Predicate;\n \n-import org.jetbrains.annotations.Nullable;\n-\n import org.apache.logging.log4j.LogManager;\n import org.apache.logging.log4j.Logger;\n+import org.jetbrains.annotations.Nullable;\n \n import io.crate.data.BatchIterator;\n import io.crate.exceptions.JobKilledException;\n@@ -179,7 +178,10 @@ public class BatchIteratorBackpressureExecutor<T, R> {\n                         scheduler.schedule(this::resumeConsumption, delayInMs, TimeUnit.MILLISECONDS);\n                         return;\n                     }\n-                    // fall through to execute\n+                    // No delay available, execute and let any response continue (release semaphore)\n+                    execute(item);\n+                    semaphore.release();\n+                    return;\n                 }\n                 execute(item);\n             }\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    }
+  ],
+  "validation_repeated_patch_detected": false,
+  "validation_repeated_plan_detected": false,
+  "best_effort_adapted_code_hunks": [
+    {
+      "target_file": "server/src/main/java/io/crate/execution/engine/indexing/BatchIteratorBackpressureExecutor.java",
+      "mainline_file": "server/src/main/java/io/crate/execution/engine/indexing/BatchIteratorBackpressureExecutor.java",
+      "hunk_text": "diff --git a/server/src/main/java/io/crate/execution/engine/indexing/BatchIteratorBackpressureExecutor.java b/server/src/main/java/io/crate/execution/engine/indexing/BatchIteratorBackpressureExecutor.java\nindex 8870ceab13..dae080d57f 100644\n--- a/server/src/main/java/io/crate/execution/engine/indexing/BatchIteratorBackpressureExecutor.java\n+++ b/server/src/main/java/io/crate/execution/engine/indexing/BatchIteratorBackpressureExecutor.java\n@@ -35,10 +35,9 @@ import java.util.function.BinaryOperator;\n import java.util.function.Function;\n import java.util.function.Predicate;\n \n-import org.jetbrains.annotations.Nullable;\n-\n import org.apache.logging.log4j.LogManager;\n import org.apache.logging.log4j.Logger;\n+import org.jetbrains.annotations.Nullable;\n \n import io.crate.data.BatchIterator;\n import io.crate.exceptions.JobKilledException;\n@@ -179,7 +178,10 @@ public class BatchIteratorBackpressureExecutor<T, R> {\n                         scheduler.schedule(this::resumeConsumption, delayInMs, TimeUnit.MILLISECONDS);\n                         return;\n                     }\n-                    // fall through to execute\n+                    // No delay available, execute and let any response continue (release semaphore)\n+                    execute(item);\n+                    semaphore.release();\n+                    return;\n                 }\n                 execute(item);\n             }\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    }
+  ],
+  "adapted_test_hunks": [],
+  "generation_checklist": [
+    {
+      "mainline_file": "server/src/main/java/io/crate/execution/engine/indexing/BatchIteratorBackpressureExecutor.java",
+      "target_file": "server/src/main/java/io/crate/execution/engine/indexing/BatchIteratorBackpressureExecutor.java",
+      "hunk_index": 0,
+      "adaptation_type": "TYPE_II",
+      "execution_types": [
+        "TYPE_II"
+      ],
+      "status": "success",
+      "reason": "developer_fast_path",
+      "todo_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ],
+      "completed_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ]
+    }
+  ],
+  "generated_patch_hash": "be3542fd6f379874801971bcfe22a90cbc74facc071368fdf2ccc790dc1265f1",
+  "force_type_v_until_success": false,
+  "force_type_v_reason": "",
+  "force_type_v_retry_files": [],
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "sources": []
+  }
+}

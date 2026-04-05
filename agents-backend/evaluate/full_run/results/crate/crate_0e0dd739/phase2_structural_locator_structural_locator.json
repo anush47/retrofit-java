@@ -1,0 +1,64 @@
+{
+  "consistency_map": {},
+  "mapped_target_context": {
+    "server/src/main/java/io/crate/execution/dml/IndexDocumentBuilder.java": [
+      {
+        "hunk_index": 1,
+        "mainline_method": "getSyntheticValue",
+        "target_file": "server/src/main/java/io/crate/execution/dml/IndexDocumentBuilder.java",
+        "target_method": "getSyntheticValue",
+        "start_line": 46,
+        "end_line": 46,
+        "code_snippet": "\nimport org.apache.lucene.document.BinaryDocValuesField;\nimport org.apache.lucene.document.Document;\nimport org.apache.lucene.document.Field;\nimport org.apache.lucene.document.NumericDocValuesField;\nimport org.apache.lucene.document.StoredField;\nimport org.apache.lucene.index.IndexableField;\nimport org.apache.lucene.util.BytesRef;\nimport org.elasticsearch.Version;\nimport org.elasticsearch.common.bytes.BytesReference;\nimport org.elasticsearch.index.mapper.ParsedDocument;\nimport org.elasticsearch.index.mapper.SequenceIDFields;\nimport org.elasticsearch.index.mapper.Uid;\n\nimport io.crate.data.Input;\nimport io.crate.expression.reference.doc.lucene.IdCollectorExpression;\nimport io.crate.expression.reference.doc.lucene.StoredRowLookup;\nimport io.crate.metadata.ColumnIdent;\nimport io.crate.metadata.doc.SysColumns;\n\n/**\n * Used by ValueIndexer implementations to construct a lucene document for indexing\n */\npublic class IndexDocumentBuilder {\n\n    private final Document doc;\n    private final TranslogWriter translogWriter;\n    private final ValueIndexer.Synthetics synthetics;\n    private final Map<ColumnIdent, Indexer.ColumnConstraint> constraints;\n    private final Version tableVersionCreated;\n    private final boolean addStoredField;\n    private final boolean addArrayLengthField;\n\n    /**\n     * Builds a new IndexDocumentBuilder\n     */\n    public IndexDocumentBuilder(\n        TranslogWriter translogWriter,\n        ValueIndexer.Synthetics synthetics,\n        Map<ColumnIdent, Indexer.ColumnConstraint> constraints,\n        Version tableVersionCreated) {",
+        "anchor_confidence": "high",
+        "anchor_reason": "line_and_method_resolved",
+        "anchor_strategy": "deterministic_realign"
+      }
+    ],
+    "server/src/main/java/io/crate/execution/dml/ObjectIndexer.java": [
+      {
+        "hunk_index": 1,
+        "mainline_method": "hunk_1",
+        "target_file": "server/src/main/java/io/crate/execution/dml/ObjectIndexer.java",
+        "target_method": null,
+        "start_line": 105,
+        "end_line": 105,
+        "code_snippet": "            Reference childRef = getRef.apply(child);\n            if (childRef == null) {\n                // Race, either column got deleted or stale DocTableInfo?\n                // Treat it as dynamic column if a value for the nested column is found\n                continue;\n            }\n            ValueIndexer<?> indexer\n                = childRef.granularity() == RowGranularity.PARTITION ? null : value.valueIndexer(table, childRef, getRef);\n            children.put(innerName, new Child(childRef, (ValueIndexer<Object>) indexer));\n        }\n    }\n\n    @Override\n    public void indexValue(@NotNull Map<String, Object> value, IndexDocumentBuilder docBuilder) throws IOException {\n        TranslogWriter translogWriter = docBuilder.translogWriter();\n        translogWriter.startObject();\n        for (var entry : children.entrySet()) {\n            String innerName = entry.getKey();\n            Child child = entry.getValue();\n            if (value.containsKey(innerName) == false) {\n                var synth = docBuilder.getSyntheticValue(child.ident());\n                if (synth != null) {\n                    // directly modify the map so that containing types will see the value\n                    // if they need to write stored fields\n                    value.put(innerName, synth);\n                }\n            }\n            var innerValue = value.get(innerName);\n            docBuilder.checkColumnConstraint(child.ident(), innerValue);\n            if (innerValue == null) {\n                continue;\n            }\n            var valueIndexer = child.indexer;\n            // valueIndexer is null for partitioned columns\n            if (valueIndexer != null) {\n                innerValue = child.reference.valueType().sanitizeValue(innerValue);\n                docBuilder.translogWriter().writeFieldName(child.reference.storageIdentLeafName());\n                valueIndexer.indexValue(innerValue, docBuilder);\n                value.put(innerName, innerValue);\n            }\n        }",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 2,
+        "mainline_method": "hunk_2",
+        "target_file": "server/src/main/java/io/crate/execution/dml/ObjectIndexer.java",
+        "target_method": null,
+        "start_line": 131,
+        "end_line": 131,
+        "code_snippet": "            }\n            var innerValue = value.get(innerName);\n            docBuilder.checkColumnConstraint(child.ident(), innerValue);\n            if (innerValue == null) {\n                continue;\n            }\n            var valueIndexer = child.indexer;\n            // valueIndexer is null for partitioned columns\n            if (valueIndexer != null) {\n                innerValue = child.reference.valueType().sanitizeValue(innerValue);\n                docBuilder.translogWriter().writeFieldName(child.reference.storageIdentLeafName());\n                valueIndexer.indexValue(innerValue, docBuilder);\n                value.put(innerName, innerValue);\n            }\n        }\n        Map<String, Object> columnsToStore = new HashMap<>();\n        value.forEach((k, v) -> {\n            if (children.containsKey(k) == false) {\n                translogWriter.writeFieldName(this.unknownColumnPrefix + k);\n                translogWriter.writeValue(v);\n                columnsToStore.put(k, v);\n            }\n            if (v == null) {\n                columnsToStore.put(k, null);\n            }\n        });\n        if (docBuilder.maybeAddStoredField()) {\n            if (columnsToStore.isEmpty() == false) {\n                // We have unknown or null values that can't be reconstructed from doc values\n                // at read time, so we need to store them explicitly\n                docBuilder.addField(new StoredField(\n                    ref.storageIdentLeafName(),\n                    toBytes(columnsToStore, docBuilder.getTableVersionCreated()).toBytesRef()\n                ));\n            } else if (value.isEmpty()) {\n                // A completely empty object doesn't store anything in doc values, so we need to\n                // store a marker here to reconstruct it at read time and distinguish it from a\n                // null value\n                docBuilder.addField(new StoredField(\n                    ref.storageIdentLeafName(),\n                    toBytes(value, docBuilder.getTableVersionCreated()).toBytesRef()",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 3,
+        "mainline_method": "toBytes",
+        "target_file": "server/src/main/java/io/crate/execution/dml/ObjectIndexer.java",
+        "target_method": "toBytes",
+        "start_line": 158,
+        "end_line": 158,
+        "code_snippet": "            if (columnsToStore.isEmpty() == false) {\n                // We have unknown or null values that can't be reconstructed from doc values\n                // at read time, so we need to store them explicitly\n                docBuilder.addField(new StoredField(\n                    ref.storageIdentLeafName(),\n                    toBytes(columnsToStore, docBuilder.getTableVersionCreated()).toBytesRef()\n                ));\n            } else if (value.isEmpty()) {\n                // A completely empty object doesn't store anything in doc values, so we need to\n                // store a marker here to reconstruct it at read time and distinguish it from a\n                // null value\n                docBuilder.addField(new StoredField(\n                    ref.storageIdentLeafName(),\n                    toBytes(value, docBuilder.getTableVersionCreated()).toBytesRef()\n                ));\n            }\n        }\n        translogWriter.endObject();\n    }\n\n    private BytesReference toBytes(Map<String, Object> v, Version version) {\n        try (BytesStreamOutput out = new BytesStreamOutput()) {\n            out.setVersion(version);\n            out.writeMap(v, StreamOutput::writeString, StreamOutput::writeGenericValue);\n            return out.bytes();\n        } catch (IOException e) {\n            throw new UncheckedIOException(e);\n        }\n    }\n\n    @Override\n    public void collectSchemaUpdates(@Nullable Map<String, Object> value,\n                                     Consumer<? super Reference> onDynamicColumn,\n                                     Synthetics synthetics) throws IOException {\n        for (var entry : children.entrySet()) {\n            String innerName = entry.getKey();\n            Child child = entry.getValue();\n            Object innerValue = null;\n            if (value == null || value.containsKey(innerName) == false) {\n                Input<Object> synthetic = synthetics.get(child.ident());\n                if (synthetic != null) {",
+        "anchor_confidence": "high",
+        "anchor_reason": "line_and_method_resolved",
+        "anchor_strategy": "deterministic_realign"
+      }
+    ]
+  },
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "reason": "llm_usage_not_collected_in_this_node"
+  }
+}

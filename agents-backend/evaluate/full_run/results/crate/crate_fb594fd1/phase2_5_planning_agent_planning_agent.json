@@ -1,0 +1,61 @@
+{
+  "hunk_generation_plan": {
+    "server/src/main/java/io/crate/execution/dml/Indexer.java": [
+      {
+        "hunk_index": 0,
+        "target_file": "server/src/main/java/io/crate/execution/dml/Indexer.java",
+        "operation_index": 0,
+        "edit_type": "insert_before",
+        "old_string": "        assert onConflictIndexer() == null || new HashSet<>(onConflictIndexer().insertColumns().stream().map(Reference::column).toList())",
+        "new_string": "        if (onConflictIndexer() == null && undeterministic.isEmpty()) {\n            return insertValues;\n        }\n        assert onConflictIndexer() == null || new HashSet<>(onConflictIndexer().insertColumns().stream().map(Reference::column).toList())",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_insert_before",
+        "surround_before_3": [
+          "",
+          "    public Object[] addGeneratedValues(IndexItem item) {",
+          "        Object[] insertValues = item.insertValues();"
+        ],
+        "surround_after_3": [
+          "            .containsAll(insertColumns().stream().map(Reference::column).toList()) : \"onConflictIndexer().insertColumns() is a superset of this.insertColumns()\";",
+          "        List<Reference> insertColumns = onConflictIndexer() == null ? insertColumns() : onConflictIndexer().insertColumns();",
+          "        List<Object> extendedValues = new ArrayList<>(insertValues.length);"
+        ],
+        "adaptation_type": "TYPE_II",
+        "base_adaptation_type": "TYPE_II",
+        "execution_type": "TYPE_II",
+        "location_match": false,
+        "surrounding_match": true,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "if (onConflictIndexer() == null && undeterministic.isEmpty()) {",
+          "return insertValues;"
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 26,
+          "target_declared_methods_count": 26,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      }
+    ]
+  },
+  "last_plan_signature": "7d1d24bb3da65ce8e29ac623cca5f98510037c4804fbd4075b383f925a2c9884",
+  "validation_repeated_plan_detected": false,
+  "force_type_v_until_success": false,
+  "force_type_v_reason": "",
+  "force_type_v_retry_files": [],
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "sources": []
+  }
+}

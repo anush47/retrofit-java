@@ -1,0 +1,326 @@
+# Post-Pipeline Developer Patch Comparison
+
+**Exact Developer Patch (code-only)**: True
+
+**Comparison Method**: file_state
+
+## Commit Pair Consistency
+- Pair mismatch: False
+- Reason: scope_overlap_ok
+- Mainline Java files: ['server/src/main/java/io/crate/execution/IncrementalPageBucketReceiver.java']
+- Developer Java files: ['server/src/main/java/io/crate/execution/IncrementalPageBucketReceiver.java']
+- Overlap Java files: ['server/src/main/java/io/crate/execution/IncrementalPageBucketReceiver.java']
+- Overlap ratio (mainline): 1.0
+- Compare files scope used: ['server/src/main/java/io/crate/execution/IncrementalPageBucketReceiver.java']
+
+## File State Comparison
+- Compared files: ['server/src/main/java/io/crate/execution/IncrementalPageBucketReceiver.java']
+- Mismatched files: []
+- Error: None
+
+## Comparison Scope
+- Agent-only patch: code hunks produced by Agent 3
+- Final effective patch: agent code hunks + developer auxiliary hunks (still code-only for this report)
+
+## Agent-Only Hunk Comparison (code files)
+
+### server/src/main/java/io/crate/execution/IncrementalPageBucketReceiver.java
+
+- Developer hunks: 2
+- Generated hunks: 2
+
+#### Hunk 1
+
+Developer
+```diff
+@@ -30,6 +30,7 @@
+ import io.crate.data.RowConsumer;
+ import io.crate.execution.jobs.PageBucketReceiver;
+ import io.crate.execution.jobs.PageResultListener;
++
+ import org.elasticsearch.common.util.concurrent.EsRejectedExecutionException;
+ 
+ import org.jetbrains.annotations.NotNull;
+
+```
+
+Generated
+```diff
+@@ -30,6 +30,7 @@
+ import io.crate.data.RowConsumer;
+ import io.crate.execution.jobs.PageBucketReceiver;
+ import io.crate.execution.jobs.PageResultListener;
++
+ import org.elasticsearch.common.util.concurrent.EsRejectedExecutionException;
+ 
+ import org.jetbrains.annotations.NotNull;
+
+```
+
+Developer -> Generated (Unified Diff)
+```diff
+(No textual difference)
+
+```
+
+#### Hunk 2
+
+Developer
+```diff
+@@ -98,7 +99,13 @@
+             } else {
+                 currentlyAccumulating = currentlyAccumulating.whenComplete((r, t) -> {
+                     if (t == null) {
+-                        processRows(rows);
++                        try {
++                            processRows(rows);
++                        } catch (Exception e) {
++                            var runtimeErr = Exceptions.toRuntimeException(t);
++                            processingFuture.completeExceptionally(runtimeErr);
++                            throw runtimeErr;
++                        }
+                     } else {
+                         var runtimeErr = Exceptions.toRuntimeException(t);
+                         processingFuture.completeExceptionally(runtimeErr);
+
+```
+
+Generated
+```diff
+@@ -98,7 +99,13 @@
+             } else {
+                 currentlyAccumulating = currentlyAccumulating.whenComplete((r, t) -> {
+                     if (t == null) {
+-                        processRows(rows);
++                        try {
++                            processRows(rows);
++                        } catch (Exception e) {
++                            var runtimeErr = Exceptions.toRuntimeException(t);
++                            processingFuture.completeExceptionally(runtimeErr);
++                            throw runtimeErr;
++                        }
+                     } else {
+                         var runtimeErr = Exceptions.toRuntimeException(t);
+                         processingFuture.completeExceptionally(runtimeErr);
+
+```
+
+Developer -> Generated (Unified Diff)
+```diff
+(No textual difference)
+
+```
+
+
+
+## Full Generated Patch (Agent-Only, code-only)
+```diff
+diff --git a/server/src/main/java/io/crate/execution/IncrementalPageBucketReceiver.java b/server/src/main/java/io/crate/execution/IncrementalPageBucketReceiver.java
+index 636e957742..616aba3d45 100644
+--- a/server/src/main/java/io/crate/execution/IncrementalPageBucketReceiver.java
++++ b/server/src/main/java/io/crate/execution/IncrementalPageBucketReceiver.java
+@@ -30,6 +30,7 @@ import io.crate.data.Row;
+ import io.crate.data.RowConsumer;
+ import io.crate.execution.jobs.PageBucketReceiver;
+ import io.crate.execution.jobs.PageResultListener;
++
+ import org.elasticsearch.common.util.concurrent.EsRejectedExecutionException;
+ 
+ import org.jetbrains.annotations.NotNull;
+@@ -98,7 +99,13 @@ public class IncrementalPageBucketReceiver<T> implements PageBucketReceiver {
+             } else {
+                 currentlyAccumulating = currentlyAccumulating.whenComplete((r, t) -> {
+                     if (t == null) {
+-                        processRows(rows);
++                        try {
++                            processRows(rows);
++                        } catch (Exception e) {
++                            var runtimeErr = Exceptions.toRuntimeException(t);
++                            processingFuture.completeExceptionally(runtimeErr);
++                            throw runtimeErr;
++                        }
+                     } else {
+                         var runtimeErr = Exceptions.toRuntimeException(t);
+                         processingFuture.completeExceptionally(runtimeErr);
+
+```
+
+## Full Generated Patch (Final Effective, code-only)
+```diff
+diff --git a/server/src/main/java/io/crate/execution/IncrementalPageBucketReceiver.java b/server/src/main/java/io/crate/execution/IncrementalPageBucketReceiver.java
+index 636e957742..616aba3d45 100644
+--- a/server/src/main/java/io/crate/execution/IncrementalPageBucketReceiver.java
++++ b/server/src/main/java/io/crate/execution/IncrementalPageBucketReceiver.java
+@@ -30,6 +30,7 @@ import io.crate.data.Row;
+ import io.crate.data.RowConsumer;
+ import io.crate.execution.jobs.PageBucketReceiver;
+ import io.crate.execution.jobs.PageResultListener;
++
+ import org.elasticsearch.common.util.concurrent.EsRejectedExecutionException;
+ 
+ import org.jetbrains.annotations.NotNull;
+@@ -98,7 +99,13 @@ public class IncrementalPageBucketReceiver<T> implements PageBucketReceiver {
+             } else {
+                 currentlyAccumulating = currentlyAccumulating.whenComplete((r, t) -> {
+                     if (t == null) {
+-                        processRows(rows);
++                        try {
++                            processRows(rows);
++                        } catch (Exception e) {
++                            var runtimeErr = Exceptions.toRuntimeException(t);
++                            processingFuture.completeExceptionally(runtimeErr);
++                            throw runtimeErr;
++                        }
+                     } else {
+                         var runtimeErr = Exceptions.toRuntimeException(t);
+                         processingFuture.completeExceptionally(runtimeErr);
+
+```
+## Full Developer Backport Patch (full commit diff)
+```diff
+diff --git a/docs/appendices/release-notes/5.10.10.rst b/docs/appendices/release-notes/5.10.10.rst
+index 3a22092dda..63b021d804 100644
+--- a/docs/appendices/release-notes/5.10.10.rst
++++ b/docs/appendices/release-notes/5.10.10.rst
+@@ -57,3 +57,7 @@ Fixes
+ - Fixed an issue that caused RAM under-accounting, potentially leading to an
+   ``OutOfMemoryError`` when result sets contained numeric values with large
+   digit counts. The issue affected ``HTTP`` requests only.
++
++- Fixed an issue that caused queries with aggregations to continue despite
++  ``CircuitBreakerException`` being thrown and return incorrect (partial)
++  results under memory pressure.
+diff --git a/server/src/main/java/io/crate/execution/IncrementalPageBucketReceiver.java b/server/src/main/java/io/crate/execution/IncrementalPageBucketReceiver.java
+index 636e957742..616aba3d45 100644
+--- a/server/src/main/java/io/crate/execution/IncrementalPageBucketReceiver.java
++++ b/server/src/main/java/io/crate/execution/IncrementalPageBucketReceiver.java
+@@ -30,6 +30,7 @@ import io.crate.data.Row;
+ import io.crate.data.RowConsumer;
+ import io.crate.execution.jobs.PageBucketReceiver;
+ import io.crate.execution.jobs.PageResultListener;
++
+ import org.elasticsearch.common.util.concurrent.EsRejectedExecutionException;
+ 
+ import org.jetbrains.annotations.NotNull;
+@@ -98,7 +99,13 @@ public class IncrementalPageBucketReceiver<T> implements PageBucketReceiver {
+             } else {
+                 currentlyAccumulating = currentlyAccumulating.whenComplete((r, t) -> {
+                     if (t == null) {
+-                        processRows(rows);
++                        try {
++                            processRows(rows);
++                        } catch (Exception e) {
++                            var runtimeErr = Exceptions.toRuntimeException(t);
++                            processingFuture.completeExceptionally(runtimeErr);
++                            throw runtimeErr;
++                        }
+                     } else {
+                         var runtimeErr = Exceptions.toRuntimeException(t);
+                         processingFuture.completeExceptionally(runtimeErr);
+diff --git a/server/src/test/java/io/crate/execution/IncrementalPageBucketReceiverTest.java b/server/src/test/java/io/crate/execution/IncrementalPageBucketReceiverTest.java
+index 549bd25b0d..1887c52e20 100644
+--- a/server/src/test/java/io/crate/execution/IncrementalPageBucketReceiverTest.java
++++ b/server/src/test/java/io/crate/execution/IncrementalPageBucketReceiverTest.java
+@@ -23,6 +23,14 @@ package io.crate.execution;
+ 
+ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+ 
++import java.time.Duration;
++import java.util.ArrayList;
++import java.util.Set;
++import java.util.concurrent.CompletableFuture;
++import java.util.function.BiConsumer;
++import java.util.function.BinaryOperator;
++import java.util.function.Function;
++import java.util.function.Supplier;
+ import java.util.stream.Collector;
+ import java.util.stream.Collectors;
+ 
+@@ -30,9 +38,12 @@ import org.elasticsearch.common.breaker.CircuitBreakingException;
+ import org.junit.Test;
+ 
+ import io.crate.Streamer;
++import io.crate.data.ArrayBucket;
+ import io.crate.data.Bucket;
+ import io.crate.data.Row;
+ import io.crate.data.testing.TestingRowConsumer;
++import io.crate.execution.engine.distribution.DistributedResultResponse;
++import io.crate.execution.jobs.PageResultListener;
+ 
+ public class IncrementalPageBucketReceiverTest {
+ 
+@@ -53,4 +64,72 @@ public class IncrementalPageBucketReceiverTest {
+         assertThat(pageBucketReceiver.completionFuture().isCompletedExceptionally()).isTrue();
+         assertThat(batchConsumer.completionFuture().isCompletedExceptionally()).isTrue();
+     }
++
++    @Test
++    public void test_listener_doesnt_need_more_when_processRows_throws() {
++        TestingRowConsumer batchConsumer = new TestingRowConsumer();
++        Collector<Row, Object, Iterable<Row>> collector = new Collector<>() {
++            @Override
++            public Supplier<Object> supplier() {
++                return ArrayList::new;
++            }
++
++            @Override
++            public BiConsumer<Object, Row> accumulator() {
++                return (_, _) -> {
++                    throw new CircuitBreakingException("dummy");
++                };
++            }
++
++            @Override
++            public BinaryOperator<Object> combiner() {
++                return null;
++            }
++
++            @Override
++            public Function<Object, Iterable<Row>> finisher() {
++                return null;
++            }
++
++            @Override
++            public Set<Characteristics> characteristics() {
++                return Set.of();
++            }
++        };
++
++        var pageBucketReceiver = new IncrementalPageBucketReceiver<>(
++            collector,
++            batchConsumer,
++            Runnable::run,
++            new Streamer[1],
++            1
++        );
++
++        // First call goes to currentlyAccumulating == null, needMore must be true after the call
++        final CompletableFuture<DistributedResultResponse> result = new CompletableFuture<>();
++        PageResultListener listener = needMore -> result.complete(new DistributedResultResponse(needMore));
++        pageBucketReceiver.setBucket(0, Bucket.EMPTY, false, listener);
++        assertThat(result)
++            .isCompletedWithValueMatching(distributedResultResponse -> distributedResultResponse.needMore() == true)
++            .succeedsWithin(Duration.ofSeconds(1));
++
++        // Second call goes to currentlyAccumulating != null, use non-empty bucket to provoke CBE
++        Bucket bucket = new ArrayBucket(new Object[][]{
++            new Object[]{1},
++        });
++        final CompletableFuture<DistributedResultResponse> result2 = new CompletableFuture<>();
++        PageResultListener listener2 = needMore -> result2.complete(new DistributedResultResponse(needMore));
++        pageBucketReceiver.setBucket(0, bucket, false, listener2);
++        assertThat(result2)
++            .isCompletedWithValueMatching(distributedResultResponse -> distributedResultResponse.needMore() == true)
++            .succeedsWithin(Duration.ofSeconds(1));
++
++        // Call after failed processRows, listener must see that previous call was completed exceptionally
++        final CompletableFuture<DistributedResultResponse> result3 = new CompletableFuture<>();
++        PageResultListener listener3 = needMore -> result3.complete(new DistributedResultResponse(needMore));
++        pageBucketReceiver.setBucket(0, Bucket.EMPTY, false, listener3);
++        assertThat(result3)
++            .isCompletedWithValueMatching(distributedResultResponse -> distributedResultResponse.needMore() == false)
++            .succeedsWithin(Duration.ofSeconds(1));
++    }
+ }
+
+```

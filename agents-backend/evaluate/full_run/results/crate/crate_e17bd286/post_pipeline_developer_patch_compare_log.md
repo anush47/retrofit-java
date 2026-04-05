@@ -4,50 +4,30 @@
 
 **Comparison Method**: file_state
 
+## Commit Pair Consistency
+- Pair mismatch: False
+- Reason: scope_overlap_ok
+- Mainline Java files: ['server/src/main/java/io/crate/rest/action/SqlHttpHandler.java']
+- Developer Java files: ['server/src/main/java/io/crate/rest/action/SqlHttpHandler.java']
+- Overlap Java files: ['server/src/main/java/io/crate/rest/action/SqlHttpHandler.java']
+- Overlap ratio (mainline): 1.0
+- Compare files scope used: ['server/src/main/java/io/crate/rest/action/SqlHttpHandler.java']
+
 ## File State Comparison
-- Compared files: ['docs/appendices/release-notes/6.1.3.rst', 'server/src/main/java/io/crate/rest/action/SqlHttpHandler.java']
-- Mismatched files: ['docs/appendices/release-notes/6.1.3.rst', 'server/src/main/java/io/crate/rest/action/SqlHttpHandler.java']
+- Compared files: ['server/src/main/java/io/crate/rest/action/SqlHttpHandler.java']
+- Mismatched files: ['server/src/main/java/io/crate/rest/action/SqlHttpHandler.java']
 - Error: None
 
-## Hunk-by-Hunk Comparison
+## Comparison Scope
+- Agent-only patch: code hunks produced by Agent 3
+- Final effective patch: agent code hunks + developer auxiliary hunks (still code-only for this report)
 
-### docs/appendices/release-notes/6.1.3.rst
-
-#### Hunk 1
-
-Developer
-```diff
-@@ -46,4 +46,6 @@
- Fixes
- =====
- 
--None
-+- Fixed a regression introduced in :ref:`version_6.1.0` that could lead to
-+  mixing partial success results with error message in the response from the
-+  ``HTTP`` endpoint.
-
-```
-
-Generated
-```diff
-*No hunk*
-```
-
-Developer -> Generated (Unified Diff)
-```diff
---- developer+++ generated@@ -1,8 +1 @@-@@ -46,4 +46,6 @@
-- Fixes
-- =====
-- 
---None
--+- Fixed a regression introduced in :ref:`version_6.1.0` that could lead to
--+  mixing partial success results with error message in the response from the
--+  ``HTTP`` endpoint.
-+*No hunk*
-```
-
+## Agent-Only Hunk Comparison (code files)
 
 ### server/src/main/java/io/crate/rest/action/SqlHttpHandler.java
+
+- Developer hunks: 2
+- Generated hunks: 0
 
 #### Hunk 1
 
@@ -139,7 +119,12 @@ Developer -> Generated (Unified Diff)
 
 
 
-## Full Generated Patch (code-only)
+## Full Generated Patch (Agent-Only, code-only)
+```diff
+
+```
+
+## Full Generated Patch (Final Effective, code-only)
 ```diff
 
 ```

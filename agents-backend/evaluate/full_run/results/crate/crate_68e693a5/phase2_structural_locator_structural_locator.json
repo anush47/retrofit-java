@@ -1,0 +1,26 @@
+{
+  "consistency_map": {},
+  "mapped_target_context": {
+    "server/src/main/java/io/crate/execution/dml/Indexer.java": [
+      {
+        "hunk_index": 1,
+        "mainline_method": "hunk_1",
+        "target_file": "server/src/main/java/io/crate/execution/dml/Indexer.java",
+        "target_method": null,
+        "start_line": 191,
+        "end_line": 191,
+        "code_snippet": "            //    Example `INSERT INTO (x, y) VALUES (1, 2)\n            //                          \u2502             \u25b2\n            //                          \u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518\n            //\n            //  - Can be used in PARITITONED BY, in which case it's part of the partition name\n            //\n            //  - Can be missing from targetColumns / insertValues but have a DEFAULT clause\n            //\n            //  - Can be a child column, where the root is part of the targetColumns / insertValues\n\n            ColumnIdent column = ref.column();\n            if (column.equals(SysColumns.ID.COLUMN)) {\n                return NestableCollectExpression.forFunction(IndexItem::id);\n            } else if (column.equals(SysColumns.SEQ_NO)) {\n                return NestableCollectExpression.forFunction(IndexItem::seqNo);\n            } else if (column.equals(SysColumns.PRIMARY_TERM)) {\n                return NestableCollectExpression.forFunction(IndexItem::primaryTerm);\n            }\n            int pkIndex = table.primaryKey().indexOf(column);\n            if (pkIndex > -1) {\n                return NestableCollectExpression.forFunction(item ->\n                    ref.valueType().implicitCast(item.pkValues().get(pkIndex))\n                );\n            }\n            int index = targetColumns.indexOf(ref);\n            if (index > -1) {\n                return NestableCollectExpression.forFunction(item -> item.insertValues()[index]);\n            }\n            if (ref.granularity() == RowGranularity.PARTITION) {\n                int pIndex = table.partitionedByColumns().indexOf(ref);\n                if (pIndex > -1) {\n                    String val = partitionName.values().get(pIndex);\n                    return NestableCollectExpression.constant(ref.valueType().implicitCast(val));\n                } else {\n                    return NestableCollectExpression.constant(null);\n                }\n            }\n            if (column.isRoot()) {\n                Symbol defaultExpression = ref.defaultExpression();\n                if (defaultExpression == null) {\n                    if (ref instanceof GeneratedReference generated) {",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      }
+    ]
+  },
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "reason": "llm_usage_not_collected_in_this_node"
+  }
+}

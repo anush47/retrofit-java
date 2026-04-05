@@ -1,0 +1,169 @@
+{
+  "adapted_file_edits": [
+    {
+      "target_file": "server/src/main/java/io/crate/execution/dml/Indexer.java",
+      "mainline_file": "server/src/main/java/io/crate/execution/dml/Indexer.java",
+      "old_string": "<developer patch fast path>",
+      "new_string": "diff --git a/server/src/main/java/io/crate/execution/dml/Indexer.java b/server/src/main/java/io/crate/execution/dml/Indexer.java\nindex 24f46065a9..efa77ff1ea 100644\n--- a/server/src/main/java/io/crate/execution/dml/Indexer.java\n+++ b/server/src/main/java/io/crate/execution/dml/Indexer.java\n@@ -859,7 +859,7 @@ public class Indexer {\n         Object[] values = item.insertValues();\n         for (int i = 0; i < values.length; i++) {\n             Reference reference = columns.get(i);\n-            Object value = valueForInsert(reference.valueType(), values[i]);\n+            Object value = values[i];\n             // No granularity check since PARTITIONED BY columns cannot be added dynamically.\n             if (value == null) {\n                 continue;",
+      "edit_type": "replace",
+      "verified": true,
+      "verification_result": "developer_fast_path_ok",
+      "applied": true,
+      "apply_result": "SUCCESS"
+    },
+    {
+      "target_file": "server/src/main/java/io/crate/types/ArrayType.java",
+      "mainline_file": "server/src/main/java/io/crate/types/ArrayType.java",
+      "old_string": "<developer patch fast path>",
+      "new_string": "diff --git a/server/src/main/java/io/crate/types/ArrayType.java b/server/src/main/java/io/crate/types/ArrayType.java\nindex e045a2785f..633e6211fa 100644\n--- a/server/src/main/java/io/crate/types/ArrayType.java\n+++ b/server/src/main/java/io/crate/types/ArrayType.java\n@@ -244,16 +244,12 @@ public class ArrayType<T> extends DataType<List<T>> {\n         return convert(value, innerType, innerType::sanitizeValue, CoordinatorTxnCtx.systemTransactionContext().sessionSettings());\n     }\n \n-    public static List<String> fromAnyArray(Object[] values) throws IllegalArgumentException {\n-        if (values == null) {\n+    @Override\n+    public List<T> valueForInsert(List<T> value) {\n+        if (value == null) {\n             return null;\n-        } else {\n-            ArrayList<String> array = new ArrayList<>(values.length);\n-            for (var value : values) {\n-                array.add(anyValueToString(value));\n-            }\n-            return array;\n         }\n+        return Lists.map(value, innerType::valueForInsert);\n     }\n \n     public static List<String> fromAnyArray(List<?> values) throws IllegalArgumentException {\n@@ -275,13 +271,11 @@ public class ArrayType<T> extends DataType<List<T>> {\n         }\n         try {\n             if (value instanceof Map) {\n-                //noinspection unchecked\n-                return\n-                    Strings.toString(\n+                return Strings.toString(\n                         JsonXContent.builder().map((Map<String, ?>) value));\n-            } else if (value instanceof Collection) {\n+            } else if (value instanceof Collection<?> collection) {\n                 var array = JsonXContent.builder().startArray();\n-                for (var element : (Collection<?>) value) {\n+                for (var element : collection) {\n                     array.value(element);\n                 }\n                 array.endArray();",
+      "edit_type": "replace",
+      "verified": true,
+      "verification_result": "developer_fast_path_ok",
+      "applied": true,
+      "apply_result": "SUCCESS"
+    }
+  ],
+  "all_adapted_file_edits": [
+    [
+      {
+        "target_file": "server/src/main/java/io/crate/execution/dml/Indexer.java",
+        "mainline_file": "server/src/main/java/io/crate/execution/dml/Indexer.java",
+        "old_string": "<developer patch fast path>",
+        "new_string": "diff --git a/server/src/main/java/io/crate/execution/dml/Indexer.java b/server/src/main/java/io/crate/execution/dml/Indexer.java\nindex 24f46065a9..efa77ff1ea 100644\n--- a/server/src/main/java/io/crate/execution/dml/Indexer.java\n+++ b/server/src/main/java/io/crate/execution/dml/Indexer.java\n@@ -859,7 +859,7 @@ public class Indexer {\n         Object[] values = item.insertValues();\n         for (int i = 0; i < values.length; i++) {\n             Reference reference = columns.get(i);\n-            Object value = valueForInsert(reference.valueType(), values[i]);\n+            Object value = values[i];\n             // No granularity check since PARTITIONED BY columns cannot be added dynamically.\n             if (value == null) {\n                 continue;",
+        "edit_type": "replace",
+        "verified": true,
+        "verification_result": "developer_fast_path_ok",
+        "applied": true,
+        "apply_result": "SUCCESS"
+      },
+      {
+        "target_file": "server/src/main/java/io/crate/types/ArrayType.java",
+        "mainline_file": "server/src/main/java/io/crate/types/ArrayType.java",
+        "old_string": "<developer patch fast path>",
+        "new_string": "diff --git a/server/src/main/java/io/crate/types/ArrayType.java b/server/src/main/java/io/crate/types/ArrayType.java\nindex e045a2785f..633e6211fa 100644\n--- a/server/src/main/java/io/crate/types/ArrayType.java\n+++ b/server/src/main/java/io/crate/types/ArrayType.java\n@@ -244,16 +244,12 @@ public class ArrayType<T> extends DataType<List<T>> {\n         return convert(value, innerType, innerType::sanitizeValue, CoordinatorTxnCtx.systemTransactionContext().sessionSettings());\n     }\n \n-    public static List<String> fromAnyArray(Object[] values) throws IllegalArgumentException {\n-        if (values == null) {\n+    @Override\n+    public List<T> valueForInsert(List<T> value) {\n+        if (value == null) {\n             return null;\n-        } else {\n-            ArrayList<String> array = new ArrayList<>(values.length);\n-            for (var value : values) {\n-                array.add(anyValueToString(value));\n-            }\n-            return array;\n         }\n+        return Lists.map(value, innerType::valueForInsert);\n     }\n \n     public static List<String> fromAnyArray(List<?> values) throws IllegalArgumentException {\n@@ -275,13 +271,11 @@ public class ArrayType<T> extends DataType<List<T>> {\n         }\n         try {\n             if (value instanceof Map) {\n-                //noinspection unchecked\n-                return\n-                    Strings.toString(\n+                return Strings.toString(\n                         JsonXContent.builder().map((Map<String, ?>) value));\n-            } else if (value instanceof Collection) {\n+            } else if (value instanceof Collection<?> collection) {\n                 var array = JsonXContent.builder().startArray();\n-                for (var element : (Collection<?>) value) {\n+                for (var element : collection) {\n                     array.value(element);\n                 }\n                 array.endArray();",
+        "edit_type": "replace",
+        "verified": true,
+        "verification_result": "developer_fast_path_ok",
+        "applied": true,
+        "apply_result": "SUCCESS"
+      }
+    ]
+  ],
+  "agent_trajectory_edits": [
+    []
+  ],
+  "adapted_code_hunks": [
+    {
+      "target_file": "server/src/main/java/io/crate/execution/dml/Indexer.java",
+      "mainline_file": "server/src/main/java/io/crate/execution/dml/Indexer.java",
+      "hunk_text": "diff --git a/server/src/main/java/io/crate/execution/dml/Indexer.java b/server/src/main/java/io/crate/execution/dml/Indexer.java\nindex 24f46065a9..efa77ff1ea 100644\n--- a/server/src/main/java/io/crate/execution/dml/Indexer.java\n+++ b/server/src/main/java/io/crate/execution/dml/Indexer.java\n@@ -859,7 +859,7 @@ public class Indexer {\n         Object[] values = item.insertValues();\n         for (int i = 0; i < values.length; i++) {\n             Reference reference = columns.get(i);\n-            Object value = valueForInsert(reference.valueType(), values[i]);\n+            Object value = values[i];\n             // No granularity check since PARTITIONED BY columns cannot be added dynamically.\n             if (value == null) {\n                 continue;\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    },
+    {
+      "target_file": "server/src/main/java/io/crate/types/ArrayType.java",
+      "mainline_file": "server/src/main/java/io/crate/types/ArrayType.java",
+      "hunk_text": "diff --git a/server/src/main/java/io/crate/types/ArrayType.java b/server/src/main/java/io/crate/types/ArrayType.java\nindex e045a2785f..633e6211fa 100644\n--- a/server/src/main/java/io/crate/types/ArrayType.java\n+++ b/server/src/main/java/io/crate/types/ArrayType.java\n@@ -244,16 +244,12 @@ public class ArrayType<T> extends DataType<List<T>> {\n         return convert(value, innerType, innerType::sanitizeValue, CoordinatorTxnCtx.systemTransactionContext().sessionSettings());\n     }\n \n-    public static List<String> fromAnyArray(Object[] values) throws IllegalArgumentException {\n-        if (values == null) {\n+    @Override\n+    public List<T> valueForInsert(List<T> value) {\n+        if (value == null) {\n             return null;\n-        } else {\n-            ArrayList<String> array = new ArrayList<>(values.length);\n-            for (var value : values) {\n-                array.add(anyValueToString(value));\n-            }\n-            return array;\n         }\n+        return Lists.map(value, innerType::valueForInsert);\n     }\n \n     public static List<String> fromAnyArray(List<?> values) throws IllegalArgumentException {\n@@ -275,13 +271,11 @@ public class ArrayType<T> extends DataType<List<T>> {\n         }\n         try {\n             if (value instanceof Map) {\n-                //noinspection unchecked\n-                return\n-                    Strings.toString(\n+                return Strings.toString(\n                         JsonXContent.builder().map((Map<String, ?>) value));\n-            } else if (value instanceof Collection) {\n+            } else if (value instanceof Collection<?> collection) {\n                 var array = JsonXContent.builder().startArray();\n-                for (var element : (Collection<?>) value) {\n+                for (var element : collection) {\n                     array.value(element);\n                 }\n                 array.endArray();\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    }
+  ],
+  "validation_repeated_patch_detected": false,
+  "validation_repeated_plan_detected": false,
+  "best_effort_adapted_code_hunks": [
+    {
+      "target_file": "server/src/main/java/io/crate/execution/dml/Indexer.java",
+      "mainline_file": "server/src/main/java/io/crate/execution/dml/Indexer.java",
+      "hunk_text": "diff --git a/server/src/main/java/io/crate/execution/dml/Indexer.java b/server/src/main/java/io/crate/execution/dml/Indexer.java\nindex 24f46065a9..efa77ff1ea 100644\n--- a/server/src/main/java/io/crate/execution/dml/Indexer.java\n+++ b/server/src/main/java/io/crate/execution/dml/Indexer.java\n@@ -859,7 +859,7 @@ public class Indexer {\n         Object[] values = item.insertValues();\n         for (int i = 0; i < values.length; i++) {\n             Reference reference = columns.get(i);\n-            Object value = valueForInsert(reference.valueType(), values[i]);\n+            Object value = values[i];\n             // No granularity check since PARTITIONED BY columns cannot be added dynamically.\n             if (value == null) {\n                 continue;\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    },
+    {
+      "target_file": "server/src/main/java/io/crate/types/ArrayType.java",
+      "mainline_file": "server/src/main/java/io/crate/types/ArrayType.java",
+      "hunk_text": "diff --git a/server/src/main/java/io/crate/types/ArrayType.java b/server/src/main/java/io/crate/types/ArrayType.java\nindex e045a2785f..633e6211fa 100644\n--- a/server/src/main/java/io/crate/types/ArrayType.java\n+++ b/server/src/main/java/io/crate/types/ArrayType.java\n@@ -244,16 +244,12 @@ public class ArrayType<T> extends DataType<List<T>> {\n         return convert(value, innerType, innerType::sanitizeValue, CoordinatorTxnCtx.systemTransactionContext().sessionSettings());\n     }\n \n-    public static List<String> fromAnyArray(Object[] values) throws IllegalArgumentException {\n-        if (values == null) {\n+    @Override\n+    public List<T> valueForInsert(List<T> value) {\n+        if (value == null) {\n             return null;\n-        } else {\n-            ArrayList<String> array = new ArrayList<>(values.length);\n-            for (var value : values) {\n-                array.add(anyValueToString(value));\n-            }\n-            return array;\n         }\n+        return Lists.map(value, innerType::valueForInsert);\n     }\n \n     public static List<String> fromAnyArray(List<?> values) throws IllegalArgumentException {\n@@ -275,13 +271,11 @@ public class ArrayType<T> extends DataType<List<T>> {\n         }\n         try {\n             if (value instanceof Map) {\n-                //noinspection unchecked\n-                return\n-                    Strings.toString(\n+                return Strings.toString(\n                         JsonXContent.builder().map((Map<String, ?>) value));\n-            } else if (value instanceof Collection) {\n+            } else if (value instanceof Collection<?> collection) {\n                 var array = JsonXContent.builder().startArray();\n-                for (var element : (Collection<?>) value) {\n+                for (var element : collection) {\n                     array.value(element);\n                 }\n                 array.endArray();\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    }
+  ],
+  "adapted_test_hunks": [],
+  "generation_checklist": [
+    {
+      "mainline_file": "server/src/main/java/io/crate/execution/dml/Indexer.java",
+      "target_file": "server/src/main/java/io/crate/execution/dml/Indexer.java",
+      "hunk_index": 0,
+      "adaptation_type": "TYPE_II",
+      "execution_types": [
+        "TYPE_II"
+      ],
+      "status": "success",
+      "reason": "developer_fast_path",
+      "todo_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ],
+      "completed_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ]
+    },
+    {
+      "mainline_file": "server/src/main/java/io/crate/types/ArrayType.java",
+      "target_file": "server/src/main/java/io/crate/types/ArrayType.java",
+      "hunk_index": 0,
+      "adaptation_type": "TYPE_II",
+      "execution_types": [
+        "TYPE_II"
+      ],
+      "status": "success",
+      "reason": "developer_fast_path",
+      "todo_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ],
+      "completed_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ]
+    }
+  ],
+  "generated_patch_hash": "c59875c4101f91811ce27968abce7462d508f562207c8d0f8e3e6f04703965c7",
+  "force_type_v_until_success": false,
+  "force_type_v_reason": "",
+  "force_type_v_retry_files": [],
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "sources": []
+  }
+}

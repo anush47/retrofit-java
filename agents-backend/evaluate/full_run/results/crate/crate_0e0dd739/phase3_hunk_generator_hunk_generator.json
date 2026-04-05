@@ -1,0 +1,169 @@
+{
+  "adapted_file_edits": [
+    {
+      "target_file": "server/src/main/java/io/crate/execution/dml/IndexDocumentBuilder.java",
+      "mainline_file": "server/src/main/java/io/crate/execution/dml/IndexDocumentBuilder.java",
+      "old_string": "<developer patch fast path>",
+      "new_string": "diff --git a/server/src/main/java/io/crate/execution/dml/IndexDocumentBuilder.java b/server/src/main/java/io/crate/execution/dml/IndexDocumentBuilder.java\nindex 57ce287151..de9ab7f16c 100644\n--- a/server/src/main/java/io/crate/execution/dml/IndexDocumentBuilder.java\n+++ b/server/src/main/java/io/crate/execution/dml/IndexDocumentBuilder.java\n@@ -106,12 +106,8 @@ public class IndexDocumentBuilder {\n         return translogWriter;\n     }\n \n-    /**\n-     * @return a generated value for the given column if one exists, otherwise null\n-     */\n-    public Object getSyntheticValue(ColumnIdent columnIdent) {\n-        Input<Object> input = synthetics.get(columnIdent);\n-        return input == null ? null : input.value();\n+    public Input<Object> getSynthetic(ColumnIdent columnIdent) {\n+        return synthetics.get(columnIdent);\n     }\n \n     /**",
+      "edit_type": "replace",
+      "verified": true,
+      "verification_result": "developer_fast_path_ok",
+      "applied": true,
+      "apply_result": "SUCCESS"
+    },
+    {
+      "target_file": "server/src/main/java/io/crate/execution/dml/ObjectIndexer.java",
+      "mainline_file": "server/src/main/java/io/crate/execution/dml/ObjectIndexer.java",
+      "old_string": "<developer patch fast path>",
+      "new_string": "diff --git a/server/src/main/java/io/crate/execution/dml/ObjectIndexer.java b/server/src/main/java/io/crate/execution/dml/ObjectIndexer.java\nindex c328890ca0..7c9b89ab18 100644\n--- a/server/src/main/java/io/crate/execution/dml/ObjectIndexer.java\n+++ b/server/src/main/java/io/crate/execution/dml/ObjectIndexer.java\n@@ -102,11 +102,11 @@ public class ObjectIndexer implements ValueIndexer<Map<String, Object>> {\n             String innerName = entry.getKey();\n             Child child = entry.getValue();\n             if (value.containsKey(innerName) == false) {\n-                var synth = docBuilder.getSyntheticValue(child.ident());\n+                var synth = docBuilder.getSynthetic(child.ident());\n                 if (synth != null) {\n                     // directly modify the map so that containing types will see the value\n                     // if they need to write stored fields\n-                    value.put(innerName, synth);\n+                    value.put(innerName, synth.value());\n                 }\n             }\n             var innerValue = value.get(innerName);\n@@ -131,6 +131,8 @@ public class ObjectIndexer implements ValueIndexer<Map<String, Object>> {\n                 columnsToStore.put(k, v);\n             }\n             if (v == null) {\n+                translogWriter.writeFieldName(k);\n+                translogWriter.writeValue(null);\n                 columnsToStore.put(k, null);\n             }\n         });\n@@ -155,7 +157,7 @@ public class ObjectIndexer implements ValueIndexer<Map<String, Object>> {\n         translogWriter.endObject();\n     }\n \n-    private BytesReference toBytes(Map<String, Object> v, Version version) {\n+    public static BytesReference toBytes(Map<String, Object> v, Version version) {\n         try (BytesStreamOutput out = new BytesStreamOutput()) {\n             out.setVersion(version);\n             out.writeMap(v, StreamOutput::writeString, StreamOutput::writeGenericValue);",
+      "edit_type": "replace",
+      "verified": true,
+      "verification_result": "developer_fast_path_ok",
+      "applied": true,
+      "apply_result": "SUCCESS"
+    }
+  ],
+  "all_adapted_file_edits": [
+    [
+      {
+        "target_file": "server/src/main/java/io/crate/execution/dml/IndexDocumentBuilder.java",
+        "mainline_file": "server/src/main/java/io/crate/execution/dml/IndexDocumentBuilder.java",
+        "old_string": "<developer patch fast path>",
+        "new_string": "diff --git a/server/src/main/java/io/crate/execution/dml/IndexDocumentBuilder.java b/server/src/main/java/io/crate/execution/dml/IndexDocumentBuilder.java\nindex 57ce287151..de9ab7f16c 100644\n--- a/server/src/main/java/io/crate/execution/dml/IndexDocumentBuilder.java\n+++ b/server/src/main/java/io/crate/execution/dml/IndexDocumentBuilder.java\n@@ -106,12 +106,8 @@ public class IndexDocumentBuilder {\n         return translogWriter;\n     }\n \n-    /**\n-     * @return a generated value for the given column if one exists, otherwise null\n-     */\n-    public Object getSyntheticValue(ColumnIdent columnIdent) {\n-        Input<Object> input = synthetics.get(columnIdent);\n-        return input == null ? null : input.value();\n+    public Input<Object> getSynthetic(ColumnIdent columnIdent) {\n+        return synthetics.get(columnIdent);\n     }\n \n     /**",
+        "edit_type": "replace",
+        "verified": true,
+        "verification_result": "developer_fast_path_ok",
+        "applied": true,
+        "apply_result": "SUCCESS"
+      },
+      {
+        "target_file": "server/src/main/java/io/crate/execution/dml/ObjectIndexer.java",
+        "mainline_file": "server/src/main/java/io/crate/execution/dml/ObjectIndexer.java",
+        "old_string": "<developer patch fast path>",
+        "new_string": "diff --git a/server/src/main/java/io/crate/execution/dml/ObjectIndexer.java b/server/src/main/java/io/crate/execution/dml/ObjectIndexer.java\nindex c328890ca0..7c9b89ab18 100644\n--- a/server/src/main/java/io/crate/execution/dml/ObjectIndexer.java\n+++ b/server/src/main/java/io/crate/execution/dml/ObjectIndexer.java\n@@ -102,11 +102,11 @@ public class ObjectIndexer implements ValueIndexer<Map<String, Object>> {\n             String innerName = entry.getKey();\n             Child child = entry.getValue();\n             if (value.containsKey(innerName) == false) {\n-                var synth = docBuilder.getSyntheticValue(child.ident());\n+                var synth = docBuilder.getSynthetic(child.ident());\n                 if (synth != null) {\n                     // directly modify the map so that containing types will see the value\n                     // if they need to write stored fields\n-                    value.put(innerName, synth);\n+                    value.put(innerName, synth.value());\n                 }\n             }\n             var innerValue = value.get(innerName);\n@@ -131,6 +131,8 @@ public class ObjectIndexer implements ValueIndexer<Map<String, Object>> {\n                 columnsToStore.put(k, v);\n             }\n             if (v == null) {\n+                translogWriter.writeFieldName(k);\n+                translogWriter.writeValue(null);\n                 columnsToStore.put(k, null);\n             }\n         });\n@@ -155,7 +157,7 @@ public class ObjectIndexer implements ValueIndexer<Map<String, Object>> {\n         translogWriter.endObject();\n     }\n \n-    private BytesReference toBytes(Map<String, Object> v, Version version) {\n+    public static BytesReference toBytes(Map<String, Object> v, Version version) {\n         try (BytesStreamOutput out = new BytesStreamOutput()) {\n             out.setVersion(version);\n             out.writeMap(v, StreamOutput::writeString, StreamOutput::writeGenericValue);",
+        "edit_type": "replace",
+        "verified": true,
+        "verification_result": "developer_fast_path_ok",
+        "applied": true,
+        "apply_result": "SUCCESS"
+      }
+    ]
+  ],
+  "agent_trajectory_edits": [
+    []
+  ],
+  "adapted_code_hunks": [
+    {
+      "target_file": "server/src/main/java/io/crate/execution/dml/IndexDocumentBuilder.java",
+      "mainline_file": "server/src/main/java/io/crate/execution/dml/IndexDocumentBuilder.java",
+      "hunk_text": "diff --git a/server/src/main/java/io/crate/execution/dml/IndexDocumentBuilder.java b/server/src/main/java/io/crate/execution/dml/IndexDocumentBuilder.java\nindex 57ce287151..de9ab7f16c 100644\n--- a/server/src/main/java/io/crate/execution/dml/IndexDocumentBuilder.java\n+++ b/server/src/main/java/io/crate/execution/dml/IndexDocumentBuilder.java\n@@ -106,12 +106,8 @@ public class IndexDocumentBuilder {\n         return translogWriter;\n     }\n \n-    /**\n-     * @return a generated value for the given column if one exists, otherwise null\n-     */\n-    public Object getSyntheticValue(ColumnIdent columnIdent) {\n-        Input<Object> input = synthetics.get(columnIdent);\n-        return input == null ? null : input.value();\n+    public Input<Object> getSynthetic(ColumnIdent columnIdent) {\n+        return synthetics.get(columnIdent);\n     }\n \n     /**\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    },
+    {
+      "target_file": "server/src/main/java/io/crate/execution/dml/ObjectIndexer.java",
+      "mainline_file": "server/src/main/java/io/crate/execution/dml/ObjectIndexer.java",
+      "hunk_text": "diff --git a/server/src/main/java/io/crate/execution/dml/ObjectIndexer.java b/server/src/main/java/io/crate/execution/dml/ObjectIndexer.java\nindex c328890ca0..7c9b89ab18 100644\n--- a/server/src/main/java/io/crate/execution/dml/ObjectIndexer.java\n+++ b/server/src/main/java/io/crate/execution/dml/ObjectIndexer.java\n@@ -102,11 +102,11 @@ public class ObjectIndexer implements ValueIndexer<Map<String, Object>> {\n             String innerName = entry.getKey();\n             Child child = entry.getValue();\n             if (value.containsKey(innerName) == false) {\n-                var synth = docBuilder.getSyntheticValue(child.ident());\n+                var synth = docBuilder.getSynthetic(child.ident());\n                 if (synth != null) {\n                     // directly modify the map so that containing types will see the value\n                     // if they need to write stored fields\n-                    value.put(innerName, synth);\n+                    value.put(innerName, synth.value());\n                 }\n             }\n             var innerValue = value.get(innerName);\n@@ -131,6 +131,8 @@ public class ObjectIndexer implements ValueIndexer<Map<String, Object>> {\n                 columnsToStore.put(k, v);\n             }\n             if (v == null) {\n+                translogWriter.writeFieldName(k);\n+                translogWriter.writeValue(null);\n                 columnsToStore.put(k, null);\n             }\n         });\n@@ -155,7 +157,7 @@ public class ObjectIndexer implements ValueIndexer<Map<String, Object>> {\n         translogWriter.endObject();\n     }\n \n-    private BytesReference toBytes(Map<String, Object> v, Version version) {\n+    public static BytesReference toBytes(Map<String, Object> v, Version version) {\n         try (BytesStreamOutput out = new BytesStreamOutput()) {\n             out.setVersion(version);\n             out.writeMap(v, StreamOutput::writeString, StreamOutput::writeGenericValue);\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    }
+  ],
+  "validation_repeated_patch_detected": false,
+  "validation_repeated_plan_detected": false,
+  "best_effort_adapted_code_hunks": [
+    {
+      "target_file": "server/src/main/java/io/crate/execution/dml/IndexDocumentBuilder.java",
+      "mainline_file": "server/src/main/java/io/crate/execution/dml/IndexDocumentBuilder.java",
+      "hunk_text": "diff --git a/server/src/main/java/io/crate/execution/dml/IndexDocumentBuilder.java b/server/src/main/java/io/crate/execution/dml/IndexDocumentBuilder.java\nindex 57ce287151..de9ab7f16c 100644\n--- a/server/src/main/java/io/crate/execution/dml/IndexDocumentBuilder.java\n+++ b/server/src/main/java/io/crate/execution/dml/IndexDocumentBuilder.java\n@@ -106,12 +106,8 @@ public class IndexDocumentBuilder {\n         return translogWriter;\n     }\n \n-    /**\n-     * @return a generated value for the given column if one exists, otherwise null\n-     */\n-    public Object getSyntheticValue(ColumnIdent columnIdent) {\n-        Input<Object> input = synthetics.get(columnIdent);\n-        return input == null ? null : input.value();\n+    public Input<Object> getSynthetic(ColumnIdent columnIdent) {\n+        return synthetics.get(columnIdent);\n     }\n \n     /**\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    },
+    {
+      "target_file": "server/src/main/java/io/crate/execution/dml/ObjectIndexer.java",
+      "mainline_file": "server/src/main/java/io/crate/execution/dml/ObjectIndexer.java",
+      "hunk_text": "diff --git a/server/src/main/java/io/crate/execution/dml/ObjectIndexer.java b/server/src/main/java/io/crate/execution/dml/ObjectIndexer.java\nindex c328890ca0..7c9b89ab18 100644\n--- a/server/src/main/java/io/crate/execution/dml/ObjectIndexer.java\n+++ b/server/src/main/java/io/crate/execution/dml/ObjectIndexer.java\n@@ -102,11 +102,11 @@ public class ObjectIndexer implements ValueIndexer<Map<String, Object>> {\n             String innerName = entry.getKey();\n             Child child = entry.getValue();\n             if (value.containsKey(innerName) == false) {\n-                var synth = docBuilder.getSyntheticValue(child.ident());\n+                var synth = docBuilder.getSynthetic(child.ident());\n                 if (synth != null) {\n                     // directly modify the map so that containing types will see the value\n                     // if they need to write stored fields\n-                    value.put(innerName, synth);\n+                    value.put(innerName, synth.value());\n                 }\n             }\n             var innerValue = value.get(innerName);\n@@ -131,6 +131,8 @@ public class ObjectIndexer implements ValueIndexer<Map<String, Object>> {\n                 columnsToStore.put(k, v);\n             }\n             if (v == null) {\n+                translogWriter.writeFieldName(k);\n+                translogWriter.writeValue(null);\n                 columnsToStore.put(k, null);\n             }\n         });\n@@ -155,7 +157,7 @@ public class ObjectIndexer implements ValueIndexer<Map<String, Object>> {\n         translogWriter.endObject();\n     }\n \n-    private BytesReference toBytes(Map<String, Object> v, Version version) {\n+    public static BytesReference toBytes(Map<String, Object> v, Version version) {\n         try (BytesStreamOutput out = new BytesStreamOutput()) {\n             out.setVersion(version);\n             out.writeMap(v, StreamOutput::writeString, StreamOutput::writeGenericValue);\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    }
+  ],
+  "adapted_test_hunks": [],
+  "generation_checklist": [
+    {
+      "mainline_file": "server/src/main/java/io/crate/execution/dml/IndexDocumentBuilder.java",
+      "target_file": "server/src/main/java/io/crate/execution/dml/IndexDocumentBuilder.java",
+      "hunk_index": 0,
+      "adaptation_type": "TYPE_II",
+      "execution_types": [
+        "TYPE_II"
+      ],
+      "status": "success",
+      "reason": "developer_fast_path",
+      "todo_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ],
+      "completed_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ]
+    },
+    {
+      "mainline_file": "server/src/main/java/io/crate/execution/dml/ObjectIndexer.java",
+      "target_file": "server/src/main/java/io/crate/execution/dml/ObjectIndexer.java",
+      "hunk_index": 0,
+      "adaptation_type": "TYPE_II",
+      "execution_types": [
+        "TYPE_II"
+      ],
+      "status": "success",
+      "reason": "developer_fast_path",
+      "todo_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ],
+      "completed_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ]
+    }
+  ],
+  "generated_patch_hash": "192c81959d6177f468af0bcf2fa1d2ac0ee3ee9bffb8be3135b23f66785d37cf",
+  "force_type_v_until_success": false,
+  "force_type_v_reason": "",
+  "force_type_v_retry_files": [],
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "sources": []
+  }
+}

@@ -1,0 +1,39 @@
+# Full Trace of Agentic File Edits
+
+## Attempt #1
+
+### Final Output Diff
+**server/src/main/java/io/crate/execution/engine/indexing/BatchIteratorBackpressureExecutor.java** [replace]
+```java
+// --- OLD ---
+<developer patch fast path>
+// --- NEW ---
+diff --git a/server/src/main/java/io/crate/execution/engine/indexing/BatchIteratorBackpressureExecutor.java b/server/src/main/java/io/crate/execution/engine/indexing/BatchIteratorBackpressureExecutor.java
+index 8870ceab13..dae080d57f 100644
+--- a/server/src/main/java/io/crate/execution/engine/indexing/BatchIteratorBackpressureExecutor.java
++++ b/server/src/main/java/io/crate/execution/engine/indexing/BatchIteratorBackpressureExecutor.java
+@@ -35,10 +35,9 @@ import java.util.function.BinaryOperator;
+ import java.util.function.Function;
+ import java.util.function.Predicate;
+ 
+-import org.jetbrains.annotations.Nullable;
+-
+ import org.apache.logging.log4j.LogManager;
+ import org.apache.logging.log4j.Logger;
++import org.jetbrains.annotations.Nullable;
+ 
+ import io.crate.data.BatchIterator;
+ import io.crate.exceptions.JobKilledException;
+@@ -179,7 +178,10 @@ public class BatchIteratorBackpressureExecutor<T, R> {
+                         scheduler.schedule(this::resumeConsumption, delayInMs, TimeUnit.MILLISECONDS);
+                         return;
+                     }
+-                    // fall through to execute
++                    // No delay available, execute and let any response continue (release semaphore)
++                    execute(item);
++                    semaphore.release();
++                    return;
+                 }
+                 execute(item);
+             }
+```

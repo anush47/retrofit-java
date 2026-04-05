@@ -1,0 +1,28 @@
+patch_id=crate_7e4bc7e9
+project=crate
+mainline_commit=7e4bc7e9a73d300f97e6905fec14412bf3cd15a2
+backport_commit=7bb9c7a1434d39a7d1bead8f1b31d1313ac27e06
+mode=full
+started_at=2026-04-05T13:08:58.284705
+----------------------------------------
+Running full workflow graph
+Completed node=phase_0_optimistic
+Workflow completed successfully
+
+[crate/crate_7e4bc7e9] Setting up repositories for mode=full...
+[crate/crate_7e4bc7e9] Running full workflow graph...
+Router: Running Phase 0.
+Phase 0 (Optimistic): Checking direct patch applicability...
+Phase 0: Experiment mode — checking out parent of 7bb9c7a1434d39a7d1bead8f1b31d1313ac27e06...
+Phase 0: Building baseline by applying developer backport test hunks only...
+  Validation: server/src/test/java/io/crate/execution/engine/distribution/StreamBucketTest.java - applying 1 hunk(s) one by one in bottom-to-top order: [1]
+  Validation: ADDED operation for server/src/test/java/io/crate/execution/engine/distribution/StreamBucketTest.java
+    Agent 4: Executing crate helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_tests.sh
+Phase 0: git apply --check SUCCEEDED. Attempting actual patch application and test run.
+    Agent 4: Executing crate helper build script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_build.sh
+    Agent 4: Executing crate helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_tests.sh
+Phase 0: Transition summary -> reason=Valid: Observed fail-to-pass and/or newly passing relevant tests with no regressions.; fail->pass(1): ['io.crate.execution.engine.distribution.StreamBucketTest#test_accounting']; newly_passing(0): []; pass->fail(0): []
+Phase 0: Transition-based test validation passed. Fast-path success.
+Router: Phase 0 succeeded - taking fast-path exit.
+  Completed: phase_0_optimistic
+[crate/crate_7e4bc7e9] Full workflow completed!

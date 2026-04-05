@@ -1,0 +1,28 @@
+patch_id=crate_ad91e3aa
+project=crate
+mainline_commit=ad91e3aaffbfd5bff986593c3c57c89f0b52425a
+backport_commit=ed7e7467f9c9883784e7d44558cb95ea69eea74c
+mode=full
+started_at=2026-04-05T11:52:17.898412
+----------------------------------------
+Running full workflow graph
+Completed node=phase_0_optimistic
+Workflow completed successfully
+
+[crate/crate_ad91e3aa] Setting up repositories for mode=full...
+[crate/crate_ad91e3aa] Running full workflow graph...
+Router: Running Phase 0.
+Phase 0 (Optimistic): Checking direct patch applicability...
+Phase 0: Experiment mode — checking out parent of ed7e7467f9c9883784e7d44558cb95ea69eea74c...
+Phase 0: Building baseline by applying developer backport test hunks only...
+  Validation: server/src/test/java/org/elasticsearch/threadpool/ThreadPoolTest.java - applying 1 hunk(s) one by one in bottom-to-top order: [1]
+  Validation: ADDED operation for server/src/test/java/org/elasticsearch/threadpool/ThreadPoolTest.java
+    Agent 4: Executing crate helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_tests.sh
+Phase 0: git apply --check SUCCEEDED. Attempting actual patch application and test run.
+    Agent 4: Executing crate helper build script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_build.sh
+    Agent 4: Executing crate helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_tests.sh
+Phase 0: Transition summary -> reason=Valid: Observed fail-to-pass and/or newly passing relevant tests with no regressions.; fail->pass(0): []; newly_passing(2): ['org.elasticsearch.threadpool.ThreadPoolTest#test_force_merge_pool_size', 'org.elasticsearch.threadpool.ThreadPoolTest#test_one_eight_of_processors']; pass->fail(0): []
+Phase 0: Transition-based test validation passed. Fast-path success.
+Router: Phase 0 succeeded - taking fast-path exit.
+  Completed: phase_0_optimistic
+[crate/crate_ad91e3aa] Full workflow completed!

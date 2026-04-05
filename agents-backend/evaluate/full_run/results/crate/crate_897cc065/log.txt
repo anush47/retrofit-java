@@ -1,0 +1,28 @@
+patch_id=crate_897cc065
+project=crate
+mainline_commit=897cc0651cf51d8c520fba0cbadcfa4a5009bc07
+backport_commit=a735d95e81af2d67af2a23ac3279b0d4b403f266
+mode=full
+started_at=2026-04-05T11:57:33.795937
+----------------------------------------
+Running full workflow graph
+Completed node=phase_0_optimistic
+Workflow completed successfully
+
+[crate/crate_897cc065] Setting up repositories for mode=full...
+[crate/crate_897cc065] Running full workflow graph...
+Router: Running Phase 0.
+Phase 0 (Optimistic): Checking direct patch applicability...
+Phase 0: Experiment mode — checking out parent of a735d95e81af2d67af2a23ac3279b0d4b403f266...
+Phase 0: Building baseline by applying developer backport test hunks only...
+  Validation: server/src/test/java/io/crate/planner/operators/EquiJoinDetectorTest.java - applying 1 hunk(s) one by one in bottom-to-top order: [165]
+  Validation: server/src/test/java/io/crate/planner/optimizer/rule/EquiJoinToLookupJoinTest.java - applying 4 hunk(s) one by one in bottom-to-top order: [279, 66, 51, 21]
+    Agent 4: Executing crate helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_tests.sh
+Phase 0: git apply --check SUCCEEDED. Attempting actual patch application and test run.
+    Agent 4: Executing crate helper build script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_build.sh
+    Agent 4: Executing crate helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_tests.sh
+Phase 0: Transition summary -> reason=Valid: Observed fail-to-pass and/or newly passing relevant tests with no regressions.; fail->pass(0): []; newly_passing(25): ['io.crate.planner.operators.EquiJoinDetectorTest#testNotPossibleOnEqWithoutRelationFieldsOnBothSides', 'io.crate.planner.operators.EquiJoinDetectorTest#testNotPossibleOnInnerContainingEqOrAnyCondition', 'io.crate.planner.operators.EquiJoinDetectorTest#testNotPossibleOnInnerWithEqAndScalarOnMultipleRelations', 'io.crate.planner.operators.EquiJoinDetectorTest#testNotPossibleOnInnerWithoutAnyEqCondition', 'io.crate.planner.operators.EquiJoinDetectorTest#testNotPossibleOnNotWrappingEq', 'io.crate.planner.operators.EquiJoinDetectorTest#testPossibleOnInnerContainingEqAndAnyCondition', 'io.crate.planner.operators.EquiJoinDetectorTest#testPossibleOnInnerContainingEqCondition', 'io.crate.planner.operators.EquiJoinDetectorTest#testPossibleOnInnerWithEqAndScalarOnOneRelation', 'io.crate.planner.operators.EquiJoinDetectorTest#test_case_expression_with_nested_equality', 'io.crate.planner.operators.EquiJoinDetectorTest#test_detect_pure_equi_join', 'io.crate.planner.operators.EquiJoinDetectorTest#test_equality_and_many_relations_in_boolean_join_condition_hash_join_not_possible', 'io.crate.planner.operators.EquiJoinDetectorTest#test_equality_condition_inside_cast', 'io.crate.planner.operators.EquiJoinDetectorTest#test_equality_expression_followed_by_case_expression', 'io.crate.planner.operators.EquiJoinDetectorTest#test_if_expression_with_nested_equality', 'io.crate.planner.operators.EquiJoinDetectorTest#test_inequality_in_boolean_join_condition_hash_join_possible', 'io.crate.planner.operators.EquiJoinDetectorTest#test_not_hash_join_possible_if_join_condition_refers_to_columns_from_a_single_relation', 'io.crate.planner.operators.EquiJoinDetectorTest#test_or_in_boolean_join_condition_hash_join_possible', 'io.crate.planner.optimizer.rule.EquiJoinToLookupJoinTest#test_complex_equi_join_conditions_are_not_supported', 'io.crate.planner.optimizer.rule.EquiJoinToLookupJoinTest#test_filter_on_larger_side', 'io.crate.planner.optimizer.rule.EquiJoinToLookupJoinTest#test_filter_on_smaller_side', 'io.crate.planner.optimizer.rule.EquiJoinToLookupJoinTest#test_lookup_join_lhs_is_larger', 'io.crate.planner.optimizer.rule.EquiJoinToLookupJoinTest#test_lookup_join_rhs_is_larger', 'io.crate.planner.optimizer.rule.EquiJoinToLookupJoinTest#test_skip_if_source_is_not_a_collect', 'io.crate.planner.optimizer.rule.EquiJoinToLookupJoinTest#test_skip_no_stats', 'io.crate.planner.optimizer.rule.EquiJoinToLookupJoinTest#test_skip_non_equi_joins']; pass->fail(0): []
+Phase 0: Transition-based test validation passed. Fast-path success.
+Router: Phase 0 succeeded - taking fast-path exit.
+  Completed: phase_0_optimistic
+[crate/crate_897cc065] Full workflow completed!

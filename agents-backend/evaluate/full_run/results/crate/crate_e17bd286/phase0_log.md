@@ -5,6 +5,14 @@
 - Java-only files for agentic phases: 1
 - Developer auxiliary hunks (test + non-Java): 4
 
+## Commit Pair Consistency
+- Pair mismatch: False
+- Reason: scope_overlap_ok
+- Mainline Java files: ['server/src/main/java/io/crate/rest/action/SqlHttpHandler.java']
+- Developer Java files: ['server/src/main/java/io/crate/rest/action/SqlHttpHandler.java']
+- Overlap Java files: ['server/src/main/java/io/crate/rest/action/SqlHttpHandler.java']
+- Overlap ratio (mainline): 1.0
+
 ## Mainline Patch
 ```diff
 From e17bd286fd9fb7fe8904fdfaf5010b6ba28b3083 Mon Sep 17 00:00:00 2001

@@ -1,0 +1,3743 @@
+{
+  "hunk_generation_plan": {
+    "server/src/main/java/io/crate/protocols/postgres/DelayableWriteChannel.java": [
+      {
+        "hunk_index": 0,
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/DelayableWriteChannel.java",
+        "operation_index": 0,
+        "edit_type": "replace",
+        "old_string": "",
+        "new_string": "/*\n * Licensed to Crate.io GmbH (\"Crate\") under one or more contributor\n * license agreements.  See the NOTICE file distributed with this work for\n * additional information regarding copyright ownership.  Crate licenses\n * this file to you under the Apache License, Version 2.0 (the \"License\");\n * you may not use this file except in compliance with the License.  You may\n * obtain a copy of the License at\n *\n *   http://www.apache.org/licenses/LICENSE-2.0\n *\n * Unless required by applicable law or agreed to in writing, software\n * distributed under the License is distributed on an \"AS IS\" BASIS, WITHOUT\n * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the\n * License for the specific language governing permissions and limitations\n * under the License.\n *\n * However, if you have executed another commercial license agreement\n * with Crate these terms will supersede the license and you may use the\n * software solely pursuant to the terms of the relevant commercial agreement.\n */\n\npackage io.crate.protocols.postgres;\n\nimport java.net.SocketAddress;\nimport java.util.ArrayDeque;\n\nimport org.jetbrains.annotations.Nullable;\n\nimport io.netty.buffer.ByteBufAllocator;\nimport io.netty.channel.Channel;\nimport io.netty.channel.ChannelConfig;\nimport io.netty.channel.ChannelFuture;\nimport io.netty.channel.ChannelId;\nimport io.netty.channel.ChannelMetadata;\nimport io.netty.channel.ChannelPipeline;\nimport io.netty.channel.ChannelProgressivePromise;\nimport io.netty.channel.ChannelPromise;\nimport io.netty.channel.EventLoop;\nimport io.netty.util.Attribute;\nimport io.netty.util.AttributeKey;\nimport io.netty.util.ReferenceCountUtil;\n\n/**\n * Channel implementation that allows to delay writes with `blockWritesUntil`\n **/\npublic class DelayableWriteChannel implements Channel {\n\n    private final Channel delegate;\n    private DelayedWrites delay = null;\n\n    public DelayableWriteChannel(Channel channel) {\n        this.delegate = channel;\n        channel.closeFuture().addListener(_ -> discardDelayedWrites());\n    }\n\n    @Override\n    public <T> Attribute<T> attr(AttributeKey<T> key) {\n        return delegate.attr(key);\n    }\n\n    @Override\n    public <T> boolean hasAttr(AttributeKey<T> key) {\n        return delegate.hasAttr(key);\n    }\n\n    @Override\n    public ChannelFuture bind(SocketAddress localAddress) {\n        return delegate.bind(localAddress);\n    }\n\n    @Override\n    public ChannelFuture connect(SocketAddress remoteAddress) {\n        return delegate.connect(remoteAddress);\n    }\n\n    @Override\n    public ChannelFuture connect(SocketAddress remoteAddress, SocketAddress localAddress) {\n        return delegate.connect(remoteAddress, localAddress);\n    }\n\n    @Override\n    public ChannelFuture disconnect() {\n        return delegate.disconnect();\n    }\n\n    @Override\n    public ChannelFuture close() {\n        return delegate.close();\n    }\n\n    @Override\n    public ChannelFuture deregister() {\n        return delegate.deregister();\n    }\n\n    @Override\n    public ChannelFuture bind(SocketAddress localAddress, ChannelPromise promise) {\n        return delegate.bind(localAddress, promise);\n    }\n\n    @Override\n    public ChannelFuture connect(SocketAddress remoteAddress, ChannelPromise promise) {\n        return delegate.connect(remoteAddress, promise);\n    }\n\n    @Override\n    public ChannelFuture connect(SocketAddress remoteAddress, SocketAddress localAddress, ChannelPromise promise) {\n        return delegate.connect(remoteAddress, localAddress, promise);\n    }\n\n    @Override\n    public ChannelFuture disconnect(ChannelPromise promise) {\n        return delegate.disconnect(promise);\n    }\n\n    @Override\n    public ChannelFuture close(ChannelPromise promise) {\n        return delegate.close(promise);\n    }\n\n    @Override\n    public ChannelFuture deregister(ChannelPromise promise) {\n        return delegate.deregister(promise);\n    }\n\n    @Override\n    public ChannelFuture write(Object msg) {\n        return this.write(msg, newPromise());\n    }\n\n    @Override\n    public ChannelFuture writeAndFlush(Object msg) {\n        return this.writeAndFlush(msg, newPromise());\n    }\n\n    @Override\n    public ChannelPromise newPromise() {\n        return delegate.newPromise();\n    }\n\n    @Override\n    public ChannelProgressivePromise newProgressivePromise() {\n        return delegate.newProgressivePromise();\n    }\n\n    @Override\n    public ChannelFuture newSucceededFuture() {\n        return delegate.newSucceededFuture();\n    }\n\n    @Override\n    public ChannelFuture newFailedFuture(Throwable cause) {\n        return delegate.newFailedFuture(cause);\n    }\n\n    @Override\n    public ChannelPromise voidPromise() {\n        return delegate.voidPromise();\n    }\n\n    @Override\n    public int compareTo(Channel o) {\n        return delegate.compareTo(o);\n    }\n\n    @Override\n    public ChannelId id() {\n        return delegate.id();\n    }\n\n    @Override\n    public EventLoop eventLoop() {\n        return delegate.eventLoop();\n    }\n\n    @Override\n    public Channel parent() {\n        return delegate.parent();\n    }\n\n    @Override\n    public ChannelConfig config() {\n        return delegate.config();\n    }\n\n    @Override\n    public boolean isOpen() {\n        return delegate.isOpen();\n    }\n\n    @Override\n    public boolean isRegistered() {\n        return delegate.isRegistered();\n    }\n\n    @Override\n    public boolean isActive() {\n        return delegate.isActive();\n    }\n\n    @Override\n    public ChannelMetadata metadata() {\n        return delegate.metadata();\n    }\n\n    @Override\n    public SocketAddress localAddress() {\n        return delegate.localAddress();\n    }\n\n    @Override\n    public SocketAddress remoteAddress() {\n        return delegate.remoteAddress();\n    }\n\n    @Override\n    public ChannelFuture closeFuture() {\n        return delegate.closeFuture();\n    }\n\n    @Override\n    public boolean isWritable() {\n        return delegate.isWritable();\n    }\n\n    @Override\n    public long bytesBeforeUnwritable() {\n        return delegate.bytesBeforeUnwritable();\n    }\n\n    @Override\n    public long bytesBeforeWritable() {\n        return delegate.bytesBeforeWritable();\n    }\n\n    @Override\n    public Unsafe unsafe() {\n        return delegate.unsafe();\n    }\n\n    @Override\n    public ChannelPipeline pipeline() {\n        return delegate.pipeline();\n    }\n\n    @Override\n    public ByteBufAllocator alloc() {\n        return delegate.alloc();\n    }\n\n    @Override\n    public Channel read() {\n        return delegate.read();\n    }\n\n    @Override\n    public Channel flush() {\n        return delegate.flush();\n    }\n\n    public Channel bypassDelay() {\n        return delegate;\n    }\n\n\n    @Override\n    public ChannelFuture write(Object msg, ChannelPromise promise) {\n        synchronized (this) {\n            if (delay != null) {\n                delay.add(msg, () -> delegate.write(msg, promise));\n                return promise;\n            }\n        }\n        return delegate.write(msg, promise);\n    }\n\n    @Override\n    public ChannelFuture writeAndFlush(Object msg, ChannelPromise promise) {\n        synchronized (this) {\n            if (delay != null) {\n                delay.add(msg, () -> delegate.writeAndFlush(msg, promise));\n                return promise;\n            }\n        }\n        return delegate.writeAndFlush(msg, promise);\n    }\n\n    public synchronized void discardDelayedWrites() {\n        if (delay != null) {\n            var parent = delay.parent;\n            while (parent != null) {\n                parent.discard();\n                parent = parent.parent;\n            }\n            delay.discard();\n            delay = null;\n        }\n    }\n\n    public synchronized void writePendingMessages(DelayedWrites delayedWrites) {\n        if (delay == delayedWrites) {\n            delay = null;\n        }\n        delayedWrites.writeDelayed();\n    }\n\n    public synchronized void writePendingMessages() {\n        if (delay != null) {\n            var parent = delay.parent;\n            while (parent != null) {\n                parent.writeDelayed();\n                parent = parent.parent;\n            }\n            delay.writeDelayed();\n            delay = null;\n        }\n    }\n\n    public DelayedWrites delayWrites() {\n        DelayedWrites delayedWrites = new DelayedWrites(delay);\n        delay = delayedWrites;\n        return delayedWrites;\n    }\n\n    record DelayedMsg(Object msg, Runnable runnable) {\n    }\n\n    static class DelayedWrites {\n\n        private final ArrayDeque<DelayedMsg> delayed = new ArrayDeque<>();\n        private final DelayedWrites parent;\n\n        public DelayedWrites(@Nullable DelayedWrites parent) {\n            this.parent = parent;\n        }\n\n        public void discard() {\n            DelayedMsg delayedMsg;\n            while ((delayedMsg = delayed.poll()) != null) {\n                ReferenceCountUtil.safeRelease(delayedMsg.msg);\n            }\n        }\n\n        public void add(Object msg, Runnable runnable) {\n            delayed.add(new DelayedMsg(msg, runnable));\n        }\n\n        private void writeDelayed() {\n            DelayedMsg delayedMsg;\n            while ((delayedMsg = delayed.poll()) != null) {\n                delayedMsg.runnable.run();\n            }\n        }\n    }\n}",
+        "verified": true,
+        "verification_result": "verified_applicable_replace",
+        "notes": "full new file content insertion at start of empty target file",
+        "surround_before_3": [],
+        "surround_after_3": [
+          " * Licensed to Crate.io GmbH (\"Crate\") under one or more contributor",
+          " * license agreements.  See the NOTICE file distributed with this work for",
+          " * additional information regarding copyright ownership.  Crate licenses"
+        ],
+        "adaptation_type": "TYPE_I",
+        "base_adaptation_type": "TYPE_I",
+        "execution_type": "TYPE_I",
+        "location_match": true,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": true,
+        "namespace_changes": [],
+        "required_invariants": [
+          "public class DelayableWriteChannel implements Channel {",
+          "private final Channel delegate;",
+          "private DelayedWrites delay = null;",
+          "public DelayableWriteChannel(Channel channel) {",
+          "this.delegate = channel;",
+          "channel.closeFuture().addListener(_ -> discardDelayedWrites());",
+          "public <T> Attribute<T> attr(AttributeKey<T> key) {",
+          "return delegate.attr(key);"
+        ],
+        "required_symbols": [
+          "add",
+          "alloc",
+          "attr",
+          "bind",
+          "bypassDelay",
+          "bytesBeforeUnwritable",
+          "bytesBeforeWritable",
+          "close",
+          "closeFuture",
+          "compareTo",
+          "config",
+          "connect",
+          "delayWrites",
+          "deregister",
+          "discard",
+          "discardDelayedWrites",
+          "disconnect",
+          "eventLoop",
+          "flush",
+          "hasAttr",
+          "id",
+          "isActive",
+          "isOpen",
+          "isRegistered",
+          "isWritable",
+          "localAddress",
+          "metadata",
+          "newFailedFuture",
+          "newProgressivePromise",
+          "newPromise",
+          "newSucceededFuture",
+          "parent",
+          "pipeline",
+          "read",
+          "remoteAddress",
+          "unsafe",
+          "voidPromise",
+          "write",
+          "writeAndFlush",
+          "writeDelayed",
+          "writePendingMessages"
+        ],
+        "protected_symbols": [
+          "add",
+          "alloc",
+          "attr",
+          "bind",
+          "bypassDelay",
+          "bytesBeforeUnwritable",
+          "bytesBeforeWritable",
+          "close",
+          "closeFuture",
+          "compareTo",
+          "config",
+          "connect",
+          "delayWrites",
+          "deregister",
+          "discard",
+          "discardDelayedWrites",
+          "disconnect",
+          "eventLoop",
+          "flush",
+          "hasAttr",
+          "id",
+          "isActive",
+          "isOpen",
+          "isRegistered",
+          "isWritable",
+          "localAddress",
+          "metadata",
+          "newFailedFuture",
+          "newProgressivePromise",
+          "newPromise",
+          "newSucceededFuture",
+          "parent",
+          "pipeline",
+          "read",
+          "remoteAddress",
+          "unsafe",
+          "voidPromise",
+          "write",
+          "writeAndFlush",
+          "writeDelayed",
+          "writePendingMessages"
+        ],
+        "must_preserve_symbols": [
+          "discardDelayedWrites"
+        ],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 41,
+          "target_declared_methods_count": 0,
+          "matched_symbols_before": [],
+          "missing_symbols_before": [
+            "add",
+            "alloc",
+            "attr",
+            "bind",
+            "bypassDelay",
+            "bytesBeforeUnwritable",
+            "bytesBeforeWritable",
+            "close",
+            "closeFuture",
+            "compareTo",
+            "config",
+            "connect",
+            "delayWrites",
+            "deregister",
+            "discard",
+            "discardDelayedWrites",
+            "disconnect",
+            "eventLoop",
+            "flush",
+            "hasAttr",
+            "id",
+            "isActive",
+            "isOpen",
+            "isRegistered",
+            "isWritable",
+            "localAddress",
+            "metadata",
+            "newFailedFuture",
+            "newProgressivePromise",
+            "newPromise",
+            "newSucceededFuture",
+            "parent",
+            "pipeline",
+            "read",
+            "remoteAddress",
+            "unsafe",
+            "voidPromise",
+            "write",
+            "writeAndFlush",
+            "writeDelayed",
+            "writePendingMessages"
+          ]
+        }
+      }
+    ],
+    "server/src/main/java/io/crate/protocols/postgres/PostgresNetty.java": [
+      {
+        "hunk_index": 0,
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/PostgresNetty.java",
+        "operation_index": 0,
+        "edit_type": "insert_before",
+        "old_string": "import io.crate.auth.Authentication;",
+        "new_string": "import io.crate.session.Sessions;\nimport io.crate.auth.Authentication;",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_insert_before",
+        "surround_before_3": [
+          "import com.carrotsearch.hppc.IntHashSet;",
+          "import com.carrotsearch.hppc.IntSet;",
+          ""
+        ],
+        "surround_after_3": [
+          "import io.crate.metadata.settings.session.SessionSettingRegistry;",
+          "import io.crate.netty.NettyBootstrap;",
+          "import io.crate.protocols.ConnectionStats;"
+        ],
+        "adaptation_type": "TYPE_I",
+        "base_adaptation_type": "TYPE_I",
+        "execution_type": "TYPE_I",
+        "location_match": true,
+        "surrounding_match": true,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 8,
+          "target_declared_methods_count": 8,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 1,
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/PostgresNetty.java",
+        "operation_index": 0,
+        "edit_type": "delete",
+        "old_string": "import io.crate.session.Sessions;",
+        "new_string": "",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_delete",
+        "surround_before_3": [
+          "import io.crate.protocols.ssl.SslContextProvider;",
+          "import io.crate.protocols.ssl.SslSettings;",
+          "import io.crate.role.Roles;"
+        ],
+        "surround_after_3": [
+          "import io.crate.types.DataTypes;",
+          "import io.netty.bootstrap.ServerBootstrap;",
+          "import io.netty.channel.Channel;"
+        ],
+        "adaptation_type": "TYPE_I",
+        "base_adaptation_type": "TYPE_I",
+        "execution_type": "TYPE_I",
+        "location_match": true,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 8,
+          "target_declared_methods_count": 8,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 1,
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/PostgresNetty.java",
+        "operation_index": 1,
+        "edit_type": "delete",
+        "old_string": "import io.netty.channel.ChannelOption;",
+        "new_string": "",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_delete",
+        "surround_before_3": [
+          "import io.netty.bootstrap.ServerBootstrap;",
+          "import io.netty.channel.Channel;",
+          "import io.netty.channel.ChannelInitializer;"
+        ],
+        "surround_after_3": [
+          "import io.netty.channel.ChannelPipeline;",
+          "import io.netty.handler.ssl.SslContext;",
+          ""
+        ],
+        "adaptation_type": "TYPE_I",
+        "base_adaptation_type": "TYPE_I",
+        "execution_type": "TYPE_I",
+        "location_match": true,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 8,
+          "target_declared_methods_count": 8,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 2,
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/PostgresNetty.java",
+        "operation_index": 0,
+        "edit_type": "delete",
+        "old_string": "        bootstrap.childOption(ChannelOption.AUTO_READ, false);",
+        "new_string": "",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_delete",
+        "surround_before_3": [
+          "        }",
+          "        var eventLoopGroup = nettyBootstrap.getSharedEventLoopGroup();",
+          "        bootstrap = NettyBootstrap.newServerBootstrap(settings, eventLoopGroup);"
+        ],
+        "surround_after_3": [
+          "        inboundStatsHandler = new Netty4InboundStatsHandler(statsTracker, LOGGER);",
+          "        outboundStatsHandler = new Netty4OutboundStatsHandler(statsTracker, LOGGER);",
+          ""
+        ],
+        "adaptation_type": "TYPE_I",
+        "base_adaptation_type": "TYPE_I",
+        "execution_type": "TYPE_I",
+        "location_match": true,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 8,
+          "target_declared_methods_count": 8,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 3,
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/PostgresNetty.java",
+        "operation_index": 0,
+        "edit_type": "replace",
+        "old_string": "                        var nettyTcpChannel = new CloseableChannel(ch, true);\n                        ch.attr(Netty4Transport.CHANNEL_KEY).set(nettyTcpChannel);\n                        var handler = new Netty4MessageChannelHandler(pageCacheRecycler, transport);\n                        chPipeline.addLast(\"dispatcher\", handler);\n                        ch.setOption(ChannelOption.AUTO_READ, true);\n                    },",
+        "new_string": "                        var nettyTcpChannel = new CloseableChannel(ch, true);\n                        ch.attr(Netty4Transport.CHANNEL_KEY).set(nettyTcpChannel);\n                        chPipeline.addLast(\"dispatcher\", new Netty4MessageChannelHandler(pageCacheRecycler, transport));\n                    },",
+        "verified": false,
+        "verification_result": "sanitize_old_not_found:not_found_multiline",
+        "notes": "required_op_replace|sanitize_old_not_found:not_found_multiline|sanitize_old_not_found:not_found_multiline",
+        "surround_before_3": [],
+        "surround_after_3": [],
+        "adaptation_type": "TYPE_I",
+        "base_adaptation_type": "TYPE_I",
+        "execution_type": "TYPE_I",
+        "location_match": true,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "chPipeline.addLast(\"dispatcher\", new Netty4MessageChannelHandler(pageCacheRecycler, transport));"
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 8,
+          "target_declared_methods_count": 8,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      }
+    ],
+    "server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java": [
+      {
+        "hunk_index": 0,
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java",
+        "operation_index": 0,
+        "edit_type": "insert_before",
+        "old_string": "import io.crate.protocols.postgres.types.PGType;",
+        "new_string": "import io.crate.protocols.postgres.DelayableWriteChannel.DelayedWrites;\nimport io.crate.protocols.postgres.types.PGType;",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_insert_before",
+        "surround_before_3": [
+          "import io.crate.metadata.settings.CoordinatorSessionSettings;",
+          "import io.crate.metadata.settings.session.SessionSetting;",
+          "import io.crate.metadata.settings.session.SessionSettingRegistry;"
+        ],
+        "surround_after_3": [
+          "import io.crate.protocols.postgres.types.PGTypes;",
+          "import io.crate.role.Role;",
+          "import io.crate.session.DescribeResult;"
+        ],
+        "adaptation_type": "TYPE_I",
+        "base_adaptation_type": "TYPE_I",
+        "execution_type": "TYPE_I",
+        "location_match": true,
+        "surrounding_match": true,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 29,
+          "target_declared_methods_count": 29,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 1,
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java",
+        "operation_index": 0,
+        "edit_type": "replace",
+        "old_string": "    private final Consumer<ChannelPipeline> addTransportHandler;\n\n    private Channel channel;\n    Session session;",
+        "new_string": "    private final Consumer<ChannelPipeline> addTransportHandler;\n\n    private DelayableWriteChannel channel;\n    Session session;",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_replace",
+        "surround_before_3": [
+          "    private final SessionSettingRegistry sessionSettingRegistry;",
+          "    private final Function<CoordinatorSessionSettings, AccessControl> getAccessControl;",
+          "    private final Authentication authService;"
+        ],
+        "surround_after_3": [
+          "    private boolean ignoreTillSync = false;",
+          "    private AuthenticationContext authContext;",
+          "    private Properties properties;"
+        ],
+        "adaptation_type": "TYPE_I",
+        "base_adaptation_type": "TYPE_I",
+        "execution_type": "TYPE_I",
+        "location_match": true,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "private DelayableWriteChannel channel;"
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 29,
+          "target_declared_methods_count": 29,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 2,
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java",
+        "operation_index": 0,
+        "edit_type": "delete",
+        "old_string": "        private final Runnable read;",
+        "new_string": "",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_delete",
+        "surround_before_3": [
+          "    private static class ReadyForQueryCallback implements BiConsumer<Object, Throwable> {",
+          "        private final Channel channel;",
+          "        private final TransactionState transactionState;"
+        ],
+        "surround_after_3": [
+          "",
+          "        private ReadyForQueryCallback(Runnable read, Channel channel, TransactionState transactionState) {",
+          "            this.read = read;"
+        ],
+        "adaptation_type": "TYPE_I",
+        "base_adaptation_type": "TYPE_I",
+        "execution_type": "TYPE_I",
+        "location_match": true,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "private ReadyForQueryCallback(Channel channel, TransactionState transactionState) {"
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 29,
+          "target_declared_methods_count": 29,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 2,
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java",
+        "operation_index": 1,
+        "edit_type": "replace",
+        "old_string": "\n        private ReadyForQueryCallback(Runnable read, Channel channel, TransactionState transactionState) {\n            this.read = read;\n            this.channel = channel;",
+        "new_string": "\n        private ReadyForQueryCallback(Channel channel, TransactionState transactionState) {\n            this.channel = channel;",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_replace",
+        "surround_before_3": [
+          "        private final Channel channel;",
+          "        private final TransactionState transactionState;",
+          "        private final Runnable read;"
+        ],
+        "surround_after_3": [
+          "            this.transactionState = transactionState;",
+          "        }",
+          ""
+        ],
+        "adaptation_type": "TYPE_I",
+        "base_adaptation_type": "TYPE_I",
+        "execution_type": "TYPE_I",
+        "location_match": true,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "private ReadyForQueryCallback(Channel channel, TransactionState transactionState) {"
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 29,
+          "target_declared_methods_count": 29,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 3,
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java",
+        "operation_index": 0,
+        "edit_type": "delete",
+        "old_string": "            read.run();",
+        "new_string": "",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_delete",
+        "surround_before_3": [
+          "        @Override",
+          "        public void accept(Object result, Throwable t) {",
+          "            sendReadyForQuery(channel, transactionState);"
+        ],
+        "surround_after_3": [
+          "        }",
+          "    }",
+          ""
+        ],
+        "adaptation_type": "TYPE_I",
+        "base_adaptation_type": "TYPE_I",
+        "execution_type": "TYPE_I",
+        "location_match": true,
+        "surrounding_match": true,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 29,
+          "target_declared_methods_count": 29,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 4,
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java",
+        "operation_index": 0,
+        "edit_type": "replace",
+        "old_string": "        @Override\n        public void channelRegistered(ChannelHandlerContext ctx) throws Exception {\n            channel = ctx.channel();\n        }",
+        "new_string": "        @Override\n        public void channelRegistered(ChannelHandlerContext ctx) throws Exception {\n            channel = new DelayableWriteChannel(ctx.channel());\n        }",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_replace",
+        "surround_before_3": [
+          "",
+          "    private class MessageHandler extends SimpleChannelInboundHandler<ByteBuf> {",
+          ""
+        ],
+        "surround_after_3": [
+          "",
+          "        @Override",
+          "        public boolean acceptInboundMessage(Object msg) throws Exception {"
+        ],
+        "adaptation_type": "TYPE_I",
+        "base_adaptation_type": "TYPE_I",
+        "execution_type": "TYPE_I",
+        "location_match": true,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "channel = new DelayableWriteChannel(ctx.channel());"
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 29,
+          "target_declared_methods_count": 29,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 5,
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java",
+        "operation_index": 0,
+        "edit_type": "delete",
+        "old_string": "        @Override\n        public void channelActive(ChannelHandlerContext ctx) throws Exception {\n            super.channelActive(ctx);\n            ctx.read();\n        }\n",
+        "new_string": "",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_delete",
+        "surround_before_3": [
+          "            return true;",
+          "        }",
+          ""
+        ],
+        "surround_after_3": [
+          "        @Override",
+          "        public void channelRead0(ChannelHandlerContext ctx, ByteBuf buffer) throws Exception {",
+          "            assert channel != null : \"Channel must be initialized\";"
+        ],
+        "adaptation_type": "TYPE_II",
+        "base_adaptation_type": "TYPE_II",
+        "execution_type": "TYPE_II",
+        "location_match": false,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "dispatchState(buffer, channel);"
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 29,
+          "target_declared_methods_count": 29,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 5,
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java",
+        "operation_index": 1,
+        "edit_type": "replace",
+        "old_string": "            assert channel != null : \"Channel must be initialized\";\n            try {\n                dispatchState(ctx, buffer, channel);\n            } catch (Throwable t) {",
+        "new_string": "            assert channel != null : \"Channel must be initialized\";\n            try {\n                dispatchState(buffer, channel);\n            } catch (Throwable t) {",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_replace",
+        "surround_before_3": [
+          "",
+          "        @Override",
+          "        public void channelRead0(ChannelHandlerContext ctx, ByteBuf buffer) throws Exception {"
+        ],
+        "surround_after_3": [
+          "                ignoreTillSync = true;",
+          "                try {",
+          "                    AccessControl accessControl = session == null"
+        ],
+        "adaptation_type": "TYPE_II",
+        "base_adaptation_type": "TYPE_II",
+        "execution_type": "TYPE_II",
+        "location_match": false,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "dispatchState(buffer, channel);"
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 29,
+          "target_declared_methods_count": 29,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 6,
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java",
+        "operation_index": 0,
+        "edit_type": "delete",
+        "old_string": "                ctx.read();",
+        "new_string": "",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_delete",
+        "surround_before_3": [
+          "                } catch (Throwable ti) {",
+          "                    LOGGER.error(\"Error trying to send error to client: {}\", t, ti);",
+          "                }"
+        ],
+        "surround_after_3": [
+          "            }",
+          "        }",
+          ""
+        ],
+        "adaptation_type": "TYPE_II",
+        "base_adaptation_type": "TYPE_II",
+        "execution_type": "TYPE_II",
+        "location_match": false,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "private void dispatchState(ByteBuf buffer, DelayableWriteChannel channel) {"
+        ],
+        "required_symbols": [
+          "dispatchState"
+        ],
+        "protected_symbols": [
+          "dispatchState"
+        ],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 29,
+          "target_declared_methods_count": 29,
+          "matched_symbols_before": [
+            "dispatchState"
+          ],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 6,
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java",
+        "operation_index": 1,
+        "edit_type": "replace",
+        "old_string": "        }\n\n        private void dispatchState(ChannelHandlerContext ctx, ByteBuf buffer, Channel channel) {\n            switch (decoder.state()) {",
+        "new_string": "        }\n\n        private void dispatchState(ByteBuf buffer, DelayableWriteChannel channel) {\n            switch (decoder.state()) {",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_replace",
+        "surround_before_3": [
+          "                }",
+          "                ctx.read();",
+          "            }"
+        ],
+        "surround_after_3": [
+          "                case STARTUP_PARAMETERS:",
+          "                    handleStartupBody(buffer, channel);",
+          "                    decoder.startupDone();"
+        ],
+        "adaptation_type": "TYPE_II",
+        "base_adaptation_type": "TYPE_II",
+        "execution_type": "TYPE_II",
+        "location_match": false,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "private void dispatchState(ByteBuf buffer, DelayableWriteChannel channel) {"
+        ],
+        "required_symbols": [
+          "dispatchState"
+        ],
+        "protected_symbols": [
+          "dispatchState"
+        ],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 29,
+          "target_declared_methods_count": 29,
+          "matched_symbols_before": [
+            "dispatchState"
+          ],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 6,
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java",
+        "operation_index": 2,
+        "edit_type": "delete",
+        "old_string": "                    ctx.read();",
+        "new_string": "",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_delete",
+        "surround_before_3": [
+          "                case STARTUP_PARAMETERS:",
+          "                    handleStartupBody(buffer, channel);",
+          "                    decoder.startupDone();"
+        ],
+        "surround_after_3": [
+          "                    return;",
+          "",
+          "                case CANCEL:"
+        ],
+        "adaptation_type": "TYPE_II",
+        "base_adaptation_type": "TYPE_II",
+        "execution_type": "TYPE_II",
+        "location_match": false,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "private void dispatchState(ByteBuf buffer, DelayableWriteChannel channel) {"
+        ],
+        "required_symbols": [
+          "dispatchState"
+        ],
+        "protected_symbols": [
+          "dispatchState"
+        ],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 29,
+          "target_declared_methods_count": 29,
+          "matched_symbols_before": [
+            "dispatchState"
+          ],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 6,
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java",
+        "operation_index": 3,
+        "edit_type": "delete",
+        "old_string": "                    ctx.read();",
+        "new_string": "",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_delete",
+        "surround_before_3": [
+          "                case STARTUP_PARAMETERS:",
+          "                    handleStartupBody(buffer, channel);",
+          "                    decoder.startupDone();"
+        ],
+        "surround_after_3": [
+          "                    return;",
+          "",
+          "                case CANCEL:"
+        ],
+        "adaptation_type": "TYPE_II",
+        "base_adaptation_type": "TYPE_II",
+        "execution_type": "TYPE_II",
+        "location_match": false,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "private void dispatchState(ByteBuf buffer, DelayableWriteChannel channel) {"
+        ],
+        "required_symbols": [
+          "dispatchState"
+        ],
+        "protected_symbols": [
+          "dispatchState"
+        ],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 29,
+          "target_declared_methods_count": 29,
+          "matched_symbols_before": [
+            "dispatchState"
+          ],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 7,
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java",
+        "operation_index": 0,
+        "edit_type": "delete",
+        "old_string": "                        ctx.read();",
+        "new_string": "",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_delete",
+        "surround_before_3": [
+          "",
+          "                    if (ignoreTillSync && decoder.msgType() != 'S') {",
+          "                        buffer.skipBytes(decoder.payloadLength());"
+        ],
+        "surround_after_3": [
+          "                        return;",
+          "                    }",
+          "                    dispatchMessage(ctx, buffer, channel);"
+        ],
+        "adaptation_type": "TYPE_II",
+        "base_adaptation_type": "TYPE_II",
+        "execution_type": "TYPE_II",
+        "location_match": false,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "dispatchMessage(buffer, channel);",
+          "private void dispatchMessage(ByteBuf buffer, DelayableWriteChannel channel) {",
+          "handleSimpleQuery(buffer, channel);",
+          "handleExecute(buffer, channel);",
+          "handleSync(channel);"
+        ],
+        "required_symbols": [
+          "dispatchMessage"
+        ],
+        "protected_symbols": [
+          "dispatchMessage"
+        ],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 29,
+          "target_declared_methods_count": 29,
+          "matched_symbols_before": [
+            "dispatchMessage"
+          ],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 7,
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java",
+        "operation_index": 1,
+        "edit_type": "replace",
+        "old_string": "                        return;\n                    }\n                    dispatchMessage(ctx, buffer, channel);\n                    return;",
+        "new_string": "                        return;\n                    }\n                    dispatchMessage(buffer, channel);\n                    return;",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_replace",
+        "surround_before_3": [
+          "                    if (ignoreTillSync && decoder.msgType() != 'S') {",
+          "                        buffer.skipBytes(decoder.payloadLength());",
+          "                        ctx.read();"
+        ],
+        "surround_after_3": [
+          "                default:",
+          "                    throw new IllegalStateException(\"Illegal state: \" + decoder.state());",
+          "            }"
+        ],
+        "adaptation_type": "TYPE_II",
+        "base_adaptation_type": "TYPE_II",
+        "execution_type": "TYPE_II",
+        "location_match": false,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "dispatchMessage(buffer, channel);",
+          "private void dispatchMessage(ByteBuf buffer, DelayableWriteChannel channel) {",
+          "handleSimpleQuery(buffer, channel);",
+          "handleExecute(buffer, channel);",
+          "handleSync(channel);"
+        ],
+        "required_symbols": [
+          "dispatchMessage"
+        ],
+        "protected_symbols": [
+          "dispatchMessage"
+        ],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 29,
+          "target_declared_methods_count": 29,
+          "matched_symbols_before": [
+            "dispatchMessage"
+          ],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 7,
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java",
+        "operation_index": 2,
+        "edit_type": "replace",
+        "old_string": "        }\n\n        private void dispatchMessage(ChannelHandlerContext ctx, ByteBuf buffer, Channel channel) {\n            switch (decoder.msgType()) {",
+        "new_string": "        }\n\n        private void dispatchMessage(ByteBuf buffer, DelayableWriteChannel channel) {\n            switch (decoder.msgType()) {",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_replace",
+        "surround_before_3": [
+          "                default:",
+          "                    throw new IllegalStateException(\"Illegal state: \" + decoder.state());",
+          "            }"
+        ],
+        "surround_after_3": [
+          "                case 'Q': // Query (simple)",
+          "                    handleSimpleQuery(ctx::read, buffer, channel);",
+          "                    return;"
+        ],
+        "adaptation_type": "TYPE_II",
+        "base_adaptation_type": "TYPE_II",
+        "execution_type": "TYPE_II",
+        "location_match": false,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "dispatchMessage(buffer, channel);",
+          "private void dispatchMessage(ByteBuf buffer, DelayableWriteChannel channel) {",
+          "handleSimpleQuery(buffer, channel);",
+          "handleExecute(buffer, channel);",
+          "handleSync(channel);"
+        ],
+        "required_symbols": [
+          "dispatchMessage"
+        ],
+        "protected_symbols": [
+          "dispatchMessage"
+        ],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 29,
+          "target_declared_methods_count": 29,
+          "matched_symbols_before": [
+            "dispatchMessage"
+          ],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 7,
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java",
+        "operation_index": 3,
+        "edit_type": "replace",
+        "old_string": "            switch (decoder.msgType()) {\n                case 'Q': // Query (simple)\n                    handleSimpleQuery(ctx::read, buffer, channel);\n                    return;",
+        "new_string": "            switch (decoder.msgType()) {\n                case 'Q': // Query (simple)\n                    handleSimpleQuery(buffer, channel);\n                    return;",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_replace",
+        "surround_before_3": [
+          "        }",
+          "",
+          "        private void dispatchMessage(ChannelHandlerContext ctx, ByteBuf buffer, Channel channel) {"
+        ],
+        "surround_after_3": [
+          "                case 'P':",
+          "                    handleParseMessage(buffer, channel);",
+          "                    ctx.read();"
+        ],
+        "adaptation_type": "TYPE_II",
+        "base_adaptation_type": "TYPE_II",
+        "execution_type": "TYPE_II",
+        "location_match": false,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "dispatchMessage(buffer, channel);",
+          "private void dispatchMessage(ByteBuf buffer, DelayableWriteChannel channel) {",
+          "handleSimpleQuery(buffer, channel);",
+          "handleExecute(buffer, channel);",
+          "handleSync(channel);"
+        ],
+        "required_symbols": [
+          "dispatchMessage"
+        ],
+        "protected_symbols": [
+          "dispatchMessage"
+        ],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 29,
+          "target_declared_methods_count": 29,
+          "matched_symbols_before": [
+            "dispatchMessage"
+          ],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 7,
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java",
+        "operation_index": 4,
+        "edit_type": "delete",
+        "old_string": "                    ctx.read();",
+        "new_string": "",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_delete",
+        "surround_before_3": [
+          "                case STARTUP_PARAMETERS:",
+          "                    handleStartupBody(buffer, channel);",
+          "                    decoder.startupDone();"
+        ],
+        "surround_after_3": [
+          "                    return;",
+          "",
+          "                case CANCEL:"
+        ],
+        "adaptation_type": "TYPE_II",
+        "base_adaptation_type": "TYPE_II",
+        "execution_type": "TYPE_II",
+        "location_match": false,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "dispatchMessage(buffer, channel);",
+          "private void dispatchMessage(ByteBuf buffer, DelayableWriteChannel channel) {",
+          "handleSimpleQuery(buffer, channel);",
+          "handleExecute(buffer, channel);",
+          "handleSync(channel);"
+        ],
+        "required_symbols": [
+          "dispatchMessage"
+        ],
+        "protected_symbols": [
+          "dispatchMessage"
+        ],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 29,
+          "target_declared_methods_count": 29,
+          "matched_symbols_before": [
+            "dispatchMessage"
+          ],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 7,
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java",
+        "operation_index": 5,
+        "edit_type": "delete",
+        "old_string": "                    ctx.read();",
+        "new_string": "",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_delete",
+        "surround_before_3": [
+          "                case STARTUP_PARAMETERS:",
+          "                    handleStartupBody(buffer, channel);",
+          "                    decoder.startupDone();"
+        ],
+        "surround_after_3": [
+          "                    return;",
+          "",
+          "                case CANCEL:"
+        ],
+        "adaptation_type": "TYPE_II",
+        "base_adaptation_type": "TYPE_II",
+        "execution_type": "TYPE_II",
+        "location_match": false,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "dispatchMessage(buffer, channel);",
+          "private void dispatchMessage(ByteBuf buffer, DelayableWriteChannel channel) {",
+          "handleSimpleQuery(buffer, channel);",
+          "handleExecute(buffer, channel);",
+          "handleSync(channel);"
+        ],
+        "required_symbols": [
+          "dispatchMessage"
+        ],
+        "protected_symbols": [
+          "dispatchMessage"
+        ],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 29,
+          "target_declared_methods_count": 29,
+          "matched_symbols_before": [
+            "dispatchMessage"
+          ],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 7,
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java",
+        "operation_index": 6,
+        "edit_type": "delete",
+        "old_string": "                    ctx.read();",
+        "new_string": "",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_delete",
+        "surround_before_3": [
+          "                case STARTUP_PARAMETERS:",
+          "                    handleStartupBody(buffer, channel);",
+          "                    decoder.startupDone();"
+        ],
+        "surround_after_3": [
+          "                    return;",
+          "",
+          "                case CANCEL:"
+        ],
+        "adaptation_type": "TYPE_II",
+        "base_adaptation_type": "TYPE_II",
+        "execution_type": "TYPE_II",
+        "location_match": false,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "dispatchMessage(buffer, channel);",
+          "private void dispatchMessage(ByteBuf buffer, DelayableWriteChannel channel) {",
+          "handleSimpleQuery(buffer, channel);",
+          "handleExecute(buffer, channel);",
+          "handleSync(channel);"
+        ],
+        "required_symbols": [
+          "dispatchMessage"
+        ],
+        "protected_symbols": [
+          "dispatchMessage"
+        ],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 29,
+          "target_declared_methods_count": 29,
+          "matched_symbols_before": [
+            "dispatchMessage"
+          ],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 7,
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java",
+        "operation_index": 7,
+        "edit_type": "delete",
+        "old_string": "                    ctx.read();",
+        "new_string": "",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_delete",
+        "surround_before_3": [
+          "                case STARTUP_PARAMETERS:",
+          "                    handleStartupBody(buffer, channel);",
+          "                    decoder.startupDone();"
+        ],
+        "surround_after_3": [
+          "                    return;",
+          "",
+          "                case CANCEL:"
+        ],
+        "adaptation_type": "TYPE_II",
+        "base_adaptation_type": "TYPE_II",
+        "execution_type": "TYPE_II",
+        "location_match": false,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "dispatchMessage(buffer, channel);",
+          "private void dispatchMessage(ByteBuf buffer, DelayableWriteChannel channel) {",
+          "handleSimpleQuery(buffer, channel);",
+          "handleExecute(buffer, channel);",
+          "handleSync(channel);"
+        ],
+        "required_symbols": [
+          "dispatchMessage"
+        ],
+        "protected_symbols": [
+          "dispatchMessage"
+        ],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 29,
+          "target_declared_methods_count": 29,
+          "matched_symbols_before": [
+            "dispatchMessage"
+          ],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 7,
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java",
+        "operation_index": 8,
+        "edit_type": "replace",
+        "old_string": "                    return;\n                case 'E':\n                    handleExecute(ctx, buffer, channel);\n                    return;",
+        "new_string": "                    return;\n                case 'E':\n                    handleExecute(buffer, channel);\n                    return;",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_replace",
+        "surround_before_3": [
+          "                case 'D':",
+          "                    handleDescribeMessage(buffer, channel);",
+          "                    ctx.read();"
+        ],
+        "surround_after_3": [
+          "                case 'H':",
+          "                    handleFlush(channel);",
+          "                    ctx.read();"
+        ],
+        "adaptation_type": "TYPE_II",
+        "base_adaptation_type": "TYPE_II",
+        "execution_type": "TYPE_II",
+        "location_match": false,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "dispatchMessage(buffer, channel);",
+          "private void dispatchMessage(ByteBuf buffer, DelayableWriteChannel channel) {",
+          "handleSimpleQuery(buffer, channel);",
+          "handleExecute(buffer, channel);",
+          "handleSync(channel);"
+        ],
+        "required_symbols": [
+          "dispatchMessage"
+        ],
+        "protected_symbols": [
+          "dispatchMessage"
+        ],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 29,
+          "target_declared_methods_count": 29,
+          "matched_symbols_before": [
+            "dispatchMessage"
+          ],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 7,
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java",
+        "operation_index": 9,
+        "edit_type": "delete",
+        "old_string": "                    ctx.read();",
+        "new_string": "",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_delete",
+        "surround_before_3": [
+          "                case STARTUP_PARAMETERS:",
+          "                    handleStartupBody(buffer, channel);",
+          "                    decoder.startupDone();"
+        ],
+        "surround_after_3": [
+          "                    return;",
+          "",
+          "                case CANCEL:"
+        ],
+        "adaptation_type": "TYPE_II",
+        "base_adaptation_type": "TYPE_II",
+        "execution_type": "TYPE_II",
+        "location_match": false,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "dispatchMessage(buffer, channel);",
+          "private void dispatchMessage(ByteBuf buffer, DelayableWriteChannel channel) {",
+          "handleSimpleQuery(buffer, channel);",
+          "handleExecute(buffer, channel);",
+          "handleSync(channel);"
+        ],
+        "required_symbols": [
+          "dispatchMessage"
+        ],
+        "protected_symbols": [
+          "dispatchMessage"
+        ],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 29,
+          "target_declared_methods_count": 29,
+          "matched_symbols_before": [
+            "dispatchMessage"
+          ],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 7,
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java",
+        "operation_index": 10,
+        "edit_type": "replace",
+        "old_string": "                    return;\n                case 'S':\n                    handleSync(ctx, channel);\n                    return;",
+        "new_string": "                    return;\n                case 'S':\n                    handleSync(channel);\n                    return;",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_replace",
+        "surround_before_3": [
+          "                case 'H':",
+          "                    handleFlush(channel);",
+          "                    ctx.read();"
+        ],
+        "surround_after_3": [
+          "                case 'C':",
+          "                    handleClose(buffer, channel);",
+          "                    ctx.read();"
+        ],
+        "adaptation_type": "TYPE_II",
+        "base_adaptation_type": "TYPE_II",
+        "execution_type": "TYPE_II",
+        "location_match": false,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "dispatchMessage(buffer, channel);",
+          "private void dispatchMessage(ByteBuf buffer, DelayableWriteChannel channel) {",
+          "handleSimpleQuery(buffer, channel);",
+          "handleExecute(buffer, channel);",
+          "handleSync(channel);"
+        ],
+        "required_symbols": [
+          "dispatchMessage"
+        ],
+        "protected_symbols": [
+          "dispatchMessage"
+        ],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 29,
+          "target_declared_methods_count": 29,
+          "matched_symbols_before": [
+            "dispatchMessage"
+          ],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 7,
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java",
+        "operation_index": 11,
+        "edit_type": "delete",
+        "old_string": "                    ctx.read();",
+        "new_string": "",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_delete",
+        "surround_before_3": [
+          "                case STARTUP_PARAMETERS:",
+          "                    handleStartupBody(buffer, channel);",
+          "                    decoder.startupDone();"
+        ],
+        "surround_after_3": [
+          "                    return;",
+          "",
+          "                case CANCEL:"
+        ],
+        "adaptation_type": "TYPE_II",
+        "base_adaptation_type": "TYPE_II",
+        "execution_type": "TYPE_II",
+        "location_match": false,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "dispatchMessage(buffer, channel);",
+          "private void dispatchMessage(ByteBuf buffer, DelayableWriteChannel channel) {",
+          "handleSimpleQuery(buffer, channel);",
+          "handleExecute(buffer, channel);",
+          "handleSync(channel);"
+        ],
+        "required_symbols": [
+          "dispatchMessage"
+        ],
+        "protected_symbols": [
+          "dispatchMessage"
+        ],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 29,
+          "target_declared_methods_count": 29,
+          "matched_symbols_before": [
+            "dispatchMessage"
+          ],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 7,
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java",
+        "operation_index": 12,
+        "edit_type": "delete",
+        "old_string": "                    ctx.read();",
+        "new_string": "",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_delete",
+        "surround_before_3": [
+          "                case STARTUP_PARAMETERS:",
+          "                    handleStartupBody(buffer, channel);",
+          "                    decoder.startupDone();"
+        ],
+        "surround_after_3": [
+          "                    return;",
+          "",
+          "                case CANCEL:"
+        ],
+        "adaptation_type": "TYPE_II",
+        "base_adaptation_type": "TYPE_II",
+        "execution_type": "TYPE_II",
+        "location_match": false,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "dispatchMessage(buffer, channel);",
+          "private void dispatchMessage(ByteBuf buffer, DelayableWriteChannel channel) {",
+          "handleSimpleQuery(buffer, channel);",
+          "handleExecute(buffer, channel);",
+          "handleSync(channel);"
+        ],
+        "required_symbols": [
+          "dispatchMessage"
+        ],
+        "protected_symbols": [
+          "dispatchMessage"
+        ],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 29,
+          "target_declared_methods_count": 29,
+          "matched_symbols_before": [
+            "dispatchMessage"
+          ],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 8,
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java",
+        "operation_index": 0,
+        "edit_type": "delete",
+        "old_string": "                    ctx.read();",
+        "new_string": "",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_delete",
+        "surround_before_3": [
+          "                case STARTUP_PARAMETERS:",
+          "                    handleStartupBody(buffer, channel);",
+          "                    decoder.startupDone();"
+        ],
+        "surround_after_3": [
+          "                    return;",
+          "",
+          "                case CANCEL:"
+        ],
+        "adaptation_type": "TYPE_II",
+        "base_adaptation_type": "TYPE_II",
+        "execution_type": "TYPE_II",
+        "location_match": false,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 29,
+          "target_declared_methods_count": 29,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 9,
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java",
+        "operation_index": 0,
+        "edit_type": "replace",
+        "old_string": "            }\n            Messages.sendAuthenticationOK(channel)\n                .addListener(_ -> sendParams(channel, session.sessionSettings()))\n                .addListener(_ -> Messages.sendKeyData(channel, session.id(), session.secret()))\n                .addListener(_ -> {\n                    sendReadyForQuery(channel, TransactionState.IDLE);",
+        "new_string": "            }\n            Messages.sendAuthenticationOK(channel)\n                .addListener(f -> sendParams(channel, session.sessionSettings()))\n                .addListener(f -> Messages.sendKeyData(channel, session.id(), session.secret()))\n                .addListener(f -> {\n                    sendReadyForQuery(channel, TransactionState.IDLE);",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_replace",
+        "surround_before_3": [
+          "            String options = properties.getProperty(\"options\");",
+          "            if (options != null) {",
+          "                applyOptions(options);"
+        ],
+        "surround_after_3": [
+          "                    if (properties.containsKey(\"CrateDBTransport\")) {",
+          "                        switchToTransportProtocol(channel);",
+          "                    }"
+        ],
+        "adaptation_type": "TYPE_I",
+        "base_adaptation_type": "TYPE_I",
+        "execution_type": "TYPE_I",
+        "location_match": true,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          ".addListener(f -> sendParams(channel, session.sessionSettings()))",
+          ".addListener(f -> Messages.sendKeyData(channel, session.id(), session.secret()))",
+          ".addListener(f -> {"
+        ],
+        "required_symbols": [
+          "sendParams"
+        ],
+        "protected_symbols": [
+          "sendParams"
+        ],
+        "must_preserve_symbols": [
+          "sendParams"
+        ],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 29,
+          "target_declared_methods_count": 29,
+          "matched_symbols_before": [
+            "sendParams"
+          ],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 10,
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java",
+        "operation_index": 0,
+        "edit_type": "replace",
+        "old_string": "     * | int32 maxRows (0 = unlimited)\n     */\n    private void handleExecute(ChannelHandlerContext ctx, ByteBuf buffer, Channel channel) {\n        String portalName = readCString(buffer);",
+        "new_string": "     * | int32 maxRows (0 = unlimited)\n     */\n    private void handleExecute(ByteBuf buffer, DelayableWriteChannel channel) {\n        String portalName = readCString(buffer);",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_replace",
+        "surround_before_3": [
+          "     * <p>",
+          "     * Body:",
+          "     * | string portalName"
+        ],
+        "surround_after_3": [
+          "        int maxRows = buffer.readInt();",
+          "        String query = session.getQuery(portalName);",
+          "        if (query.isEmpty()) {"
+        ],
+        "adaptation_type": "TYPE_I",
+        "base_adaptation_type": "TYPE_I",
+        "execution_type": "TYPE_I",
+        "location_match": true,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "private void handleExecute(ByteBuf buffer, DelayableWriteChannel channel) {"
+        ],
+        "required_symbols": [
+          "handleExecute"
+        ],
+        "protected_symbols": [
+          "handleExecute"
+        ],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 29,
+          "target_declared_methods_count": 29,
+          "matched_symbols_before": [
+            "handleExecute"
+          ],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 11,
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java",
+        "operation_index": 0,
+        "edit_type": "insert_before",
+        "old_string": "        ResultReceiver<?> resultReceiver;",
+        "new_string": "\n        // .execute is going async and may execute the query in another thread-pool.\n        // The results are later sent to the clients via the `ResultReceiver` created\n        // above, The `channel.write` calls - which the `ResultReceiver` makes - may\n        // happen in a thread which is *not* a netty thread.\n        // If that is the case, netty schedules the writes instead of running them\n        // immediately. A consequence of that is that *this* thread can continue\n        // processing other messages from the client, and if this thread then sends messages to the\n        // client, these are sent immediately, overtaking the result messages of the\n        // execute that is triggered here.\n        //\n        // This would lead to out-of-order messages. For example, we could send a\n        // `parseComplete` before the `commandComplete` of the previous statement has\n        // been transmitted.\n        //\n        // To ensure clients receive messages in the correct order we delay all writes\n        // The \"finish\" logic of the ResultReceivers writes out all pending writes/unblocks the channel\n\n        DelayedWrites delayedWrites = channel.delayWrites();\n        ResultReceiver<?> resultReceiver;",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_insert_before",
+        "surround_before_3": [
+          "            return;",
+          "        }",
+          "        List<? extends DataType<?>> outputTypes = session.getOutputTypes(portalName);"
+        ],
+        "surround_after_3": [
+          "        if (outputTypes == null) {",
+          "            // this is a DML query",
+          "            maxRows = 0;"
+        ],
+        "adaptation_type": "TYPE_II",
+        "base_adaptation_type": "TYPE_II",
+        "execution_type": "TYPE_II",
+        "location_match": false,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "DelayedWrites delayedWrites = channel.delayWrites();"
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 29,
+          "target_declared_methods_count": 29,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 12,
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java",
+        "operation_index": 0,
+        "edit_type": "insert_before",
+        "old_string": "                getAccessControl.apply(session.sessionSettings())",
+        "new_string": "                delayedWrites,\n                getAccessControl.apply(session.sessionSettings())",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_insert_before",
+        "surround_before_3": [
+          "                    default:",
+          "                        Messages.sendErrorResponse(",
+          "                            channel,"
+        ],
+        "surround_after_3": [
+          "                            new UnsupportedOperationException(String.format(",
+          "                                Locale.ENGLISH,",
+          "                                \"Unsupported format code '%d' for param '%s'\","
+        ],
+        "adaptation_type": "TYPE_II",
+        "base_adaptation_type": "TYPE_II",
+        "execution_type": "TYPE_II",
+        "location_match": false,
+        "surrounding_match": true,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 29,
+          "target_declared_methods_count": 29,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 13,
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java",
+        "operation_index": 0,
+        "edit_type": "insert_before",
+        "old_string": "                getAccessControl.apply(session.sessionSettings()),",
+        "new_string": "                delayedWrites,\n                getAccessControl.apply(session.sessionSettings()),",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_insert_before",
+        "surround_before_3": [
+          "                    default:",
+          "                        Messages.sendErrorResponse(",
+          "                            channel,"
+        ],
+        "surround_after_3": [
+          "                            new UnsupportedOperationException(String.format(",
+          "                                Locale.ENGLISH,",
+          "                                \"Unsupported format code '%d' for param '%s'\","
+        ],
+        "adaptation_type": "TYPE_II",
+        "base_adaptation_type": "TYPE_II",
+        "execution_type": "TYPE_II",
+        "location_match": false,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "session.execute(portalName, maxRows, resultReceiver);",
+          "private void handleSync(DelayableWriteChannel channel) {"
+        ],
+        "required_symbols": [
+          "handleSync"
+        ],
+        "protected_symbols": [
+          "handleSync"
+        ],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 29,
+          "target_declared_methods_count": 29,
+          "matched_symbols_before": [
+            "handleSync"
+          ],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 13,
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java",
+        "operation_index": 1,
+        "edit_type": "replace",
+        "old_string": "            );\n        }\n        @Nullable\n        CompletableFuture<?> pendingExecution = session.execute(portalName, maxRows, resultReceiver);\n        if (pendingExecution == null) {\n            ctx.read();\n        } else {\n            pendingExecution.whenComplete((_, _) -> ctx.read());\n        }\n    }",
+        "new_string": "            );\n        }\n        session.execute(portalName, maxRows, resultReceiver);\n    }",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_replace",
+        "surround_before_3": [
+          "                getAccessControl.apply(session.sessionSettings()),",
+          "                Lists.map(outputTypes, PGTypes::get),",
+          "                session.getResultFormatCodes(portalName)"
+        ],
+        "surround_after_3": [
+          "",
+          "    private void handleSync(ChannelHandlerContext ctx, Channel channel) {",
+          "        if (ignoreTillSync) {"
+        ],
+        "adaptation_type": "TYPE_II",
+        "base_adaptation_type": "TYPE_II",
+        "execution_type": "TYPE_II",
+        "location_match": false,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "session.execute(portalName, maxRows, resultReceiver);",
+          "private void handleSync(DelayableWriteChannel channel) {"
+        ],
+        "required_symbols": [
+          "handleSync"
+        ],
+        "protected_symbols": [
+          "handleSync"
+        ],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 29,
+          "target_declared_methods_count": 29,
+          "matched_symbols_before": [
+            "handleSync"
+          ],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 13,
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java",
+        "operation_index": 2,
+        "edit_type": "replace",
+        "old_string": "    }\n\n    private void handleSync(ChannelHandlerContext ctx, Channel channel) {\n        if (ignoreTillSync) {",
+        "new_string": "    }\n\n    private void handleSync(DelayableWriteChannel channel) {\n        if (ignoreTillSync) {",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_replace",
+        "surround_before_3": [
+          "        } else {",
+          "            pendingExecution.whenComplete((_, _) -> ctx.read());",
+          "        }"
+        ],
+        "surround_after_3": [
+          "            ignoreTillSync = false;",
+          "            // If an error happens all sub-sequent messages can be ignored until the client sends a sync message",
+          "            // We need to discard any deferred executions to make sure that the *next* sync isn't executing"
+        ],
+        "adaptation_type": "TYPE_II",
+        "base_adaptation_type": "TYPE_II",
+        "execution_type": "TYPE_II",
+        "location_match": false,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "session.execute(portalName, maxRows, resultReceiver);",
+          "private void handleSync(DelayableWriteChannel channel) {"
+        ],
+        "required_symbols": [
+          "handleSync"
+        ],
+        "protected_symbols": [
+          "handleSync"
+        ],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 29,
+          "target_declared_methods_count": 29,
+          "matched_symbols_before": [
+            "handleSync"
+          ],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 14,
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java",
+        "operation_index": 0,
+        "edit_type": "insert_before",
+        "old_string": "            sendReadyForQuery(channel, TransactionState.FAILED_TRANSACTION);",
+        "new_string": "            channel.writePendingMessages();\n            sendReadyForQuery(channel, TransactionState.FAILED_TRANSACTION);",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_insert_before",
+        "surround_before_3": [
+          "            //  4) p, b, e    -> We've a new query deferred.",
+          "            //  5) `sync`     -> We must execute the query from 4, but not 1)",
+          "            session.resetDeferredExecutions();"
+        ],
+        "surround_after_3": [
+          "            ctx.read();",
+          "            return;",
+          "        }"
+        ],
+        "adaptation_type": "TYPE_II",
+        "base_adaptation_type": "TYPE_II",
+        "execution_type": "TYPE_II",
+        "location_match": false,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "channel.writePendingMessages();",
+          "ReadyForQueryCallback readyForQueryCallback = new ReadyForQueryCallback(channel, session.transactionState());",
+          "channel.discardDelayedWrites();"
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 29,
+          "target_declared_methods_count": 29,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 14,
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java",
+        "operation_index": 1,
+        "edit_type": "delete",
+        "old_string": "            ctx.read();",
+        "new_string": "",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_delete",
+        "surround_before_3": [
+          "        @Override",
+          "        public void channelActive(ChannelHandlerContext ctx) throws Exception {",
+          "            super.channelActive(ctx);"
+        ],
+        "surround_after_3": [
+          "        }",
+          "",
+          "        @Override"
+        ],
+        "adaptation_type": "TYPE_II",
+        "base_adaptation_type": "TYPE_II",
+        "execution_type": "TYPE_II",
+        "location_match": false,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "channel.writePendingMessages();",
+          "ReadyForQueryCallback readyForQueryCallback = new ReadyForQueryCallback(channel, session.transactionState());",
+          "channel.discardDelayedWrites();"
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 29,
+          "target_declared_methods_count": 29,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 14,
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java",
+        "operation_index": 2,
+        "edit_type": "replace",
+        "old_string": "        }\n        try {\n            ReadyForQueryCallback readyForQueryCallback = new ReadyForQueryCallback(ctx::read, channel, session.transactionState());\n            session.sync(false).whenComplete(readyForQueryCallback);",
+        "new_string": "        }\n        try {\n            ReadyForQueryCallback readyForQueryCallback = new ReadyForQueryCallback(channel, session.transactionState());\n            session.sync(false).whenComplete(readyForQueryCallback);",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_replace",
+        "surround_before_3": [
+          "            sendReadyForQuery(channel, TransactionState.FAILED_TRANSACTION);",
+          "            ctx.read();",
+          "            return;"
+        ],
+        "surround_after_3": [
+          "        } catch (Throwable t) {",
+          "            Messages.sendErrorResponse(channel, getAccessControl.apply(session.sessionSettings()), t);",
+          "            sendReadyForQuery(channel, TransactionState.FAILED_TRANSACTION);"
+        ],
+        "adaptation_type": "TYPE_II",
+        "base_adaptation_type": "TYPE_II",
+        "execution_type": "TYPE_II",
+        "location_match": false,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "channel.writePendingMessages();",
+          "ReadyForQueryCallback readyForQueryCallback = new ReadyForQueryCallback(channel, session.transactionState());",
+          "channel.discardDelayedWrites();"
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 29,
+          "target_declared_methods_count": 29,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 14,
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java",
+        "operation_index": 3,
+        "edit_type": "insert_before",
+        "old_string": "            Messages.sendErrorResponse(channel, getAccessControl.apply(session.sessionSettings()), t);",
+        "new_string": "            channel.discardDelayedWrites();\n            Messages.sendErrorResponse(channel, getAccessControl.apply(session.sessionSettings()), t);",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_insert_before",
+        "surround_before_3": [
+          "                channel.flush();",
+          "            }",
+          "        } catch (Throwable t) {"
+        ],
+        "surround_after_3": [
+          "        }",
+          "    }",
+          ""
+        ],
+        "adaptation_type": "TYPE_II",
+        "base_adaptation_type": "TYPE_II",
+        "execution_type": "TYPE_II",
+        "location_match": false,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "channel.writePendingMessages();",
+          "ReadyForQueryCallback readyForQueryCallback = new ReadyForQueryCallback(channel, session.transactionState());",
+          "channel.discardDelayedWrites();"
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 29,
+          "target_declared_methods_count": 29,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 14,
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java",
+        "operation_index": 4,
+        "edit_type": "delete",
+        "old_string": "            ctx.read();",
+        "new_string": "",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_delete",
+        "surround_before_3": [
+          "        @Override",
+          "        public void channelActive(ChannelHandlerContext ctx) throws Exception {",
+          "            super.channelActive(ctx);"
+        ],
+        "surround_after_3": [
+          "        }",
+          "",
+          "        @Override"
+        ],
+        "adaptation_type": "TYPE_II",
+        "base_adaptation_type": "TYPE_II",
+        "execution_type": "TYPE_II",
+        "location_match": false,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "channel.writePendingMessages();",
+          "ReadyForQueryCallback readyForQueryCallback = new ReadyForQueryCallback(channel, session.transactionState());",
+          "channel.discardDelayedWrites();"
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 29,
+          "target_declared_methods_count": 29,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 15,
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java",
+        "operation_index": 0,
+        "edit_type": "replace",
+        "old_string": "\n    @VisibleForTesting\n    void handleSimpleQuery(Runnable read, ByteBuf buffer, final Channel channel) {\n        assert session != null : \"Session must be created when running a simple query\";",
+        "new_string": "\n    @VisibleForTesting\n    void handleSimpleQuery(ByteBuf buffer, final DelayableWriteChannel channel) {\n        assert session != null : \"Session must be created when running a simple query\";",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_replace",
+        "surround_before_3": [
+          "        session.close(b, portalOrStatementName);",
+          "        Messages.sendCloseComplete(channel);",
+          "    }"
+        ],
+        "surround_after_3": [
+          "        Session.TimeoutToken timeoutToken = session.newTimeoutToken();",
+          "        String queryString = readCString(buffer);",
+          "        assert queryString != null : \"query must not be nulL\";"
+        ],
+        "adaptation_type": "TYPE_I",
+        "base_adaptation_type": "TYPE_I",
+        "execution_type": "TYPE_I",
+        "location_match": true,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "void handleSimpleQuery(ByteBuf buffer, final DelayableWriteChannel channel) {"
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 29,
+          "target_declared_methods_count": 29,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 16,
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java",
+        "operation_index": 0,
+        "edit_type": "delete",
+        "old_string": "            read.run();",
+        "new_string": "",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_delete",
+        "surround_before_3": [
+          "        @Override",
+          "        public void accept(Object result, Throwable t) {",
+          "            sendReadyForQuery(channel, transactionState);"
+        ],
+        "surround_after_3": [
+          "        }",
+          "    }",
+          ""
+        ],
+        "adaptation_type": "TYPE_II",
+        "base_adaptation_type": "TYPE_II",
+        "execution_type": "TYPE_II",
+        "location_match": false,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 29,
+          "target_declared_methods_count": 29,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 17,
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java",
+        "operation_index": 0,
+        "edit_type": "replace",
+        "old_string": "            composedFuture = composedFuture.thenCompose(_ -> handleSingleQuery(statement, queryString, channel, timeoutToken));\n        }\n        composedFuture.whenComplete(new ReadyForQueryCallback(read, channel, TransactionState.IDLE));\n    }",
+        "new_string": "            composedFuture = composedFuture.thenCompose(_ -> handleSingleQuery(statement, queryString, channel, timeoutToken));\n        }\n        composedFuture.whenComplete(new ReadyForQueryCallback(channel, TransactionState.IDLE));\n    }",
+        "verified": false,
+        "verification_result": "sanitize_old_not_found:not_found_multiline",
+        "notes": "required_op_replace|sanitize_old_not_found:not_found_multiline|sanitize_old_not_found:not_found_multiline",
+        "surround_before_3": [],
+        "surround_after_3": [],
+        "adaptation_type": "TYPE_I",
+        "base_adaptation_type": "TYPE_I",
+        "execution_type": "TYPE_I",
+        "location_match": true,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "composedFuture.whenComplete(new ReadyForQueryCallback(channel, TransactionState.IDLE));",
+          "DelayableWriteChannel channel,"
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 29,
+          "target_declared_methods_count": 29,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 17,
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java",
+        "operation_index": 1,
+        "edit_type": "replace",
+        "old_string": "    private CompletableFuture<?> handleSingleQuery(Statement statement,\n                                                   String query,\n                                                   Channel channel,\n                                                   Session.TimeoutToken timeoutToken) {",
+        "new_string": "    private CompletableFuture<?> handleSingleQuery(Statement statement,\n                                                   String query,\n                                                   DelayableWriteChannel channel,\n                                                   Session.TimeoutToken timeoutToken) {",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_replace",
+        "surround_before_3": [
+          "        composedFuture.whenComplete(new ReadyForQueryCallback(read, channel, TransactionState.IDLE));",
+          "    }",
+          ""
+        ],
+        "surround_after_3": [
+          "        CompletableFuture<?> result = new CompletableFuture<>();",
+          "",
+          "        AccessControl accessControl = getAccessControl.apply(session.sessionSettings());"
+        ],
+        "adaptation_type": "TYPE_I",
+        "base_adaptation_type": "TYPE_I",
+        "execution_type": "TYPE_I",
+        "location_match": true,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "composedFuture.whenComplete(new ReadyForQueryCallback(channel, TransactionState.IDLE));",
+          "DelayableWriteChannel channel,"
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 29,
+          "target_declared_methods_count": 29,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 18,
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java",
+        "operation_index": 0,
+        "edit_type": "insert_before",
+        "old_string": "                RowCountReceiver rowCountReceiver = new RowCountReceiver(",
+        "new_string": "                DelayedWrites delayedWrites = channel.delayWrites();\n                RowCountReceiver rowCountReceiver = new RowCountReceiver(",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_insert_before",
+        "surround_before_3": [
+          "            List<Symbol> fields = describeResult.getFields();",
+          "",
+          "            if (fields == null) {"
+        ],
+        "surround_after_3": [
+          "                    query,",
+          "                    channel,",
+          "                    accessControl"
+        ],
+        "adaptation_type": "TYPE_II",
+        "base_adaptation_type": "TYPE_II",
+        "execution_type": "TYPE_II",
+        "location_match": false,
+        "surrounding_match": true,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "DelayedWrites delayedWrites = channel.delayWrites();"
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 29,
+          "target_declared_methods_count": 29,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 18,
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java",
+        "operation_index": 1,
+        "edit_type": "insert_before",
+        "old_string": "                    accessControl",
+        "new_string": "                    delayedWrites,\n                    accessControl",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_insert_before",
+        "surround_before_3": [
+          "                RowCountReceiver rowCountReceiver = new RowCountReceiver(",
+          "                    query,",
+          "                    channel,"
+        ],
+        "surround_after_3": [
+          "                );",
+          "                session.execute(\"\", 0, rowCountReceiver);",
+          "            } else {"
+        ],
+        "adaptation_type": "TYPE_II",
+        "base_adaptation_type": "TYPE_II",
+        "execution_type": "TYPE_II",
+        "location_match": false,
+        "surrounding_match": true,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "DelayedWrites delayedWrites = channel.delayWrites();"
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 29,
+          "target_declared_methods_count": 29,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 19,
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java",
+        "operation_index": 0,
+        "edit_type": "insert_before",
+        "old_string": "                ResultSetReceiver resultSetReceiver = new ResultSetReceiver(",
+        "new_string": "                DelayedWrites delayedWrites = channel.delayWrites();\n                ResultSetReceiver resultSetReceiver = new ResultSetReceiver(",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_insert_before",
+        "surround_before_3": [
+          "                session.execute(\"\", 0, rowCountReceiver);",
+          "            } else {",
+          "                Messages.sendRowDescription(channel, fields, null, describeResult.relation());"
+        ],
+        "surround_after_3": [
+          "                    query,",
+          "                    channel,",
+          "                    accessControl,"
+        ],
+        "adaptation_type": "TYPE_II",
+        "base_adaptation_type": "TYPE_II",
+        "execution_type": "TYPE_II",
+        "location_match": false,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "DelayedWrites delayedWrites = channel.delayWrites();"
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 29,
+          "target_declared_methods_count": 29,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 19,
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java",
+        "operation_index": 1,
+        "edit_type": "insert_before",
+        "old_string": "                    accessControl,",
+        "new_string": "                    delayedWrites,\n                    accessControl,",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_insert_before",
+        "surround_before_3": [
+          "                ResultSetReceiver resultSetReceiver = new ResultSetReceiver(",
+          "                    query,",
+          "                    channel,"
+        ],
+        "surround_after_3": [
+          "                    Lists.map(fields, x -> PGTypes.get(x.valueType())),",
+          "                    null",
+          "                );"
+        ],
+        "adaptation_type": "TYPE_II",
+        "base_adaptation_type": "TYPE_II",
+        "execution_type": "TYPE_II",
+        "location_match": false,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "DelayedWrites delayedWrites = channel.delayWrites();"
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 29,
+          "target_declared_methods_count": 29,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 20,
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java",
+        "operation_index": 0,
+        "edit_type": "insert_before",
+        "old_string": "            Messages.sendErrorResponse(channel, accessControl, t);",
+        "new_string": "            channel.discardDelayedWrites();\n            Messages.sendErrorResponse(channel, accessControl, t);",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_insert_before",
+        "surround_before_3": [
+          "                    AccessControl accessControl = session == null",
+          "                        ? AccessControl.DISABLED",
+          "                        : getAccessControl.apply(session.sessionSettings());"
+        ],
+        "surround_after_3": [
+          "                } catch (Throwable ti) {",
+          "                    LOGGER.error(\"Error trying to send error to client: {}\", t, ti);",
+          "                }"
+        ],
+        "adaptation_type": "TYPE_II",
+        "base_adaptation_type": "TYPE_II",
+        "execution_type": "TYPE_II",
+        "location_match": false,
+        "surrounding_match": true,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "channel.discardDelayedWrites();"
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 29,
+          "target_declared_methods_count": 29,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      }
+    ],
+    "server/src/main/java/io/crate/protocols/postgres/ResultSetReceiver.java": [
+      {
+        "hunk_index": 0,
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/ResultSetReceiver.java",
+        "operation_index": 0,
+        "edit_type": "insert_before",
+        "old_string": "import io.crate.protocols.postgres.types.PGType;",
+        "new_string": "import io.crate.protocols.postgres.DelayableWriteChannel.DelayedWrites;\nimport io.crate.protocols.postgres.types.PGType;",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_insert_before",
+        "surround_before_3": [
+          "",
+          "import io.crate.auth.AccessControl;",
+          "import io.crate.data.Row;"
+        ],
+        "surround_after_3": [
+          "import io.crate.session.BaseResultReceiver;",
+          "import io.netty.channel.Channel;",
+          "import io.netty.channel.ChannelFuture;"
+        ],
+        "adaptation_type": "TYPE_I",
+        "base_adaptation_type": "TYPE_I",
+        "execution_type": "TYPE_I",
+        "location_match": true,
+        "surrounding_match": true,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 4,
+          "target_declared_methods_count": 4,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 1,
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/ResultSetReceiver.java",
+        "operation_index": 0,
+        "edit_type": "replace",
+        "old_string": "\n    private final String query;\n    private final Channel channel;\n    private final List<PGType<?>> columnTypes;",
+        "new_string": "\n    private final String query;\n    private final DelayableWriteChannel channel;\n    private final List<PGType<?>> columnTypes;",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_replace",
+        "surround_before_3": [
+          "import io.netty.channel.ChannelFuture;",
+          "",
+          "class ResultSetReceiver extends BaseResultReceiver {"
+        ],
+        "surround_after_3": [
+          "    private final AccessControl accessControl;",
+          "",
+          "    @Nullable"
+        ],
+        "adaptation_type": "TYPE_I",
+        "base_adaptation_type": "TYPE_I",
+        "execution_type": "TYPE_I",
+        "location_match": true,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "private final DelayableWriteChannel channel;",
+          "private final Channel directChannel;",
+          "private final DelayedWrites delayedWrites;"
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 4,
+          "target_declared_methods_count": 4,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 1,
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/ResultSetReceiver.java",
+        "operation_index": 1,
+        "edit_type": "insert_before",
+        "old_string": "    @Nullable",
+        "new_string": "    private final Channel directChannel;\n    private final DelayedWrites delayedWrites;\n    @Nullable",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_insert_before",
+        "surround_before_3": [
+          "    private final List<PGType<?>> columnTypes;",
+          "    private final AccessControl accessControl;",
+          ""
+        ],
+        "surround_after_3": [
+          "    private final FormatCodes.FormatCode[] formatCodes;",
+          "",
+          "    private long rowCount = 0;"
+        ],
+        "adaptation_type": "TYPE_I",
+        "base_adaptation_type": "TYPE_I",
+        "execution_type": "TYPE_I",
+        "location_match": true,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "private final DelayableWriteChannel channel;",
+          "private final Channel directChannel;",
+          "private final DelayedWrites delayedWrites;"
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 4,
+          "target_declared_methods_count": 4,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 2,
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/ResultSetReceiver.java",
+        "operation_index": 0,
+        "edit_type": "replace",
+        "old_string": "\n    ResultSetReceiver(String query,\n                      Channel channel,\n                      AccessControl accessControl,",
+        "new_string": "\n    ResultSetReceiver(String query,\n                      DelayableWriteChannel channel,\n                      DelayedWrites delayedWrites,\n                      AccessControl accessControl,",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_replace",
+        "surround_before_3": [
+          "    private final FormatCodes.FormatCode[] formatCodes;",
+          "",
+          "    private long rowCount = 0;"
+        ],
+        "surround_after_3": [
+          "                      List<PGType<?>> columnTypes,",
+          "                      @Nullable FormatCodes.FormatCode[] formatCodes) {",
+          "        this.query = query;"
+        ],
+        "adaptation_type": "TYPE_I",
+        "base_adaptation_type": "TYPE_I",
+        "execution_type": "TYPE_I",
+        "location_match": true,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "DelayableWriteChannel channel,",
+          "DelayedWrites delayedWrites,",
+          "this.delayedWrites = delayedWrites;",
+          "this.directChannel = channel.bypassDelay();"
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 4,
+          "target_declared_methods_count": 4,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 2,
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/ResultSetReceiver.java",
+        "operation_index": 1,
+        "edit_type": "insert_before",
+        "old_string": "        this.accessControl = accessControl;",
+        "new_string": "        this.delayedWrites = delayedWrites;\n        this.directChannel = channel.bypassDelay();\n        this.accessControl = accessControl;",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_insert_before",
+        "surround_before_3": [
+          "                      @Nullable FormatCodes.FormatCode[] formatCodes) {",
+          "        this.query = query;",
+          "        this.channel = channel;"
+        ],
+        "surround_after_3": [
+          "        this.columnTypes = columnTypes;",
+          "        this.formatCodes = formatCodes;",
+          "    }"
+        ],
+        "adaptation_type": "TYPE_I",
+        "base_adaptation_type": "TYPE_I",
+        "execution_type": "TYPE_I",
+        "location_match": true,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "DelayableWriteChannel channel,",
+          "DelayedWrites delayedWrites,",
+          "this.delayedWrites = delayedWrites;",
+          "this.directChannel = channel.bypassDelay();"
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 4,
+          "target_declared_methods_count": 4,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 3,
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/ResultSetReceiver.java",
+        "operation_index": 0,
+        "edit_type": "replace",
+        "old_string": "    public CompletableFuture<Void> setNextRow(Row row) {\n        rowCount++;\n        ChannelFuture sendDataRow = Messages.sendDataRow(channel, row, columnTypes, formatCodes);\n        CompletableFuture<Void> future;",
+        "new_string": "    public CompletableFuture<Void> setNextRow(Row row) {\n        rowCount++;\n        ChannelFuture sendDataRow = Messages.sendDataRow(directChannel, row, columnTypes, formatCodes);\n        CompletableFuture<Void> future;",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_replace",
+        "surround_before_3": [
+          "     */",
+          "    @Override",
+          "    @Nullable"
+        ],
+        "surround_after_3": [
+          "        boolean isWritable = channel.isWritable();",
+          "        if (isWritable) {",
+          "            future = null;"
+        ],
+        "adaptation_type": "TYPE_I",
+        "base_adaptation_type": "TYPE_I",
+        "execution_type": "TYPE_I",
+        "location_match": true,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "ChannelFuture sendDataRow = Messages.sendDataRow(directChannel, row, columnTypes, formatCodes);",
+          "boolean isWritable = directChannel.isWritable();"
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 4,
+          "target_declared_methods_count": 4,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 3,
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/ResultSetReceiver.java",
+        "operation_index": 1,
+        "edit_type": "replace",
+        "old_string": "        CompletableFuture<Void> future;\n        boolean isWritable = channel.isWritable();\n        if (isWritable) {",
+        "new_string": "        CompletableFuture<Void> future;\n        boolean isWritable = directChannel.isWritable();\n        if (isWritable) {",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_replace",
+        "surround_before_3": [
+          "    public CompletableFuture<Void> setNextRow(Row row) {",
+          "        rowCount++;",
+          "        ChannelFuture sendDataRow = Messages.sendDataRow(channel, row, columnTypes, formatCodes);"
+        ],
+        "surround_after_3": [
+          "            future = null;",
+          "        } else {",
+          "            future = new CompletableFuture<>();"
+        ],
+        "adaptation_type": "TYPE_I",
+        "base_adaptation_type": "TYPE_I",
+        "execution_type": "TYPE_I",
+        "location_match": true,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "ChannelFuture sendDataRow = Messages.sendDataRow(directChannel, row, columnTypes, formatCodes);",
+          "boolean isWritable = directChannel.isWritable();"
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 4,
+          "target_declared_methods_count": 4,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 4,
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/ResultSetReceiver.java",
+        "operation_index": 0,
+        "edit_type": "replace",
+        "old_string": "        // But flushing must be forced once the channel outbound buffer is full (= channel not in writable state)\n        if (isWritable == false || rowCount % 1000 == 0) {\n            channel.flush();\n        }",
+        "new_string": "        // But flushing must be forced once the channel outbound buffer is full (= channel not in writable state)\n        if (isWritable == false || rowCount % 1000 == 0) {\n            directChannel.flush();\n        }",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_replace",
+        "surround_before_3": [
+          "        }",
+          "",
+          "        // Flush the channel only every 1000 rows for better performance."
+        ],
+        "surround_after_3": [
+          "        return future;",
+          "    }",
+          ""
+        ],
+        "adaptation_type": "TYPE_I",
+        "base_adaptation_type": "TYPE_I",
+        "execution_type": "TYPE_I",
+        "location_match": true,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "directChannel.flush();",
+          "ChannelFuture sendPortalSuspended = Messages.sendPortalSuspended(directChannel);",
+          "channel.writePendingMessages(delayedWrites);",
+          "sendPortalSuspended.addListener(f -> super.allFinished());",
+          "ChannelFuture sendCommandComplete = Messages.sendCommandComplete(directChannel, query, rowCount);",
+          "sendCommandComplete.addListener(f -> super.allFinished());",
+          "ChannelFuture sendErrorResponse = Messages.sendErrorResponse(directChannel, accessControl, throwable);",
+          "sendErrorResponse.addListener(f -> super.fail(throwable));"
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 4,
+          "target_declared_methods_count": 4,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 4,
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/ResultSetReceiver.java",
+        "operation_index": 1,
+        "edit_type": "replace",
+        "old_string": "    @Override\n    public void batchFinished() {\n        ChannelFuture sendPortalSuspended = Messages.sendPortalSuspended(channel);\n        channel.flush();",
+        "new_string": "    @Override\n    public void batchFinished() {\n        ChannelFuture sendPortalSuspended = Messages.sendPortalSuspended(directChannel);\n        channel.writePendingMessages(delayedWrites);\n        channel.flush();",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_replace",
+        "surround_before_3": [
+          "        return future;",
+          "    }",
+          ""
+        ],
+        "surround_after_3": [
+          "",
+          "        // Trigger the completion future but by-pass `sendCompleteComplete`",
+          "        // This resultReceiver shouldn't be used anymore. The next `execute` message"
+        ],
+        "adaptation_type": "TYPE_I",
+        "base_adaptation_type": "TYPE_I",
+        "execution_type": "TYPE_I",
+        "location_match": true,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "directChannel.flush();",
+          "ChannelFuture sendPortalSuspended = Messages.sendPortalSuspended(directChannel);",
+          "channel.writePendingMessages(delayedWrites);",
+          "sendPortalSuspended.addListener(f -> super.allFinished());",
+          "ChannelFuture sendCommandComplete = Messages.sendCommandComplete(directChannel, query, rowCount);",
+          "sendCommandComplete.addListener(f -> super.allFinished());",
+          "ChannelFuture sendErrorResponse = Messages.sendErrorResponse(directChannel, accessControl, throwable);",
+          "sendErrorResponse.addListener(f -> super.fail(throwable));"
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 4,
+          "target_declared_methods_count": 4,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 4,
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/ResultSetReceiver.java",
+        "operation_index": 2,
+        "edit_type": "replace",
+        "old_string": "        // This resultReceiver shouldn't be used anymore. The next `execute` message\n        // from the client will create a new one.\n        sendPortalSuspended.addListener(_ -> super.allFinished());\n    }",
+        "new_string": "        // This resultReceiver shouldn't be used anymore. The next `execute` message\n        // from the client will create a new one.\n        sendPortalSuspended.addListener(f -> super.allFinished());\n    }",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_replace",
+        "surround_before_3": [
+          "        channel.flush();",
+          "",
+          "        // Trigger the completion future but by-pass `sendCompleteComplete`"
+        ],
+        "surround_after_3": [
+          "",
+          "    @Override",
+          "    public void allFinished() {"
+        ],
+        "adaptation_type": "TYPE_I",
+        "base_adaptation_type": "TYPE_I",
+        "execution_type": "TYPE_I",
+        "location_match": true,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "directChannel.flush();",
+          "ChannelFuture sendPortalSuspended = Messages.sendPortalSuspended(directChannel);",
+          "channel.writePendingMessages(delayedWrites);",
+          "sendPortalSuspended.addListener(f -> super.allFinished());",
+          "ChannelFuture sendCommandComplete = Messages.sendCommandComplete(directChannel, query, rowCount);",
+          "sendCommandComplete.addListener(f -> super.allFinished());",
+          "ChannelFuture sendErrorResponse = Messages.sendErrorResponse(directChannel, accessControl, throwable);",
+          "sendErrorResponse.addListener(f -> super.fail(throwable));"
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 4,
+          "target_declared_methods_count": 4,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 4,
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/ResultSetReceiver.java",
+        "operation_index": 3,
+        "edit_type": "replace",
+        "old_string": "    @Override\n    public void allFinished() {\n        ChannelFuture sendCommandComplete = Messages.sendCommandComplete(channel, query, rowCount);\n        channel.flush();",
+        "new_string": "    @Override\n    public void allFinished() {\n        ChannelFuture sendCommandComplete = Messages.sendCommandComplete(directChannel, query, rowCount);\n        channel.writePendingMessages(delayedWrites);\n        channel.flush();",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_replace",
+        "surround_before_3": [
+          "        sendPortalSuspended.addListener(_ -> super.allFinished());",
+          "    }",
+          ""
+        ],
+        "surround_after_3": [
+          "        sendCommandComplete.addListener(_ -> super.allFinished());",
+          "    }",
+          ""
+        ],
+        "adaptation_type": "TYPE_I",
+        "base_adaptation_type": "TYPE_I",
+        "execution_type": "TYPE_I",
+        "location_match": true,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "directChannel.flush();",
+          "ChannelFuture sendPortalSuspended = Messages.sendPortalSuspended(directChannel);",
+          "channel.writePendingMessages(delayedWrites);",
+          "sendPortalSuspended.addListener(f -> super.allFinished());",
+          "ChannelFuture sendCommandComplete = Messages.sendCommandComplete(directChannel, query, rowCount);",
+          "sendCommandComplete.addListener(f -> super.allFinished());",
+          "ChannelFuture sendErrorResponse = Messages.sendErrorResponse(directChannel, accessControl, throwable);",
+          "sendErrorResponse.addListener(f -> super.fail(throwable));"
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 4,
+          "target_declared_methods_count": 4,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 4,
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/ResultSetReceiver.java",
+        "operation_index": 4,
+        "edit_type": "replace",
+        "old_string": "        channel.flush();\n        sendCommandComplete.addListener(_ -> super.allFinished());\n    }",
+        "new_string": "        channel.flush();\n        sendCommandComplete.addListener(f -> super.allFinished());\n    }",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_replace",
+        "surround_before_3": [
+          "    @Override",
+          "    public void allFinished() {",
+          "        ChannelFuture sendCommandComplete = Messages.sendCommandComplete(channel, query, rowCount);"
+        ],
+        "surround_after_3": [
+          "",
+          "    @Override",
+          "    public void fail(@NotNull Throwable throwable) {"
+        ],
+        "adaptation_type": "TYPE_I",
+        "base_adaptation_type": "TYPE_I",
+        "execution_type": "TYPE_I",
+        "location_match": true,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "directChannel.flush();",
+          "ChannelFuture sendPortalSuspended = Messages.sendPortalSuspended(directChannel);",
+          "channel.writePendingMessages(delayedWrites);",
+          "sendPortalSuspended.addListener(f -> super.allFinished());",
+          "ChannelFuture sendCommandComplete = Messages.sendCommandComplete(directChannel, query, rowCount);",
+          "sendCommandComplete.addListener(f -> super.allFinished());",
+          "ChannelFuture sendErrorResponse = Messages.sendErrorResponse(directChannel, accessControl, throwable);",
+          "sendErrorResponse.addListener(f -> super.fail(throwable));"
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 4,
+          "target_declared_methods_count": 4,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 4,
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/ResultSetReceiver.java",
+        "operation_index": 5,
+        "edit_type": "replace",
+        "old_string": "    @Override\n    public void fail(@NotNull Throwable throwable) {\n        ChannelFuture sendErrorResponse = Messages.sendErrorResponse(channel, accessControl, throwable);\n        channel.flush();",
+        "new_string": "    @Override\n    public void fail(@NotNull Throwable throwable) {\n        ChannelFuture sendErrorResponse = Messages.sendErrorResponse(directChannel, accessControl, throwable);\n        channel.writePendingMessages(delayedWrites);\n        channel.flush();",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_replace",
+        "surround_before_3": [
+          "        sendCommandComplete.addListener(_ -> super.allFinished());",
+          "    }",
+          ""
+        ],
+        "surround_after_3": [
+          "        sendErrorResponse.addListener(_ -> super.fail(throwable));",
+          "    }",
+          "}"
+        ],
+        "adaptation_type": "TYPE_I",
+        "base_adaptation_type": "TYPE_I",
+        "execution_type": "TYPE_I",
+        "location_match": true,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "directChannel.flush();",
+          "ChannelFuture sendPortalSuspended = Messages.sendPortalSuspended(directChannel);",
+          "channel.writePendingMessages(delayedWrites);",
+          "sendPortalSuspended.addListener(f -> super.allFinished());",
+          "ChannelFuture sendCommandComplete = Messages.sendCommandComplete(directChannel, query, rowCount);",
+          "sendCommandComplete.addListener(f -> super.allFinished());",
+          "ChannelFuture sendErrorResponse = Messages.sendErrorResponse(directChannel, accessControl, throwable);",
+          "sendErrorResponse.addListener(f -> super.fail(throwable));"
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 4,
+          "target_declared_methods_count": 4,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 4,
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/ResultSetReceiver.java",
+        "operation_index": 6,
+        "edit_type": "replace",
+        "old_string": "        channel.flush();\n        sendErrorResponse.addListener(_ -> super.fail(throwable));\n    }",
+        "new_string": "        channel.flush();\n        sendErrorResponse.addListener(f -> super.fail(throwable));\n    }",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_replace",
+        "surround_before_3": [
+          "    @Override",
+          "    public void fail(@NotNull Throwable throwable) {",
+          "        ChannelFuture sendErrorResponse = Messages.sendErrorResponse(channel, accessControl, throwable);"
+        ],
+        "surround_after_3": [
+          "}"
+        ],
+        "adaptation_type": "TYPE_I",
+        "base_adaptation_type": "TYPE_I",
+        "execution_type": "TYPE_I",
+        "location_match": true,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "directChannel.flush();",
+          "ChannelFuture sendPortalSuspended = Messages.sendPortalSuspended(directChannel);",
+          "channel.writePendingMessages(delayedWrites);",
+          "sendPortalSuspended.addListener(f -> super.allFinished());",
+          "ChannelFuture sendCommandComplete = Messages.sendCommandComplete(directChannel, query, rowCount);",
+          "sendCommandComplete.addListener(f -> super.allFinished());",
+          "ChannelFuture sendErrorResponse = Messages.sendErrorResponse(directChannel, accessControl, throwable);",
+          "sendErrorResponse.addListener(f -> super.fail(throwable));"
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 4,
+          "target_declared_methods_count": 4,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      }
+    ],
+    "server/src/main/java/io/crate/protocols/postgres/RowCountReceiver.java": [
+      {
+        "hunk_index": 0,
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/RowCountReceiver.java",
+        "operation_index": 0,
+        "edit_type": "insert_before",
+        "old_string": "import io.crate.auth.AccessControl;",
+        "new_string": "import io.crate.session.BaseResultReceiver;\nimport io.crate.auth.AccessControl;",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_insert_before",
+        "surround_before_3": [
+          "import org.jetbrains.annotations.NotNull;",
+          "import org.jetbrains.annotations.Nullable;",
+          ""
+        ],
+        "surround_after_3": [
+          "import io.crate.data.Row;",
+          "import io.crate.session.BaseResultReceiver;",
+          "import io.netty.channel.Channel;"
+        ],
+        "adaptation_type": "TYPE_I",
+        "base_adaptation_type": "TYPE_I",
+        "execution_type": "TYPE_I",
+        "location_match": true,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "private final DelayableWriteChannel channel;",
+          "private final DelayedWrites delayedWrites;",
+          "DelayableWriteChannel channel,",
+          "DelayedWrites delayedWrites,",
+          "this.delayedWrites = delayedWrites;"
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 3,
+          "target_declared_methods_count": 3,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 0,
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/RowCountReceiver.java",
+        "operation_index": 1,
+        "edit_type": "replace",
+        "old_string": "import io.crate.auth.AccessControl;\nimport io.crate.data.Row;\nimport io.crate.session.BaseResultReceiver;\nimport io.netty.channel.Channel;\nimport io.netty.channel.ChannelFuture;",
+        "new_string": "import io.crate.auth.AccessControl;\nimport io.crate.data.Row;\nimport io.crate.protocols.postgres.DelayableWriteChannel.DelayedWrites;\nimport io.netty.channel.ChannelFuture;",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_replace",
+        "surround_before_3": [
+          "import org.jetbrains.annotations.NotNull;",
+          "import org.jetbrains.annotations.Nullable;",
+          ""
+        ],
+        "surround_after_3": [
+          "",
+          "class RowCountReceiver extends BaseResultReceiver {",
+          ""
+        ],
+        "adaptation_type": "TYPE_I",
+        "base_adaptation_type": "TYPE_I",
+        "execution_type": "TYPE_I",
+        "location_match": true,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "private final DelayableWriteChannel channel;",
+          "private final DelayedWrites delayedWrites;",
+          "DelayableWriteChannel channel,",
+          "DelayedWrites delayedWrites,",
+          "this.delayedWrites = delayedWrites;"
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 3,
+          "target_declared_methods_count": 3,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 0,
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/RowCountReceiver.java",
+        "operation_index": 2,
+        "edit_type": "replace",
+        "old_string": "class RowCountReceiver extends BaseResultReceiver {\n\n    private final Channel channel;\n    private final String query;",
+        "new_string": "class RowCountReceiver extends BaseResultReceiver {\n\n    private final DelayableWriteChannel channel;\n    private final String query;",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_replace",
+        "surround_before_3": [
+          "import io.netty.channel.Channel;",
+          "import io.netty.channel.ChannelFuture;",
+          ""
+        ],
+        "surround_after_3": [
+          "    private final AccessControl accessControl;",
+          "    private long rowCount;",
+          ""
+        ],
+        "adaptation_type": "TYPE_I",
+        "base_adaptation_type": "TYPE_I",
+        "execution_type": "TYPE_I",
+        "location_match": true,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "private final DelayableWriteChannel channel;",
+          "private final DelayedWrites delayedWrites;",
+          "DelayableWriteChannel channel,",
+          "DelayedWrites delayedWrites,",
+          "this.delayedWrites = delayedWrites;"
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 3,
+          "target_declared_methods_count": 3,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 0,
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/RowCountReceiver.java",
+        "operation_index": 3,
+        "edit_type": "insert_before",
+        "old_string": "    private long rowCount;",
+        "new_string": "    private final DelayedWrites delayedWrites;\n    private long rowCount;",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_insert_before",
+        "surround_before_3": [
+          "    private final Channel channel;",
+          "    private final String query;",
+          "    private final AccessControl accessControl;"
+        ],
+        "surround_after_3": [
+          "",
+          "    RowCountReceiver(String query,",
+          "                     Channel channel,"
+        ],
+        "adaptation_type": "TYPE_I",
+        "base_adaptation_type": "TYPE_I",
+        "execution_type": "TYPE_I",
+        "location_match": true,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "private final DelayableWriteChannel channel;",
+          "private final DelayedWrites delayedWrites;",
+          "DelayableWriteChannel channel,",
+          "DelayedWrites delayedWrites,",
+          "this.delayedWrites = delayedWrites;"
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 3,
+          "target_declared_methods_count": 3,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 0,
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/RowCountReceiver.java",
+        "operation_index": 4,
+        "edit_type": "replace",
+        "old_string": "\n    RowCountReceiver(String query,\n                     Channel channel,\n                     AccessControl accessControl) {",
+        "new_string": "\n    RowCountReceiver(String query,\n                     DelayableWriteChannel channel,\n                     DelayedWrites delayedWrites,\n                     AccessControl accessControl) {",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_replace",
+        "surround_before_3": [
+          "    private final String query;",
+          "    private final AccessControl accessControl;",
+          "    private long rowCount;"
+        ],
+        "surround_after_3": [
+          "        this.query = query;",
+          "        this.channel = channel;",
+          "        this.accessControl = accessControl;"
+        ],
+        "adaptation_type": "TYPE_I",
+        "base_adaptation_type": "TYPE_I",
+        "execution_type": "TYPE_I",
+        "location_match": true,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "private final DelayableWriteChannel channel;",
+          "private final DelayedWrites delayedWrites;",
+          "DelayableWriteChannel channel,",
+          "DelayedWrites delayedWrites,",
+          "this.delayedWrites = delayedWrites;"
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 3,
+          "target_declared_methods_count": 3,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 0,
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/RowCountReceiver.java",
+        "operation_index": 5,
+        "edit_type": "insert_before",
+        "old_string": "        this.accessControl = accessControl;",
+        "new_string": "        this.delayedWrites = delayedWrites;\n        this.accessControl = accessControl;",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_insert_before",
+        "surround_before_3": [
+          "                     AccessControl accessControl) {",
+          "        this.query = query;",
+          "        this.channel = channel;"
+        ],
+        "surround_after_3": [
+          "    }",
+          "",
+          "    @Override"
+        ],
+        "adaptation_type": "TYPE_I",
+        "base_adaptation_type": "TYPE_I",
+        "execution_type": "TYPE_I",
+        "location_match": true,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "private final DelayableWriteChannel channel;",
+          "private final DelayedWrites delayedWrites;",
+          "DelayableWriteChannel channel,",
+          "DelayedWrites delayedWrites,",
+          "this.delayedWrites = delayedWrites;"
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 3,
+          "target_declared_methods_count": 3,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 1,
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/RowCountReceiver.java",
+        "operation_index": 0,
+        "edit_type": "replace",
+        "old_string": "    @Override\n    public void allFinished() {\n        ChannelFuture sendCommandComplete = Messages.sendCommandComplete(channel, query, rowCount);\n        channel.flush();",
+        "new_string": "    @Override\n    public void allFinished() {\n        ChannelFuture sendCommandComplete = Messages.sendCommandComplete(channel.bypassDelay(), query, rowCount);\n        channel.writePendingMessages(delayedWrites);\n        channel.flush();",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_replace",
+        "surround_before_3": [
+          "        return null;",
+          "    }",
+          ""
+        ],
+        "surround_after_3": [
+          "        sendCommandComplete.addListener(_ -> super.allFinished());",
+          "    }",
+          ""
+        ],
+        "adaptation_type": "TYPE_I",
+        "base_adaptation_type": "TYPE_I",
+        "execution_type": "TYPE_I",
+        "location_match": true,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "ChannelFuture sendCommandComplete = Messages.sendCommandComplete(channel.bypassDelay(), query, rowCount);",
+          "channel.writePendingMessages(delayedWrites);",
+          "sendCommandComplete.addListener(f -> super.allFinished());",
+          "ChannelFuture sendErrorResponse = Messages.sendErrorResponse(channel.bypassDelay(), accessControl, throwable);",
+          "sendErrorResponse.addListener(f -> super.fail(throwable));"
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 3,
+          "target_declared_methods_count": 3,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 1,
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/RowCountReceiver.java",
+        "operation_index": 1,
+        "edit_type": "replace",
+        "old_string": "        channel.flush();\n        sendCommandComplete.addListener(_ -> super.allFinished());\n    }",
+        "new_string": "        channel.flush();\n        sendCommandComplete.addListener(f -> super.allFinished());\n    }",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_replace",
+        "surround_before_3": [
+          "    @Override",
+          "    public void allFinished() {",
+          "        ChannelFuture sendCommandComplete = Messages.sendCommandComplete(channel, query, rowCount);"
+        ],
+        "surround_after_3": [
+          "",
+          "    @Override",
+          "    public void fail(@NotNull Throwable throwable) {"
+        ],
+        "adaptation_type": "TYPE_I",
+        "base_adaptation_type": "TYPE_I",
+        "execution_type": "TYPE_I",
+        "location_match": true,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "ChannelFuture sendCommandComplete = Messages.sendCommandComplete(channel.bypassDelay(), query, rowCount);",
+          "channel.writePendingMessages(delayedWrites);",
+          "sendCommandComplete.addListener(f -> super.allFinished());",
+          "ChannelFuture sendErrorResponse = Messages.sendErrorResponse(channel.bypassDelay(), accessControl, throwable);",
+          "sendErrorResponse.addListener(f -> super.fail(throwable));"
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 3,
+          "target_declared_methods_count": 3,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 1,
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/RowCountReceiver.java",
+        "operation_index": 2,
+        "edit_type": "replace",
+        "old_string": "    @Override\n    public void fail(@NotNull Throwable throwable) {\n        ChannelFuture sendErrorResponse = Messages.sendErrorResponse(channel, accessControl, throwable);\n        channel.flush();",
+        "new_string": "    @Override\n    public void fail(@NotNull Throwable throwable) {\n        ChannelFuture sendErrorResponse = Messages.sendErrorResponse(channel.bypassDelay(), accessControl, throwable);\n        channel.writePendingMessages(delayedWrites);\n        channel.flush();",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_replace",
+        "surround_before_3": [
+          "        sendCommandComplete.addListener(_ -> super.allFinished());",
+          "    }",
+          ""
+        ],
+        "surround_after_3": [
+          "        sendErrorResponse.addListener(_ -> super.fail(throwable));",
+          "    }",
+          "}"
+        ],
+        "adaptation_type": "TYPE_I",
+        "base_adaptation_type": "TYPE_I",
+        "execution_type": "TYPE_I",
+        "location_match": true,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "ChannelFuture sendCommandComplete = Messages.sendCommandComplete(channel.bypassDelay(), query, rowCount);",
+          "channel.writePendingMessages(delayedWrites);",
+          "sendCommandComplete.addListener(f -> super.allFinished());",
+          "ChannelFuture sendErrorResponse = Messages.sendErrorResponse(channel.bypassDelay(), accessControl, throwable);",
+          "sendErrorResponse.addListener(f -> super.fail(throwable));"
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 3,
+          "target_declared_methods_count": 3,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 1,
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/RowCountReceiver.java",
+        "operation_index": 3,
+        "edit_type": "replace",
+        "old_string": "        channel.flush();\n        sendErrorResponse.addListener(_ -> super.fail(throwable));\n    }",
+        "new_string": "        channel.flush();\n        sendErrorResponse.addListener(f -> super.fail(throwable));\n    }",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_replace",
+        "surround_before_3": [
+          "    @Override",
+          "    public void fail(@NotNull Throwable throwable) {",
+          "        ChannelFuture sendErrorResponse = Messages.sendErrorResponse(channel, accessControl, throwable);"
+        ],
+        "surround_after_3": [
+          "}"
+        ],
+        "adaptation_type": "TYPE_I",
+        "base_adaptation_type": "TYPE_I",
+        "execution_type": "TYPE_I",
+        "location_match": true,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "ChannelFuture sendCommandComplete = Messages.sendCommandComplete(channel.bypassDelay(), query, rowCount);",
+          "channel.writePendingMessages(delayedWrites);",
+          "sendCommandComplete.addListener(f -> super.allFinished());",
+          "ChannelFuture sendErrorResponse = Messages.sendErrorResponse(channel.bypassDelay(), accessControl, throwable);",
+          "sendErrorResponse.addListener(f -> super.fail(throwable));"
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 3,
+          "target_declared_methods_count": 3,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      }
+    ],
+    "server/src/main/java/org/elasticsearch/transport/netty4/Netty4Transport.java": [
+      {
+        "hunk_index": 0,
+        "target_file": "server/src/main/java/org/elasticsearch/transport/netty4/Netty4Transport.java",
+        "operation_index": 0,
+        "edit_type": "replace",
+        "old_string": "            ch.pipeline().addLast(\"logging\", loggingHandler);\n            // using a dot as a prefix means this cannot come from any settings parsed\n            var handler = new Netty4MessageChannelHandler(pageCacheRecycler, Netty4Transport.this);\n            ch.pipeline().addLast(\"dispatcher\", handler);\n        }",
+        "new_string": "            ch.pipeline().addLast(\"logging\", loggingHandler);\n            // using a dot as a prefix means this cannot come from any settings parsed\n            ch.pipeline().addLast(\"dispatcher\", new Netty4MessageChannelHandler(pageCacheRecycler, Netty4Transport.this));\n        }",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_replace",
+        "surround_before_3": [
+          "        @Override",
+          "        protected void initChannel(Channel ch) throws Exception {",
+          "            maybeInjectSSL(ch);"
+        ],
+        "surround_after_3": [
+          "",
+          "        @Override",
+          "        public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {"
+        ],
+        "adaptation_type": "TYPE_I",
+        "base_adaptation_type": "TYPE_I",
+        "execution_type": "TYPE_I",
+        "location_match": true,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "ch.pipeline().addLast(\"dispatcher\", new Netty4MessageChannelHandler(pageCacheRecycler, Netty4Transport.this));"
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 10,
+          "target_declared_methods_count": 10,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 1,
+        "target_file": "server/src/main/java/org/elasticsearch/transport/netty4/Netty4Transport.java",
+        "operation_index": 0,
+        "edit_type": "replace",
+        "old_string": "            serverAcceptedChannel(nettyTcpChannel);\n            ch.pipeline().addLast(\"logging\", loggingHandler);\n            var handler = new Netty4MessageChannelHandler(pageCacheRecycler, Netty4Transport.this);\n            ch.pipeline().addLast(\"dispatcher\", handler);\n        }",
+        "new_string": "            serverAcceptedChannel(nettyTcpChannel);\n            ch.pipeline().addLast(\"logging\", loggingHandler);\n            ch.pipeline().addLast(\"dispatcher\", new Netty4MessageChannelHandler(pageCacheRecycler, Netty4Transport.this));\n        }",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_replace",
+        "surround_before_3": [
+          "            addClosedExceptionLogger(ch);",
+          "            CloseableChannel nettyTcpChannel = new CloseableChannel(ch, true);",
+          "            ch.attr(CHANNEL_KEY).set(nettyTcpChannel);"
+        ],
+        "surround_after_3": [
+          "",
+          "        @Override",
+          "        public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {"
+        ],
+        "adaptation_type": "TYPE_II",
+        "base_adaptation_type": "TYPE_II",
+        "execution_type": "TYPE_II",
+        "location_match": false,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "ch.pipeline().addLast(\"dispatcher\", new Netty4MessageChannelHandler(pageCacheRecycler, Netty4Transport.this));"
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 10,
+          "target_declared_methods_count": 10,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      }
+    ]
+  },
+  "last_plan_signature": "3553eeb02b3bb71a5ba791127df191d6beb71680b74b078c0f87c86d0db71d67",
+  "validation_repeated_plan_detected": false,
+  "force_type_v_until_success": false,
+  "force_type_v_reason": "",
+  "force_type_v_retry_files": [],
+  "token_usage": {
+    "input_tokens": 5352,
+    "output_tokens": 2370,
+    "total_tokens": 7722,
+    "estimated": false,
+    "sources": [
+      "planning_agent.provider_usage"
+    ]
+  }
+}

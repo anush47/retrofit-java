@@ -1,0 +1,38 @@
+{
+  "consistency_map": {},
+  "mapped_target_context": {
+    "server/src/main/java/io/crate/execution/engine/indexing/BatchIteratorBackpressureExecutor.java": [
+      {
+        "hunk_index": 1,
+        "mainline_method": "<import>",
+        "target_file": "server/src/main/java/io/crate/execution/engine/indexing/BatchIteratorBackpressureExecutor.java",
+        "target_method": "<import>",
+        "start_line": 38,
+        "end_line": 38,
+        "code_snippet": " * with Crate these terms will supersede the license and you may use the\n * software solely pursuant to the terms of the relevant commercial agreement.\n */\n\npackage io.crate.execution.engine.indexing;\n\nimport java.util.UUID;\nimport java.util.concurrent.CompletableFuture;\nimport java.util.concurrent.Executor;\nimport java.util.concurrent.RejectedExecutionException;\nimport java.util.concurrent.ScheduledExecutorService;\nimport java.util.concurrent.Semaphore;\nimport java.util.concurrent.TimeUnit;\nimport java.util.concurrent.atomic.AtomicInteger;\nimport java.util.concurrent.atomic.AtomicReference;\nimport java.util.function.BiConsumer;\nimport java.util.function.BinaryOperator;\nimport java.util.function.Function;\nimport java.util.function.Predicate;\n\nimport org.jetbrains.annotations.Nullable;\n\nimport org.apache.logging.log4j.LogManager;\nimport org.apache.logging.log4j.Logger;\n\nimport io.crate.data.BatchIterator;\nimport io.crate.exceptions.JobKilledException;\n\n/**\n * Consumes a BatchIterator, concurrently invoking {@link #execute} on\n * each item until {@link #pauseConsumption} returns true.\n *\n * The future returned on {@link #consumeIteratorAndExecute()} completes\n * once all items in the BatchIterator have been processed.\n *\n * If {@link #pauseConsumption} returns true it will pause for a while ({@link #throttleDelay})\n * and afterwards resume consumption.\n */\npublic class BatchIteratorBackpressureExecutor<T, R> {\n\n    private static final Logger LOGGER = LogManager.getLogger(BatchIteratorBackpressureExecutor.class);",
+        "anchor_confidence": "high",
+        "anchor_reason": "line_and_method_resolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 2,
+        "mainline_method": "hunk_2",
+        "target_file": "server/src/main/java/io/crate/execution/engine/indexing/BatchIteratorBackpressureExecutor.java",
+        "target_method": null,
+        "start_line": 182,
+        "end_line": 182,
+        "code_snippet": "     * To make sure only a single consumer thread is active at a time a {@link #semaphore} is used.\n     */\n    private void consumeIterator() {\n        if (semaphore.tryAcquire() == false) {\n            return;\n        }\n        try {\n            while (batchIterator.moveNext()) {\n                T item = batchIterator.currentElement();\n                if (pauseConsumption.test(item)) {\n                    long delayInMs = getDelayInMs.apply(item);\n                    if (delayInMs > 0) {\n                        if (LOGGER.isDebugEnabled()) {\n                            LOGGER.debug(\"Pausing consumption jobId={} delayInMs={}\", jobId, delayInMs);\n                        }\n                        // release semaphore inside resumeConsumption: after throttle delay has passed\n                        // to make sure callbacks of previously triggered async operations don't resume consumption\n                        scheduler.schedule(this::resumeConsumption, delayInMs, TimeUnit.MILLISECONDS);\n                        return;\n                    }\n                    // fall through to execute\n                }\n                execute(item);\n            }\n\n            inFlightExecutions.incrementAndGet();\n            if (batchIterator.allLoaded()) {\n                semaphore.release();\n                consumptionFinished = true;\n                continueConsumptionOrFinish(null, null);\n            } else {\n                batchIterator.loadNextBatch()\n                    // consumption can only be continued after loadNextBatch completes; so keep permit until then.\n                    .whenComplete((r, f) -> {\n                        semaphore.release();\n                        continueConsumptionOrFinish(null, f);\n                    });\n            }\n        } catch (Throwable t) {\n            // semaphore may be unreleased, but we're finished anyway.\n            batchIterator.close();",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      }
+    ]
+  },
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "reason": "llm_usage_not_collected_in_this_node"
+  }
+}

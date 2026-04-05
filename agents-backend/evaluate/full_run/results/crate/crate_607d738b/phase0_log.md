@@ -5,6 +5,14 @@
 - Java-only files for agentic phases: 1
 - Developer auxiliary hunks (test + non-Java): 2
 
+## Commit Pair Consistency
+- Pair mismatch: False
+- Reason: scope_overlap_ok
+- Mainline Java files: ['server/src/main/java/io/crate/execution/engine/aggregation/impl/TDigestState.java']
+- Developer Java files: ['server/src/main/java/io/crate/execution/engine/aggregation/impl/TDigestState.java']
+- Overlap Java files: ['server/src/main/java/io/crate/execution/engine/aggregation/impl/TDigestState.java']
+- Overlap ratio (mainline): 1.0
+
 ## Mainline Patch
 ```diff
 From 607d738b93ecc8ea82e38cc5c6aef2ca0e6d9f4e Mon Sep 17 00:00:00 2001

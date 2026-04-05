@@ -1,0 +1,38 @@
+# Full Trace of Agentic File Edits
+
+## Attempt #1
+
+### Final Output Diff
+**server/src/main/java/io/crate/execution/IncrementalPageBucketReceiver.java** [replace]
+```java
+// --- OLD ---
+<developer patch fast path>
+// --- NEW ---
+diff --git a/server/src/main/java/io/crate/execution/IncrementalPageBucketReceiver.java b/server/src/main/java/io/crate/execution/IncrementalPageBucketReceiver.java
+index 636e957742..616aba3d45 100644
+--- a/server/src/main/java/io/crate/execution/IncrementalPageBucketReceiver.java
++++ b/server/src/main/java/io/crate/execution/IncrementalPageBucketReceiver.java
+@@ -30,6 +30,7 @@ import io.crate.data.Row;
+ import io.crate.data.RowConsumer;
+ import io.crate.execution.jobs.PageBucketReceiver;
+ import io.crate.execution.jobs.PageResultListener;
++
+ import org.elasticsearch.common.util.concurrent.EsRejectedExecutionException;
+ 
+ import org.jetbrains.annotations.NotNull;
+@@ -98,7 +99,13 @@ public class IncrementalPageBucketReceiver<T> implements PageBucketReceiver {
+             } else {
+                 currentlyAccumulating = currentlyAccumulating.whenComplete((r, t) -> {
+                     if (t == null) {
+-                        processRows(rows);
++                        try {
++                            processRows(rows);
++                        } catch (Exception e) {
++                            var runtimeErr = Exceptions.toRuntimeException(t);
++                            processingFuture.completeExceptionally(runtimeErr);
++                            throw runtimeErr;
++                        }
+                     } else {
+                         var runtimeErr = Exceptions.toRuntimeException(t);
+                         processingFuture.completeExceptionally(runtimeErr);
+```

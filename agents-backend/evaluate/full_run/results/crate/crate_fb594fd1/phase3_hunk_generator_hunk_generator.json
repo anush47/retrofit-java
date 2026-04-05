@@ -1,0 +1,100 @@
+{
+  "adapted_file_edits": [
+    {
+      "target_file": "server/src/main/java/io/crate/execution/dml/Indexer.java",
+      "mainline_file": "server/src/main/java/io/crate/execution/dml/Indexer.java",
+      "old_string": "<developer patch fast path>",
+      "new_string": "diff --git a/server/src/main/java/io/crate/execution/dml/Indexer.java b/server/src/main/java/io/crate/execution/dml/Indexer.java\nindex a3b6bee9de..70b2d8bb38 100644\n--- a/server/src/main/java/io/crate/execution/dml/Indexer.java\n+++ b/server/src/main/java/io/crate/execution/dml/Indexer.java\n@@ -1055,6 +1055,9 @@ public class Indexer {\n \n     public Object[] addGeneratedValues(IndexItem item) {\n         Object[] insertValues = item.insertValues();\n+        if (onConflictIndexer() == null && undeterministic.isEmpty()) {\n+            return insertValues;\n+        }\n         assert onConflictIndexer() == null || new HashSet<>(onConflictIndexer().insertColumns().stream().map(Reference::column).toList())\n             .containsAll(insertColumns().stream().map(Reference::column).toList()) : \"onConflictIndexer().insertColumns() is a superset of this.insertColumns()\";\n         List<Reference> insertColumns = onConflictIndexer() == null ? insertColumns() : onConflictIndexer().insertColumns();",
+      "edit_type": "replace",
+      "verified": true,
+      "verification_result": "developer_fast_path_ok",
+      "applied": true,
+      "apply_result": "SUCCESS"
+    }
+  ],
+  "all_adapted_file_edits": [
+    [
+      {
+        "target_file": "server/src/main/java/io/crate/execution/dml/Indexer.java",
+        "mainline_file": "server/src/main/java/io/crate/execution/dml/Indexer.java",
+        "old_string": "<developer patch fast path>",
+        "new_string": "diff --git a/server/src/main/java/io/crate/execution/dml/Indexer.java b/server/src/main/java/io/crate/execution/dml/Indexer.java\nindex a3b6bee9de..70b2d8bb38 100644\n--- a/server/src/main/java/io/crate/execution/dml/Indexer.java\n+++ b/server/src/main/java/io/crate/execution/dml/Indexer.java\n@@ -1055,6 +1055,9 @@ public class Indexer {\n \n     public Object[] addGeneratedValues(IndexItem item) {\n         Object[] insertValues = item.insertValues();\n+        if (onConflictIndexer() == null && undeterministic.isEmpty()) {\n+            return insertValues;\n+        }\n         assert onConflictIndexer() == null || new HashSet<>(onConflictIndexer().insertColumns().stream().map(Reference::column).toList())\n             .containsAll(insertColumns().stream().map(Reference::column).toList()) : \"onConflictIndexer().insertColumns() is a superset of this.insertColumns()\";\n         List<Reference> insertColumns = onConflictIndexer() == null ? insertColumns() : onConflictIndexer().insertColumns();",
+        "edit_type": "replace",
+        "verified": true,
+        "verification_result": "developer_fast_path_ok",
+        "applied": true,
+        "apply_result": "SUCCESS"
+      }
+    ]
+  ],
+  "agent_trajectory_edits": [
+    []
+  ],
+  "adapted_code_hunks": [
+    {
+      "target_file": "server/src/main/java/io/crate/execution/dml/Indexer.java",
+      "mainline_file": "server/src/main/java/io/crate/execution/dml/Indexer.java",
+      "hunk_text": "diff --git a/server/src/main/java/io/crate/execution/dml/Indexer.java b/server/src/main/java/io/crate/execution/dml/Indexer.java\nindex a3b6bee9de..70b2d8bb38 100644\n--- a/server/src/main/java/io/crate/execution/dml/Indexer.java\n+++ b/server/src/main/java/io/crate/execution/dml/Indexer.java\n@@ -1055,6 +1055,9 @@ public class Indexer {\n \n     public Object[] addGeneratedValues(IndexItem item) {\n         Object[] insertValues = item.insertValues();\n+        if (onConflictIndexer() == null && undeterministic.isEmpty()) {\n+            return insertValues;\n+        }\n         assert onConflictIndexer() == null || new HashSet<>(onConflictIndexer().insertColumns().stream().map(Reference::column).toList())\n             .containsAll(insertColumns().stream().map(Reference::column).toList()) : \"onConflictIndexer().insertColumns() is a superset of this.insertColumns()\";\n         List<Reference> insertColumns = onConflictIndexer() == null ? insertColumns() : onConflictIndexer().insertColumns();\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    }
+  ],
+  "validation_repeated_patch_detected": false,
+  "validation_repeated_plan_detected": false,
+  "best_effort_adapted_code_hunks": [
+    {
+      "target_file": "server/src/main/java/io/crate/execution/dml/Indexer.java",
+      "mainline_file": "server/src/main/java/io/crate/execution/dml/Indexer.java",
+      "hunk_text": "diff --git a/server/src/main/java/io/crate/execution/dml/Indexer.java b/server/src/main/java/io/crate/execution/dml/Indexer.java\nindex a3b6bee9de..70b2d8bb38 100644\n--- a/server/src/main/java/io/crate/execution/dml/Indexer.java\n+++ b/server/src/main/java/io/crate/execution/dml/Indexer.java\n@@ -1055,6 +1055,9 @@ public class Indexer {\n \n     public Object[] addGeneratedValues(IndexItem item) {\n         Object[] insertValues = item.insertValues();\n+        if (onConflictIndexer() == null && undeterministic.isEmpty()) {\n+            return insertValues;\n+        }\n         assert onConflictIndexer() == null || new HashSet<>(onConflictIndexer().insertColumns().stream().map(Reference::column).toList())\n             .containsAll(insertColumns().stream().map(Reference::column).toList()) : \"onConflictIndexer().insertColumns() is a superset of this.insertColumns()\";\n         List<Reference> insertColumns = onConflictIndexer() == null ? insertColumns() : onConflictIndexer().insertColumns();\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    }
+  ],
+  "adapted_test_hunks": [],
+  "generation_checklist": [
+    {
+      "mainline_file": "server/src/main/java/io/crate/execution/dml/Indexer.java",
+      "target_file": "server/src/main/java/io/crate/execution/dml/Indexer.java",
+      "hunk_index": 0,
+      "adaptation_type": "TYPE_II",
+      "execution_types": [
+        "TYPE_II"
+      ],
+      "status": "success",
+      "reason": "developer_fast_path",
+      "todo_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ],
+      "completed_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ]
+    }
+  ],
+  "generated_patch_hash": "414254125171ca92d9bb914eeb88db8a2757a803a7e4856ce5f0b7e966eb34e6",
+  "force_type_v_until_success": false,
+  "force_type_v_reason": "",
+  "force_type_v_retry_files": [],
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "sources": []
+  }
+}

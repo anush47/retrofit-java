@@ -1,0 +1,27 @@
+patch_id=crate_e7228911
+project=crate
+mainline_commit=e7228911f64b3a3a8376e95dc258c845d76cef61
+backport_commit=af79a03f61f8e5260c58093b213e0a66aac0d2e9
+mode=full
+started_at=2026-04-05T12:34:09.457200
+----------------------------------------
+Running full workflow graph
+Completed node=phase_0_optimistic
+Workflow completed successfully
+
+[crate/crate_e7228911] Setting up repositories for mode=full...
+[crate/crate_e7228911] Running full workflow graph...
+Router: Running Phase 0.
+Phase 0 (Optimistic): Checking direct patch applicability...
+Phase 0: Experiment mode — checking out parent of af79a03f61f8e5260c58093b213e0a66aac0d2e9...
+Phase 0: Building baseline by applying developer backport test hunks only...
+  Validation: server/src/test/java/io/crate/protocols/postgres/DelayableWriteChannelTest.java - applying 3 hunk(s) one by one in bottom-to-top order: [79, 31, 23]
+    Agent 4: Executing crate helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_tests.sh
+Phase 0: git apply --check SUCCEEDED. Attempting actual patch application and test run.
+    Agent 4: Executing crate helper build script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_build.sh
+    Agent 4: Executing crate helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_tests.sh
+Phase 0: Transition summary -> reason=Valid: Observed fail-to-pass and/or newly passing relevant tests with no regressions.; fail->pass(1): ['io.crate.protocols.postgres.DelayableWriteChannelTest#test_write_pending_writes_in_correct_order']; newly_passing(0): []; pass->fail(0): []
+Phase 0: Transition-based test validation passed. Fast-path success.
+Router: Phase 0 succeeded - taking fast-path exit.
+  Completed: phase_0_optimistic
+[crate/crate_e7228911] Full workflow completed!

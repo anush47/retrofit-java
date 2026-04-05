@@ -1,0 +1,169 @@
+{
+  "adapted_file_edits": [
+    {
+      "target_file": "server/src/main/java/io/crate/metadata/sys/SysClusterTableInfo.java",
+      "mainline_file": "server/src/main/java/io/crate/metadata/sys/SysClusterTableInfo.java",
+      "old_string": "<developer patch fast path>",
+      "new_string": "diff --git a/server/src/main/java/io/crate/metadata/sys/SysClusterTableInfo.java b/server/src/main/java/io/crate/metadata/sys/SysClusterTableInfo.java\nindex 5d57134516..8f57069d04 100644\n--- a/server/src/main/java/io/crate/metadata/sys/SysClusterTableInfo.java\n+++ b/server/src/main/java/io/crate/metadata/sys/SysClusterTableInfo.java\n@@ -39,6 +39,7 @@ import io.crate.metadata.SystemTable.ObjectBuilder;\n import io.crate.metadata.settings.CrateSettings;\n import io.crate.types.DataType;\n import io.crate.types.DataTypes;\n+import io.crate.types.ObjectType;\n \n public class SysClusterTableInfo {\n \n@@ -99,7 +100,6 @@ public class SysClusterTableInfo {\n             .build();\n     }\n \n-    @SuppressWarnings(\"unchecked\")\n     private static void addSetting(ClusterSettings clusterSettings,\n                                    ObjectBuilder<Void, ? extends Builder<Void>> settingsBuilder,\n                                    Node<Setting<?>> element) {\n@@ -107,11 +107,16 @@ public class SysClusterTableInfo {\n             Leaf<Setting<?>> leaf = (Leaf<Setting<?>>) element;\n             var setting = leaf.value;\n             var valueType = (DataType<Object>) leaf.value.dataType();\n-            settingsBuilder.add(\n-                leaf.name,\n-                valueType,\n-                x -> valueType.implicitCast(clusterSettings.get(setting))\n-            );\n+            Object settingValue = clusterSettings.get(setting);\n+            if (settingValue instanceof Settings groupSetting &&\n+                valueType.id() == ObjectType.ID) {\n+                settingsBuilder.addDynamicObject(leaf.name, DataTypes.STRING, _ -> groupSetting.getAsStructuredMap());\n+            } else {\n+                settingsBuilder.add(\n+                    leaf.name,\n+                    valueType,\n+                    _ -> valueType.implicitCast(clusterSettings.get(setting)));\n+            }\n         } else {\n             var objectSetting = settingsBuilder.startObject(element.name);\n             for (var c : element.children) {",
+      "edit_type": "replace",
+      "verified": true,
+      "verification_result": "developer_fast_path_ok",
+      "applied": true,
+      "apply_result": "SUCCESS"
+    },
+    {
+      "target_file": "server/src/main/java/org/elasticsearch/cluster/routing/allocation/decider/AwarenessAllocationDecider.java",
+      "mainline_file": "server/src/main/java/org/elasticsearch/cluster/routing/allocation/decider/AwarenessAllocationDecider.java",
+      "old_string": "<developer patch fast path>",
+      "new_string": "diff --git a/server/src/main/java/org/elasticsearch/cluster/routing/allocation/decider/AwarenessAllocationDecider.java b/server/src/main/java/org/elasticsearch/cluster/routing/allocation/decider/AwarenessAllocationDecider.java\nindex 1302d07597..997799e107 100644\n--- a/server/src/main/java/org/elasticsearch/cluster/routing/allocation/decider/AwarenessAllocationDecider.java\n+++ b/server/src/main/java/org/elasticsearch/cluster/routing/allocation/decider/AwarenessAllocationDecider.java\n@@ -90,10 +90,15 @@ public class AwarenessAllocationDecider extends AllocationDecider {\n             Function.identity(),\n             DataTypes.STRING_ARRAY,\n             Property.Dynamic,\n-            Property.NodeScope);\n+            Property.NodeScope,\n+            Property.Exposed);\n \n     public static final Setting<Settings> CLUSTER_ROUTING_ALLOCATION_AWARENESS_FORCE_GROUP_SETTING =\n-        Setting.groupSetting(\"cluster.routing.allocation.awareness.force.\", Property.Dynamic, Property.NodeScope);\n+        Setting.groupSetting(\n+            \"cluster.routing.allocation.awareness.force.\",\n+            Property.Dynamic,\n+            Property.NodeScope,\n+            Property.Exposed);\n \n     private volatile List<String> awarenessAttributes;",
+      "edit_type": "replace",
+      "verified": true,
+      "verification_result": "developer_fast_path_ok",
+      "applied": true,
+      "apply_result": "SUCCESS"
+    }
+  ],
+  "all_adapted_file_edits": [
+    [
+      {
+        "target_file": "server/src/main/java/io/crate/metadata/sys/SysClusterTableInfo.java",
+        "mainline_file": "server/src/main/java/io/crate/metadata/sys/SysClusterTableInfo.java",
+        "old_string": "<developer patch fast path>",
+        "new_string": "diff --git a/server/src/main/java/io/crate/metadata/sys/SysClusterTableInfo.java b/server/src/main/java/io/crate/metadata/sys/SysClusterTableInfo.java\nindex 5d57134516..8f57069d04 100644\n--- a/server/src/main/java/io/crate/metadata/sys/SysClusterTableInfo.java\n+++ b/server/src/main/java/io/crate/metadata/sys/SysClusterTableInfo.java\n@@ -39,6 +39,7 @@ import io.crate.metadata.SystemTable.ObjectBuilder;\n import io.crate.metadata.settings.CrateSettings;\n import io.crate.types.DataType;\n import io.crate.types.DataTypes;\n+import io.crate.types.ObjectType;\n \n public class SysClusterTableInfo {\n \n@@ -99,7 +100,6 @@ public class SysClusterTableInfo {\n             .build();\n     }\n \n-    @SuppressWarnings(\"unchecked\")\n     private static void addSetting(ClusterSettings clusterSettings,\n                                    ObjectBuilder<Void, ? extends Builder<Void>> settingsBuilder,\n                                    Node<Setting<?>> element) {\n@@ -107,11 +107,16 @@ public class SysClusterTableInfo {\n             Leaf<Setting<?>> leaf = (Leaf<Setting<?>>) element;\n             var setting = leaf.value;\n             var valueType = (DataType<Object>) leaf.value.dataType();\n-            settingsBuilder.add(\n-                leaf.name,\n-                valueType,\n-                x -> valueType.implicitCast(clusterSettings.get(setting))\n-            );\n+            Object settingValue = clusterSettings.get(setting);\n+            if (settingValue instanceof Settings groupSetting &&\n+                valueType.id() == ObjectType.ID) {\n+                settingsBuilder.addDynamicObject(leaf.name, DataTypes.STRING, _ -> groupSetting.getAsStructuredMap());\n+            } else {\n+                settingsBuilder.add(\n+                    leaf.name,\n+                    valueType,\n+                    _ -> valueType.implicitCast(clusterSettings.get(setting)));\n+            }\n         } else {\n             var objectSetting = settingsBuilder.startObject(element.name);\n             for (var c : element.children) {",
+        "edit_type": "replace",
+        "verified": true,
+        "verification_result": "developer_fast_path_ok",
+        "applied": true,
+        "apply_result": "SUCCESS"
+      },
+      {
+        "target_file": "server/src/main/java/org/elasticsearch/cluster/routing/allocation/decider/AwarenessAllocationDecider.java",
+        "mainline_file": "server/src/main/java/org/elasticsearch/cluster/routing/allocation/decider/AwarenessAllocationDecider.java",
+        "old_string": "<developer patch fast path>",
+        "new_string": "diff --git a/server/src/main/java/org/elasticsearch/cluster/routing/allocation/decider/AwarenessAllocationDecider.java b/server/src/main/java/org/elasticsearch/cluster/routing/allocation/decider/AwarenessAllocationDecider.java\nindex 1302d07597..997799e107 100644\n--- a/server/src/main/java/org/elasticsearch/cluster/routing/allocation/decider/AwarenessAllocationDecider.java\n+++ b/server/src/main/java/org/elasticsearch/cluster/routing/allocation/decider/AwarenessAllocationDecider.java\n@@ -90,10 +90,15 @@ public class AwarenessAllocationDecider extends AllocationDecider {\n             Function.identity(),\n             DataTypes.STRING_ARRAY,\n             Property.Dynamic,\n-            Property.NodeScope);\n+            Property.NodeScope,\n+            Property.Exposed);\n \n     public static final Setting<Settings> CLUSTER_ROUTING_ALLOCATION_AWARENESS_FORCE_GROUP_SETTING =\n-        Setting.groupSetting(\"cluster.routing.allocation.awareness.force.\", Property.Dynamic, Property.NodeScope);\n+        Setting.groupSetting(\n+            \"cluster.routing.allocation.awareness.force.\",\n+            Property.Dynamic,\n+            Property.NodeScope,\n+            Property.Exposed);\n \n     private volatile List<String> awarenessAttributes;",
+        "edit_type": "replace",
+        "verified": true,
+        "verification_result": "developer_fast_path_ok",
+        "applied": true,
+        "apply_result": "SUCCESS"
+      }
+    ]
+  ],
+  "agent_trajectory_edits": [
+    []
+  ],
+  "adapted_code_hunks": [
+    {
+      "target_file": "server/src/main/java/io/crate/metadata/sys/SysClusterTableInfo.java",
+      "mainline_file": "server/src/main/java/io/crate/metadata/sys/SysClusterTableInfo.java",
+      "hunk_text": "diff --git a/server/src/main/java/io/crate/metadata/sys/SysClusterTableInfo.java b/server/src/main/java/io/crate/metadata/sys/SysClusterTableInfo.java\nindex 5d57134516..8f57069d04 100644\n--- a/server/src/main/java/io/crate/metadata/sys/SysClusterTableInfo.java\n+++ b/server/src/main/java/io/crate/metadata/sys/SysClusterTableInfo.java\n@@ -39,6 +39,7 @@ import io.crate.metadata.SystemTable.ObjectBuilder;\n import io.crate.metadata.settings.CrateSettings;\n import io.crate.types.DataType;\n import io.crate.types.DataTypes;\n+import io.crate.types.ObjectType;\n \n public class SysClusterTableInfo {\n \n@@ -99,7 +100,6 @@ public class SysClusterTableInfo {\n             .build();\n     }\n \n-    @SuppressWarnings(\"unchecked\")\n     private static void addSetting(ClusterSettings clusterSettings,\n                                    ObjectBuilder<Void, ? extends Builder<Void>> settingsBuilder,\n                                    Node<Setting<?>> element) {\n@@ -107,11 +107,16 @@ public class SysClusterTableInfo {\n             Leaf<Setting<?>> leaf = (Leaf<Setting<?>>) element;\n             var setting = leaf.value;\n             var valueType = (DataType<Object>) leaf.value.dataType();\n-            settingsBuilder.add(\n-                leaf.name,\n-                valueType,\n-                x -> valueType.implicitCast(clusterSettings.get(setting))\n-            );\n+            Object settingValue = clusterSettings.get(setting);\n+            if (settingValue instanceof Settings groupSetting &&\n+                valueType.id() == ObjectType.ID) {\n+                settingsBuilder.addDynamicObject(leaf.name, DataTypes.STRING, _ -> groupSetting.getAsStructuredMap());\n+            } else {\n+                settingsBuilder.add(\n+                    leaf.name,\n+                    valueType,\n+                    _ -> valueType.implicitCast(clusterSettings.get(setting)));\n+            }\n         } else {\n             var objectSetting = settingsBuilder.startObject(element.name);\n             for (var c : element.children) {\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    },
+    {
+      "target_file": "server/src/main/java/org/elasticsearch/cluster/routing/allocation/decider/AwarenessAllocationDecider.java",
+      "mainline_file": "server/src/main/java/org/elasticsearch/cluster/routing/allocation/decider/AwarenessAllocationDecider.java",
+      "hunk_text": "diff --git a/server/src/main/java/org/elasticsearch/cluster/routing/allocation/decider/AwarenessAllocationDecider.java b/server/src/main/java/org/elasticsearch/cluster/routing/allocation/decider/AwarenessAllocationDecider.java\nindex 1302d07597..997799e107 100644\n--- a/server/src/main/java/org/elasticsearch/cluster/routing/allocation/decider/AwarenessAllocationDecider.java\n+++ b/server/src/main/java/org/elasticsearch/cluster/routing/allocation/decider/AwarenessAllocationDecider.java\n@@ -90,10 +90,15 @@ public class AwarenessAllocationDecider extends AllocationDecider {\n             Function.identity(),\n             DataTypes.STRING_ARRAY,\n             Property.Dynamic,\n-            Property.NodeScope);\n+            Property.NodeScope,\n+            Property.Exposed);\n \n     public static final Setting<Settings> CLUSTER_ROUTING_ALLOCATION_AWARENESS_FORCE_GROUP_SETTING =\n-        Setting.groupSetting(\"cluster.routing.allocation.awareness.force.\", Property.Dynamic, Property.NodeScope);\n+        Setting.groupSetting(\n+            \"cluster.routing.allocation.awareness.force.\",\n+            Property.Dynamic,\n+            Property.NodeScope,\n+            Property.Exposed);\n \n     private volatile List<String> awarenessAttributes;\n \n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    }
+  ],
+  "validation_repeated_patch_detected": false,
+  "validation_repeated_plan_detected": false,
+  "best_effort_adapted_code_hunks": [
+    {
+      "target_file": "server/src/main/java/io/crate/metadata/sys/SysClusterTableInfo.java",
+      "mainline_file": "server/src/main/java/io/crate/metadata/sys/SysClusterTableInfo.java",
+      "hunk_text": "diff --git a/server/src/main/java/io/crate/metadata/sys/SysClusterTableInfo.java b/server/src/main/java/io/crate/metadata/sys/SysClusterTableInfo.java\nindex 5d57134516..8f57069d04 100644\n--- a/server/src/main/java/io/crate/metadata/sys/SysClusterTableInfo.java\n+++ b/server/src/main/java/io/crate/metadata/sys/SysClusterTableInfo.java\n@@ -39,6 +39,7 @@ import io.crate.metadata.SystemTable.ObjectBuilder;\n import io.crate.metadata.settings.CrateSettings;\n import io.crate.types.DataType;\n import io.crate.types.DataTypes;\n+import io.crate.types.ObjectType;\n \n public class SysClusterTableInfo {\n \n@@ -99,7 +100,6 @@ public class SysClusterTableInfo {\n             .build();\n     }\n \n-    @SuppressWarnings(\"unchecked\")\n     private static void addSetting(ClusterSettings clusterSettings,\n                                    ObjectBuilder<Void, ? extends Builder<Void>> settingsBuilder,\n                                    Node<Setting<?>> element) {\n@@ -107,11 +107,16 @@ public class SysClusterTableInfo {\n             Leaf<Setting<?>> leaf = (Leaf<Setting<?>>) element;\n             var setting = leaf.value;\n             var valueType = (DataType<Object>) leaf.value.dataType();\n-            settingsBuilder.add(\n-                leaf.name,\n-                valueType,\n-                x -> valueType.implicitCast(clusterSettings.get(setting))\n-            );\n+            Object settingValue = clusterSettings.get(setting);\n+            if (settingValue instanceof Settings groupSetting &&\n+                valueType.id() == ObjectType.ID) {\n+                settingsBuilder.addDynamicObject(leaf.name, DataTypes.STRING, _ -> groupSetting.getAsStructuredMap());\n+            } else {\n+                settingsBuilder.add(\n+                    leaf.name,\n+                    valueType,\n+                    _ -> valueType.implicitCast(clusterSettings.get(setting)));\n+            }\n         } else {\n             var objectSetting = settingsBuilder.startObject(element.name);\n             for (var c : element.children) {\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    },
+    {
+      "target_file": "server/src/main/java/org/elasticsearch/cluster/routing/allocation/decider/AwarenessAllocationDecider.java",
+      "mainline_file": "server/src/main/java/org/elasticsearch/cluster/routing/allocation/decider/AwarenessAllocationDecider.java",
+      "hunk_text": "diff --git a/server/src/main/java/org/elasticsearch/cluster/routing/allocation/decider/AwarenessAllocationDecider.java b/server/src/main/java/org/elasticsearch/cluster/routing/allocation/decider/AwarenessAllocationDecider.java\nindex 1302d07597..997799e107 100644\n--- a/server/src/main/java/org/elasticsearch/cluster/routing/allocation/decider/AwarenessAllocationDecider.java\n+++ b/server/src/main/java/org/elasticsearch/cluster/routing/allocation/decider/AwarenessAllocationDecider.java\n@@ -90,10 +90,15 @@ public class AwarenessAllocationDecider extends AllocationDecider {\n             Function.identity(),\n             DataTypes.STRING_ARRAY,\n             Property.Dynamic,\n-            Property.NodeScope);\n+            Property.NodeScope,\n+            Property.Exposed);\n \n     public static final Setting<Settings> CLUSTER_ROUTING_ALLOCATION_AWARENESS_FORCE_GROUP_SETTING =\n-        Setting.groupSetting(\"cluster.routing.allocation.awareness.force.\", Property.Dynamic, Property.NodeScope);\n+        Setting.groupSetting(\n+            \"cluster.routing.allocation.awareness.force.\",\n+            Property.Dynamic,\n+            Property.NodeScope,\n+            Property.Exposed);\n \n     private volatile List<String> awarenessAttributes;\n \n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    }
+  ],
+  "adapted_test_hunks": [],
+  "generation_checklist": [
+    {
+      "mainline_file": "server/src/main/java/io/crate/metadata/sys/SysClusterTableInfo.java",
+      "target_file": "server/src/main/java/io/crate/metadata/sys/SysClusterTableInfo.java",
+      "hunk_index": 0,
+      "adaptation_type": "TYPE_II",
+      "execution_types": [
+        "TYPE_II"
+      ],
+      "status": "success",
+      "reason": "developer_fast_path",
+      "todo_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ],
+      "completed_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ]
+    },
+    {
+      "mainline_file": "server/src/main/java/org/elasticsearch/cluster/routing/allocation/decider/AwarenessAllocationDecider.java",
+      "target_file": "server/src/main/java/org/elasticsearch/cluster/routing/allocation/decider/AwarenessAllocationDecider.java",
+      "hunk_index": 0,
+      "adaptation_type": "TYPE_II",
+      "execution_types": [
+        "TYPE_II"
+      ],
+      "status": "success",
+      "reason": "developer_fast_path",
+      "todo_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ],
+      "completed_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ]
+    }
+  ],
+  "generated_patch_hash": "78718024528aad3c38458671455e0371ca01b69b07595605024b13a5e9cdd299",
+  "force_type_v_until_success": false,
+  "force_type_v_reason": "",
+  "force_type_v_retry_files": [],
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "sources": []
+  }
+}

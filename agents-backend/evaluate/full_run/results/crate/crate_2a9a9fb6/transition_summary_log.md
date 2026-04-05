@@ -1,0 +1,55 @@
+# Transition Summary
+
+- Source: phase_outputs
+- Valid backport signal: True
+- Reason: Valid: Observed fail-to-pass and/or newly passing relevant tests with no regressions.
+- fail->pass (0): []
+- newly passing (44): ['io.crate.planner.operators.LogicalPlannerTest#testAggregationOnTableFunction', 'io.crate.planner.operators.LogicalPlannerTest#testAliasedPrimaryKeyLookupHasGetPlan', 'io.crate.planner.operators.LogicalPlannerTest#testAvgWindowFunction', 'io.crate.planner.operators.LogicalPlannerTest#testHavingGlobalAggregation', 'io.crate.planner.operators.LogicalPlannerTest#testHavingGlobalAggregationAndRelationAlias', 'io.crate.planner.operators.LogicalPlannerTest#testInWithSubqueryOrderImplicitlyApplied', 'io.crate.planner.operators.LogicalPlannerTest#testInWithSubqueryOrderImplicitlyAppliedWithExistingOrderBy', 'io.crate.planner.operators.LogicalPlannerTest#testInWithSubqueryOrderImplicitlyAppliedWithExistingOrderByOnDifferentField', 'io.crate.planner.operators.LogicalPlannerTest#testIntermediateFetch', 'io.crate.planner.operators.LogicalPlannerTest#testJoinTwoTables', 'io.crate.planner.operators.LogicalPlannerTest#testParentQueryIsPushedDownAndMergedIntoSubRelationWhereClause', 'io.crate.planner.operators.LogicalPlannerTest#testPlanOfJoinedViewsHasBoundaryWithViewOutputs', 'io.crate.planner.operators.LogicalPlannerTest#testQTFWithOrderBy', 'io.crate.planner.operators.LogicalPlannerTest#testQTFWithOrderByAndAlias', 'io.crate.planner.operators.LogicalPlannerTest#testQTFWithoutOrderBy', 'io.crate.planner.operators.LogicalPlannerTest#testScoreColumnIsCollectedNotFetched', 'io.crate.planner.operators.LogicalPlannerTest#testSelectCountStarIsOptimized', 'io.crate.planner.operators.LogicalPlannerTest#testSelectCountStarIsOptimizedInsideRelations', 'io.crate.planner.operators.LogicalPlannerTest#testSelectCountStarIsOptimizedOnNestedSubqueries', 'io.crate.planner.operators.LogicalPlannerTest#testSelectOnVirtualTableWithOrderBy', 'io.crate.planner.operators.LogicalPlannerTest#testSimpleSelectQAFAndLimit', 'io.crate.planner.operators.LogicalPlannerTest#test_can_create_execution_plan_from_correlated_join_with_reordered_hash_join', 'io.crate.planner.operators.LogicalPlannerTest#test_collect_derives_estimated_size_per_row_from_stats_and_types', 'io.crate.planner.operators.LogicalPlannerTest#test_column_pruning_is_applied_to_subqueries', 'io.crate.planner.operators.LogicalPlannerTest#test_eval_qtf_doesnt_unwrap_non_fetchable_aliases', 'io.crate.planner.operators.LogicalPlannerTest#test_group_by_with_alias_and_limit_distinct_rewrite_creates_valid_plan', 'io.crate.planner.operators.LogicalPlannerTest#test_limit_distinct_limits_outputs_to_the_group_keys_if_source_has_more_outputs', 'io.crate.planner.operators.LogicalPlannerTest#test_limit_on_hash_join_is_rewritten_to_query_then_fetch', 'io.crate.planner.operators.LogicalPlannerTest#test_limit_on_join_is_rewritten_to_query_then_fetch', 'io.crate.planner.operators.LogicalPlannerTest#test_optimize_for_in_subquery_only_operates_on_primitive_types', 'io.crate.planner.operators.LogicalPlannerTest#test_orderBy_not_optimized_for_array_subquery_expression', 'io.crate.planner.operators.LogicalPlannerTest#test_prune_outputs_on_group_hash_aggregate', 'io.crate.planner.operators.LogicalPlannerTest#test_prune_outputs_on_group_hash_aggregate_with_limit', 'io.crate.planner.operators.LogicalPlannerTest#test_prune_outputs_on_table_functions', 'io.crate.planner.operators.LogicalPlannerTest#test_prune_outputs_on_window_functions', 'io.crate.planner.operators.LogicalPlannerTest#test_query_uses_fetch_if_there_is_a_hash_join_where_only_one_side_can_utilize_fetch', 'io.crate.planner.operators.LogicalPlannerTest#test_query_uses_fetch_if_there_is_a_nested_loop_join_where_only_one_side_can_utilize_fetch', 'io.crate.planner.operators.LogicalPlannerTest#test_ram_accounting_released_on_multi_phase_execution_failure', 'io.crate.planner.operators.LogicalPlannerTest#test_rename_gets_scalar_outputs_from_collect', 'io.crate.planner.operators.LogicalPlannerTest#test_scalar_uses_table_function_and_column_not_used_in_select_and_table_function', 'io.crate.planner.operators.LogicalPlannerTest#test_select_count_star_is_optimized_if_there_is_a_single_agg_in_select_list', 'io.crate.planner.operators.LogicalPlannerTest#test_select_count_star_on_aliased_table_is_optimized', 'io.crate.planner.operators.LogicalPlannerTest#test_select_expression_with_a_non_fetchable_column_and_parameter', 'io.crate.planner.operators.LogicalPlannerTest#test_unused_table_function_in_subquery_is_not_pruned']
+- pass->fail (0): []
+
+## Touched Test States
+- Touched tests (from patch): ['io.crate.planner.operators.LogicalPlannerTest']
+  - io.crate.planner.operators.LogicalPlannerTest#testAggregationOnTableFunction: baseline=absent, patched=passed
+  - io.crate.planner.operators.LogicalPlannerTest#testAliasedPrimaryKeyLookupHasGetPlan: baseline=absent, patched=passed
+  - io.crate.planner.operators.LogicalPlannerTest#testAvgWindowFunction: baseline=absent, patched=passed
+  - io.crate.planner.operators.LogicalPlannerTest#testHavingGlobalAggregation: baseline=absent, patched=passed
+  - io.crate.planner.operators.LogicalPlannerTest#testHavingGlobalAggregationAndRelationAlias: baseline=absent, patched=passed
+  - io.crate.planner.operators.LogicalPlannerTest#testInWithSubqueryOrderImplicitlyApplied: baseline=absent, patched=passed
+  - io.crate.planner.operators.LogicalPlannerTest#testInWithSubqueryOrderImplicitlyAppliedWithExistingOrderBy: baseline=absent, patched=passed
+  - io.crate.planner.operators.LogicalPlannerTest#testInWithSubqueryOrderImplicitlyAppliedWithExistingOrderByOnDifferentField: baseline=absent, patched=passed
+  - io.crate.planner.operators.LogicalPlannerTest#testIntermediateFetch: baseline=absent, patched=passed
+  - io.crate.planner.operators.LogicalPlannerTest#testJoinTwoTables: baseline=absent, patched=passed
+  - io.crate.planner.operators.LogicalPlannerTest#testParentQueryIsPushedDownAndMergedIntoSubRelationWhereClause: baseline=absent, patched=passed
+  - io.crate.planner.operators.LogicalPlannerTest#testPlanOfJoinedViewsHasBoundaryWithViewOutputs: baseline=absent, patched=passed
+  - io.crate.planner.operators.LogicalPlannerTest#testQTFWithOrderBy: baseline=absent, patched=passed
+  - io.crate.planner.operators.LogicalPlannerTest#testQTFWithOrderByAndAlias: baseline=absent, patched=passed
+  - io.crate.planner.operators.LogicalPlannerTest#testQTFWithoutOrderBy: baseline=absent, patched=passed
+  - io.crate.planner.operators.LogicalPlannerTest#testScoreColumnIsCollectedNotFetched: baseline=absent, patched=passed
+  - io.crate.planner.operators.LogicalPlannerTest#testSelectCountStarIsOptimized: baseline=absent, patched=passed
+  - io.crate.planner.operators.LogicalPlannerTest#testSelectCountStarIsOptimizedInsideRelations: baseline=absent, patched=passed
+  - io.crate.planner.operators.LogicalPlannerTest#testSelectCountStarIsOptimizedOnNestedSubqueries: baseline=absent, patched=passed
+  - io.crate.planner.operators.LogicalPlannerTest#testSelectOnVirtualTableWithOrderBy: baseline=absent, patched=passed
+  - io.crate.planner.operators.LogicalPlannerTest#testSimpleSelectQAFAndLimit: baseline=absent, patched=passed
+  - io.crate.planner.operators.LogicalPlannerTest#test_can_create_execution_plan_from_correlated_join_with_reordered_hash_join: baseline=absent, patched=passed
+  - io.crate.planner.operators.LogicalPlannerTest#test_collect_derives_estimated_size_per_row_from_stats_and_types: baseline=absent, patched=passed
+  - io.crate.planner.operators.LogicalPlannerTest#test_column_pruning_is_applied_to_subqueries: baseline=absent, patched=passed
+  - io.crate.planner.operators.LogicalPlannerTest#test_eval_qtf_doesnt_unwrap_non_fetchable_aliases: baseline=absent, patched=passed
+  - io.crate.planner.operators.LogicalPlannerTest#test_group_by_with_alias_and_limit_distinct_rewrite_creates_valid_plan: baseline=absent, patched=passed
+  - io.crate.planner.operators.LogicalPlannerTest#test_limit_distinct_limits_outputs_to_the_group_keys_if_source_has_more_outputs: baseline=absent, patched=passed
+  - io.crate.planner.operators.LogicalPlannerTest#test_limit_on_hash_join_is_rewritten_to_query_then_fetch: baseline=absent, patched=passed
+  - io.crate.planner.operators.LogicalPlannerTest#test_limit_on_join_is_rewritten_to_query_then_fetch: baseline=absent, patched=passed
+  - io.crate.planner.operators.LogicalPlannerTest#test_optimize_for_in_subquery_only_operates_on_primitive_types: baseline=absent, patched=passed
+  - io.crate.planner.operators.LogicalPlannerTest#test_orderBy_not_optimized_for_array_subquery_expression: baseline=absent, patched=passed
+  - io.crate.planner.operators.LogicalPlannerTest#test_prune_outputs_on_group_hash_aggregate: baseline=absent, patched=passed
+  - io.crate.planner.operators.LogicalPlannerTest#test_prune_outputs_on_group_hash_aggregate_with_limit: baseline=absent, patched=passed
+  - io.crate.planner.operators.LogicalPlannerTest#test_prune_outputs_on_table_functions: baseline=absent, patched=passed
+  - io.crate.planner.operators.LogicalPlannerTest#test_prune_outputs_on_window_functions: baseline=absent, patched=passed
+  - io.crate.planner.operators.LogicalPlannerTest#test_query_uses_fetch_if_there_is_a_hash_join_where_only_one_side_can_utilize_fetch: baseline=absent, patched=passed
+  - io.crate.planner.operators.LogicalPlannerTest#test_query_uses_fetch_if_there_is_a_nested_loop_join_where_only_one_side_can_utilize_fetch: baseline=absent, patched=passed
+  - io.crate.planner.operators.LogicalPlannerTest#test_ram_accounting_released_on_multi_phase_execution_failure: baseline=absent, patched=passed
+  - io.crate.planner.operators.LogicalPlannerTest#test_rename_gets_scalar_outputs_from_collect: baseline=absent, patched=passed
+  - io.crate.planner.operators.LogicalPlannerTest#test_scalar_uses_table_function_and_column_not_used_in_select_and_table_function: baseline=absent, patched=passed
+  - io.crate.planner.operators.LogicalPlannerTest#test_select_count_star_is_optimized_if_there_is_a_single_agg_in_select_list: baseline=absent, patched=passed
+  - io.crate.planner.operators.LogicalPlannerTest#test_select_count_star_on_aliased_table_is_optimized: baseline=absent, patched=passed
+  - io.crate.planner.operators.LogicalPlannerTest#test_select_expression_with_a_non_fetchable_column_and_parameter: baseline=absent, patched=passed
+  - io.crate.planner.operators.LogicalPlannerTest#test_unused_table_function_in_subquery_is_not_pruned: baseline=absent, patched=passed

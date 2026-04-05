@@ -1,0 +1,164 @@
+{
+  "hunk_generation_plan": {
+    "server/src/main/java/io/crate/expression/reference/doc/lucene/SourceParser.java": [
+      {
+        "hunk_index": 0,
+        "target_file": "server/src/main/java/io/crate/expression/reference/doc/lucene/SourceParser.java",
+        "operation_index": 0,
+        "edit_type": "insert_before",
+        "old_string": "import java.util.ArrayList;",
+        "new_string": "import java.math.BigDecimal;\nimport java.math.BigInteger;\nimport java.util.ArrayList;",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "Insert BigDecimal and BigInteger imports before ArrayList import as in mainline|forced_type_v:failed_stage_generation_contract",
+        "surround_before_3": [
+          "import java.io.IOException;",
+          "import java.io.InputStream;",
+          "import java.io.UncheckedIOException;"
+        ],
+        "surround_after_3": [
+          "import java.util.BitSet;",
+          "import java.util.HashMap;",
+          "import java.util.List;"
+        ],
+        "adaptation_type": "TYPE_V",
+        "base_adaptation_type": "TYPE_I",
+        "execution_type": "TYPE_V",
+        "location_match": true,
+        "surrounding_match": true,
+        "blockers": [],
+        "namespace_only_possible": true,
+        "namespace_changes": [],
+        "required_invariants": [],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 7,
+          "target_declared_methods_count": 8,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 1,
+        "target_file": "server/src/main/java/io/crate/expression/reference/doc/lucene/SourceParser.java",
+        "operation_index": 0,
+        "edit_type": "replace",
+        "old_string": "            case START_OBJECT -> parseObject(parser, requiredColumns, colPath, includeUnknown);\n            case VALUE_STRING -> isUndefined(type) ? parser.text() : parseByType(parser, type);\n            case VALUE_NUMBER -> isUndefined(type) ? parser.numberValue() : parseByType(parser, type);\n            case VALUE_BOOLEAN -> isUndefined(type) ? parser.booleanValue() : parseByType(parser, type);",
+        "new_string": "            case START_OBJECT -> parseObject(parser, requiredColumns, includeUnknown);\n            case VALUE_STRING -> isUndefined(type) ? parser.text() : parseByType(parser, type);\n            case VALUE_NUMBER -> isUndefined(type) ? numberValue(parser.numberValue()) : parseByType(parser, type);\n            case VALUE_BOOLEAN -> isUndefined(type) ? parser.booleanValue() : parseByType(parser, type);",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_replace|forced_type_v:failed_stage_generation_contract",
+        "surround_before_3": [
+          "        return switch (parser.currentToken()) {",
+          "            case VALUE_NULL -> null;",
+          "            case START_ARRAY -> parseArray(parser, type, requiredColumns, colPath);"
+        ],
+        "surround_after_3": [
+          "            case VALUE_EMBEDDED_OBJECT -> isUndefined(type) ? parser.binaryValue() : parseByType(parser, type);",
+          "            default -> throw new UnsupportedOperationException(\"Unsupported token encountered, expected a value, got \"",
+          "                + parser.currentToken());"
+        ],
+        "adaptation_type": "TYPE_V",
+        "base_adaptation_type": "TYPE_II",
+        "execution_type": "TYPE_V",
+        "location_match": false,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": true,
+        "namespace_changes": [],
+        "required_invariants": [
+          "case VALUE_NUMBER -> isUndefined(type) ? numberValue(parser.numberValue()) : parseByType(parser, type);"
+        ],
+        "required_symbols": [
+          "isUndefined"
+        ],
+        "protected_symbols": [
+          "isUndefined"
+        ],
+        "must_preserve_symbols": [
+          "isUndefined"
+        ],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 7,
+          "target_declared_methods_count": 8,
+          "matched_symbols_before": [
+            "isUndefined"
+          ],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 2,
+        "target_file": "server/src/main/java/io/crate/expression/reference/doc/lucene/SourceParser.java",
+        "operation_index": 0,
+        "edit_type": "insert_before",
+        "old_string": "    private static boolean isUndefined(@Nullable DataType<?> type) {",
+        "new_string": "    /**\n     * For the undefined case, Number's concrete types is guessed by the parser.\n     * ParserBase.getNumberValue always returns BigInteger for integral big numbers.\n     * We must use BigDecimal for NUMERIC even for integral values, otherwise streaming will be broken.\n     * @param number is a Number returned by the parser.\n     */\n    private static Number numberValue(Number number) {\n        if (number instanceof BigInteger bigInt) {\n            return new BigDecimal(bigInt);\n        }\n        return number;\n    }\n\n\n    private static boolean isUndefined(@Nullable DataType<?> type) {",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_insert_before|forced_type_v:failed_stage_generation_contract",
+        "surround_before_3": [
+          "        };",
+          "    }",
+          ""
+        ],
+        "surround_after_3": [
+          "        return type == null || type.id() == DataTypes.UNDEFINED.id();",
+          "    }",
+          ""
+        ],
+        "adaptation_type": "TYPE_V",
+        "base_adaptation_type": "TYPE_II",
+        "execution_type": "TYPE_V",
+        "location_match": false,
+        "surrounding_match": true,
+        "blockers": [],
+        "namespace_only_possible": true,
+        "namespace_changes": [],
+        "required_invariants": [
+          "private static Number numberValue(Number number) {",
+          "if (number instanceof BigInteger bigInt) {",
+          "return new BigDecimal(bigInt);"
+        ],
+        "required_symbols": [
+          "numberValue"
+        ],
+        "protected_symbols": [
+          "numberValue"
+        ],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 7,
+          "target_declared_methods_count": 8,
+          "matched_symbols_before": [],
+          "missing_symbols_before": [
+            "numberValue"
+          ]
+        }
+      }
+    ]
+  },
+  "last_plan_signature": "d660eb1b5869486d6cd8a1a8ada8d813b701a423f5abe17aa3431f9406ab35e5",
+  "validation_repeated_plan_detected": false,
+  "force_type_v_until_success": true,
+  "force_type_v_reason": "failed_stage_generation_contract",
+  "force_type_v_retry_files": [
+    "server/src/main/java/io/crate/expression/reference/doc/lucene/SourceParser.java"
+  ],
+  "token_usage": {
+    "input_tokens": 4209,
+    "output_tokens": 1048,
+    "total_tokens": 5257,
+    "estimated": false,
+    "sources": [
+      "planning_agent.provider_usage",
+      "planning_agent.provider_usage",
+      "planning_agent.provider_usage"
+    ]
+  }
+}

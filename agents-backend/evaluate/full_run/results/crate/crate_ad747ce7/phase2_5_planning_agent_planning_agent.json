@@ -1,0 +1,65 @@
+{
+  "hunk_generation_plan": {
+    "server/src/main/java/io/crate/session/RowConsumerToResultReceiver.java": [
+      {
+        "hunk_index": 0,
+        "target_file": "server/src/main/java/io/crate/session/RowConsumerToResultReceiver.java",
+        "operation_index": 0,
+        "edit_type": "replace",
+        "old_string": "                        LOGGER.trace(\"Suspended execution after {} rows as the receiver is not writable anymore\", rowCount);\n                        waitingForWrite = true;\n                        writeFuture.thenRun(() -> {\n                            LOGGER.trace(\"Resume execution after {} rows\", rowCount);\n                            waitingForWrite = false;\n                            rowCount = 0;\n                            consumeIt(iterator);\n                        });",
+        "new_string": "                        LOGGER.trace(\"Suspended execution after {} rows as the receiver is not writable anymore\", rowCount);\n                        waitingForWrite = true;\n                        writeFuture.whenComplete((_, t) -> {\n                            if (t == null) {\n                                LOGGER.trace(\"Resume execution after {} rows\", rowCount);\n                                waitingForWrite = false;\n                                rowCount = 0;\n                                consumeIt(iterator);\n                            } else {\n                                iterator.close();\n                                completionFuture.completeExceptionally(t);\n                                resultReceiver.fail(t);\n                            }\n                        });",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_replace",
+        "surround_before_3": [
+          "                    rowCount++;",
+          "                    CompletableFuture<Void> writeFuture = resultReceiver.setNextRow(iterator.currentElement());",
+          "                    if (writeFuture != null) {"
+        ],
+        "surround_after_3": [
+          "                        return;",
+          "                    }",
+          "                }"
+        ],
+        "adaptation_type": "TYPE_I",
+        "base_adaptation_type": "TYPE_I",
+        "execution_type": "TYPE_I",
+        "location_match": true,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "writeFuture.whenComplete((_, t) -> {",
+          "LOGGER.trace(\"Resume execution after {} rows\", rowCount);",
+          "waitingForWrite = false;",
+          "consumeIt(iterator);",
+          "completionFuture.completeExceptionally(t);",
+          "resultReceiver.fail(t);"
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 9,
+          "target_declared_methods_count": 9,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      }
+    ]
+  },
+  "last_plan_signature": "97292fcb79a8edf14e3fa928a14bdc90f7c93d2cbda3c4215bc5066f608edc8e",
+  "validation_repeated_plan_detected": false,
+  "force_type_v_until_success": false,
+  "force_type_v_reason": "",
+  "force_type_v_retry_files": [],
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "sources": []
+  }
+}

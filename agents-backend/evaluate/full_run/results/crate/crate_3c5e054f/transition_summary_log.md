@@ -1,0 +1,65 @@
+# Transition Summary
+
+- Source: phase_outputs
+- Valid backport signal: True
+- Reason: Valid: Observed fail-to-pass and/or newly passing relevant tests with no regressions.
+- fail->pass (3): ['io.crate.integrationtests.InformationSchemaTest#testDefaultColumns', 'io.crate.integrationtests.InformationSchemaTest#testGlobalAggregation', 'io.crate.metadata.sys.SysClusterTableInfoTest#test_routing_allocation_awareness_settings']
+- newly passing (0): []
+- pass->fail (0): []
+
+## Touched Test States
+- Touched tests (from patch): ['io.crate.integrationtests.InformationSchemaTest', 'io.crate.metadata.sys.SysClusterTableInfoTest']
+  - io.crate.integrationtests.InformationSchemaTest#selectDynamicObjectAddsSubColumn: baseline=passed, patched=passed
+  - io.crate.integrationtests.InformationSchemaTest#testAddColumnToIgnoredObject: baseline=passed, patched=passed
+  - io.crate.integrationtests.InformationSchemaTest#testAnyInformationSchema: baseline=passed, patched=passed
+  - io.crate.integrationtests.InformationSchemaTest#testColumnsColumns: baseline=passed, patched=passed
+  - io.crate.integrationtests.InformationSchemaTest#testDefaultColumns: baseline=failed, patched=passed
+  - io.crate.integrationtests.InformationSchemaTest#testDefaultTables: baseline=passed, patched=passed
+  - io.crate.integrationtests.InformationSchemaTest#testDynamicObjectPartitionedTableInformationSchemaColumns: baseline=passed, patched=passed
+  - io.crate.integrationtests.InformationSchemaTest#testGlobalAggregation: baseline=failed, patched=passed
+  - io.crate.integrationtests.InformationSchemaTest#testGlobalAggregationMany: baseline=passed, patched=passed
+  - io.crate.integrationtests.InformationSchemaTest#testGlobalAggregationWithAlias: baseline=passed, patched=passed
+  - io.crate.integrationtests.InformationSchemaTest#testGlobalAggregationWithWhere: baseline=passed, patched=passed
+  - io.crate.integrationtests.InformationSchemaTest#testGlobalCount: baseline=passed, patched=passed
+  - io.crate.integrationtests.InformationSchemaTest#testGlobalCountDistinct: baseline=passed, patched=passed
+  - io.crate.integrationtests.InformationSchemaTest#testInformationRoutinesColumns: baseline=passed, patched=passed
+  - io.crate.integrationtests.InformationSchemaTest#testOpenClosePartitionInformation: baseline=passed, patched=passed
+  - io.crate.integrationtests.InformationSchemaTest#testOpenCloseTableInformation: baseline=passed, patched=passed
+  - io.crate.integrationtests.InformationSchemaTest#testPartitionedBy: baseline=passed, patched=passed
+  - io.crate.integrationtests.InformationSchemaTest#testPartitionedTableShardsAndReplicas: baseline=passed, patched=passed
+  - io.crate.integrationtests.InformationSchemaTest#testPartitionsNestedCol: baseline=passed, patched=passed
+  - io.crate.integrationtests.InformationSchemaTest#testRefreshTableConstraints: baseline=passed, patched=passed
+  - io.crate.integrationtests.InformationSchemaTest#testRegexpMatch: baseline=passed, patched=passed
+  - io.crate.integrationtests.InformationSchemaTest#testScalarEvaluatesInErrorOnInformationSchema: baseline=passed, patched=passed
+  - io.crate.integrationtests.InformationSchemaTest#testSearchInformationSchemaTablesRefresh: baseline=passed, patched=passed
+  - io.crate.integrationtests.InformationSchemaTest#testSelectAnalyzersFromRoutines: baseline=passed, patched=passed
+  - io.crate.integrationtests.InformationSchemaTest#testSelectBlobTablesFromInformationSchemaTable: baseline=passed, patched=passed
+  - io.crate.integrationtests.InformationSchemaTest#testSelectCharFiltersFromRoutines: baseline=passed, patched=passed
+  - io.crate.integrationtests.InformationSchemaTest#testSelectFromInformationSchemaTable: baseline=passed, patched=passed
+  - io.crate.integrationtests.InformationSchemaTest#testSelectFromKeyColumnUsage: baseline=passed, patched=passed
+  - io.crate.integrationtests.InformationSchemaTest#testSelectFromReferentialConstraints: baseline=passed, patched=passed
+  - io.crate.integrationtests.InformationSchemaTest#testSelectFromTableColumns: baseline=passed, patched=passed
+  - io.crate.integrationtests.InformationSchemaTest#testSelectFromTableColumnsMultiField: baseline=passed, patched=passed
+  - io.crate.integrationtests.InformationSchemaTest#testSelectFromTableColumnsRefresh: baseline=passed, patched=passed
+  - io.crate.integrationtests.InformationSchemaTest#testSelectFromTableConstraints: baseline=passed, patched=passed
+  - io.crate.integrationtests.InformationSchemaTest#testSelectGeneratedColumnFromInformationSchemaColumns: baseline=passed, patched=passed
+  - io.crate.integrationtests.InformationSchemaTest#testSelectPartitionedTablesFromInformationSchemaTable: baseline=passed, patched=passed
+  - io.crate.integrationtests.InformationSchemaTest#testSelectSchemata: baseline=passed, patched=passed
+  - io.crate.integrationtests.InformationSchemaTest#testSelectSqlFeatures: baseline=passed, patched=passed
+  - io.crate.integrationtests.InformationSchemaTest#testSelectStarFromInformationSchemaTable: baseline=passed, patched=passed
+  - io.crate.integrationtests.InformationSchemaTest#testSelectStarFromInformationSchemaTableWithOrderBy: baseline=passed, patched=passed
+  - io.crate.integrationtests.InformationSchemaTest#testSelectStarFromInformationSchemaTableWithOrderByAndLimit: baseline=passed, patched=passed
+  - io.crate.integrationtests.InformationSchemaTest#testSelectStarFromInformationSchemaTableWithOrderByAndLimitOffset: baseline=passed, patched=passed
+  - io.crate.integrationtests.InformationSchemaTest#testSelectStarFromInformationSchemaTableWithOrderByTwoColumnsAndLimit: baseline=passed, patched=passed
+  - io.crate.integrationtests.InformationSchemaTest#testSelectTokenFiltersFromRoutines: baseline=passed, patched=passed
+  - io.crate.integrationtests.InformationSchemaTest#testSelectTokenizersFromRoutines: baseline=passed, patched=passed
+  - io.crate.integrationtests.InformationSchemaTest#testSelectViewsFromInformationSchema: baseline=passed, patched=passed
+  - io.crate.integrationtests.InformationSchemaTest#testSupportedPgTypeColumns: baseline=passed, patched=passed
+  - io.crate.integrationtests.InformationSchemaTest#testTableConstraintsWithOrderBy: baseline=passed, patched=passed
+  - io.crate.integrationtests.InformationSchemaTest#testTablePartitions: baseline=passed, patched=passed
+  - io.crate.integrationtests.InformationSchemaTest#testTablePartitionsMultiCol: baseline=passed, patched=passed
+  - io.crate.integrationtests.InformationSchemaTest#test_character_maximum_length_information_schema_columns: baseline=passed, patched=passed
+  - io.crate.integrationtests.InformationSchemaTest#test_dropped_columns_are_not_shown_in_information_schema: baseline=passed, patched=passed
+  - io.crate.integrationtests.InformationSchemaTest#test_primary_key_constraint_names_are_visible: baseline=passed, patched=passed
+  - io.crate.metadata.sys.SysClusterTableInfoTest#test_license_data_can_be_selected: baseline=passed, patched=passed
+  - io.crate.metadata.sys.SysClusterTableInfoTest#test_routing_allocation_awareness_settings: baseline=error, patched=passed

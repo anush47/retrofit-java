@@ -1,0 +1,40 @@
+patch_id=crate_24144013
+project=crate
+mainline_commit=2414401337b6b12b3392502285257bd1913c27b9
+backport_commit=7d4bde801d2628e3e8ba8e5cebaca3e4afd5265d
+mode=full
+started_at=2026-04-05T11:18:40.250601
+----------------------------------------
+Running full workflow graph
+Completed node=phase_0_optimistic
+Workflow completed successfully
+
+[crate/crate_24144013] Setting up repositories for mode=full...
+[crate/crate_24144013] Running full workflow graph...
+Router: Running Phase 0.
+Phase 0 (Optimistic): Checking direct patch applicability...
+Phase 0: Experiment mode — checking out parent of 7d4bde801d2628e3e8ba8e5cebaca3e4afd5265d...
+Phase 0: Building baseline by applying developer backport test hunks only...
+  Validation: server/src/test/java/io/crate/replication/logical/action/GetFileChunkActionTest.java - applying 1 hunk(s) one by one in bottom-to-top order: [1]
+  Validation: server/src/test/java/io/crate/replication/logical/action/GetStoreMetadataActionTest.java - applying 1 hunk(s) one by one in bottom-to-top order: [1]
+  Validation: server/src/test/java/io/crate/replication/logical/action/ReleasePublisherResourcesActionTest.java - applying 1 hunk(s) one by one in bottom-to-top order: [1]
+  Validation: server/src/test/java/io/crate/replication/logical/action/ShardChangesActionTest.java - applying 1 hunk(s) one by one in bottom-to-top order: [1]
+  Validation: server/src/test/java/io/crate/replication/logical/seqno/RetentionLeaseHelperTest.java - applying 1 hunk(s) one by one in bottom-to-top order: [1]
+  Validation: server/src/test/java/org/elasticsearch/action/support/single/shard/SingleShardRequestTest.java - applying 1 hunk(s) one by one in bottom-to-top order: [1]
+  Validation: server/src/test/java/org/elasticsearch/index/seqno/RetentionLeaseActionsTest.java - applying 1 hunk(s) one by one in bottom-to-top order: [1]
+  Validation: ADDED operation for server/src/test/java/io/crate/replication/logical/action/GetFileChunkActionTest.java
+  Validation: ADDED operation for server/src/test/java/io/crate/replication/logical/action/GetStoreMetadataActionTest.java
+  Validation: ADDED operation for server/src/test/java/io/crate/replication/logical/action/ReleasePublisherResourcesActionTest.java
+  Validation: ADDED operation for server/src/test/java/io/crate/replication/logical/action/ShardChangesActionTest.java
+  Validation: ADDED operation for server/src/test/java/io/crate/replication/logical/seqno/RetentionLeaseHelperTest.java
+  Validation: ADDED operation for server/src/test/java/org/elasticsearch/action/support/single/shard/SingleShardRequestTest.java
+  Validation: ADDED operation for server/src/test/java/org/elasticsearch/index/seqno/RetentionLeaseActionsTest.java
+    Agent 4: Executing crate helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_tests.sh
+Phase 0: git apply --check SUCCEEDED. Attempting actual patch application and test run.
+    Agent 4: Executing crate helper build script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_build.sh
+    Agent 4: Executing crate helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_tests.sh
+Phase 0: Transition summary -> reason=Valid: Observed fail-to-pass and/or newly passing relevant tests with no regressions.; fail->pass(0): []; newly_passing(8): ['io.crate.replication.logical.action.GetFileChunkActionTest#test_bwc_can_resolve_shards_using_index_names_before_6_1', 'io.crate.replication.logical.action.GetStoreMetadataActionTest#test_bwc_can_resolve_shards_using_index_names_before_6_1', 'io.crate.replication.logical.action.ReleasePublisherResourcesActionTest#test_bwc_can_resolve_shards_using_index_names_before_6_1', 'io.crate.replication.logical.action.ShardChangesActionTest#test_bwc_can_resolve_shards_using_index_names_before_6_1', 'io.crate.replication.logical.seqno.RetentionLeaseHelperTest#test_retention_lease_id_for_shard', 'org.elasticsearch.action.support.single.shard.SingleShardRequestTest#test_streaming', 'org.elasticsearch.action.support.single.shard.SingleShardRequestTest#test_streaming_bwc_before_6_1', 'org.elasticsearch.index.seqno.RetentionLeaseActionsTest#test_bwc_can_resolve_shards_using_index_names_before_6_1']; pass->fail(0): []
+Phase 0: Transition-based test validation passed. Fast-path success.
+Router: Phase 0 succeeded - taking fast-path exit.
+  Completed: phase_0_optimistic
+[crate/crate_24144013] Full workflow completed!

@@ -1,0 +1,14 @@
+patch_id=crate_d31bd126
+project=crate
+mainline_commit=d31bd126c49b8283fa5a28b6ec90099024bedef1
+backport_commit=418f2f245aec87d96ba287b00e2dd590560c9e27
+mode=full
+started_at=2026-04-05T10:58:07.180042
+----------------------------------------
+Phase0 cache fast-path success; skipping agentic workflow
+Completed from cache
+
+[crate/crate_d31bd126] Setting up repositories for mode=full...
+[crate/crate_d31bd126] Found cached Phase 0 results. Skipping Phase 0 and reusing baseline test state.
+[crate/crate_d31bd126] Cached Phase 0 fast-path success. Skipping agentic workflow.
+[crate/crate_d31bd126] Completed from cache without agentic workflow.

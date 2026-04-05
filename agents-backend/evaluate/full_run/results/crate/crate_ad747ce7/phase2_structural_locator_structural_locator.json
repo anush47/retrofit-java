@@ -1,0 +1,26 @@
+{
+  "consistency_map": {},
+  "mapped_target_context": {
+    "server/src/main/java/io/crate/session/RowConsumerToResultReceiver.java": [
+      {
+        "hunk_index": 1,
+        "mainline_method": "hunk_1",
+        "target_file": "server/src/main/java/io/crate/session/RowConsumerToResultReceiver.java",
+        "target_method": null,
+        "start_line": 92,
+        "end_line": 92,
+        "code_snippet": "\n    @Override\n    public CompletableFuture<?> completionFuture() {\n        return completionFuture;\n    }\n\n    private void consumeIt(BatchIterator<Row> iterator) {\n        while (true) {\n            try {\n                while (iterator.moveNext()) {\n                    if (rowCount > 0 && maxRows > 0 && rowCount % maxRows == 0) {\n                        suspendedIt.complete(iterator);\n                        resultReceiver.batchFinished();\n                        return; // resumed via postgres protocol, close is done later\n                    }\n                    rowCount++;\n                    CompletableFuture<Void> writeFuture = resultReceiver.setNextRow(iterator.currentElement());\n                    if (writeFuture != null) {\n                        LOGGER.trace(\"Suspended execution after {} rows as the receiver is not writable anymore\", rowCount);\n                        waitingForWrite = true;\n                        writeFuture.thenRun(() -> {\n                            LOGGER.trace(\"Resume execution after {} rows\", rowCount);\n                            waitingForWrite = false;\n                            rowCount = 0;\n                            consumeIt(iterator);\n                        });\n                        return;\n                    }\n                }\n                if (iterator.allLoaded()) {\n                    completionFuture.complete(null);\n                    iterator.close();\n                    resultReceiver.allFinished();\n                    return;\n                } else {\n                    var nextBatch = iterator.loadNextBatch().toCompletableFuture();\n                    if (nextBatch.isDone()) {\n                        if (nextBatch.isCompletedExceptionally()) {\n                            // trigger exception\n                            nextBatch.join();\n                        }",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      }
+    ]
+  },
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "reason": "llm_usage_not_collected_in_this_node"
+  }
+}

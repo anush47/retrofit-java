@@ -1,0 +1,85 @@
+patch_id=crate_006187ad
+project=crate
+mainline_commit=006187ad50f256dfb4f1018c01fd54bc2456fd66
+backport_commit=4d0ac298bc694eab4608bf459fff249f82bf1519
+mode=full
+started_at=2026-04-05T13:44:15.125286
+----------------------------------------
+Running full workflow graph
+Completed node=phase_0_optimistic
+Completed node=context_analyzer
+Completed node=structural_locator
+Completed node=hunk_generator
+Completed node=validation
+Workflow completed successfully
+
+[crate/crate_006187ad] Setting up repositories for mode=full...
+[crate/crate_006187ad] Running full workflow graph...
+Router: Running Phase 0.
+Phase 0 (Optimistic): Checking direct patch applicability...
+Phase 0: Experiment mode — checking out parent of 4d0ac298bc694eab4608bf459fff249f82bf1519...
+Phase 0: Building baseline by applying developer backport test hunks only...
+  Validation: server/src/test/java/io/crate/rest/action/RestActionReceiversTest.java - applying 5 hunk(s) one by one in bottom-to-top order: [148, 99, 57, 47, 40]
+    Agent 4: Executing crate helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_tests.sh
+Phase 0: git apply --check FAILED. Escalating to full pipeline.
+  Hint: error: patch failed: server/src/main/java/io/crate/rest/action/RestResultSetReceiver.java:48
+error: server/src/main/java/io/crate/rest/action/RestResultSetReceiver.java: patch does not apply
+error: pa
+Router: Phase 0 failed - entering full 4-agent pipeline.
+  Completed: phase_0_optimistic
+Agent 1 (Context Analyzer): Deterministic blueprint generation...
+Agent 1: Complete. Files=2 hunks=8 (deterministic).
+Agent 1: Detected 1 hunk(s) with variants.
+  Completed: context_analyzer
+Agent 2 (Structural Locator): Starting target location mapping...
+  Agent 2: 2 code file(s), 0 test file(s)
+LLM Provider: azure, Model: gpt-4.1-mini, Temperature: 0
+  Agent 2: Found 8 hunk(s) in hunk_chain
+  Agent 2: Locating target for server/src/main/java/io/crate/rest/action/RestResultSetReceiver.java (4 hunk(s))...
+Blob Hunting: Searching for SHA 94d5284b6813bdf92f0f40408f4d1a129f619757 (server/src/main/java/io/crate/rest/action/RestResultSetReceiver.java)
+Blob Hunting: Found EXACT match in HEAD at server/src/main/java/io/crate/rest/action/RestResultSetReceiver.java
+Phase 1 (Git) Match Found: server/src/main/java/io/crate/rest/action/RestResultSetReceiver.java
+  Agent 2: Git resolution found target: server/src/main/java/io/crate/rest/action/RestResultSetReceiver.java
+  Agent 2: Mapped hunk 1 (hunk_1) to None at lines 34-34
+  Agent 2: Mapped hunk 2 (hunk_2) to None at lines 42-42
+  Agent 2: Mapped hunk 3 (hunk_3) to None at lines 50-50
+  Agent 2: Mapped hunk 4 (setNextRow) to setNextRow at lines 67-67
+  Agent 2: Locating target for server/src/main/java/io/crate/rest/action/SqlHttpHandler.java (4 hunk(s))...
+Blob Hunting: Searching for SHA 960d55615fa7dc0b37f759a8e99da0519ce7c8ae (server/src/main/java/io/crate/rest/action/SqlHttpHandler.java)
+Blob Hunting: Found EXACT match in HEAD at server/src/main/java/io/crate/rest/action/SqlHttpHandler.java
+Phase 1 (Git) Match Found: server/src/main/java/io/crate/rest/action/SqlHttpHandler.java
+  Agent 2: Git resolution found target: server/src/main/java/io/crate/rest/action/SqlHttpHandler.java
+  Agent 2: Mapped hunk 1 (<import>) to <import> at lines 29-29
+  Agent 2: Mapped hunk 2 (hunk_2) to None at lines 59-59
+  Agent 2: Mapped hunk 3 (hunk_3) to None at lines 262-262
+  Agent 2: Mapped hunk 4 (<class_declaration>) to <class_declaration> at lines 336-336
+  Agent 2: Trace written to structural_locator_trace.md
+Agent 2: Complete. Mapped 2 file(s). Total hunk mappings: 8. ConsistencyMap has 0 rename(s).
+Router: complexity=STRUCTURAL -> skip planning, go hunk_generator.
+  Completed: structural_locator
+Agent 3 (File Editor): Starting direct file-edit workflow...
+LLM Provider: azure, Model: gpt-4.1-mini, Temperature: 0
+  Agent 3: Built 4 deterministic fallback edit(s) for server/src/main/java/io/crate/rest/action/RestResultSetReceiver.java.
+  Agent 3: Processing 4 edit(s) for server/src/main/java/io/crate/rest/action/RestResultSetReceiver.java (op=MODIFIED)
+    Agent 3: Classified server/src/main/java/io/crate/rest/action/RestResultSetReceiver.java as TYPE_II (deterministic path)
+    Agent 3: base_types=['TYPE_II'] execution_types=['TYPE_II']
+    Agent 3: Developer patch fast path for server/src/main/java/io/crate/rest/action/RestResultSetReceiver.java (developer_fast_path_ok)
+  Agent 3: Built 4 deterministic fallback edit(s) for server/src/main/java/io/crate/rest/action/SqlHttpHandler.java.
+  Agent 3: Processing 4 edit(s) for server/src/main/java/io/crate/rest/action/SqlHttpHandler.java (op=MODIFIED)
+    Agent 3: Classified server/src/main/java/io/crate/rest/action/SqlHttpHandler.java as TYPE_II (deterministic path)
+    Agent 3: base_types=['TYPE_II'] execution_types=['TYPE_II']
+    Agent 3: Developer patch fast path for server/src/main/java/io/crate/rest/action/SqlHttpHandler.java (developer_fast_path_ok)
+  Agent 3 (File Editor): Done. 2 file(s) adapted, 2 edit record(s).
+  Completed: hunk_generator
+Agent 4 (Validation): Starting 'Prove Red, Make Green' loop...
+  Agent 4: Evaluation full-workflow mode (apply -> build -> relevant tests)...
+  Validation: server/src/main/java/io/crate/rest/action/RestResultSetReceiver.java - applying 1 hunk(s) one by one in bottom-to-top order: [1]
+  Validation: server/src/main/java/io/crate/rest/action/SqlHttpHandler.java - applying 1 hunk(s) one by one in bottom-to-top order: [1]
+  Validation: docs/appendices/release-notes/5.10.10.rst - applying 1 hunk(s) one by one in bottom-to-top order: [53]
+  Validation: server/src/test/java/io/crate/rest/action/RestActionReceiversTest.java - applying 5 hunk(s) one by one in bottom-to-top order: [148, 99, 57, 47, 40]
+    Agent 4: Executing crate helper build script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_build.sh
+    Agent 4: Executing crate helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_tests.sh
+Trace saved to validation_trace.md
+Router: Validation PASSED after 1 attempt(s). Done.
+  Completed: validation
+[crate/crate_006187ad] Full workflow completed!

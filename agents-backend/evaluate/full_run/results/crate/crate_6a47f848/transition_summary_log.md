@@ -1,0 +1,100 @@
+# Transition Summary
+
+- Source: phase0_cache
+- Valid backport signal: True
+- Reason: Valid: Observed fail-to-pass and/or newly passing relevant tests with no regressions.
+- fail->pass (0): []
+- newly passing (89): ['io.crate.expression.symbol.SymbolsTest#testNullableSerialization', 'io.crate.expression.symbol.SymbolsTest#testNullableSerializationOfNull', 'io.crate.expression.symbol.SymbolsTest#test_contains_considers_subscripts', 'io.crate.expression.symbol.SymbolsTest#test_lookupValueByColumn_must_compare_scoped_symbols_relations', 'io.crate.expression.symbol.SymbolsTest#test_symbols_are_accountable', 'io.crate.planner.SelectPlannerTest#test2TableJoinWithNoMatch', 'io.crate.planner.SelectPlannerTest#test3TableJoinQuerySplitting', 'io.crate.planner.SelectPlannerTest#test3TableJoinWithNoMatch', 'io.crate.planner.SelectPlannerTest#testAggregationCanBeUsedAsArgumentToTableFunction', 'io.crate.planner.SelectPlannerTest#testAggregationOnGeneratedColumns', 'io.crate.planner.SelectPlannerTest#testAggregationOnTopOfTableFunctionIsNotPossibleWithoutSeparateSubQuery', 'io.crate.planner.SelectPlannerTest#testCollectAndMergePlan', 'io.crate.planner.SelectPlannerTest#testCollectAndMergePlanFunction', 'io.crate.planner.SelectPlannerTest#testCollectAndMergePlanHighLimit', 'io.crate.planner.SelectPlannerTest#testCollectAndMergePlanNoFetch', 'io.crate.planner.SelectPlannerTest#testCollectAndMergePlanPartitioned', 'io.crate.planner.SelectPlannerTest#testCountDistinctPlan', 'io.crate.planner.SelectPlannerTest#testCountOnPartitionedTable', 'io.crate.planner.SelectPlannerTest#testFilterOnPKSubsetResultsInPKLookupPlanIfTheOtherPKPartIsGenerated', 'io.crate.planner.SelectPlannerTest#testGetPlan', 'io.crate.planner.SelectPlannerTest#testGetPlanPartitioned', 'io.crate.planner.SelectPlannerTest#testGetPlanStringLiteral', 'io.crate.planner.SelectPlannerTest#testGetWithVersion', 'io.crate.planner.SelectPlannerTest#testGlobalAggregateOn2TableJoinWithNoMatch', 'io.crate.planner.SelectPlannerTest#testGlobalAggregateOn3TableJoinWithNoMatch', 'io.crate.planner.SelectPlannerTest#testGlobalAggregateWithWhereOnPartitionColumn', 'io.crate.planner.SelectPlannerTest#testGlobalAggregationHaving', 'io.crate.planner.SelectPlannerTest#testGlobalAggregationOn3TableJoinWithImplicitJoinConditions', 'io.crate.planner.SelectPlannerTest#testGlobalAggregationPlan', 'io.crate.planner.SelectPlannerTest#testGlobalCountPlan', 'io.crate.planner.SelectPlannerTest#testHandlerSideRouting', 'io.crate.planner.SelectPlannerTest#testHasNoResultFromHaving', 'io.crate.planner.SelectPlannerTest#testInnerJoinResultsInHashJoinIfHashJoinIsEnabled', 'io.crate.planner.SelectPlannerTest#testLimitThatIsBiggerThanPageSizeCausesQTFPUshPlan', 'io.crate.planner.SelectPlannerTest#testMultiGetPlan', 'io.crate.planner.SelectPlannerTest#testOrderByOnTableFunctionMustOrderAfterProjectSet', 'io.crate.planner.SelectPlannerTest#testOuterJoinToInnerJoinRewrite', 'io.crate.planner.SelectPlannerTest#testQAFPagingIsEnabledOnHighLimit', 'io.crate.planner.SelectPlannerTest#testQAFPagingIsEnabledOnHighOffset', 'io.crate.planner.SelectPlannerTest#testQTFPagingIsEnabledOnHighLimit', 'io.crate.planner.SelectPlannerTest#testQueryRequiresScalar', 'io.crate.planner.SelectPlannerTest#testReferenceToNestedAggregatedField', 'io.crate.planner.SelectPlannerTest#testScalarCanBeUsedAroundTableGeneratingFunctionInSelectList', 'io.crate.planner.SelectPlannerTest#testSelectAnalyzedReferenceInFunctionAggregation', 'io.crate.planner.SelectPlannerTest#testSelectFromUnnestResultsInTableFunctionPlan', 'io.crate.planner.SelectPlannerTest#testSelectPartitionedTableOrderByPartitionedColumnInFunction', 'io.crate.planner.SelectPlannerTest#testSeqNoAndPrimaryTermFilteringRequirePrimaryKey', 'io.crate.planner.SelectPlannerTest#testShardQueueSizeCalculation', 'io.crate.planner.SelectPlannerTest#testShardSelect', 'io.crate.planner.SelectPlannerTest#testShardSelectWithOrderBy', 'io.crate.planner.SelectPlannerTest#testSortOnUnknownColumn', 'io.crate.planner.SelectPlannerTest#testTableFunctionIsExecutedAfterAggregation', 'io.crate.planner.SelectPlannerTest#testTablePartitionsAreNarrowedToMatchWhereClauseOfParentQuery', 'io.crate.planner.SelectPlannerTest#testUnnestInSelectListResultsInPlanWithProjectSetOperator', 'io.crate.planner.SelectPlannerTest#testWherePKAndMatchDoesNotResultInESGet', 'io.crate.planner.SelectPlannerTest#testWindowFunctionsWithPartitionByAreExecutedDistributed', 'io.crate.planner.SelectPlannerTest#test_binding_same_params_to_pk_filtering', 'io.crate.planner.SelectPlannerTest#test_binding_same_params_to_primary_term_and_seq_no_filtering', 'io.crate.planner.SelectPlannerTest#test_collect_execution_plan_is_narrowed_to_matching_generated_partition_columns', 'io.crate.planner.SelectPlannerTest#test_collect_phase_narrows_shard_selection_based_on_clustered_by_columns', 'io.crate.planner.SelectPlannerTest#test_columns_used_in_hash_join_condition_are_not_duplicated_in_outputs', 'io.crate.planner.SelectPlannerTest#test_columns_used_in_nl_join_condition_are_not_duplicated_in_outputs', 'io.crate.planner.SelectPlannerTest#test_distinct_with_limit_and_offset_keeps_offset', 'io.crate.planner.SelectPlannerTest#test_distinct_with_limit_is_optimized_to_limitandoffset_distinct', 'io.crate.planner.SelectPlannerTest#test_duplicate_aggregate_filter_expression_on_top_of_alias', 'io.crate.planner.SelectPlannerTest#test_equi_join_with_scalar_using_parameter_placeholders', 'io.crate.planner.SelectPlannerTest#test_filter_and_eval_on_get_operator_use_shard_projections', 'io.crate.planner.SelectPlannerTest#test_filter_by_internal_id_result_in_get_plan', 'io.crate.planner.SelectPlannerTest#test_filter_on_aliased_object_col_in_view_is_pushed_down_to_collect', 'io.crate.planner.SelectPlannerTest#test_filter_on_aliased_subselect_output', 'io.crate.planner.SelectPlannerTest#test_filter_on_object_col_is_pushed_down_to_collect_with_view', 'io.crate.planner.SelectPlannerTest#test_float_and_double_implicit_cast_dont_hang_on_range_validation', 'io.crate.planner.SelectPlannerTest#test_group_by_on_pk_lookup_uses_shard_projections', 'io.crate.planner.SelectPlannerTest#test_group_by_on_subscript_on_obj_output_of_sub_relation', 'io.crate.planner.SelectPlannerTest#test_group_by_without_aggregates_and_with_limit_is_optimized_to_limitandoffset_distinct', 'io.crate.planner.SelectPlannerTest#test_join_condition_on_object_subscript_with_same_name', 'io.crate.planner.SelectPlannerTest#test_join_with_no_match_where_clause_pushes_down_no_match', 'io.crate.planner.SelectPlannerTest#test_match_used_on_table_with_alias_is_resolved_to_a_function', 'io.crate.planner.SelectPlannerTest#test_non_euqi_join_with_scalar_using_parameter_placeholders', 'io.crate.planner.SelectPlannerTest#test_non_recursive_nested_with', 'io.crate.planner.SelectPlannerTest#test_non_recursive_with_is_rewritten_to_nested_subselects', 'io.crate.planner.SelectPlannerTest#test_order_by_on_aggregation_with_alias_in_select_list', 'io.crate.planner.SelectPlannerTest#test_order_by_on_subscript_on_obj_output_of_sub_relation', 'io.crate.planner.SelectPlannerTest#test_queries_in_count_operator_are_optimized', 'io.crate.planner.SelectPlannerTest#test_select_from_table_function_with_filter_on_not_selected_column', 'io.crate.planner.SelectPlannerTest#test_select_where_id_and_seq_missing_primary_term', 'io.crate.planner.SelectPlannerTest#test_select_where_seq_and_primary_term_missing_id', 'io.crate.planner.SelectPlannerTest#test_table_function_without_from_can_bind_parameters', 'io.crate.planner.SelectPlannerTest#test_window_function_with_function_used_in_order_by_injects_eval_below_window_agg_ordering']
+- pass->fail (0): []
+
+## Touched Test States
+- Touched tests (from patch): ['io.crate.expression.symbol.SymbolsTest', 'io.crate.planner.SelectPlannerTest']
+  - io.crate.expression.symbol.SymbolsTest#testNullableSerialization: baseline=absent, patched=passed
+  - io.crate.expression.symbol.SymbolsTest#testNullableSerializationOfNull: baseline=absent, patched=passed
+  - io.crate.expression.symbol.SymbolsTest#test_contains_considers_subscripts: baseline=absent, patched=passed
+  - io.crate.expression.symbol.SymbolsTest#test_lookupValueByColumn_must_compare_scoped_symbols_relations: baseline=absent, patched=passed
+  - io.crate.expression.symbol.SymbolsTest#test_symbols_are_accountable: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#test2TableJoinWithNoMatch: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#test3TableJoinQuerySplitting: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#test3TableJoinWithNoMatch: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#testAggregationCanBeUsedAsArgumentToTableFunction: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#testAggregationOnGeneratedColumns: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#testAggregationOnTopOfTableFunctionIsNotPossibleWithoutSeparateSubQuery: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#testCollectAndMergePlan: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#testCollectAndMergePlanFunction: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#testCollectAndMergePlanHighLimit: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#testCollectAndMergePlanNoFetch: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#testCollectAndMergePlanPartitioned: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#testCountDistinctPlan: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#testCountOnPartitionedTable: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#testFilterOnPKSubsetResultsInPKLookupPlanIfTheOtherPKPartIsGenerated: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#testGetPlan: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#testGetPlanPartitioned: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#testGetPlanStringLiteral: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#testGetWithVersion: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#testGlobalAggregateOn2TableJoinWithNoMatch: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#testGlobalAggregateOn3TableJoinWithNoMatch: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#testGlobalAggregateWithWhereOnPartitionColumn: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#testGlobalAggregationHaving: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#testGlobalAggregationOn3TableJoinWithImplicitJoinConditions: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#testGlobalAggregationPlan: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#testGlobalCountPlan: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#testHandlerSideRouting: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#testHasNoResultFromHaving: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#testInnerJoinResultsInHashJoinIfHashJoinIsEnabled: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#testLimitThatIsBiggerThanPageSizeCausesQTFPUshPlan: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#testMultiGetPlan: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#testOrderByOnTableFunctionMustOrderAfterProjectSet: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#testOuterJoinToInnerJoinRewrite: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#testQAFPagingIsEnabledOnHighLimit: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#testQAFPagingIsEnabledOnHighOffset: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#testQTFPagingIsEnabledOnHighLimit: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#testQueryRequiresScalar: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#testReferenceToNestedAggregatedField: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#testScalarCanBeUsedAroundTableGeneratingFunctionInSelectList: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#testSelectAnalyzedReferenceInFunctionAggregation: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#testSelectFromUnnestResultsInTableFunctionPlan: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#testSelectPartitionedTableOrderByPartitionedColumnInFunction: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#testSeqNoAndPrimaryTermFilteringRequirePrimaryKey: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#testShardQueueSizeCalculation: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#testShardSelect: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#testShardSelectWithOrderBy: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#testSortOnUnknownColumn: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#testTableFunctionIsExecutedAfterAggregation: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#testTablePartitionsAreNarrowedToMatchWhereClauseOfParentQuery: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#testUnnestInSelectListResultsInPlanWithProjectSetOperator: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#testWherePKAndMatchDoesNotResultInESGet: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#testWindowFunctionsWithPartitionByAreExecutedDistributed: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#test_binding_same_params_to_pk_filtering: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#test_binding_same_params_to_primary_term_and_seq_no_filtering: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#test_collect_execution_plan_is_narrowed_to_matching_generated_partition_columns: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#test_collect_phase_narrows_shard_selection_based_on_clustered_by_columns: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#test_columns_used_in_hash_join_condition_are_not_duplicated_in_outputs: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#test_columns_used_in_nl_join_condition_are_not_duplicated_in_outputs: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#test_distinct_with_limit_and_offset_keeps_offset: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#test_distinct_with_limit_is_optimized_to_limitandoffset_distinct: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#test_duplicate_aggregate_filter_expression_on_top_of_alias: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#test_equi_join_with_scalar_using_parameter_placeholders: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#test_filter_and_eval_on_get_operator_use_shard_projections: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#test_filter_by_internal_id_result_in_get_plan: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#test_filter_on_aliased_object_col_in_view_is_pushed_down_to_collect: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#test_filter_on_aliased_subselect_output: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#test_filter_on_object_col_is_pushed_down_to_collect_with_view: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#test_float_and_double_implicit_cast_dont_hang_on_range_validation: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#test_group_by_on_pk_lookup_uses_shard_projections: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#test_group_by_on_subscript_on_obj_output_of_sub_relation: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#test_group_by_without_aggregates_and_with_limit_is_optimized_to_limitandoffset_distinct: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#test_join_condition_on_object_subscript_with_same_name: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#test_join_with_no_match_where_clause_pushes_down_no_match: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#test_match_used_on_table_with_alias_is_resolved_to_a_function: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#test_non_euqi_join_with_scalar_using_parameter_placeholders: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#test_non_recursive_nested_with: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#test_non_recursive_with_is_rewritten_to_nested_subselects: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#test_order_by_on_aggregation_with_alias_in_select_list: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#test_order_by_on_subscript_on_obj_output_of_sub_relation: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#test_queries_in_count_operator_are_optimized: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#test_select_from_table_function_with_filter_on_not_selected_column: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#test_select_where_id_and_seq_missing_primary_term: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#test_select_where_seq_and_primary_term_missing_id: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#test_table_function_without_from_can_bind_parameters: baseline=absent, patched=passed
+  - io.crate.planner.SelectPlannerTest#test_window_function_with_function_used_in_order_by_injects_eval_below_window_agg_ordering: baseline=absent, patched=passed

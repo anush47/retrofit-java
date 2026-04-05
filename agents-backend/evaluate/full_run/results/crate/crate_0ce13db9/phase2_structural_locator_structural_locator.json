@@ -1,0 +1,38 @@
+{
+  "consistency_map": {},
+  "mapped_target_context": {
+    "server/src/main/java/io/crate/execution/IncrementalPageBucketReceiver.java": [
+      {
+        "hunk_index": 1,
+        "mainline_method": "hunk_1",
+        "target_file": "server/src/main/java/io/crate/execution/IncrementalPageBucketReceiver.java",
+        "target_method": null,
+        "start_line": 30,
+        "end_line": 30,
+        "code_snippet": " *\n * Unless required by applicable law or agreed to in writing, software\n * distributed under the License is distributed on an \"AS IS\" BASIS, WITHOUT\n * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the\n * License for the specific language governing permissions and limitations\n * under the License.\n *\n * However, if you have executed another commercial license agreement\n * with Crate these terms will supersede the license and you may use the\n * software solely pursuant to the terms of the relevant commercial agreement.\n */\n\npackage io.crate.execution;\n\nimport io.crate.Streamer;\nimport io.crate.common.exceptions.Exceptions;\nimport io.crate.data.BatchIterator;\nimport io.crate.data.Bucket;\nimport io.crate.data.CollectingBatchIterator;\nimport io.crate.data.Row;\nimport io.crate.data.RowConsumer;\nimport io.crate.execution.jobs.PageBucketReceiver;\nimport io.crate.execution.jobs.PageResultListener;\nimport org.elasticsearch.common.util.concurrent.EsRejectedExecutionException;\n\nimport org.jetbrains.annotations.NotNull;\nimport java.util.concurrent.CompletableFuture;\nimport java.util.concurrent.Executor;\nimport java.util.concurrent.atomic.AtomicInteger;\nimport java.util.function.BiConsumer;\nimport java.util.function.Function;\nimport java.util.stream.Collector;\n\npublic class IncrementalPageBucketReceiver<T> implements PageBucketReceiver {\n\n    private final Function<T, Iterable<Row>> finisher;\n    private final BiConsumer<T, Row> accumulator;\n    private final T state;\n    private final AtomicInteger remainingUpstreams;\n    private final CompletableFuture<Iterable<Row>> processingFuture = new CompletableFuture<>();\n    private final Executor executor;",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 2,
+        "mainline_method": "hunk_2",
+        "target_file": "server/src/main/java/io/crate/execution/IncrementalPageBucketReceiver.java",
+        "target_method": null,
+        "start_line": 101,
+        "end_line": 101,
+        "code_snippet": "    @Override\n    public void setBucket(int bucketIdx, Bucket rows, boolean isLast, PageResultListener pageResultListener) {\n        if (processingFuture.isCompletedExceptionally()) {\n            pageResultListener.needMore(false);\n            return;\n        } else {\n            pageResultListener.needMore(!isLast);\n        }\n\n        // We make sure only one accumulation operation runs at a time because the state is not thread-safe.\n        synchronized (state) {\n            if (currentlyAccumulating == null) {\n                try {\n                    currentlyAccumulating = CompletableFuture.runAsync(() -> processRows(rows), executor);\n                } catch (EsRejectedExecutionException e) {\n                    processingFuture.completeExceptionally(e);\n                }\n            } else {\n                currentlyAccumulating = currentlyAccumulating.whenComplete((r, t) -> {\n                    if (t == null) {\n                        processRows(rows);\n                    } else {\n                        var runtimeErr = Exceptions.toRuntimeException(t);\n                        processingFuture.completeExceptionally(runtimeErr);\n                        throw runtimeErr;\n                    }\n                });\n            }\n        }\n        if (isLast) {\n            if (remainingUpstreams.decrementAndGet() == 0) {\n                currentlyAccumulating.whenComplete((r, t) -> consumeRows());\n            }\n        }\n    }\n\n    @Override\n    public Streamer<?>[] streamers() {\n        return streamers;\n    }\n",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      }
+    ]
+  },
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "reason": "llm_usage_not_collected_in_this_node"
+  }
+}
