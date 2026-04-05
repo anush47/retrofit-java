@@ -1,5 +1,5 @@
 #!/bin/bash
-set -euo pipefail
+set -e
 
 WORKTREE_MODE="${WORKTREE_MODE:-0}"
 SHORT_SHA="${COMMIT_SHA:-worktree}"
