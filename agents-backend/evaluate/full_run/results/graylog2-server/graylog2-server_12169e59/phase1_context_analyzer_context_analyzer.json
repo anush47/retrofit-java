@@ -1,0 +1,29 @@
+{
+  "semantic_blueprint": {
+    "root_cause_hypothesis": "Deterministic inference: target branch diverges from mainline; adapt hunks with exact target context.",
+    "fix_logic": "Apply each source hunk with target-verified context and symbol consistency while preserving behavior.",
+    "dependent_apis": [
+      "if",
+      "RangeFilter"
+    ],
+    "patch_intent_summary": "Backport patch behavior to target branch with minimal, context-correct edits.",
+    "hunk_chain": [
+      {
+        "hunk_index": 1,
+        "file": "graylog2-server/src/main/java/org/graylog2/database/filtering/inmemory/SingleFilterParser.java",
+        "summary": "Modifies logic (+4/-1 lines).",
+        "role": "guard",
+        "connects_to_next": "",
+        "global_index": 1
+      }
+    ]
+  },
+  "patch_diff": "From 12169e594da08dde083bdacc28c35e3b7a520535 Mon Sep 17 00:00:00 2001\nFrom: Jan Heise <jan.heise@graylog.com>\nDate: Tue, 30 Sep 2025 15:03:13 +0200\nSubject: [PATCH] Adding support for `all time` in filter for paginated\n searches (#23789)\n\n* adding support for all time\n\n* adding changelog\n---\n changelog/unreleased/pr-23789.toml              |  5 +++++\n .../filtering/inmemory/SingleFilterParser.java  |  5 ++++-\n .../inmemory/SingleFilterParserTest.java        | 17 +++++++++++++++++\n 3 files changed, 26 insertions(+), 1 deletion(-)\n create mode 100644 changelog/unreleased/pr-23789.toml\n\ndiff --git a/changelog/unreleased/pr-23789.toml b/changelog/unreleased/pr-23789.toml\nnew file mode 100644\nindex 0000000000..a386edad0e\n--- /dev/null\n+++ b/changelog/unreleased/pr-23789.toml\n@@ -0,0 +1,5 @@\n+type = \"f\"\n+message = \"Fix search filters for 'Created At' and 'All time' in paginated searcheds.\"\n+\n+issues = [\"23634\"]\n+pulls = [\"23789\"]\ndiff --git a/graylog2-server/src/main/java/org/graylog2/database/filtering/inmemory/SingleFilterParser.java b/graylog2-server/src/main/java/org/graylog2/database/filtering/inmemory/SingleFilterParser.java\nindex aa48167a93..5938bb4326 100644\n--- a/graylog2-server/src/main/java/org/graylog2/database/filtering/inmemory/SingleFilterParser.java\n+++ b/graylog2-server/src/main/java/org/graylog2/database/filtering/inmemory/SingleFilterParser.java\n@@ -51,7 +51,10 @@ public class SingleFilterParser {\n \n         final SearchQueryField.Type fieldType = attributeMetaData.type();\n         if (isRangeValueExpression(valuePart, fieldType)) {\n-            if (valuePart.startsWith(RANGE_VALUES_SEPARATOR)) {\n+            if (valuePart.equals(RANGE_VALUES_SEPARATOR)) {\n+                // could probably also return an empty BSON here, but just for consistency:\n+                return new RangeFilter(attributeMetaData.id(), null, null);\n+            } else if (valuePart.startsWith(RANGE_VALUES_SEPARATOR)) {\n                 return new RangeFilter(attributeMetaData.id(),\n                         null,\n                         extractValue(fieldType, valuePart.substring(RANGE_VALUES_SEPARATOR.length()))\ndiff --git a/graylog2-server/src/test/java/org/graylog2/database/filtering/inmemory/SingleFilterParserTest.java b/graylog2-server/src/test/java/org/graylog2/database/filtering/inmemory/SingleFilterParserTest.java\nindex 1ce80cb3ff..52c1c56214 100644\n--- a/graylog2-server/src/test/java/org/graylog2/database/filtering/inmemory/SingleFilterParserTest.java\n+++ b/graylog2-server/src/test/java/org/graylog2/database/filtering/inmemory/SingleFilterParserTest.java\n@@ -109,6 +109,23 @@ class SingleFilterParserTest {\n                 ));\n     }\n \n+    @Test\n+    void parsesFilterExpressionCorrectlyForAllTimeRange() {\n+        final List<EntityAttribute> entityAttributes = List.of(EntityAttribute.builder()\n+                .id(\"created_at\")\n+                .title(\"Creation Date\")\n+                .type(SearchQueryField.Type.DATE)\n+                .filterable(true)\n+                .build());\n+\n+        assertEquals(\n+                new RangeFilter(\"created_at\", null, null),\n+\n+                toTest.parseSingleExpression(\"created_at:\" + RANGE_VALUES_SEPARATOR,\n+                        entityAttributes\n+                ));\n+    }\n+\n     @Test\n     void parsesFilterExpressionCorrectlyForDateRanges() {\n         final String fromString = \"2012-12-12 12:12:12\";\n-- \n2.43.0\n\n",
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "reason": "deterministic_no_llm"
+  }
+}

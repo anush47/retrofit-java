@@ -1,0 +1,27 @@
+patch_id=graylog2-server_12169e59
+project=graylog2-server
+mainline_commit=12169e594da08dde083bdacc28c35e3b7a520535
+backport_commit=3b5050775d4457379150957ab11f4416aa668a4d
+mode=full
+started_at=2026-04-05T16:48:12.298898
+----------------------------------------
+Running full workflow graph
+Completed node=phase_0_optimistic
+Workflow completed successfully
+
+[graylog2-server/graylog2-server_12169e59] Setting up repositories for mode=full...
+[graylog2-server/graylog2-server_12169e59] Running full workflow graph...
+Router: Running Phase 0.
+Phase 0 (Optimistic): Checking direct patch applicability...
+Phase 0: Experiment mode — checking out parent of 3b5050775d4457379150957ab11f4416aa668a4d...
+Phase 0: Building baseline by applying developer backport test hunks only...
+  Validation: graylog2-server/src/test/java/org/graylog2/database/filtering/inmemory/SingleFilterParserTest.java - applying 1 hunk(s) one by one in bottom-to-top order: [109]
+    Agent 4: Executing graylog2-server helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/graylog2-server/run_tests.sh
+Phase 0: git apply --check SUCCEEDED. Attempting actual patch application and test run.
+    Agent 4: Executing graylog2-server helper build script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/graylog2-server/run_build.sh
+    Agent 4: Executing graylog2-server helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/graylog2-server/run_tests.sh
+Phase 0: Transition summary -> reason=Valid: Observed fail-to-pass and/or newly passing relevant tests with no regressions.; fail->pass(1): ['org.graylog2.database.filtering.inmemory.SingleFilterParserTest#parsesFilterExpressionCorrectlyForAllTimeRange']; newly_passing(0): []; pass->fail(0): []
+Phase 0: Transition-based test validation passed. Fast-path success.
+Router: Phase 0 succeeded - taking fast-path exit.
+  Completed: phase_0_optimistic
+[graylog2-server/graylog2-server_12169e59] Full workflow completed!
