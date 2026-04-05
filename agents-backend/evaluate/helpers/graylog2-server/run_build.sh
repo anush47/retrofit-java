@@ -1,56 +1,44 @@
 #!/bin/bash
-set -e
+set -e # Exit on error
 
 WORKTREE_MODE="${WORKTREE_MODE:-0}"
-SHORT_SHA="${COMMIT_SHA:-worktree}"
-if [ "${WORKTREE_MODE}" != "1" ] && [ -n "${COMMIT_SHA:-}" ]; then
-    SHORT_SHA="${COMMIT_SHA:0:7}"
-fi
+echo "--- Building code for ${COMMIT_SHA:0:7} --- (WORKTREE_MODE=${WORKTREE_MODE})"
 
-echo "=== Building Graylog for ${SHORT_SHA} ==="
-
-MAX_CPU="${MAX_CPU:-$(getconf _NPROCESSORS_ONLN 2>/dev/null || nproc 2>/dev/null || echo 1)}"
-MAVEN_THREADS="${MAVEN_THREADS:-${MAX_CPU}}"
-
-echo "CPU detected: ${MAX_CPU}"
-echo "Maven threads: ${MAVEN_THREADS}"
-
+# 1. Checkout commit
+echo "--- Changing directory to ${PROJECT_DIR} ---"
 cd "${PROJECT_DIR}"
 
 if [ "${WORKTREE_MODE}" != "1" ]; then
-    echo "--- Checking out commit ${COMMIT_SHA}... ---"
+    echo "--- Checking out commit... ---"
     git checkout -f ${COMMIT_SHA}
 fi
 
 # 2. Build Docker image
 echo "--- Building Docker image... ---"
-IMAGE_TAG="${BUILDER_IMAGE_TAG:-${IMAGE_TAG}}"
-docker build -t ${IMAGE_TAG} -f ${TOOLKIT_DIR}/Dockerfile ${TOOLKIT_DIR}
+docker build -t ${BUILDER_IMAGE_TAG} -f ${TOOLKIT_DIR}/Dockerfile .
 
 # 3. Run Build
 echo "--- Running Maven Build... ---"
 
-# Create volume for maven repo if not exists
 docker volume create maven-repo 2>/dev/null || true
 
 # Run build
-if docker run --rm \
+docker run --rm \
     -v "${PROJECT_DIR}:/repo" \
     -v "maven-repo:/root/.m2/repository" \
     -w /repo \
-    ${IMAGE_TAG} \
-    bash -c "export MAVEN_OPTS='-Xmx4g -Xms2g -XX:ActiveProcessorCount=${MAX_CPU}'; mvn clean install -DskipTests -Dskip.yarn -Dskip.npm -Dskip.installnodenpm -Dmaven.antrun.skip=true -Dmaven.javadoc.skip=true -Dcheckstyle.skip=true -Dpmd.skip=true -Dforbiddenapis.skip=true -Denforcer.skip=true -Drat.skip=true -Dspotbugs.skip=true -Djacoco.skip=true -Dswagger.skip=true -Dmaven.source.skip=true -T ${MAVEN_THREADS}"; then
-    
-    if [ -n "${BUILD_STATUS_FILE:-}" ]; then
-        echo "Success" > "${BUILD_STATUS_FILE}" || true
+    ${BUILDER_IMAGE_TAG} \
+    bash -c "mvn clean install -DskipTests -Dskip.yarn -Dskip.npm -Dskip.installnodenpm -Dmaven.antrun.skip=true -Dmaven.javadoc.skip=true -Dcheckstyle.skip=true -Dpmd.skip=true -Dforbiddenapis.skip=true -Denforcer.skip=true -Drat.skip=true -T 1C" \
+    || BUILD_EXIT_CODE=$?
+
+# Save build status
+BUILD_EXIT_CODE=${BUILD_EXIT_CODE:-0}
+if [ -n "${BUILD_STATUS_FILE:-}" ]; then
+    if [ "${BUILD_EXIT_CODE}" -eq 0 ]; then
+        echo "Success" > "${BUILD_STATUS_FILE}"
+    else
+        echo "Fail" > "${BUILD_STATUS_FILE}"
     fi
-    echo "✅ Build succeeded for ${SHORT_SHA}"
-else
-    if [ -n "${BUILD_STATUS_FILE:-}" ]; then
-        echo "Fail" > "${BUILD_STATUS_FILE}" || true
-    fi
-    echo "❌ Build failed for ${SHORT_SHA}"
-    exit 1
 fi
 
-echo "--- Build complete for ${SHORT_SHA} ---"
+echo "--- Build complete for ${COMMIT_SHA:0:7} ---"
