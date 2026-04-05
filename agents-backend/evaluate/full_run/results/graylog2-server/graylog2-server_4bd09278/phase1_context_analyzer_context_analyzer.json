@@ -1,0 +1,54 @@
+{
+  "semantic_blueprint": {
+    "root_cause_hypothesis": "Deterministic inference: target branch diverges from mainline; adapt hunks with exact target context.",
+    "fix_logic": "Apply each source hunk with target-verified context and symbol consistency while preserving behavior.",
+    "dependent_apis": [
+      "isGlobalInputsOnly",
+      "if",
+      "BadRequestException"
+    ],
+    "patch_intent_summary": "Backport patch behavior to target branch with minimal, context-correct edits.",
+    "hunk_chain": [
+      {
+        "hunk_index": 1,
+        "file": "graylog2-server/src/main/java/org/graylog2/Configuration.java",
+        "summary": "Adds logic (+3 lines).",
+        "role": "core_fix",
+        "connects_to_next": "Prepares next hunk in same file with related context.",
+        "global_index": 1
+      },
+      {
+        "hunk_index": 2,
+        "file": "graylog2-server/src/main/java/org/graylog2/Configuration.java",
+        "summary": "Adds logic (+4 lines).",
+        "role": "guard",
+        "connects_to_next": "",
+        "global_index": 2
+      },
+      {
+        "hunk_index": 1,
+        "file": "graylog2-server/src/main/java/org/graylog2/rest/resources/system/inputs/InputsResource.java",
+        "summary": "Modifies logic (+2/-2 lines).",
+        "role": "guard",
+        "connects_to_next": "",
+        "global_index": 3
+      },
+      {
+        "hunk_index": 1,
+        "file": "graylog2-server/src/main/java/org/graylog2/web/resources/AppConfigResource.java",
+        "summary": "Adds logic (+1 lines).",
+        "role": "core_fix",
+        "connects_to_next": "",
+        "global_index": 4
+      }
+    ]
+  },
+  "patch_diff": "From 4bd09278693c5b2bf7349f5d3f5ec3836f32ae9f Mon Sep 17 00:00:00 2001\nFrom: Anton Ebel <anton.ebel@graylog.com>\nDate: Tue, 30 Sep 2025 09:18:04 +0200\nSubject: [PATCH] introduce global_inputs_only config to enforce global inputs\n (#23769)\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\n\n* introduce config to enforce global inputs\n\n* add changelog\n\n---------\n\nCo-authored-by: Laura Bergenthal-Grotl\u00fcschen <laura.bergenthalgrotlueschen@graylog.com>\n---\n changelog/unreleased/pr-23769.toml                        | 4 ++++\n .../src/main/java/org/graylog2/Configuration.java         | 7 +++++++\n .../rest/resources/system/inputs/InputsResource.java      | 4 ++--\n .../org/graylog2/web/resources/AppConfigResource.java     | 1 +\n .../src/main/resources/web-interface/config.js.template   | 3 ++-\n .../rest/resources/system/inputs/InputsResourceTest.java  | 8 ++++++++\n .../src/components/inputs/InputForm.tsx                   | 4 ++--\n graylog2-web-interface/src/util/AppConfig.ts              | 5 +++++\n 8 files changed, 31 insertions(+), 5 deletions(-)\n create mode 100644 changelog/unreleased/pr-23769.toml\n\ndiff --git a/changelog/unreleased/pr-23769.toml b/changelog/unreleased/pr-23769.toml\nnew file mode 100644\nindex 0000000000..14a0bc3899\n--- /dev/null\n+++ b/changelog/unreleased/pr-23769.toml\n@@ -0,0 +1,4 @@\n+type = \"a\"\n+message = \"Introduce global_inputs_only config to enforce global inputs.\"\n+\n+pulls = [\"23769\"]\ndiff --git a/graylog2-server/src/main/java/org/graylog2/Configuration.java b/graylog2-server/src/main/java/org/graylog2/Configuration.java\nindex 9d894f659c..b30533dfc0 100644\n--- a/graylog2-server/src/main/java/org/graylog2/Configuration.java\n+++ b/graylog2-server/src/main/java/org/graylog2/Configuration.java\n@@ -298,6 +298,9 @@ public class Configuration extends CaConfiguration implements CommonNodeConfigur\n     @Parameter(value = INSTALL_OUTPUT_BUFFER_DRAINING_MAX_RETRIES, validators = PositiveIntegerValidator.class)\n     private int installOutputBufferDrainingMaxRetries = DEFAULT_INSTALL_RETRIES;\n \n+    @Parameter(value = \"global_inputs_only\")\n+    private boolean globalInputsOnly = false;\n+\n     public boolean maintainsStreamAwareFieldTypes() {\n         return streamAwareFieldTypes;\n     }\n@@ -721,4 +724,8 @@ public class Configuration extends CaConfiguration implements CommonNodeConfigur\n     public boolean withInputs() {\n         return true;\n     }\n+\n+    public boolean isGlobalInputsOnly() {\n+        return globalInputsOnly;\n+    }\n }\ndiff --git a/graylog2-server/src/main/java/org/graylog2/rest/resources/system/inputs/InputsResource.java b/graylog2-server/src/main/java/org/graylog2/rest/resources/system/inputs/InputsResource.java\nindex a5ecab6537..c35d311622 100644\n--- a/graylog2-server/src/main/java/org/graylog2/rest/resources/system/inputs/InputsResource.java\n+++ b/graylog2-server/src/main/java/org/graylog2/rest/resources/system/inputs/InputsResource.java\n@@ -306,8 +306,8 @@ public class InputsResource extends AbstractInputsResource {\n     }\n \n     private void throwBadRequestIfNotGlobal(InputCreateRequest lr) {\n-        if (config.isCloud() && !lr.global()) {\n-            throw new BadRequestException(\"Only global inputs are allowed in the cloud environment!\");\n+        if ((config.isCloud() || config.isGlobalInputsOnly()) && !lr.global()) {\n+            throw new BadRequestException(\"Only global inputs are allowed!\");\n         }\n     }\n }\ndiff --git a/graylog2-server/src/main/java/org/graylog2/web/resources/AppConfigResource.java b/graylog2-server/src/main/java/org/graylog2/web/resources/AppConfigResource.java\nindex e12648630d..29ea387d0d 100644\n--- a/graylog2-server/src/main/java/org/graylog2/web/resources/AppConfigResource.java\n+++ b/graylog2-server/src/main/java/org/graylog2/web/resources/AppConfigResource.java\n@@ -105,6 +105,7 @@ public class AppConfigResource {\n                 .put(\"telemetry\", toPrettyJsonString(telemetryConfiguration.telemetryFrontendSettings()))\n                 .put(\"contentStream\", toPrettyJsonString((contentStreamConfiguration.contentStreamFrontendSettings())))\n                 .put(\"branding\", toPrettyJsonString(customizationConfig))\n+                .put(\"globalInputsOnly\", configuration.isGlobalInputsOnly())\n                 .build();\n         return templateEngine.transform(template, model);\n     }\ndiff --git a/graylog2-server/src/main/resources/web-interface/config.js.template b/graylog2-server/src/main/resources/web-interface/config.js.template\nindex ab18a86dd4..48c38faf31 100644\n--- a/graylog2-server/src/main/resources/web-interface/config.js.template\n+++ b/graylog2-server/src/main/resources/web-interface/config.js.template\n@@ -7,5 +7,6 @@ window.appConfig = {\n   featureFlags: ${featureFlags},\n   telemetry: ${telemetry},\n   contentStream: ${contentStream},\n-  branding: ${branding}\n+  branding: ${branding},\n+  globalInputsOnly: ${globalInputsOnly}\n };\ndiff --git a/graylog2-server/src/test/java/org/graylog2/rest/resources/system/inputs/InputsResourceTest.java b/graylog2-server/src/test/java/org/graylog2/rest/resources/system/inputs/InputsResourceTest.java\nindex d3d3ea91e5..259b491f25 100644\n--- a/graylog2-server/src/test/java/org/graylog2/rest/resources/system/inputs/InputsResourceTest.java\n+++ b/graylog2-server/src/test/java/org/graylog2/rest/resources/system/inputs/InputsResourceTest.java\n@@ -102,6 +102,14 @@ class InputsResourceTest {\n                 .hasMessageContaining(\"Only global inputs\");\n     }\n \n+    @Test\n+    void testCreateNotGlobalInputWhenIsGlobalInputOnly() {\n+        when(configuration.isGlobalInputsOnly()).thenReturn(true);\n+\n+        assertThatThrownBy(() -> inputsResource.create(false, getCR(false))).isInstanceOf(BadRequestException.class)\n+                .hasMessageContaining(\"Only global inputs\");\n+    }\n+\n     @Test\n     void testCreateNotCloudCompatibleInputInCloud() throws Exception {\n         when(configuration.isCloud()).thenReturn(true);\ndiff --git a/graylog2-web-interface/src/components/inputs/InputForm.tsx b/graylog2-web-interface/src/components/inputs/InputForm.tsx\nindex be05067224..cba00b7919 100644\n--- a/graylog2-web-interface/src/components/inputs/InputForm.tsx\n+++ b/graylog2-web-interface/src/components/inputs/InputForm.tsx\n@@ -80,7 +80,7 @@ const InputForm = ({\n     const newData = {\n       ...data,\n       ...{\n-        global: AppConfig.isCloud() || global,\n+        global: AppConfig.isCloud() || AppConfig.globalInputsOnly() || global,\n         node: node,\n       },\n     };\n@@ -135,7 +135,7 @@ const InputForm = ({\n       cancelAction={onCancel}>\n       {description && <Alert bsStyle=\"info\">{description}</Alert>}\n       <HideOnCloud>\n-        <NodeOrGlobalSelect onChange={handleChange} global={global} node={node} />\n+        {!AppConfig.globalInputsOnly() && (<NodeOrGlobalSelect onChange={handleChange} global={global} node={node} />)}\n       </HideOnCloud>\n     </ConfigurationForm>\n   );\ndiff --git a/graylog2-web-interface/src/util/AppConfig.ts b/graylog2-web-interface/src/util/AppConfig.ts\nindex 91ae8f7101..5644cc436a 100644\n--- a/graylog2-web-interface/src/util/AppConfig.ts\n+++ b/graylog2-web-interface/src/util/AppConfig.ts\n@@ -69,6 +69,7 @@ export type AppConfigs = {\n   telemetry: { api_key: string; host: string; enabled: boolean };\n   contentStream: { refresh_interval: string; rss_url: string };\n   branding: Branding | undefined;\n+  globalInputsOnly: boolean;\n };\n \n declare global {\n@@ -142,6 +143,10 @@ const AppConfig = {\n   branding(): Branding | undefined {\n     return appConfig()?.branding;\n   },\n+\n+  globalInputsOnly():boolean {\n+    return appConfig().globalInputsOnly;\n+  },\n };\n \n export default AppConfig;\n-- \n2.43.0\n\n",
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "reason": "deterministic_no_llm"
+  }
+}

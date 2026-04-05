@@ -1,0 +1,66 @@
+{
+  "hunk_generation_plan": {
+    "graylog2-server/src/main/java/org/graylog2/database/filtering/inmemory/SingleFilterParser.java": [
+      {
+        "hunk_index": 0,
+        "target_file": "graylog2-server/src/main/java/org/graylog2/database/filtering/inmemory/SingleFilterParser.java",
+        "operation_index": 0,
+        "edit_type": "replace",
+        "old_string": "        final SearchQueryField.Type fieldType = attributeMetaData.type();\n        if (isRangeValueExpression(valuePart, fieldType)) {\n            if (valuePart.startsWith(RANGE_VALUES_SEPARATOR)) {\n                return new RangeFilter(attributeMetaData.id(),",
+        "new_string": "        final SearchQueryField.Type fieldType = attributeMetaData.type();\n        if (isRangeValueExpression(valuePart, fieldType)) {\n            if (valuePart.equals(RANGE_VALUES_SEPARATOR)) {\n                // could probably also return an empty BSON here, but just for consistency:\n                return new RangeFilter(attributeMetaData.id(), null, null);\n            } else if (valuePart.startsWith(RANGE_VALUES_SEPARATOR)) {\n                return new RangeFilter(attributeMetaData.id(),",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_replace|forced_type_v:failed_stage_generation_contract",
+        "surround_before_3": [
+          "",
+          "        final EntityAttribute attributeMetaData = getAttributeMetaData(attributes, fieldPart);",
+          ""
+        ],
+        "surround_after_3": [
+          "                        null,",
+          "                        extractValue(fieldType, valuePart.substring(RANGE_VALUES_SEPARATOR.length()))",
+          "                );"
+        ],
+        "adaptation_type": "TYPE_V",
+        "base_adaptation_type": "TYPE_II",
+        "execution_type": "TYPE_V",
+        "location_match": true,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": true,
+        "namespace_changes": [],
+        "required_invariants": [
+          "if (valuePart.equals(RANGE_VALUES_SEPARATOR)) {",
+          "return new RangeFilter(attributeMetaData.id(), null, null);",
+          "} else if (valuePart.startsWith(RANGE_VALUES_SEPARATOR)) {"
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 5,
+          "target_declared_methods_count": 5,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      }
+    ]
+  },
+  "last_plan_signature": "0e04741a79ca906d742c5f2d323bd5efa46b288c13854397db3a093967b92c05",
+  "validation_repeated_plan_detected": false,
+  "force_type_v_until_success": true,
+  "force_type_v_reason": "failed_stage_generation_contract",
+  "force_type_v_retry_files": [
+    "graylog2-server/src/main/java/org/graylog2/database/filtering/inmemory/SingleFilterParser.java"
+  ],
+  "token_usage": {
+    "input_tokens": 1438,
+    "output_tokens": 369,
+    "total_tokens": 1807,
+    "estimated": false,
+    "sources": [
+      "planning_agent.provider_usage"
+    ]
+  }
+}

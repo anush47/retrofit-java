@@ -1,0 +1,113 @@
+{
+  "adapted_file_edits": [
+    {
+      "target_file": "graylog2-server/src/main/java/org/graylog2/database/filtering/inmemory/SingleFilterParser.java",
+      "mainline_file": "graylog2-server/src/main/java/org/graylog2/database/filtering/inmemory/SingleFilterParser.java",
+      "old_string": "<deterministic file-editor diff>",
+      "new_string": "diff --git a/graylog2-server/src/main/java/org/graylog2/database/filtering/inmemory/SingleFilterParser.java b/graylog2-server/src/main/java/org/graylog2/database/filtering/inmemory/SingleFilterParser.java\nindex 8fa9b26bdf..f1be66a862 100644\n--- a/graylog2-server/src/main/java/org/graylog2/database/filtering/inmemory/SingleFilterParser.java\n+++ b/graylog2-server/src/main/java/org/graylog2/database/filtering/inmemory/SingleFilterParser.java\n@@ -51,7 +51,10 @@ public class SingleFilterParser {\n \n         final SearchQueryField.Type fieldType = attributeMetaData.type();\n         if (isRangeValueExpression(valuePart, fieldType)) {\n-            if (valuePart.startsWith(RANGE_VALUES_SEPARATOR)) {\n+            if (valuePart.equals(RANGE_VALUES_SEPARATOR)) {\n+                // could probably also return an empty BSON here, but just for consistency:\n+                return new RangeFilter(attributeMetaData.id(), null, null);\n+            } else if (valuePart.startsWith(RANGE_VALUES_SEPARATOR)) {\n                 return new RangeFilter(attributeMetaData.id(),\n                         null,\n                         extractValue(fieldType, valuePart.substring(RANGE_VALUES_SEPARATOR.length()))",
+      "edit_type": "replace",
+      "verified": true,
+      "verification_result": "Deterministic file editor applied",
+      "applied": true,
+      "apply_result": "SUCCESS"
+    }
+  ],
+  "all_adapted_file_edits": [
+    [
+      {
+        "target_file": "graylog2-server/src/main/java/org/graylog2/database/filtering/inmemory/SingleFilterParser.java",
+        "mainline_file": "graylog2-server/src/main/java/org/graylog2/database/filtering/inmemory/SingleFilterParser.java",
+        "old_string": "<developer patch fast path>",
+        "new_string": "diff --git a/graylog2-server/src/main/java/org/graylog2/database/filtering/inmemory/SingleFilterParser.java b/graylog2-server/src/main/java/org/graylog2/database/filtering/inmemory/SingleFilterParser.java\nindex 8fa9b26bdf..f1be66a862 100644\n--- a/graylog2-server/src/main/java/org/graylog2/database/filtering/inmemory/SingleFilterParser.java\n+++ b/graylog2-server/src/main/java/org/graylog2/database/filtering/inmemory/SingleFilterParser.java\n@@ -51,7 +51,10 @@ public class SingleFilterParser {\n \n         final SearchQueryField.Type fieldType = attributeMetaData.type();\n         if (isRangeValueExpression(valuePart, fieldType)) {\n-            if (valuePart.startsWith(RANGE_VALUES_SEPARATOR)) {\n+            if (valuePart.equals(RANGE_VALUES_SEPARATOR)) {\n+                // could probably also return an empty BSON here, but just for consistency:\n+                return new RangeFilter(attributeMetaData.id(), null, null);\n+            } else if (valuePart.startsWith(RANGE_VALUES_SEPARATOR)) {\n                 return new RangeFilter(attributeMetaData.id(),\n                         null,\n                         extractValue(fieldType, valuePart.substring(RANGE_VALUES_SEPARATOR.length()))",
+        "edit_type": "replace",
+        "verified": true,
+        "verification_result": "developer_fast_path_ok",
+        "applied": true,
+        "apply_result": "SUCCESS"
+      }
+    ],
+    [
+      {
+        "target_file": "graylog2-server/src/main/java/org/graylog2/database/filtering/inmemory/SingleFilterParser.java",
+        "mainline_file": "graylog2-server/src/main/java/org/graylog2/database/filtering/inmemory/SingleFilterParser.java",
+        "old_string": "<deterministic file-editor diff>",
+        "new_string": "diff --git a/graylog2-server/src/main/java/org/graylog2/database/filtering/inmemory/SingleFilterParser.java b/graylog2-server/src/main/java/org/graylog2/database/filtering/inmemory/SingleFilterParser.java\nindex 8fa9b26bdf..f1be66a862 100644\n--- a/graylog2-server/src/main/java/org/graylog2/database/filtering/inmemory/SingleFilterParser.java\n+++ b/graylog2-server/src/main/java/org/graylog2/database/filtering/inmemory/SingleFilterParser.java\n@@ -51,7 +51,10 @@ public class SingleFilterParser {\n \n         final SearchQueryField.Type fieldType = attributeMetaData.type();\n         if (isRangeValueExpression(valuePart, fieldType)) {\n-            if (valuePart.startsWith(RANGE_VALUES_SEPARATOR)) {\n+            if (valuePart.equals(RANGE_VALUES_SEPARATOR)) {\n+                // could probably also return an empty BSON here, but just for consistency:\n+                return new RangeFilter(attributeMetaData.id(), null, null);\n+            } else if (valuePart.startsWith(RANGE_VALUES_SEPARATOR)) {\n                 return new RangeFilter(attributeMetaData.id(),\n                         null,\n                         extractValue(fieldType, valuePart.substring(RANGE_VALUES_SEPARATOR.length()))",
+        "edit_type": "replace",
+        "verified": true,
+        "verification_result": "Deterministic file editor applied",
+        "applied": true,
+        "apply_result": "SUCCESS"
+      }
+    ]
+  ],
+  "agent_trajectory_edits": [
+    [],
+    [
+      {
+        "target_file": "graylog2-server/src/main/java/org/graylog2/database/filtering/inmemory/SingleFilterParser.java",
+        "tool": "str_replace_in_file",
+        "args": {
+          "file_path": "graylog2-server/src/main/java/org/graylog2/database/filtering/inmemory/SingleFilterParser.java",
+          "edit_type": "replace",
+          "resolution_reason": "exact",
+          "resolved_old_preview": "            if (valuePart.startsWith(RANGE_VALUES_SEPARATOR)) {",
+          "resolved_new_preview": "            if (valuePart.equals(RANGE_VALUES_SEPARATOR)) {\n                // could probably also return an empty BSON here, but just for consistency:\n                return new RangeFilter(attribute"
+        }
+      }
+    ]
+  ],
+  "adapted_code_hunks": [
+    {
+      "target_file": "graylog2-server/src/main/java/org/graylog2/database/filtering/inmemory/SingleFilterParser.java",
+      "mainline_file": "graylog2-server/src/main/java/org/graylog2/database/filtering/inmemory/SingleFilterParser.java",
+      "hunk_text": "diff --git a/graylog2-server/src/main/java/org/graylog2/database/filtering/inmemory/SingleFilterParser.java b/graylog2-server/src/main/java/org/graylog2/database/filtering/inmemory/SingleFilterParser.java\nindex 8fa9b26bdf..f1be66a862 100644\n--- a/graylog2-server/src/main/java/org/graylog2/database/filtering/inmemory/SingleFilterParser.java\n+++ b/graylog2-server/src/main/java/org/graylog2/database/filtering/inmemory/SingleFilterParser.java\n@@ -51,7 +51,10 @@ public class SingleFilterParser {\n \n         final SearchQueryField.Type fieldType = attributeMetaData.type();\n         if (isRangeValueExpression(valuePart, fieldType)) {\n-            if (valuePart.startsWith(RANGE_VALUES_SEPARATOR)) {\n+            if (valuePart.equals(RANGE_VALUES_SEPARATOR)) {\n+                // could probably also return an empty BSON here, but just for consistency:\n+                return new RangeFilter(attributeMetaData.id(), null, null);\n+            } else if (valuePart.startsWith(RANGE_VALUES_SEPARATOR)) {\n                 return new RangeFilter(attributeMetaData.id(),\n                         null,\n                         extractValue(fieldType, valuePart.substring(RANGE_VALUES_SEPARATOR.length()))\n",
+      "insertion_line": 51,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    }
+  ],
+  "best_effort_adapted_code_hunks": [
+    {
+      "target_file": "graylog2-server/src/main/java/org/graylog2/database/filtering/inmemory/SingleFilterParser.java",
+      "mainline_file": "graylog2-server/src/main/java/org/graylog2/database/filtering/inmemory/SingleFilterParser.java",
+      "hunk_text": "diff --git a/graylog2-server/src/main/java/org/graylog2/database/filtering/inmemory/SingleFilterParser.java b/graylog2-server/src/main/java/org/graylog2/database/filtering/inmemory/SingleFilterParser.java\nindex 8fa9b26bdf..f1be66a862 100644\n--- a/graylog2-server/src/main/java/org/graylog2/database/filtering/inmemory/SingleFilterParser.java\n+++ b/graylog2-server/src/main/java/org/graylog2/database/filtering/inmemory/SingleFilterParser.java\n@@ -51,7 +51,10 @@ public class SingleFilterParser {\n \n         final SearchQueryField.Type fieldType = attributeMetaData.type();\n         if (isRangeValueExpression(valuePart, fieldType)) {\n-            if (valuePart.startsWith(RANGE_VALUES_SEPARATOR)) {\n+            if (valuePart.equals(RANGE_VALUES_SEPARATOR)) {\n+                // could probably also return an empty BSON here, but just for consistency:\n+                return new RangeFilter(attributeMetaData.id(), null, null);\n+            } else if (valuePart.startsWith(RANGE_VALUES_SEPARATOR)) {\n                 return new RangeFilter(attributeMetaData.id(),\n                         null,\n                         extractValue(fieldType, valuePart.substring(RANGE_VALUES_SEPARATOR.length()))\n",
+      "insertion_line": 51,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    }
+  ],
+  "adapted_test_hunks": [],
+  "generation_checklist": [
+    {
+      "mainline_file": "<all>",
+      "target_file": "<all>",
+      "hunk_index": 0,
+      "status": "failed",
+      "reason": "generation_contract_failed",
+      "todo_steps": [
+        "replan"
+      ],
+      "completed_steps": []
+    }
+  ],
+  "validation_failed_stage": "generation_contract_failed",
+  "validation_repeated_patch_detected": true,
+  "validation_repeated_plan_detected": false,
+  "generated_patch_hash": "97190889b0fb13296d90dc1da93c55ee49efea8fd29efc85ec22627001839072",
+  "force_type_v_until_success": false,
+  "force_type_v_reason": "",
+  "force_type_v_retry_files": [],
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "sources": []
+  }
+}

@@ -1,0 +1,238 @@
+{
+  "adapted_file_edits": [
+    {
+      "target_file": "graylog2-server/src/main/java/org/graylog2/Configuration.java",
+      "mainline_file": "graylog2-server/src/main/java/org/graylog2/Configuration.java",
+      "old_string": "<developer patch fast path>",
+      "new_string": "diff --git a/graylog2-server/src/main/java/org/graylog2/Configuration.java b/graylog2-server/src/main/java/org/graylog2/Configuration.java\nindex 2420fd9b9a..2e5a01d8ac 100644\n--- a/graylog2-server/src/main/java/org/graylog2/Configuration.java\n+++ b/graylog2-server/src/main/java/org/graylog2/Configuration.java\n@@ -295,6 +295,9 @@ public class Configuration extends CaConfiguration implements CommonNodeConfigur\n     @Parameter(value = INSTALL_OUTPUT_BUFFER_DRAINING_MAX_RETRIES, validators = PositiveIntegerValidator.class)\n     private int installOutputBufferDrainingMaxRetries = DEFAULT_INSTALL_RETRIES;\n \n+    @Parameter(value = \"global_inputs_only\")\n+    private boolean globalInputsOnly = false;\n+\n     public boolean maintainsStreamAwareFieldTypes() {\n         return streamAwareFieldTypes;\n     }\n@@ -714,4 +717,8 @@ public class Configuration extends CaConfiguration implements CommonNodeConfigur\n     public boolean withInputs() {\n         return true;\n     }\n+\n+    public boolean isGlobalInputsOnly() {\n+        return globalInputsOnly;\n+    }\n }",
+      "edit_type": "replace",
+      "verified": true,
+      "verification_result": "developer_fast_path_ok",
+      "applied": true,
+      "apply_result": "SUCCESS"
+    },
+    {
+      "target_file": "graylog2-server/src/main/java/org/graylog2/rest/resources/system/inputs/InputsResource.java",
+      "mainline_file": "graylog2-server/src/main/java/org/graylog2/rest/resources/system/inputs/InputsResource.java",
+      "old_string": "<developer patch fast path>",
+      "new_string": "diff --git a/graylog2-server/src/main/java/org/graylog2/rest/resources/system/inputs/InputsResource.java b/graylog2-server/src/main/java/org/graylog2/rest/resources/system/inputs/InputsResource.java\nindex a5ecab6537..c35d311622 100644\n--- a/graylog2-server/src/main/java/org/graylog2/rest/resources/system/inputs/InputsResource.java\n+++ b/graylog2-server/src/main/java/org/graylog2/rest/resources/system/inputs/InputsResource.java\n@@ -306,8 +306,8 @@ public class InputsResource extends AbstractInputsResource {\n     }\n \n     private void throwBadRequestIfNotGlobal(InputCreateRequest lr) {\n-        if (config.isCloud() && !lr.global()) {\n-            throw new BadRequestException(\"Only global inputs are allowed in the cloud environment!\");\n+        if ((config.isCloud() || config.isGlobalInputsOnly()) && !lr.global()) {\n+            throw new BadRequestException(\"Only global inputs are allowed!\");\n         }\n     }\n }",
+      "edit_type": "replace",
+      "verified": true,
+      "verification_result": "developer_fast_path_ok",
+      "applied": true,
+      "apply_result": "SUCCESS"
+    },
+    {
+      "target_file": "graylog2-server/src/main/java/org/graylog2/web/resources/AppConfigResource.java",
+      "mainline_file": "graylog2-server/src/main/java/org/graylog2/web/resources/AppConfigResource.java",
+      "old_string": "<developer patch fast path>",
+      "new_string": "diff --git a/graylog2-server/src/main/java/org/graylog2/web/resources/AppConfigResource.java b/graylog2-server/src/main/java/org/graylog2/web/resources/AppConfigResource.java\nindex e12648630d..29ea387d0d 100644\n--- a/graylog2-server/src/main/java/org/graylog2/web/resources/AppConfigResource.java\n+++ b/graylog2-server/src/main/java/org/graylog2/web/resources/AppConfigResource.java\n@@ -105,6 +105,7 @@ public class AppConfigResource {\n                 .put(\"telemetry\", toPrettyJsonString(telemetryConfiguration.telemetryFrontendSettings()))\n                 .put(\"contentStream\", toPrettyJsonString((contentStreamConfiguration.contentStreamFrontendSettings())))\n                 .put(\"branding\", toPrettyJsonString(customizationConfig))\n+                .put(\"globalInputsOnly\", configuration.isGlobalInputsOnly())\n                 .build();\n         return templateEngine.transform(template, model);\n     }",
+      "edit_type": "replace",
+      "verified": true,
+      "verification_result": "developer_fast_path_ok",
+      "applied": true,
+      "apply_result": "SUCCESS"
+    }
+  ],
+  "all_adapted_file_edits": [
+    [
+      {
+        "target_file": "graylog2-server/src/main/java/org/graylog2/Configuration.java",
+        "mainline_file": "graylog2-server/src/main/java/org/graylog2/Configuration.java",
+        "old_string": "<developer patch fast path>",
+        "new_string": "diff --git a/graylog2-server/src/main/java/org/graylog2/Configuration.java b/graylog2-server/src/main/java/org/graylog2/Configuration.java\nindex 2420fd9b9a..2e5a01d8ac 100644\n--- a/graylog2-server/src/main/java/org/graylog2/Configuration.java\n+++ b/graylog2-server/src/main/java/org/graylog2/Configuration.java\n@@ -295,6 +295,9 @@ public class Configuration extends CaConfiguration implements CommonNodeConfigur\n     @Parameter(value = INSTALL_OUTPUT_BUFFER_DRAINING_MAX_RETRIES, validators = PositiveIntegerValidator.class)\n     private int installOutputBufferDrainingMaxRetries = DEFAULT_INSTALL_RETRIES;\n \n+    @Parameter(value = \"global_inputs_only\")\n+    private boolean globalInputsOnly = false;\n+\n     public boolean maintainsStreamAwareFieldTypes() {\n         return streamAwareFieldTypes;\n     }\n@@ -714,4 +717,8 @@ public class Configuration extends CaConfiguration implements CommonNodeConfigur\n     public boolean withInputs() {\n         return true;\n     }\n+\n+    public boolean isGlobalInputsOnly() {\n+        return globalInputsOnly;\n+    }\n }",
+        "edit_type": "replace",
+        "verified": true,
+        "verification_result": "developer_fast_path_ok",
+        "applied": true,
+        "apply_result": "SUCCESS"
+      },
+      {
+        "target_file": "graylog2-server/src/main/java/org/graylog2/rest/resources/system/inputs/InputsResource.java",
+        "mainline_file": "graylog2-server/src/main/java/org/graylog2/rest/resources/system/inputs/InputsResource.java",
+        "old_string": "<developer patch fast path>",
+        "new_string": "diff --git a/graylog2-server/src/main/java/org/graylog2/rest/resources/system/inputs/InputsResource.java b/graylog2-server/src/main/java/org/graylog2/rest/resources/system/inputs/InputsResource.java\nindex a5ecab6537..c35d311622 100644\n--- a/graylog2-server/src/main/java/org/graylog2/rest/resources/system/inputs/InputsResource.java\n+++ b/graylog2-server/src/main/java/org/graylog2/rest/resources/system/inputs/InputsResource.java\n@@ -306,8 +306,8 @@ public class InputsResource extends AbstractInputsResource {\n     }\n \n     private void throwBadRequestIfNotGlobal(InputCreateRequest lr) {\n-        if (config.isCloud() && !lr.global()) {\n-            throw new BadRequestException(\"Only global inputs are allowed in the cloud environment!\");\n+        if ((config.isCloud() || config.isGlobalInputsOnly()) && !lr.global()) {\n+            throw new BadRequestException(\"Only global inputs are allowed!\");\n         }\n     }\n }",
+        "edit_type": "replace",
+        "verified": true,
+        "verification_result": "developer_fast_path_ok",
+        "applied": true,
+        "apply_result": "SUCCESS"
+      },
+      {
+        "target_file": "graylog2-server/src/main/java/org/graylog2/web/resources/AppConfigResource.java",
+        "mainline_file": "graylog2-server/src/main/java/org/graylog2/web/resources/AppConfigResource.java",
+        "old_string": "<developer patch fast path>",
+        "new_string": "diff --git a/graylog2-server/src/main/java/org/graylog2/web/resources/AppConfigResource.java b/graylog2-server/src/main/java/org/graylog2/web/resources/AppConfigResource.java\nindex e12648630d..29ea387d0d 100644\n--- a/graylog2-server/src/main/java/org/graylog2/web/resources/AppConfigResource.java\n+++ b/graylog2-server/src/main/java/org/graylog2/web/resources/AppConfigResource.java\n@@ -105,6 +105,7 @@ public class AppConfigResource {\n                 .put(\"telemetry\", toPrettyJsonString(telemetryConfiguration.telemetryFrontendSettings()))\n                 .put(\"contentStream\", toPrettyJsonString((contentStreamConfiguration.contentStreamFrontendSettings())))\n                 .put(\"branding\", toPrettyJsonString(customizationConfig))\n+                .put(\"globalInputsOnly\", configuration.isGlobalInputsOnly())\n                 .build();\n         return templateEngine.transform(template, model);\n     }",
+        "edit_type": "replace",
+        "verified": true,
+        "verification_result": "developer_fast_path_ok",
+        "applied": true,
+        "apply_result": "SUCCESS"
+      }
+    ]
+  ],
+  "agent_trajectory_edits": [
+    []
+  ],
+  "adapted_code_hunks": [
+    {
+      "target_file": "graylog2-server/src/main/java/org/graylog2/Configuration.java",
+      "mainline_file": "graylog2-server/src/main/java/org/graylog2/Configuration.java",
+      "hunk_text": "diff --git a/graylog2-server/src/main/java/org/graylog2/Configuration.java b/graylog2-server/src/main/java/org/graylog2/Configuration.java\nindex 2420fd9b9a..2e5a01d8ac 100644\n--- a/graylog2-server/src/main/java/org/graylog2/Configuration.java\n+++ b/graylog2-server/src/main/java/org/graylog2/Configuration.java\n@@ -295,6 +295,9 @@ public class Configuration extends CaConfiguration implements CommonNodeConfigur\n     @Parameter(value = INSTALL_OUTPUT_BUFFER_DRAINING_MAX_RETRIES, validators = PositiveIntegerValidator.class)\n     private int installOutputBufferDrainingMaxRetries = DEFAULT_INSTALL_RETRIES;\n \n+    @Parameter(value = \"global_inputs_only\")\n+    private boolean globalInputsOnly = false;\n+\n     public boolean maintainsStreamAwareFieldTypes() {\n         return streamAwareFieldTypes;\n     }\n@@ -714,4 +717,8 @@ public class Configuration extends CaConfiguration implements CommonNodeConfigur\n     public boolean withInputs() {\n         return true;\n     }\n+\n+    public boolean isGlobalInputsOnly() {\n+        return globalInputsOnly;\n+    }\n }\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    },
+    {
+      "target_file": "graylog2-server/src/main/java/org/graylog2/rest/resources/system/inputs/InputsResource.java",
+      "mainline_file": "graylog2-server/src/main/java/org/graylog2/rest/resources/system/inputs/InputsResource.java",
+      "hunk_text": "diff --git a/graylog2-server/src/main/java/org/graylog2/rest/resources/system/inputs/InputsResource.java b/graylog2-server/src/main/java/org/graylog2/rest/resources/system/inputs/InputsResource.java\nindex a5ecab6537..c35d311622 100644\n--- a/graylog2-server/src/main/java/org/graylog2/rest/resources/system/inputs/InputsResource.java\n+++ b/graylog2-server/src/main/java/org/graylog2/rest/resources/system/inputs/InputsResource.java\n@@ -306,8 +306,8 @@ public class InputsResource extends AbstractInputsResource {\n     }\n \n     private void throwBadRequestIfNotGlobal(InputCreateRequest lr) {\n-        if (config.isCloud() && !lr.global()) {\n-            throw new BadRequestException(\"Only global inputs are allowed in the cloud environment!\");\n+        if ((config.isCloud() || config.isGlobalInputsOnly()) && !lr.global()) {\n+            throw new BadRequestException(\"Only global inputs are allowed!\");\n         }\n     }\n }\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    },
+    {
+      "target_file": "graylog2-server/src/main/java/org/graylog2/web/resources/AppConfigResource.java",
+      "mainline_file": "graylog2-server/src/main/java/org/graylog2/web/resources/AppConfigResource.java",
+      "hunk_text": "diff --git a/graylog2-server/src/main/java/org/graylog2/web/resources/AppConfigResource.java b/graylog2-server/src/main/java/org/graylog2/web/resources/AppConfigResource.java\nindex e12648630d..29ea387d0d 100644\n--- a/graylog2-server/src/main/java/org/graylog2/web/resources/AppConfigResource.java\n+++ b/graylog2-server/src/main/java/org/graylog2/web/resources/AppConfigResource.java\n@@ -105,6 +105,7 @@ public class AppConfigResource {\n                 .put(\"telemetry\", toPrettyJsonString(telemetryConfiguration.telemetryFrontendSettings()))\n                 .put(\"contentStream\", toPrettyJsonString((contentStreamConfiguration.contentStreamFrontendSettings())))\n                 .put(\"branding\", toPrettyJsonString(customizationConfig))\n+                .put(\"globalInputsOnly\", configuration.isGlobalInputsOnly())\n                 .build();\n         return templateEngine.transform(template, model);\n     }\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    }
+  ],
+  "validation_repeated_patch_detected": false,
+  "validation_repeated_plan_detected": false,
+  "best_effort_adapted_code_hunks": [
+    {
+      "target_file": "graylog2-server/src/main/java/org/graylog2/Configuration.java",
+      "mainline_file": "graylog2-server/src/main/java/org/graylog2/Configuration.java",
+      "hunk_text": "diff --git a/graylog2-server/src/main/java/org/graylog2/Configuration.java b/graylog2-server/src/main/java/org/graylog2/Configuration.java\nindex 2420fd9b9a..2e5a01d8ac 100644\n--- a/graylog2-server/src/main/java/org/graylog2/Configuration.java\n+++ b/graylog2-server/src/main/java/org/graylog2/Configuration.java\n@@ -295,6 +295,9 @@ public class Configuration extends CaConfiguration implements CommonNodeConfigur\n     @Parameter(value = INSTALL_OUTPUT_BUFFER_DRAINING_MAX_RETRIES, validators = PositiveIntegerValidator.class)\n     private int installOutputBufferDrainingMaxRetries = DEFAULT_INSTALL_RETRIES;\n \n+    @Parameter(value = \"global_inputs_only\")\n+    private boolean globalInputsOnly = false;\n+\n     public boolean maintainsStreamAwareFieldTypes() {\n         return streamAwareFieldTypes;\n     }\n@@ -714,4 +717,8 @@ public class Configuration extends CaConfiguration implements CommonNodeConfigur\n     public boolean withInputs() {\n         return true;\n     }\n+\n+    public boolean isGlobalInputsOnly() {\n+        return globalInputsOnly;\n+    }\n }\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    },
+    {
+      "target_file": "graylog2-server/src/main/java/org/graylog2/rest/resources/system/inputs/InputsResource.java",
+      "mainline_file": "graylog2-server/src/main/java/org/graylog2/rest/resources/system/inputs/InputsResource.java",
+      "hunk_text": "diff --git a/graylog2-server/src/main/java/org/graylog2/rest/resources/system/inputs/InputsResource.java b/graylog2-server/src/main/java/org/graylog2/rest/resources/system/inputs/InputsResource.java\nindex a5ecab6537..c35d311622 100644\n--- a/graylog2-server/src/main/java/org/graylog2/rest/resources/system/inputs/InputsResource.java\n+++ b/graylog2-server/src/main/java/org/graylog2/rest/resources/system/inputs/InputsResource.java\n@@ -306,8 +306,8 @@ public class InputsResource extends AbstractInputsResource {\n     }\n \n     private void throwBadRequestIfNotGlobal(InputCreateRequest lr) {\n-        if (config.isCloud() && !lr.global()) {\n-            throw new BadRequestException(\"Only global inputs are allowed in the cloud environment!\");\n+        if ((config.isCloud() || config.isGlobalInputsOnly()) && !lr.global()) {\n+            throw new BadRequestException(\"Only global inputs are allowed!\");\n         }\n     }\n }\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    },
+    {
+      "target_file": "graylog2-server/src/main/java/org/graylog2/web/resources/AppConfigResource.java",
+      "mainline_file": "graylog2-server/src/main/java/org/graylog2/web/resources/AppConfigResource.java",
+      "hunk_text": "diff --git a/graylog2-server/src/main/java/org/graylog2/web/resources/AppConfigResource.java b/graylog2-server/src/main/java/org/graylog2/web/resources/AppConfigResource.java\nindex e12648630d..29ea387d0d 100644\n--- a/graylog2-server/src/main/java/org/graylog2/web/resources/AppConfigResource.java\n+++ b/graylog2-server/src/main/java/org/graylog2/web/resources/AppConfigResource.java\n@@ -105,6 +105,7 @@ public class AppConfigResource {\n                 .put(\"telemetry\", toPrettyJsonString(telemetryConfiguration.telemetryFrontendSettings()))\n                 .put(\"contentStream\", toPrettyJsonString((contentStreamConfiguration.contentStreamFrontendSettings())))\n                 .put(\"branding\", toPrettyJsonString(customizationConfig))\n+                .put(\"globalInputsOnly\", configuration.isGlobalInputsOnly())\n                 .build();\n         return templateEngine.transform(template, model);\n     }\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    }
+  ],
+  "adapted_test_hunks": [],
+  "generation_checklist": [
+    {
+      "mainline_file": "graylog2-server/src/main/java/org/graylog2/Configuration.java",
+      "target_file": "graylog2-server/src/main/java/org/graylog2/Configuration.java",
+      "hunk_index": 0,
+      "adaptation_type": "TYPE_II",
+      "execution_types": [
+        "TYPE_II"
+      ],
+      "status": "success",
+      "reason": "developer_fast_path",
+      "todo_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ],
+      "completed_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ]
+    },
+    {
+      "mainline_file": "graylog2-server/src/main/java/org/graylog2/rest/resources/system/inputs/InputsResource.java",
+      "target_file": "graylog2-server/src/main/java/org/graylog2/rest/resources/system/inputs/InputsResource.java",
+      "hunk_index": 0,
+      "adaptation_type": "TYPE_II",
+      "execution_types": [
+        "TYPE_II"
+      ],
+      "status": "success",
+      "reason": "developer_fast_path",
+      "todo_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ],
+      "completed_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ]
+    },
+    {
+      "mainline_file": "graylog2-server/src/main/java/org/graylog2/web/resources/AppConfigResource.java",
+      "target_file": "graylog2-server/src/main/java/org/graylog2/web/resources/AppConfigResource.java",
+      "hunk_index": 0,
+      "adaptation_type": "TYPE_II",
+      "execution_types": [
+        "TYPE_II"
+      ],
+      "status": "success",
+      "reason": "developer_fast_path",
+      "todo_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ],
+      "completed_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ]
+    }
+  ],
+  "generated_patch_hash": "55daef6e6879d87131e02292c846acb81888e91af807ebedee115dd658bf34f7",
+  "force_type_v_until_success": false,
+  "force_type_v_reason": "",
+  "force_type_v_retry_files": [],
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "sources": []
+  }
+}

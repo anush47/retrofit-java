@@ -1,0 +1,66 @@
+{
+  "consistency_map": {},
+  "mapped_target_context": {
+    "graylog2-server/src/main/java/org/graylog2/Configuration.java": [
+      {
+        "hunk_index": 1,
+        "mainline_method": "maintainsStreamAwareFieldTypes",
+        "target_file": "graylog2-server/src/main/java/org/graylog2/Configuration.java",
+        "target_method": "maintainsStreamAwareFieldTypes",
+        "start_line": 295,
+        "end_line": 295,
+        "code_snippet": "            will be used to sign certificates for SSL communication between the server and datanodes.\n            \"\"\")\n    @Parameter(value = \"selfsigned_startup\")\n    private boolean selfsignedStartup = false;\n\n    public static final String INSTALL_HTTP_CONNECTION_TIMEOUT = \"install_http_connection_timeout\";\n    public static final String INSTALL_OUTPUT_BUFFER_DRAINING_INTERVAL = \"install_output_buffer_drain_interval\";\n    public static final String INSTALL_OUTPUT_BUFFER_DRAINING_MAX_RETRIES = \"install_output_buffer_max_retries\";\n\n    private static final int DEFAULT_INSTALL_RETRIES = 150;\n    private static final Duration DEFAULT_INSTALL_SECONDS = Duration.seconds(2);\n\n    @Parameter(value = INSTALL_HTTP_CONNECTION_TIMEOUT, validators = PositiveDurationValidator.class)\n    private Duration installHttpConnectionTimeout = Duration.seconds(10L);\n\n    @Parameter(value = INSTALL_OUTPUT_BUFFER_DRAINING_INTERVAL, validators = PositiveDurationValidator.class)\n    private Duration installOutputBufferDrainingInterval = DEFAULT_INSTALL_SECONDS;\n\n    // The maximum number of times to check if buffers have drained during Illuminate restarts on all\n    // nodes before giving up\n    @Parameter(value = INSTALL_OUTPUT_BUFFER_DRAINING_MAX_RETRIES, validators = PositiveIntegerValidator.class)\n    private int installOutputBufferDrainingMaxRetries = DEFAULT_INSTALL_RETRIES;\n\n    public boolean maintainsStreamAwareFieldTypes() {\n        return streamAwareFieldTypes;\n    }\n\n    /**\n     * @deprecated Use {@link #isLeader()} instead.\n     */\n    @Deprecated\n    public boolean isMaster() {\n        return isLeader();\n    }\n\n    /**\n     * Returns the <em>configured</em> leader status. This is only valid for static leader election. You should probably\n     * use {@link LeaderElectionService#isLeader()} instead.\n     */\n    public boolean isLeader() {\n        return isLeader != null ? isLeader : isMaster;",
+        "anchor_confidence": "high",
+        "anchor_reason": "line_and_method_resolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 2,
+        "mainline_method": "withInputs",
+        "target_file": "graylog2-server/src/main/java/org/graylog2/Configuration.java",
+        "target_method": "withInputs",
+        "start_line": 714,
+        "end_line": 714,
+        "code_snippet": "     *         <td>8</td><td>2</td>\n     *     </tr>\n     *     <tr>\n     *         <td>12</td><td>3</td>\n     *     </tr>\n     *     <tr>\n     *         <td>16</td><td>3</td>\n     *     </tr>\n     * </table>\n     */\n    private static int defaultNumberOfOutputBufferProcessors() {\n        return Math.round(Tools.availableProcessors() * 0.162f + 0.625f);\n    }\n\n    @Override\n    public boolean withPlugins() {\n        return true;\n    }\n\n    @Override\n    public boolean withInputs() {\n        return true;\n    }\n}",
+        "anchor_confidence": "high",
+        "anchor_reason": "line_and_method_resolved",
+        "anchor_strategy": "deterministic_realign"
+      }
+    ],
+    "graylog2-server/src/main/java/org/graylog2/rest/resources/system/inputs/InputsResource.java": [
+      {
+        "hunk_index": 1,
+        "mainline_method": "throwBadRequestIfNotGlobal",
+        "target_file": "graylog2-server/src/main/java/org/graylog2/rest/resources/system/inputs/InputsResource.java",
+        "target_method": "throwBadRequestIfNotGlobal",
+        "start_line": 309,
+        "end_line": 309,
+        "code_snippet": "\n        // Special handling for encrypted values\n        final Map<String, Object> origConfig = input.getConfiguration();\n        final Map<String, Object> updatedConfig = Objects.requireNonNullElse(messageInput.getConfiguration().getSource(), Map.of());\n        mergedInput.put(MessageInput.FIELD_CONFIGURATION, EncryptedInputConfigs.merge(origConfig, updatedConfig));\n\n        final Input newInput = inputService.create(input.getId(), mergedInput);\n        inputService.update(newInput);\n        if (!input.getTitle().equals(newInput.getTitle())) {\n            clusterEventBus.post(new InputRenamedEvent(input.getId(), input.getTitle(), newInput.getTitle()));\n        }\n\n        final URI inputUri = getUriBuilderToSelf().path(InputsResource.class)\n                .path(\"{inputId}\")\n                .build(input.getId());\n\n        return Response.created(inputUri).entity(InputCreated.create(input.getId())).build();\n    }\n\n    private void throwBadRequestIfNotGlobal(InputCreateRequest lr) {\n        if (config.isCloud() && !lr.global()) {\n            throw new BadRequestException(\"Only global inputs are allowed in the cloud environment!\");\n        }\n    }\n}",
+        "anchor_confidence": "high",
+        "anchor_reason": "line_and_method_resolved",
+        "anchor_strategy": "deterministic_realign"
+      }
+    ],
+    "graylog2-server/src/main/java/org/graylog2/web/resources/AppConfigResource.java": [
+      {
+        "hunk_index": 1,
+        "mainline_method": "hunk_1",
+        "target_file": "graylog2-server/src/main/java/org/graylog2/web/resources/AppConfigResource.java",
+        "target_method": null,
+        "start_line": 105,
+        "end_line": 105,
+        "code_snippet": "\n    @GET\n    @Produces(MoreMediaTypes.APPLICATION_JAVASCRIPT)\n    public String get(@Context HttpHeaders headers) {\n        final URL templateUrl = this.getClass().getResource(\"/web-interface/config.js.template\");\n        final String template;\n        try {\n            template = Resources.toString(templateUrl, StandardCharsets.UTF_8);\n        } catch (IOException e) {\n            throw new RuntimeException(\"Unable to read AppConfig template while generating web interface configuration: \", e);\n        }\n\n        final URI baseUri = RestTools.buildRelativeExternalUri(headers.getRequestHeaders(), httpConfiguration.getHttpExternalUri());\n        final Map<String, Object> model = ImmutableMap.<String, Object>builder()\n                .put(\"rootTimeZone\", configuration.getRootTimeZone())\n                .put(\"serverUri\", baseUri.resolve(HttpConfiguration.PATH_API))\n                .put(\"appPathPrefix\", baseUri.getPath())\n                .put(\"isCloud\", configuration.isCloud())\n                .put(\"pluginUISettings\", buildPluginUISettings())\n                .put(\"featureFlags\", toPrettyJsonString(featureFlags.getAll()))\n                .put(\"telemetry\", toPrettyJsonString(telemetryConfiguration.telemetryFrontendSettings()))\n                .put(\"contentStream\", toPrettyJsonString((contentStreamConfiguration.contentStreamFrontendSettings())))\n                .put(\"branding\", toPrettyJsonString(customizationConfig))\n                .build();\n        return templateEngine.transform(template, model);\n    }\n\n    private String buildPluginUISettings() {\n        Map<String, Object> pluginUISettings = settingsProviders.entrySet().stream().collect(Collectors.toMap(\n                Map.Entry::getKey,\n                entry -> entry.getValue().pluginSettings()));\n        return toPrettyJsonString(pluginUISettings);\n    }\n\n    private String toPrettyJsonString(Object config) {\n        try {\n            return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(config);\n        } catch (JsonProcessingException ex) {\n            return \"{}\";\n        }\n    }",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      }
+    ]
+  },
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "reason": "llm_usage_not_collected_in_this_node"
+  }
+}

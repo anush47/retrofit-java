@@ -1,0 +1,90 @@
+patch_id=graylog2-server_4bd09278
+project=graylog2-server
+mainline_commit=4bd09278693c5b2bf7349f5d3f5ec3836f32ae9f
+backport_commit=5d168a4e9e16572a304e5530dcb9f9dadfc23216
+mode=full
+started_at=2026-04-05T16:57:56.861811
+----------------------------------------
+Running full workflow graph
+Completed node=phase_0_optimistic
+Completed node=context_analyzer
+Completed node=structural_locator
+Completed node=hunk_generator
+Completed node=validation
+Workflow completed successfully
+
+[graylog2-server/graylog2-server_4bd09278] Setting up repositories for mode=full...
+[graylog2-server/graylog2-server_4bd09278] Running full workflow graph...
+Router: Running Phase 0.
+Phase 0 (Optimistic): Checking direct patch applicability...
+Phase 0: Experiment mode — checking out parent of 5d168a4e9e16572a304e5530dcb9f9dadfc23216...
+Phase 0: Building baseline by applying developer backport test hunks only...
+  Validation: graylog2-server/src/test/java/org/graylog2/rest/resources/system/inputs/InputsResourceTest.java - applying 1 hunk(s) one by one in bottom-to-top order: [102]
+    Agent 4: Executing graylog2-server helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/graylog2-server/run_tests.sh
+Phase 0: git apply --check FAILED. Escalating to full pipeline.
+  Hint: error: patch failed: graylog2-web-interface/src/components/inputs/InputForm.tsx:135
+error: graylog2-web-interface/src/components/inputs/InputForm.tsx: patch does not apply
+
+Router: Phase 0 failed - entering full 4-agent pipeline.
+  Completed: phase_0_optimistic
+Agent 1 (Context Analyzer): Deterministic blueprint generation...
+Agent 1: Complete. Files=3 hunks=4 (deterministic).
+Agent 1: Detected 1 hunk(s) with variants.
+  Completed: context_analyzer
+Agent 2 (Structural Locator): Starting target location mapping...
+  Agent 2: 3 code file(s), 0 test file(s)
+LLM Provider: azure, Model: gpt-4.1-mini, Temperature: 0
+  Agent 2: Found 4 hunk(s) in hunk_chain
+  Agent 2: Locating target for graylog2-server/src/main/java/org/graylog2/Configuration.java (2 hunk(s))...
+Phase 1 (Git) Match Found: graylog2-server/src/main/java/org/graylog2/Configuration.java
+  Agent 2: Git resolution found target: graylog2-server/src/main/java/org/graylog2/Configuration.java
+  Agent 2: Mapped hunk 1 (maintainsStreamAwareFieldTypes) to maintainsStreamAwareFieldTypes at lines 295-295
+  Agent 2: Mapped hunk 2 (withInputs) to withInputs at lines 714-714
+  Agent 2: Locating target for graylog2-server/src/main/java/org/graylog2/rest/resources/system/inputs/InputsResource.java (1 hunk(s))...
+Phase 1 (Git) Match Found: graylog2-server/src/main/java/org/graylog2/rest/resources/system/inputs/InputsResource.java
+  Agent 2: Git resolution found target: graylog2-server/src/main/java/org/graylog2/rest/resources/system/inputs/InputsResource.java
+  Agent 2: Mapped hunk 1 (throwBadRequestIfNotGlobal) to throwBadRequestIfNotGlobal at lines 309-309
+  Agent 2: Locating target for graylog2-server/src/main/java/org/graylog2/web/resources/AppConfigResource.java (1 hunk(s))...
+Phase 1 (Git) Match Found: graylog2-server/src/main/java/org/graylog2/web/resources/AppConfigResource.java
+  Agent 2: Git resolution found target: graylog2-server/src/main/java/org/graylog2/web/resources/AppConfigResource.java
+  Agent 2: Mapped hunk 1 (hunk_1) to None at lines 105-105
+  Agent 2: Trace written to structural_locator_trace.md
+Agent 2: Complete. Mapped 3 file(s). Total hunk mappings: 4. ConsistencyMap has 0 rename(s).
+Router: complexity=STRUCTURAL -> skip planning, go hunk_generator.
+  Completed: structural_locator
+Agent 3 (File Editor): Starting direct file-edit workflow...
+LLM Provider: azure, Model: gpt-4.1-mini, Temperature: 0
+  Agent 3: Built 2 deterministic fallback edit(s) for graylog2-server/src/main/java/org/graylog2/Configuration.java.
+  Agent 3: Processing 2 edit(s) for graylog2-server/src/main/java/org/graylog2/Configuration.java (op=MODIFIED)
+    Agent 3: Classified graylog2-server/src/main/java/org/graylog2/Configuration.java as TYPE_II (deterministic path)
+    Agent 3: base_types=['TYPE_II'] execution_types=['TYPE_II']
+    Agent 3: Developer patch fast path for graylog2-server/src/main/java/org/graylog2/Configuration.java (developer_fast_path_ok)
+  Agent 3: Built 1 deterministic fallback edit(s) for graylog2-server/src/main/java/org/graylog2/rest/resources/system/inputs/InputsResource.java.
+  Agent 3: Processing 1 edit(s) for graylog2-server/src/main/java/org/graylog2/rest/resources/system/inputs/InputsResource.java (op=MODIFIED)
+    Agent 3: Classified graylog2-server/src/main/java/org/graylog2/rest/resources/system/inputs/InputsResource.java as TYPE_II (deterministic path)
+    Agent 3: base_types=['TYPE_II'] execution_types=['TYPE_II']
+    Agent 3: Developer patch fast path for graylog2-server/src/main/java/org/graylog2/rest/resources/system/inputs/InputsResource.java (developer_fast_path_ok)
+  Agent 3: Built 1 deterministic fallback edit(s) for graylog2-server/src/main/java/org/graylog2/web/resources/AppConfigResource.java.
+  Agent 3: Processing 1 edit(s) for graylog2-server/src/main/java/org/graylog2/web/resources/AppConfigResource.java (op=MODIFIED)
+    Agent 3: Classified graylog2-server/src/main/java/org/graylog2/web/resources/AppConfigResource.java as TYPE_II (deterministic path)
+    Agent 3: base_types=['TYPE_II'] execution_types=['TYPE_II']
+    Agent 3: Developer patch fast path for graylog2-server/src/main/java/org/graylog2/web/resources/AppConfigResource.java (developer_fast_path_ok)
+  Agent 3 (File Editor): Done. 3 file(s) adapted, 3 edit record(s).
+  Completed: hunk_generator
+Agent 4 (Validation): Starting 'Prove Red, Make Green' loop...
+  Agent 4: Evaluation full-workflow mode (apply -> build -> relevant tests)...
+  Validation: graylog2-server/src/main/java/org/graylog2/Configuration.java - applying 1 hunk(s) one by one in bottom-to-top order: [1]
+  Validation: graylog2-server/src/main/java/org/graylog2/rest/resources/system/inputs/InputsResource.java - applying 1 hunk(s) one by one in bottom-to-top order: [1]
+  Validation: graylog2-server/src/main/java/org/graylog2/web/resources/AppConfigResource.java - applying 1 hunk(s) one by one in bottom-to-top order: [1]
+  Validation: changelog/unreleased/pr-23769.toml - applying 1 hunk(s) one by one in bottom-to-top order: [1]
+  Validation: graylog2-server/src/main/resources/web-interface/config.js.template - applying 1 hunk(s) one by one in bottom-to-top order: [7]
+  Validation: graylog2-server/src/test/java/org/graylog2/rest/resources/system/inputs/InputsResourceTest.java - applying 1 hunk(s) one by one in bottom-to-top order: [102]
+  Validation: graylog2-web-interface/src/components/inputs/InputForm.tsx - applying 2 hunk(s) one by one in bottom-to-top order: [131, 77]
+  Validation: graylog2-web-interface/src/util/AppConfig.ts - applying 2 hunk(s) one by one in bottom-to-top order: [143, 69]
+  Validation: ADDED operation for changelog/unreleased/pr-23769.toml
+    Agent 4: Executing graylog2-server helper build script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/graylog2-server/run_build.sh
+    Agent 4: Executing graylog2-server helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/graylog2-server/run_tests.sh
+Trace saved to validation_trace.md
+Router: Validation PASSED after 1 attempt(s). Done.
+  Completed: validation
+[graylog2-server/graylog2-server_4bd09278] Full workflow completed!

@@ -1,0 +1,26 @@
+{
+  "consistency_map": {},
+  "mapped_target_context": {
+    "graylog2-server/src/main/java/org/graylog2/database/filtering/inmemory/SingleFilterParser.java": [
+      {
+        "hunk_index": 1,
+        "mainline_method": "hunk_1",
+        "target_file": "graylog2-server/src/main/java/org/graylog2/database/filtering/inmemory/SingleFilterParser.java",
+        "target_method": null,
+        "start_line": 54,
+        "end_line": 54,
+        "code_snippet": "\n    public Filter parseSingleExpression(final String filterExpression, final List<EntityAttribute> attributes) {\n        if (!filterExpression.contains(FIELD_AND_VALUE_SEPARATOR)) {\n            throw new IllegalArgumentException(WRONG_FILTER_EXPR_FORMAT_ERROR_MSG);\n        }\n        final String[] split = filterExpression.split(FIELD_AND_VALUE_SEPARATOR, 2);\n\n        final String fieldPart = split[0];\n        if (fieldPart == null || fieldPart.isEmpty()) {\n            throw new IllegalArgumentException(WRONG_FILTER_EXPR_FORMAT_ERROR_MSG);\n        }\n        final String valuePart = split[1];\n        if (valuePart == null || valuePart.isEmpty()) {\n            throw new IllegalArgumentException(WRONG_FILTER_EXPR_FORMAT_ERROR_MSG);\n        }\n\n        final EntityAttribute attributeMetaData = getAttributeMetaData(attributes, fieldPart);\n\n        final SearchQueryField.Type fieldType = attributeMetaData.type();\n        if (isRangeValueExpression(valuePart, fieldType)) {\n            if (valuePart.startsWith(RANGE_VALUES_SEPARATOR)) {\n                return new RangeFilter(attributeMetaData.id(),\n                        null,\n                        extractValue(fieldType, valuePart.substring(RANGE_VALUES_SEPARATOR.length()))\n                );\n            } else if (valuePart.endsWith(RANGE_VALUES_SEPARATOR)) {\n                return new RangeFilter(attributeMetaData.id(),\n                        extractValue(fieldType, valuePart.substring(0, valuePart.length() - RANGE_VALUES_SEPARATOR.length())),\n                        null\n                );\n            } else {\n                final String[] ranges = valuePart.split(RANGE_VALUES_SEPARATOR);\n                return new RangeFilter(attributeMetaData.id(),\n                        extractValue(fieldType, ranges[0]),\n                        extractValue(fieldType, ranges[1])\n                );\n            }\n        } else {\n            return new SingleValueFilter(attributeMetaData.id(), extractValue(fieldType, valuePart));\n        }\n",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      }
+    ]
+  },
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "reason": "llm_usage_not_collected_in_this_node"
+  }
+}
