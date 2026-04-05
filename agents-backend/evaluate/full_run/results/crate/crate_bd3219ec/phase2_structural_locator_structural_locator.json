@@ -1,0 +1,38 @@
+{
+  "consistency_map": {},
+  "mapped_target_context": {
+    "server/src/main/java/io/crate/rest/action/RestResultSetReceiver.java": [
+      {
+        "hunk_index": 1,
+        "mainline_method": "<import>",
+        "target_file": "server/src/main/java/io/crate/rest/action/RestResultSetReceiver.java",
+        "target_method": "<import>",
+        "start_line": 22,
+        "end_line": 22,
+        "code_snippet": " * Licensed to Crate.io GmbH (\"Crate\") under one or more contributor\n * license agreements.  See the NOTICE file distributed with this work for\n * additional information regarding copyright ownership.  Crate licenses\n * this file to you under the Apache License, Version 2.0 (the \"License\");\n * you may not use this file except in compliance with the License.  You may\n * obtain a copy of the License at\n *\n *   http://www.apache.org/licenses/LICENSE-2.0\n *\n * Unless required by applicable law or agreed to in writing, software\n * distributed under the License is distributed on an \"AS IS\" BASIS, WITHOUT\n * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the\n * License for the specific language governing permissions and limitations\n * under the License.\n *\n * However, if you have executed another commercial license agreement\n * with Crate these terms will supersede the license and you may use the\n * software solely pursuant to the terms of the relevant commercial agreement.\n */\n\npackage io.crate.rest.action;\n\nimport java.io.IOException;\nimport java.util.List;\nimport java.util.concurrent.CompletableFuture;\n\nimport org.elasticsearch.common.xcontent.XContentBuilder;\nimport org.jetbrains.annotations.Nullable;\n\nimport io.crate.session.ResultReceiver;\nimport io.crate.data.Row;\nimport io.crate.data.breaker.RowAccounting;\nimport io.crate.expression.symbol.Symbol;\n\nclass RestResultSetReceiver implements ResultReceiver<XContentBuilder> {\n\n    private final List<Symbol> outputFields;\n    private final ResultToXContentBuilder builder;\n    private final long startTimeNs;\n    private final RowAccounting<Row> rowAccounting;\n    private final CompletableFuture<XContentBuilder> result = new CompletableFuture<>();",
+        "anchor_confidence": "high",
+        "anchor_reason": "line_and_method_resolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 2,
+        "mainline_method": "hunk_2",
+        "target_file": "server/src/main/java/io/crate/rest/action/RestResultSetReceiver.java",
+        "target_method": null,
+        "start_line": 70,
+        "end_line": 70,
+        "code_snippet": "                          boolean includeTypesOnResponse) throws IOException {\n        this.outputFields = outputFields;\n        this.startTimeNs = startTimeNs;\n        this.rowAccounting = rowAccounting;\n        this.builder = ResultToXContentBuilder.builder(builder);\n        this.builder.cols(outputFields);\n        if (includeTypesOnResponse) {\n            this.builder.colTypes(outputFields);\n        }\n        this.builder.startRows();\n    }\n\n    @Override\n    @Nullable\n    public CompletableFuture<Void> setNextRow(Row row) {\n        try {\n            rowAccounting.accountForAndMaybeBreak(row);\n            builder.addRow(row, outputFields.size());\n            rowCount++;\n            return null;\n        } catch (Exception e) {\n            fail(e);\n            return null;\n        }\n    }\n\n    @Override\n    public void batchFinished() {\n        fail(new IllegalStateException(\"Incremental result streaming not supported via HTTP\"));\n    }\n\n    @Override\n    public void allFinished() {\n        try {\n            result.complete(finishBuilder());\n        } catch (IOException e) {\n            result.completeExceptionally(e);\n        }\n    }\n\n    @Override",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      }
+    ]
+  },
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "reason": "llm_usage_not_collected_in_this_node"
+  }
+}

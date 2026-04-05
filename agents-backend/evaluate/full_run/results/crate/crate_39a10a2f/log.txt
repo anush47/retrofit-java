@@ -1,0 +1,27 @@
+patch_id=crate_39a10a2f
+project=crate
+mainline_commit=39a10a2ffb72f6923d9db6346c0a6003a22536b9
+backport_commit=971b775e58399e3ae9182a031304ff23c899a9f8
+mode=full
+started_at=2026-04-05T14:04:01.342282
+----------------------------------------
+Running full workflow graph
+Completed node=phase_0_optimistic
+Workflow completed successfully
+
+[crate/crate_39a10a2f] Setting up repositories for mode=full...
+[crate/crate_39a10a2f] Running full workflow graph...
+Router: Running Phase 0.
+Phase 0 (Optimistic): Checking direct patch applicability...
+Phase 0: Experiment mode — checking out parent of 971b775e58399e3ae9182a031304ff23c899a9f8...
+Phase 0: Building baseline by applying developer backport test hunks only...
+  Validation: server/src/test/java/io/crate/types/GeoPointTypeTest.java - applying 2 hunk(s) one by one in bottom-to-top order: [105, 25]
+    Agent 4: Executing crate helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_tests.sh
+Phase 0: git apply --check SUCCEEDED. Attempting actual patch application and test run.
+    Agent 4: Executing crate helper build script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_build.sh
+    Agent 4: Executing crate helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_tests.sh
+Phase 0: Transition summary -> reason=Valid: Observed fail-to-pass and/or newly passing relevant tests with no regressions.; fail->pass(1): ['io.crate.types.GeoPointTypeTest#test_return_null_when_converting_values_containing_null_to_geo_point']; newly_passing(0): []; pass->fail(0): []
+Phase 0: Transition-based test validation passed. Fast-path success.
+Router: Phase 0 succeeded - taking fast-path exit.
+  Completed: phase_0_optimistic
+[crate/crate_39a10a2f] Full workflow completed!

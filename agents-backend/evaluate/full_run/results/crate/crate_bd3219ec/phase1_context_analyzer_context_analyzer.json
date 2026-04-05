@@ -1,0 +1,37 @@
+{
+  "semantic_blueprint": {
+    "root_cause_hypothesis": "Deterministic inference: target branch diverges from mainline; adapt hunks with exact target context.",
+    "fix_logic": "Apply each source hunk with target-verified context and symbol consistency while preserving behavior.",
+    "dependent_apis": [
+      "catch",
+      "UncheckedIOException"
+    ],
+    "patch_intent_summary": "Backport patch behavior to target branch with minimal, context-correct edits.",
+    "hunk_chain": [
+      {
+        "hunk_index": 1,
+        "file": "server/src/main/java/io/crate/rest/action/RestResultSetReceiver.java",
+        "summary": "Adds logic (+1 lines).",
+        "role": "declaration",
+        "connects_to_next": "Prepares next hunk in same file with related context.",
+        "global_index": 1
+      },
+      {
+        "hunk_index": 2,
+        "file": "server/src/main/java/io/crate/rest/action/RestResultSetReceiver.java",
+        "summary": "Modifies logic (+2/-3 lines).",
+        "role": "guard",
+        "connects_to_next": "",
+        "global_index": 2
+      }
+    ]
+  },
+  "patch_diff": "From bd3219ec49ccabf5a70191a20fba2cadd07ed6ac Mon Sep 17 00:00:00 2001\nFrom: baur <baurzhansahariev@gmail.com>\nDate: Fri, 13 Jun 2025 11:28:24 +0200\nSubject: [PATCH] Ensure that RestResultSetReceiver.setNext throws an error\n\nCallers must handle thrown exceptions.\n\nFixes a regression introduced in 9b61be3\n---\n docs/appendices/release-notes/5.10.9.rst            |  4 ++++\n .../io/crate/rest/action/RestResultSetReceiver.java |  6 +++---\n .../crate/rest/action/RestActionReceiversTest.java  | 13 ++++++++-----\n 3 files changed, 15 insertions(+), 8 deletions(-)\n\ndiff --git a/docs/appendices/release-notes/5.10.9.rst b/docs/appendices/release-notes/5.10.9.rst\nindex 21299125d7..b954164dd5 100644\n--- a/docs/appendices/release-notes/5.10.9.rst\n+++ b/docs/appendices/release-notes/5.10.9.rst\n@@ -62,3 +62,7 @@ Fixes\n - Fixed an issue that would cause :ref:`aggregation functions <aggregation>` on\n   columns used in the ``PARTITION BY()`` clause of a\n   :ref:`partitioned table <partitioned-tables>` to always return ``NULL``.\n+\n+- Fixed a regression introduced with :ref:`version_5.10.8` that caused a query\n+  to keep running even if a ``CircuitBreakerException`` was thrown while\n+  constructing the result set.\ndiff --git a/server/src/main/java/io/crate/rest/action/RestResultSetReceiver.java b/server/src/main/java/io/crate/rest/action/RestResultSetReceiver.java\nindex 0ab51943d1..11b3ef72c5 100644\n--- a/server/src/main/java/io/crate/rest/action/RestResultSetReceiver.java\n+++ b/server/src/main/java/io/crate/rest/action/RestResultSetReceiver.java\n@@ -22,6 +22,7 @@\n package io.crate.rest.action;\n \n import java.io.IOException;\n+import java.io.UncheckedIOException;\n import java.util.List;\n import java.util.concurrent.CompletableFuture;\n \n@@ -68,9 +69,8 @@ class RestResultSetReceiver implements ResultReceiver<XContentBuilder> {\n             builder.addRow(row, outputFields.size());\n             rowCount++;\n             return null;\n-        } catch (Exception e) {\n-            fail(e);\n-            return null;\n+        } catch (IOException e) {\n+            throw new UncheckedIOException(e);\n         }\n     }\n \ndiff --git a/server/src/test/java/io/crate/rest/action/RestActionReceiversTest.java b/server/src/test/java/io/crate/rest/action/RestActionReceiversTest.java\nindex b1d6cadb9b..a7f04645dd 100644\n--- a/server/src/test/java/io/crate/rest/action/RestActionReceiversTest.java\n+++ b/server/src/test/java/io/crate/rest/action/RestActionReceiversTest.java\n@@ -23,12 +23,14 @@ package io.crate.rest.action;\n \n import static io.crate.data.breaker.BlockBasedRamAccounting.MAX_BLOCK_SIZE_IN_BYTES;\n import static org.assertj.core.api.Assertions.assertThat;\n+import static org.assertj.core.api.Assertions.assertThatThrownBy;\n \n import java.io.IOException;\n import java.util.Collections;\n import java.util.List;\n \n import org.elasticsearch.common.Strings;\n+import org.elasticsearch.common.breaker.CircuitBreakingException;\n import org.elasticsearch.common.breaker.TestCircuitBreaker;\n import org.elasticsearch.common.xcontent.XContentBuilder;\n import org.elasticsearch.common.xcontent.json.JsonXContent;\n@@ -152,7 +154,7 @@ public class RestActionReceiversTest extends ESTestCase {\n     }\n \n     @Test\n-    public void test_result_reciever_future_completed_on_cbe() throws Exception {\n+    public void test_result_reciever_future_is_not_completed_on_cbe() throws Exception {\n         TestCircuitBreaker breaker = new TestCircuitBreaker();\n         breaker.startBreaking();\n         RamAccounting ramAccounting = new BlockBasedRamAccounting(\n@@ -171,9 +173,10 @@ public class RestActionReceiversTest extends ESTestCase {\n             false\n         );\n \n-        // Fails with CBE, resultReceiver's future must be completed, so that sys.jobs entry is cleared.\n-        resultReceiver.setNextRow(rows.get(0));\n-        assertThat(resultReceiver.completionFuture().isDone()).isTrue();\n-        assertThat(resultReceiver.completionFuture().isCompletedExceptionally()).isTrue();\n+        // Fails with CBE, resultReceiver's future must not be completed,\n+        // it's handled by the consumer/response emitter which also closes iterator/clears sys.jobs entry\n+        assertThatThrownBy(() -> resultReceiver.setNextRow(rows.get(0)))\n+            .isExactlyInstanceOf(CircuitBreakingException.class);\n+        assertThat(resultReceiver.completionFuture().isDone()).isFalse();\n     }\n }\n-- \n2.43.0\n\n",
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "reason": "deterministic_no_llm"
+  }
+}

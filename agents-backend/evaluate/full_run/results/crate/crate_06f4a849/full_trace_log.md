@@ -1,0 +1,28 @@
+# Full Trace of Agentic File Edits
+
+## Attempt #1
+
+### Final Output Diff
+**server/src/main/java/io/crate/execution/IncrementalPageBucketReceiver.java** [replace]
+```java
+// --- OLD ---
+<developer patch fast path>
+// --- NEW ---
+diff --git a/server/src/main/java/io/crate/execution/IncrementalPageBucketReceiver.java b/server/src/main/java/io/crate/execution/IncrementalPageBucketReceiver.java
+index ba8f757f31..636e957742 100644
+--- a/server/src/main/java/io/crate/execution/IncrementalPageBucketReceiver.java
++++ b/server/src/main/java/io/crate/execution/IncrementalPageBucketReceiver.java
+@@ -126,7 +126,11 @@ public class IncrementalPageBucketReceiver<T> implements PageBucketReceiver {
+ 
+     @Override
+     public void consumeRows() {
+-        processingFuture.complete(finisher.apply(state));
++        try {
++            processingFuture.complete(finisher.apply(state));
++        } catch (Exception e) {
++            processingFuture.completeExceptionally(e);
++        }
+     }
+ 
+     @Override
+```

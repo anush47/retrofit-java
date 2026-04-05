@@ -1,0 +1,26 @@
+{
+  "consistency_map": {},
+  "mapped_target_context": {
+    "server/src/main/java/io/crate/execution/IncrementalPageBucketReceiver.java": [
+      {
+        "hunk_index": 1,
+        "mainline_method": "consumeRows",
+        "target_file": "server/src/main/java/io/crate/execution/IncrementalPageBucketReceiver.java",
+        "target_method": "consumeRows",
+        "start_line": 129,
+        "end_line": 129,
+        "code_snippet": "        }\n        if (isLast) {\n            if (remainingUpstreams.decrementAndGet() == 0) {\n                currentlyAccumulating.whenComplete((r, t) -> consumeRows());\n            }\n        }\n    }\n\n    @Override\n    public Streamer<?>[] streamers() {\n        return streamers;\n    }\n\n    @Override\n    public CompletableFuture<?> completionFuture() {\n        return processingFuture;\n    }\n\n    @Override\n    public void consumeRows() {\n        processingFuture.complete(finisher.apply(state));\n    }\n\n    @Override\n    public void kill(@NotNull Throwable t) {\n        lazyBatchIterator.kill(t);\n        processingFuture.completeExceptionally(t);\n    }\n}",
+        "anchor_confidence": "high",
+        "anchor_reason": "line_and_method_resolved",
+        "anchor_strategy": "deterministic_realign"
+      }
+    ]
+  },
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "reason": "llm_usage_not_collected_in_this_node"
+  }
+}

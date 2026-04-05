@@ -1,0 +1,100 @@
+{
+  "adapted_file_edits": [
+    {
+      "target_file": "server/src/main/java/io/crate/rest/action/RestResultSetReceiver.java",
+      "mainline_file": "server/src/main/java/io/crate/rest/action/RestResultSetReceiver.java",
+      "old_string": "<developer patch fast path>",
+      "new_string": "diff --git a/server/src/main/java/io/crate/rest/action/RestResultSetReceiver.java b/server/src/main/java/io/crate/rest/action/RestResultSetReceiver.java\nindex 7eff95efb5..94d5284b68 100644\n--- a/server/src/main/java/io/crate/rest/action/RestResultSetReceiver.java\n+++ b/server/src/main/java/io/crate/rest/action/RestResultSetReceiver.java\n@@ -22,6 +22,7 @@\n package io.crate.rest.action;\n \n import java.io.IOException;\n+import java.io.UncheckedIOException;\n import java.util.List;\n import java.util.concurrent.CompletableFuture;\n \n@@ -67,9 +68,8 @@ class RestResultSetReceiver implements ResultReceiver<XContentBuilder> {\n             builder.addRow(row, outputFields.size());\n             rowCount++;\n             return null;\n-        } catch (Exception e) {\n-            fail(e);\n-            return null;\n+        } catch (IOException e) {\n+            throw new UncheckedIOException(e);\n         }\n     }",
+      "edit_type": "replace",
+      "verified": true,
+      "verification_result": "developer_fast_path_ok",
+      "applied": true,
+      "apply_result": "SUCCESS"
+    }
+  ],
+  "all_adapted_file_edits": [
+    [
+      {
+        "target_file": "server/src/main/java/io/crate/rest/action/RestResultSetReceiver.java",
+        "mainline_file": "server/src/main/java/io/crate/rest/action/RestResultSetReceiver.java",
+        "old_string": "<developer patch fast path>",
+        "new_string": "diff --git a/server/src/main/java/io/crate/rest/action/RestResultSetReceiver.java b/server/src/main/java/io/crate/rest/action/RestResultSetReceiver.java\nindex 7eff95efb5..94d5284b68 100644\n--- a/server/src/main/java/io/crate/rest/action/RestResultSetReceiver.java\n+++ b/server/src/main/java/io/crate/rest/action/RestResultSetReceiver.java\n@@ -22,6 +22,7 @@\n package io.crate.rest.action;\n \n import java.io.IOException;\n+import java.io.UncheckedIOException;\n import java.util.List;\n import java.util.concurrent.CompletableFuture;\n \n@@ -67,9 +68,8 @@ class RestResultSetReceiver implements ResultReceiver<XContentBuilder> {\n             builder.addRow(row, outputFields.size());\n             rowCount++;\n             return null;\n-        } catch (Exception e) {\n-            fail(e);\n-            return null;\n+        } catch (IOException e) {\n+            throw new UncheckedIOException(e);\n         }\n     }",
+        "edit_type": "replace",
+        "verified": true,
+        "verification_result": "developer_fast_path_ok",
+        "applied": true,
+        "apply_result": "SUCCESS"
+      }
+    ]
+  ],
+  "agent_trajectory_edits": [
+    []
+  ],
+  "adapted_code_hunks": [
+    {
+      "target_file": "server/src/main/java/io/crate/rest/action/RestResultSetReceiver.java",
+      "mainline_file": "server/src/main/java/io/crate/rest/action/RestResultSetReceiver.java",
+      "hunk_text": "diff --git a/server/src/main/java/io/crate/rest/action/RestResultSetReceiver.java b/server/src/main/java/io/crate/rest/action/RestResultSetReceiver.java\nindex 7eff95efb5..94d5284b68 100644\n--- a/server/src/main/java/io/crate/rest/action/RestResultSetReceiver.java\n+++ b/server/src/main/java/io/crate/rest/action/RestResultSetReceiver.java\n@@ -22,6 +22,7 @@\n package io.crate.rest.action;\n \n import java.io.IOException;\n+import java.io.UncheckedIOException;\n import java.util.List;\n import java.util.concurrent.CompletableFuture;\n \n@@ -67,9 +68,8 @@ class RestResultSetReceiver implements ResultReceiver<XContentBuilder> {\n             builder.addRow(row, outputFields.size());\n             rowCount++;\n             return null;\n-        } catch (Exception e) {\n-            fail(e);\n-            return null;\n+        } catch (IOException e) {\n+            throw new UncheckedIOException(e);\n         }\n     }\n \n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    }
+  ],
+  "validation_repeated_patch_detected": false,
+  "validation_repeated_plan_detected": false,
+  "best_effort_adapted_code_hunks": [
+    {
+      "target_file": "server/src/main/java/io/crate/rest/action/RestResultSetReceiver.java",
+      "mainline_file": "server/src/main/java/io/crate/rest/action/RestResultSetReceiver.java",
+      "hunk_text": "diff --git a/server/src/main/java/io/crate/rest/action/RestResultSetReceiver.java b/server/src/main/java/io/crate/rest/action/RestResultSetReceiver.java\nindex 7eff95efb5..94d5284b68 100644\n--- a/server/src/main/java/io/crate/rest/action/RestResultSetReceiver.java\n+++ b/server/src/main/java/io/crate/rest/action/RestResultSetReceiver.java\n@@ -22,6 +22,7 @@\n package io.crate.rest.action;\n \n import java.io.IOException;\n+import java.io.UncheckedIOException;\n import java.util.List;\n import java.util.concurrent.CompletableFuture;\n \n@@ -67,9 +68,8 @@ class RestResultSetReceiver implements ResultReceiver<XContentBuilder> {\n             builder.addRow(row, outputFields.size());\n             rowCount++;\n             return null;\n-        } catch (Exception e) {\n-            fail(e);\n-            return null;\n+        } catch (IOException e) {\n+            throw new UncheckedIOException(e);\n         }\n     }\n \n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    }
+  ],
+  "adapted_test_hunks": [],
+  "generation_checklist": [
+    {
+      "mainline_file": "server/src/main/java/io/crate/rest/action/RestResultSetReceiver.java",
+      "target_file": "server/src/main/java/io/crate/rest/action/RestResultSetReceiver.java",
+      "hunk_index": 0,
+      "adaptation_type": "TYPE_II",
+      "execution_types": [
+        "TYPE_II"
+      ],
+      "status": "success",
+      "reason": "developer_fast_path",
+      "todo_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ],
+      "completed_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ]
+    }
+  ],
+  "generated_patch_hash": "9f1f043e1fdb0207357c2ed9f0d4643c0289a761afd6b1da436619d1e6dce382",
+  "force_type_v_until_success": false,
+  "force_type_v_reason": "",
+  "force_type_v_retry_files": [],
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "sources": []
+  }
+}

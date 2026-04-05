@@ -1,0 +1,117 @@
+# Phase 0 Inputs
+
+- Mainline commit: 39a10a2ffb72f6923d9db6346c0a6003a22536b9
+- Backport commit: 971b775e58399e3ae9182a031304ff23c899a9f8
+- Java-only files for agentic phases: 1
+- Developer auxiliary hunks (test + non-Java): 3
+
+## Commit Pair Consistency
+- Pair mismatch: False
+- Reason: scope_overlap_ok
+- Mainline Java files: ['server/src/main/java/io/crate/types/GeoPointType.java']
+- Developer Java files: ['server/src/main/java/io/crate/types/GeoPointType.java']
+- Overlap Java files: ['server/src/main/java/io/crate/types/GeoPointType.java']
+- Overlap ratio (mainline): 1.0
+
+## Mainline Patch
+```diff
+From 39a10a2ffb72f6923d9db6346c0a6003a22536b9 Mon Sep 17 00:00:00 2001
+From: jeeminso <jeeminso@gmail.com>
+Date: Wed, 11 Jun 2025 21:02:50 -0400
+Subject: [PATCH] Fix NullPointerException when casting values containing null
+ to GEOPOINT
+
+---
+ docs/appendices/release-notes/5.10.9.rst            |  3 +++
+ .../src/main/java/io/crate/types/GeoPointType.java  | 12 ++++++++++++
+ .../test/java/io/crate/types/GeoPointTypeTest.java  | 13 +++++++++++++
+ 3 files changed, 28 insertions(+)
+
+diff --git a/docs/appendices/release-notes/5.10.9.rst b/docs/appendices/release-notes/5.10.9.rst
+index 31684871b9..4b069c4c33 100644
+--- a/docs/appendices/release-notes/5.10.9.rst
++++ b/docs/appendices/release-notes/5.10.9.rst
+@@ -55,3 +55,6 @@ Fixes
+ 
+   The insert succeeded before, but now it will cause an
+   ``IllegalArgumentException``.
++
++- Fixed ``NullPointerException`` thrown when casting an array containing
++  ``NULL`` to ``GEO_POINT``.
+diff --git a/server/src/main/java/io/crate/types/GeoPointType.java b/server/src/main/java/io/crate/types/GeoPointType.java
+index 33b487eedd..28d9617610 100644
+--- a/server/src/main/java/io/crate/types/GeoPointType.java
++++ b/server/src/main/java/io/crate/types/GeoPointType.java
+@@ -106,10 +106,16 @@ public class GeoPointType extends DataType<Point> implements Streamer<Point>, Fi
+             return point;
+         } else if (value instanceof Double[] doubles) {
+             checkLengthIs2(doubles.length);
++            if (doubles[0] == null || doubles[1] == null) {
++                return null;
++            }
+             ensurePointsInRange(doubles[0], doubles[1]);
+             return new PointImpl(doubles[0], doubles[1], JtsSpatialContext.GEO);
+         } else if (value instanceof Object[] values) {
+             checkLengthIs2(values.length);
++            if (values[0] == null || values[1] == null) {
++                return null;
++            }
+             PointImpl point = new PointImpl(
+                 ((Number) values[0]).doubleValue(),
+                 ((Number) values[1]).doubleValue(),
+@@ -120,6 +126,9 @@ public class GeoPointType extends DataType<Point> implements Streamer<Point>, Fi
+             return pointFromString(str);
+         } else if (value instanceof List<?> values) {
+             checkLengthIs2(values.size());
++            if (values.getFirst() == null || values.getLast() == null) {
++                return null;
++            }
+             PointImpl point = new PointImpl(
+                 ((Number) values.get(0)).doubleValue(),
+                 ((Number) values.get(1)).doubleValue(),
+@@ -137,6 +146,9 @@ public class GeoPointType extends DataType<Point> implements Streamer<Point>, Fi
+             return null;
+         } else if (value instanceof List<?> values) {
+             checkLengthIs2(values.size());
++            if (values.getFirst() == null || values.getLast() == null) {
++                return null;
++            }
+             PointImpl point = new PointImpl(
+                 ((Number) values.get(0)).doubleValue(),
+                 ((Number) values.get(1)).doubleValue(),
+diff --git a/server/src/test/java/io/crate/types/GeoPointTypeTest.java b/server/src/test/java/io/crate/types/GeoPointTypeTest.java
+index ea09b7fe77..d070ad951f 100644
+--- a/server/src/test/java/io/crate/types/GeoPointTypeTest.java
++++ b/server/src/test/java/io/crate/types/GeoPointTypeTest.java
+@@ -25,6 +25,7 @@ import static com.carrotsearch.randomizedtesting.RandomizedTest.assumeFalse;
+ import static io.crate.testing.Asserts.assertThat;
+ import static org.assertj.core.api.Assertions.assertThatThrownBy;
+ 
++import java.util.Arrays;
+ import java.util.List;
+ 
+ import org.assertj.core.data.Offset;
+@@ -104,6 +105,18 @@ public class GeoPointTypeTest extends DataTypeTestCase<Point> {
+         assertThat(value.getY()).isEqualTo(2.0);
+     }
+ 
++    @Test
++    public void test_return_null_when_converting_values_containing_null_to_geo_point() {
++        Point value = DataTypes.GEO_POINT.implicitCast(new Integer[]{1, null});
++        assertThat(value).isNull();
++        value = DataTypes.GEO_POINT.implicitCast(Arrays.asList(null, 1));
++        assertThat(value).isNull();
++        value = DataTypes.GEO_POINT.implicitCast(new Double[]{null, 1.11});
++        assertThat(value).isNull();
++        value = DataTypes.GEO_POINT.sanitizeValue(Arrays.asList(null, 1));
++        assertThat(value).isNull();
++    }
++
+     @Test
+     public void test_cast_double_geo_point_value_with_invalid_latitude_throws_exception() {
+         assertThatThrownBy(() -> DataTypes.GEO_POINT.implicitCast(new Double[]{54.321, -123.456}))
+-- 
+2.43.0
+
+
+```

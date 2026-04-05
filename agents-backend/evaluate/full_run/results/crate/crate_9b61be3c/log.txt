@@ -1,0 +1,17 @@
+patch_id=crate_9b61be3c
+project=crate
+mainline_commit=9b61be3c7aef89289e8575e23dad7ca8e9bdc12e
+backport_commit=021eb4ea02b4f364ad83b5bf103bb8366655dfa1
+mode=full
+started_at=2026-04-05T14:15:47.265465
+----------------------------------------
+Running full workflow graph
+
+[crate/crate_9b61be3c] Setting up repositories for mode=full...
+[crate/crate_9b61be3c] Running full workflow graph...
+Router: Running Phase 0.
+Phase 0 (Optimistic): Checking direct patch applicability...
+Phase 0: Experiment mode — checking out parent of 021eb4ea02b4f364ad83b5bf103bb8366655dfa1...
+Phase 0: Building baseline by applying developer backport test hunks only...
+  Validation: server/src/test/java/io/crate/rest/action/RestActionReceiversTest.java - applying 4 hunk(s) one by one in bottom-to-top order: [148, 39, 29, 21]
+    Agent 4: Executing crate helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_tests.sh
