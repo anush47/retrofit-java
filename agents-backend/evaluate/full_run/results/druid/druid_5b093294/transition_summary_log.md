@@ -1,0 +1,298 @@
+# Transition Summary
+
+- Source: phase_outputs
+- Valid backport signal: True
+- Reason: Valid: Observed fail-to-pass and/or newly passing relevant tests with no regressions.
+- fail->pass (1): ['org.apache.druid.frame.allocation.AppendableMemoryTest#testReserveAdditionalWithLargeLastBlockAndSmallAllocator']
+- newly passing (34): ['org.apache.druid.msq.exec.MSQWindowTest#testFailurePartitionByMVD_1', 'org.apache.druid.msq.exec.MSQWindowTest#testFailurePartitionByMVD_2', 'org.apache.druid.msq.exec.MSQWindowTest#testGroupByWithWikipedia', 'org.apache.druid.msq.exec.MSQWindowTest#testInsertWithWindow', 'org.apache.druid.msq.exec.MSQWindowTest#testInsertWithWindowEmptyOver', 'org.apache.druid.msq.exec.MSQWindowTest#testInsertWithWindowPartitionByOrderBy', 'org.apache.druid.msq.exec.MSQWindowTest#testReplaceGroupByOnWikipedia', 'org.apache.druid.msq.exec.MSQWindowTest#testReplaceWithPartitionedByDayOnWikipedia', 'org.apache.druid.msq.exec.MSQWindowTest#testReplaceWithWindowsAndUnnest', 'org.apache.druid.msq.exec.MSQWindowTest#testSelectWithWikipedia', 'org.apache.druid.msq.exec.MSQWindowTest#testSelectWithWikipediaEmptyOverWithCustomContext', 'org.apache.druid.msq.exec.MSQWindowTest#testSelectWithWikipediaWithPartitionKeyNotInSelect', 'org.apache.druid.msq.exec.MSQWindowTest#testSimpleWindowWithDuplicateSelectNode', 'org.apache.druid.msq.exec.MSQWindowTest#testSimpleWindowWithEmptyOver', 'org.apache.druid.msq.exec.MSQWindowTest#testSimpleWindowWithEmptyOverNoGroupBy', 'org.apache.druid.msq.exec.MSQWindowTest#testSimpleWindowWithJoins', 'org.apache.druid.msq.exec.MSQWindowTest#testSimpleWindowWithPartitionBy', 'org.apache.druid.msq.exec.MSQWindowTest#testWindowOnFooWith2WindowsBothPartitionByWithOrderReversed', 'org.apache.druid.msq.exec.MSQWindowTest#testWindowOnFooWith2WindowsBothWindowsHavingPartitionByInnerGroupBy', 'org.apache.druid.msq.exec.MSQWindowTest#testWindowOnFooWithDim2', 'org.apache.druid.msq.exec.MSQWindowTest#testWindowOnFooWithEmptyOverWithGroupBy', 'org.apache.druid.msq.exec.MSQWindowTest#testWindowOnFooWithEmptyOverWithJoin', 'org.apache.druid.msq.exec.MSQWindowTest#testWindowOnFooWithEmptyOverWithUnnest', 'org.apache.druid.msq.exec.MSQWindowTest#testWindowOnFooWithFirstWindowPartitionNextWindowEmpty', 'org.apache.druid.msq.exec.MSQWindowTest#testWindowOnFooWithGroupByAndInnerLimit', 'org.apache.druid.msq.exec.MSQWindowTest#testWindowOnFooWithNoGroupByAndEmptyOver', 'org.apache.druid.msq.exec.MSQWindowTest#testWindowOnFooWithNoGroupByAndPartition', 'org.apache.druid.msq.exec.MSQWindowTest#testWindowOnFooWithNoGroupByAndPartitionAndVirtualColumns', 'org.apache.druid.msq.exec.MSQWindowTest#testWindowOnFooWithNoGroupByAndPartitionByAnother', 'org.apache.druid.msq.exec.MSQWindowTest#testWindowOnFooWithNoGroupByAndPartitionOnTwoElements', 'org.apache.druid.msq.exec.MSQWindowTest#testWindowOnFooWithPartitionByAndInnerGroupBy', 'org.apache.druid.msq.exec.MSQWindowTest#testWindowOnFooWithPartitionByAndWithUnnest', 'org.apache.druid.msq.exec.MSQWindowTest#testWindowOnFooWithPartitionByOrderBYWithJoin', 'org.apache.druid.msq.exec.MSQWindowTest#testWindowOnMixOfEmptyAndNonEmptyOverWithMultipleWorkers']
+- pass->fail (0): []
+
+## Touched Test States
+- Touched tests (from patch): ['org.apache.druid.frame.allocation.AppendableMemoryTest', 'org.apache.druid.frame.write.FrameWriterTest', 'org.apache.druid.msq.exec.MSQWindowTest']
+  - org.apache.druid.frame.allocation.AppendableMemoryTest#testReserveAdditionalWithLargeLastBlockAndSmallAllocator: baseline=failed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_arrayDouble[inputFrameType = COLUMNAR, outputFrameType = COLUMNAR, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_arrayDouble[inputFrameType = COLUMNAR, outputFrameType = ROW_BASED, sorted = ASCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_arrayDouble[inputFrameType = COLUMNAR, outputFrameType = ROW_BASED, sorted = DESCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_arrayDouble[inputFrameType = COLUMNAR, outputFrameType = ROW_BASED, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_arrayDouble[inputFrameType = ROW_BASED, outputFrameType = COLUMNAR, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_arrayDouble[inputFrameType = ROW_BASED, outputFrameType = ROW_BASED, sorted = ASCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_arrayDouble[inputFrameType = ROW_BASED, outputFrameType = ROW_BASED, sorted = DESCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_arrayDouble[inputFrameType = ROW_BASED, outputFrameType = ROW_BASED, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_arrayDouble[inputFrameType = null, outputFrameType = COLUMNAR, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_arrayDouble[inputFrameType = null, outputFrameType = ROW_BASED, sorted = ASCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_arrayDouble[inputFrameType = null, outputFrameType = ROW_BASED, sorted = DESCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_arrayDouble[inputFrameType = null, outputFrameType = ROW_BASED, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_arrayFloat[inputFrameType = COLUMNAR, outputFrameType = COLUMNAR, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_arrayFloat[inputFrameType = COLUMNAR, outputFrameType = ROW_BASED, sorted = ASCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_arrayFloat[inputFrameType = COLUMNAR, outputFrameType = ROW_BASED, sorted = DESCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_arrayFloat[inputFrameType = COLUMNAR, outputFrameType = ROW_BASED, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_arrayFloat[inputFrameType = ROW_BASED, outputFrameType = COLUMNAR, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_arrayFloat[inputFrameType = ROW_BASED, outputFrameType = ROW_BASED, sorted = ASCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_arrayFloat[inputFrameType = ROW_BASED, outputFrameType = ROW_BASED, sorted = DESCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_arrayFloat[inputFrameType = ROW_BASED, outputFrameType = ROW_BASED, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_arrayFloat[inputFrameType = null, outputFrameType = COLUMNAR, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_arrayFloat[inputFrameType = null, outputFrameType = ROW_BASED, sorted = ASCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_arrayFloat[inputFrameType = null, outputFrameType = ROW_BASED, sorted = DESCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_arrayFloat[inputFrameType = null, outputFrameType = ROW_BASED, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_arrayLong[inputFrameType = COLUMNAR, outputFrameType = COLUMNAR, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_arrayLong[inputFrameType = COLUMNAR, outputFrameType = ROW_BASED, sorted = ASCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_arrayLong[inputFrameType = COLUMNAR, outputFrameType = ROW_BASED, sorted = DESCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_arrayLong[inputFrameType = COLUMNAR, outputFrameType = ROW_BASED, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_arrayLong[inputFrameType = ROW_BASED, outputFrameType = COLUMNAR, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_arrayLong[inputFrameType = ROW_BASED, outputFrameType = ROW_BASED, sorted = ASCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_arrayLong[inputFrameType = ROW_BASED, outputFrameType = ROW_BASED, sorted = DESCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_arrayLong[inputFrameType = ROW_BASED, outputFrameType = ROW_BASED, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_arrayLong[inputFrameType = null, outputFrameType = COLUMNAR, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_arrayLong[inputFrameType = null, outputFrameType = ROW_BASED, sorted = ASCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_arrayLong[inputFrameType = null, outputFrameType = ROW_BASED, sorted = DESCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_arrayLong[inputFrameType = null, outputFrameType = ROW_BASED, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_arrayString[inputFrameType = COLUMNAR, outputFrameType = COLUMNAR, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_arrayString[inputFrameType = COLUMNAR, outputFrameType = ROW_BASED, sorted = ASCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_arrayString[inputFrameType = COLUMNAR, outputFrameType = ROW_BASED, sorted = DESCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_arrayString[inputFrameType = COLUMNAR, outputFrameType = ROW_BASED, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_arrayString[inputFrameType = ROW_BASED, outputFrameType = COLUMNAR, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_arrayString[inputFrameType = ROW_BASED, outputFrameType = ROW_BASED, sorted = ASCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_arrayString[inputFrameType = ROW_BASED, outputFrameType = ROW_BASED, sorted = DESCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_arrayString[inputFrameType = ROW_BASED, outputFrameType = ROW_BASED, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_arrayString[inputFrameType = null, outputFrameType = COLUMNAR, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_arrayString[inputFrameType = null, outputFrameType = ROW_BASED, sorted = ASCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_arrayString[inputFrameType = null, outputFrameType = ROW_BASED, sorted = DESCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_arrayString[inputFrameType = null, outputFrameType = ROW_BASED, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_complex_hll[inputFrameType = COLUMNAR, outputFrameType = COLUMNAR, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_complex_hll[inputFrameType = COLUMNAR, outputFrameType = ROW_BASED, sorted = ASCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_complex_hll[inputFrameType = COLUMNAR, outputFrameType = ROW_BASED, sorted = DESCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_complex_hll[inputFrameType = COLUMNAR, outputFrameType = ROW_BASED, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_complex_hll[inputFrameType = ROW_BASED, outputFrameType = COLUMNAR, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_complex_hll[inputFrameType = ROW_BASED, outputFrameType = ROW_BASED, sorted = ASCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_complex_hll[inputFrameType = ROW_BASED, outputFrameType = ROW_BASED, sorted = DESCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_complex_hll[inputFrameType = ROW_BASED, outputFrameType = ROW_BASED, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_complex_hll[inputFrameType = null, outputFrameType = COLUMNAR, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_complex_hll[inputFrameType = null, outputFrameType = ROW_BASED, sorted = ASCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_complex_hll[inputFrameType = null, outputFrameType = ROW_BASED, sorted = DESCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_complex_hll[inputFrameType = null, outputFrameType = ROW_BASED, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_complex_nested[inputFrameType = COLUMNAR, outputFrameType = COLUMNAR, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_complex_nested[inputFrameType = COLUMNAR, outputFrameType = ROW_BASED, sorted = ASCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_complex_nested[inputFrameType = COLUMNAR, outputFrameType = ROW_BASED, sorted = DESCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_complex_nested[inputFrameType = COLUMNAR, outputFrameType = ROW_BASED, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_complex_nested[inputFrameType = ROW_BASED, outputFrameType = COLUMNAR, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_complex_nested[inputFrameType = ROW_BASED, outputFrameType = ROW_BASED, sorted = ASCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_complex_nested[inputFrameType = ROW_BASED, outputFrameType = ROW_BASED, sorted = DESCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_complex_nested[inputFrameType = ROW_BASED, outputFrameType = ROW_BASED, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_complex_nested[inputFrameType = null, outputFrameType = COLUMNAR, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_complex_nested[inputFrameType = null, outputFrameType = ROW_BASED, sorted = ASCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_complex_nested[inputFrameType = null, outputFrameType = ROW_BASED, sorted = DESCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_complex_nested[inputFrameType = null, outputFrameType = ROW_BASED, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_double[inputFrameType = COLUMNAR, outputFrameType = COLUMNAR, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_double[inputFrameType = COLUMNAR, outputFrameType = ROW_BASED, sorted = ASCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_double[inputFrameType = COLUMNAR, outputFrameType = ROW_BASED, sorted = DESCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_double[inputFrameType = COLUMNAR, outputFrameType = ROW_BASED, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_double[inputFrameType = ROW_BASED, outputFrameType = COLUMNAR, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_double[inputFrameType = ROW_BASED, outputFrameType = ROW_BASED, sorted = ASCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_double[inputFrameType = ROW_BASED, outputFrameType = ROW_BASED, sorted = DESCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_double[inputFrameType = ROW_BASED, outputFrameType = ROW_BASED, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_double[inputFrameType = null, outputFrameType = COLUMNAR, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_double[inputFrameType = null, outputFrameType = ROW_BASED, sorted = ASCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_double[inputFrameType = null, outputFrameType = ROW_BASED, sorted = DESCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_double[inputFrameType = null, outputFrameType = ROW_BASED, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_float[inputFrameType = COLUMNAR, outputFrameType = COLUMNAR, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_float[inputFrameType = COLUMNAR, outputFrameType = ROW_BASED, sorted = ASCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_float[inputFrameType = COLUMNAR, outputFrameType = ROW_BASED, sorted = DESCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_float[inputFrameType = COLUMNAR, outputFrameType = ROW_BASED, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_float[inputFrameType = ROW_BASED, outputFrameType = COLUMNAR, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_float[inputFrameType = ROW_BASED, outputFrameType = ROW_BASED, sorted = ASCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_float[inputFrameType = ROW_BASED, outputFrameType = ROW_BASED, sorted = DESCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_float[inputFrameType = ROW_BASED, outputFrameType = ROW_BASED, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_float[inputFrameType = null, outputFrameType = COLUMNAR, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_float[inputFrameType = null, outputFrameType = ROW_BASED, sorted = ASCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_float[inputFrameType = null, outputFrameType = ROW_BASED, sorted = DESCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_float[inputFrameType = null, outputFrameType = ROW_BASED, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_insufficientWriteCapacity[inputFrameType = COLUMNAR, outputFrameType = COLUMNAR, sorted = NONE]: baseline=skipped, patched=skipped
+  - org.apache.druid.frame.write.FrameWriterTest#test_insufficientWriteCapacity[inputFrameType = COLUMNAR, outputFrameType = ROW_BASED, sorted = ASCENDING]: baseline=skipped, patched=skipped
+  - org.apache.druid.frame.write.FrameWriterTest#test_insufficientWriteCapacity[inputFrameType = COLUMNAR, outputFrameType = ROW_BASED, sorted = DESCENDING]: baseline=skipped, patched=skipped
+  - org.apache.druid.frame.write.FrameWriterTest#test_insufficientWriteCapacity[inputFrameType = COLUMNAR, outputFrameType = ROW_BASED, sorted = NONE]: baseline=skipped, patched=skipped
+  - org.apache.druid.frame.write.FrameWriterTest#test_insufficientWriteCapacity[inputFrameType = ROW_BASED, outputFrameType = COLUMNAR, sorted = NONE]: baseline=skipped, patched=skipped
+  - org.apache.druid.frame.write.FrameWriterTest#test_insufficientWriteCapacity[inputFrameType = ROW_BASED, outputFrameType = ROW_BASED, sorted = ASCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_insufficientWriteCapacity[inputFrameType = ROW_BASED, outputFrameType = ROW_BASED, sorted = DESCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_insufficientWriteCapacity[inputFrameType = ROW_BASED, outputFrameType = ROW_BASED, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_insufficientWriteCapacity[inputFrameType = null, outputFrameType = COLUMNAR, sorted = NONE]: baseline=skipped, patched=skipped
+  - org.apache.druid.frame.write.FrameWriterTest#test_insufficientWriteCapacity[inputFrameType = null, outputFrameType = ROW_BASED, sorted = ASCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_insufficientWriteCapacity[inputFrameType = null, outputFrameType = ROW_BASED, sorted = DESCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_insufficientWriteCapacity[inputFrameType = null, outputFrameType = ROW_BASED, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_long[inputFrameType = COLUMNAR, outputFrameType = COLUMNAR, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_long[inputFrameType = COLUMNAR, outputFrameType = ROW_BASED, sorted = ASCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_long[inputFrameType = COLUMNAR, outputFrameType = ROW_BASED, sorted = DESCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_long[inputFrameType = COLUMNAR, outputFrameType = ROW_BASED, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_long[inputFrameType = ROW_BASED, outputFrameType = COLUMNAR, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_long[inputFrameType = ROW_BASED, outputFrameType = ROW_BASED, sorted = ASCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_long[inputFrameType = ROW_BASED, outputFrameType = ROW_BASED, sorted = DESCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_long[inputFrameType = ROW_BASED, outputFrameType = ROW_BASED, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_long[inputFrameType = null, outputFrameType = COLUMNAR, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_long[inputFrameType = null, outputFrameType = ROW_BASED, sorted = ASCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_long[inputFrameType = null, outputFrameType = ROW_BASED, sorted = DESCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_long[inputFrameType = null, outputFrameType = ROW_BASED, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_multiValueString_multiValueFalse[inputFrameType = COLUMNAR, outputFrameType = COLUMNAR, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_multiValueString_multiValueFalse[inputFrameType = COLUMNAR, outputFrameType = ROW_BASED, sorted = ASCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_multiValueString_multiValueFalse[inputFrameType = COLUMNAR, outputFrameType = ROW_BASED, sorted = DESCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_multiValueString_multiValueFalse[inputFrameType = COLUMNAR, outputFrameType = ROW_BASED, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_multiValueString_multiValueFalse[inputFrameType = ROW_BASED, outputFrameType = COLUMNAR, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_multiValueString_multiValueFalse[inputFrameType = ROW_BASED, outputFrameType = ROW_BASED, sorted = ASCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_multiValueString_multiValueFalse[inputFrameType = ROW_BASED, outputFrameType = ROW_BASED, sorted = DESCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_multiValueString_multiValueFalse[inputFrameType = ROW_BASED, outputFrameType = ROW_BASED, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_multiValueString_multiValueFalse[inputFrameType = null, outputFrameType = COLUMNAR, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_multiValueString_multiValueFalse[inputFrameType = null, outputFrameType = ROW_BASED, sorted = ASCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_multiValueString_multiValueFalse[inputFrameType = null, outputFrameType = ROW_BASED, sorted = DESCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_multiValueString_multiValueFalse[inputFrameType = null, outputFrameType = ROW_BASED, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_multiValueString_multiValueTrue[inputFrameType = COLUMNAR, outputFrameType = COLUMNAR, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_multiValueString_multiValueTrue[inputFrameType = COLUMNAR, outputFrameType = ROW_BASED, sorted = ASCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_multiValueString_multiValueTrue[inputFrameType = COLUMNAR, outputFrameType = ROW_BASED, sorted = DESCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_multiValueString_multiValueTrue[inputFrameType = COLUMNAR, outputFrameType = ROW_BASED, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_multiValueString_multiValueTrue[inputFrameType = ROW_BASED, outputFrameType = COLUMNAR, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_multiValueString_multiValueTrue[inputFrameType = ROW_BASED, outputFrameType = ROW_BASED, sorted = ASCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_multiValueString_multiValueTrue[inputFrameType = ROW_BASED, outputFrameType = ROW_BASED, sorted = DESCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_multiValueString_multiValueTrue[inputFrameType = ROW_BASED, outputFrameType = ROW_BASED, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_multiValueString_multiValueTrue[inputFrameType = null, outputFrameType = COLUMNAR, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_multiValueString_multiValueTrue[inputFrameType = null, outputFrameType = ROW_BASED, sorted = ASCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_multiValueString_multiValueTrue[inputFrameType = null, outputFrameType = ROW_BASED, sorted = DESCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_multiValueString_multiValueTrue[inputFrameType = null, outputFrameType = ROW_BASED, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_multiValueString_multiValueUnknown[inputFrameType = COLUMNAR, outputFrameType = COLUMNAR, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_multiValueString_multiValueUnknown[inputFrameType = COLUMNAR, outputFrameType = ROW_BASED, sorted = ASCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_multiValueString_multiValueUnknown[inputFrameType = COLUMNAR, outputFrameType = ROW_BASED, sorted = DESCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_multiValueString_multiValueUnknown[inputFrameType = COLUMNAR, outputFrameType = ROW_BASED, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_multiValueString_multiValueUnknown[inputFrameType = ROW_BASED, outputFrameType = COLUMNAR, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_multiValueString_multiValueUnknown[inputFrameType = ROW_BASED, outputFrameType = ROW_BASED, sorted = ASCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_multiValueString_multiValueUnknown[inputFrameType = ROW_BASED, outputFrameType = ROW_BASED, sorted = DESCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_multiValueString_multiValueUnknown[inputFrameType = ROW_BASED, outputFrameType = ROW_BASED, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_multiValueString_multiValueUnknown[inputFrameType = null, outputFrameType = COLUMNAR, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_multiValueString_multiValueUnknown[inputFrameType = null, outputFrameType = ROW_BASED, sorted = ASCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_multiValueString_multiValueUnknown[inputFrameType = null, outputFrameType = ROW_BASED, sorted = DESCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_multiValueString_multiValueUnknown[inputFrameType = null, outputFrameType = ROW_BASED, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_readNullsInDefaultValueMode[inputFrameType = COLUMNAR, outputFrameType = COLUMNAR, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_readNullsInDefaultValueMode[inputFrameType = COLUMNAR, outputFrameType = ROW_BASED, sorted = ASCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_readNullsInDefaultValueMode[inputFrameType = COLUMNAR, outputFrameType = ROW_BASED, sorted = DESCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_readNullsInDefaultValueMode[inputFrameType = COLUMNAR, outputFrameType = ROW_BASED, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_readNullsInDefaultValueMode[inputFrameType = ROW_BASED, outputFrameType = COLUMNAR, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_readNullsInDefaultValueMode[inputFrameType = ROW_BASED, outputFrameType = ROW_BASED, sorted = ASCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_readNullsInDefaultValueMode[inputFrameType = ROW_BASED, outputFrameType = ROW_BASED, sorted = DESCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_readNullsInDefaultValueMode[inputFrameType = ROW_BASED, outputFrameType = ROW_BASED, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_readNullsInDefaultValueMode[inputFrameType = null, outputFrameType = COLUMNAR, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_readNullsInDefaultValueMode[inputFrameType = null, outputFrameType = ROW_BASED, sorted = ASCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_readNullsInDefaultValueMode[inputFrameType = null, outputFrameType = ROW_BASED, sorted = DESCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_readNullsInDefaultValueMode[inputFrameType = null, outputFrameType = ROW_BASED, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_singleValueWithEmpty_multiValueFalse[inputFrameType = COLUMNAR, outputFrameType = COLUMNAR, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_singleValueWithEmpty_multiValueFalse[inputFrameType = COLUMNAR, outputFrameType = ROW_BASED, sorted = ASCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_singleValueWithEmpty_multiValueFalse[inputFrameType = COLUMNAR, outputFrameType = ROW_BASED, sorted = DESCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_singleValueWithEmpty_multiValueFalse[inputFrameType = COLUMNAR, outputFrameType = ROW_BASED, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_singleValueWithEmpty_multiValueFalse[inputFrameType = ROW_BASED, outputFrameType = COLUMNAR, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_singleValueWithEmpty_multiValueFalse[inputFrameType = ROW_BASED, outputFrameType = ROW_BASED, sorted = ASCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_singleValueWithEmpty_multiValueFalse[inputFrameType = ROW_BASED, outputFrameType = ROW_BASED, sorted = DESCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_singleValueWithEmpty_multiValueFalse[inputFrameType = ROW_BASED, outputFrameType = ROW_BASED, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_singleValueWithEmpty_multiValueFalse[inputFrameType = null, outputFrameType = COLUMNAR, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_singleValueWithEmpty_multiValueFalse[inputFrameType = null, outputFrameType = ROW_BASED, sorted = ASCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_singleValueWithEmpty_multiValueFalse[inputFrameType = null, outputFrameType = ROW_BASED, sorted = DESCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_singleValueWithEmpty_multiValueFalse[inputFrameType = null, outputFrameType = ROW_BASED, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_singleValueWithEmpty_multiValueTrue[inputFrameType = COLUMNAR, outputFrameType = COLUMNAR, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_singleValueWithEmpty_multiValueTrue[inputFrameType = COLUMNAR, outputFrameType = ROW_BASED, sorted = ASCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_singleValueWithEmpty_multiValueTrue[inputFrameType = COLUMNAR, outputFrameType = ROW_BASED, sorted = DESCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_singleValueWithEmpty_multiValueTrue[inputFrameType = COLUMNAR, outputFrameType = ROW_BASED, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_singleValueWithEmpty_multiValueTrue[inputFrameType = ROW_BASED, outputFrameType = COLUMNAR, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_singleValueWithEmpty_multiValueTrue[inputFrameType = ROW_BASED, outputFrameType = ROW_BASED, sorted = ASCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_singleValueWithEmpty_multiValueTrue[inputFrameType = ROW_BASED, outputFrameType = ROW_BASED, sorted = DESCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_singleValueWithEmpty_multiValueTrue[inputFrameType = ROW_BASED, outputFrameType = ROW_BASED, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_singleValueWithEmpty_multiValueTrue[inputFrameType = null, outputFrameType = COLUMNAR, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_singleValueWithEmpty_multiValueTrue[inputFrameType = null, outputFrameType = ROW_BASED, sorted = ASCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_singleValueWithEmpty_multiValueTrue[inputFrameType = null, outputFrameType = ROW_BASED, sorted = DESCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_singleValueWithEmpty_multiValueTrue[inputFrameType = null, outputFrameType = ROW_BASED, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_singleValueWithEmpty_multiValueUnknown[inputFrameType = COLUMNAR, outputFrameType = COLUMNAR, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_singleValueWithEmpty_multiValueUnknown[inputFrameType = COLUMNAR, outputFrameType = ROW_BASED, sorted = ASCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_singleValueWithEmpty_multiValueUnknown[inputFrameType = COLUMNAR, outputFrameType = ROW_BASED, sorted = DESCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_singleValueWithEmpty_multiValueUnknown[inputFrameType = COLUMNAR, outputFrameType = ROW_BASED, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_singleValueWithEmpty_multiValueUnknown[inputFrameType = ROW_BASED, outputFrameType = COLUMNAR, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_singleValueWithEmpty_multiValueUnknown[inputFrameType = ROW_BASED, outputFrameType = ROW_BASED, sorted = ASCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_singleValueWithEmpty_multiValueUnknown[inputFrameType = ROW_BASED, outputFrameType = ROW_BASED, sorted = DESCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_singleValueWithEmpty_multiValueUnknown[inputFrameType = ROW_BASED, outputFrameType = ROW_BASED, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_singleValueWithEmpty_multiValueUnknown[inputFrameType = null, outputFrameType = COLUMNAR, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_singleValueWithEmpty_multiValueUnknown[inputFrameType = null, outputFrameType = ROW_BASED, sorted = ASCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_singleValueWithEmpty_multiValueUnknown[inputFrameType = null, outputFrameType = ROW_BASED, sorted = DESCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_singleValueWithEmpty_multiValueUnknown[inputFrameType = null, outputFrameType = ROW_BASED, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_string_multiValueFalse[inputFrameType = COLUMNAR, outputFrameType = COLUMNAR, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_string_multiValueFalse[inputFrameType = COLUMNAR, outputFrameType = ROW_BASED, sorted = ASCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_string_multiValueFalse[inputFrameType = COLUMNAR, outputFrameType = ROW_BASED, sorted = DESCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_string_multiValueFalse[inputFrameType = COLUMNAR, outputFrameType = ROW_BASED, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_string_multiValueFalse[inputFrameType = ROW_BASED, outputFrameType = COLUMNAR, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_string_multiValueFalse[inputFrameType = ROW_BASED, outputFrameType = ROW_BASED, sorted = ASCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_string_multiValueFalse[inputFrameType = ROW_BASED, outputFrameType = ROW_BASED, sorted = DESCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_string_multiValueFalse[inputFrameType = ROW_BASED, outputFrameType = ROW_BASED, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_string_multiValueFalse[inputFrameType = null, outputFrameType = COLUMNAR, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_string_multiValueFalse[inputFrameType = null, outputFrameType = ROW_BASED, sorted = ASCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_string_multiValueFalse[inputFrameType = null, outputFrameType = ROW_BASED, sorted = DESCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_string_multiValueFalse[inputFrameType = null, outputFrameType = ROW_BASED, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_string_multiValueTrue[inputFrameType = COLUMNAR, outputFrameType = COLUMNAR, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_string_multiValueTrue[inputFrameType = COLUMNAR, outputFrameType = ROW_BASED, sorted = ASCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_string_multiValueTrue[inputFrameType = COLUMNAR, outputFrameType = ROW_BASED, sorted = DESCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_string_multiValueTrue[inputFrameType = COLUMNAR, outputFrameType = ROW_BASED, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_string_multiValueTrue[inputFrameType = ROW_BASED, outputFrameType = COLUMNAR, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_string_multiValueTrue[inputFrameType = ROW_BASED, outputFrameType = ROW_BASED, sorted = ASCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_string_multiValueTrue[inputFrameType = ROW_BASED, outputFrameType = ROW_BASED, sorted = DESCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_string_multiValueTrue[inputFrameType = ROW_BASED, outputFrameType = ROW_BASED, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_string_multiValueTrue[inputFrameType = null, outputFrameType = COLUMNAR, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_string_multiValueTrue[inputFrameType = null, outputFrameType = ROW_BASED, sorted = ASCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_string_multiValueTrue[inputFrameType = null, outputFrameType = ROW_BASED, sorted = DESCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_string_multiValueTrue[inputFrameType = null, outputFrameType = ROW_BASED, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_string_multiValueUnknown[inputFrameType = COLUMNAR, outputFrameType = COLUMNAR, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_string_multiValueUnknown[inputFrameType = COLUMNAR, outputFrameType = ROW_BASED, sorted = ASCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_string_multiValueUnknown[inputFrameType = COLUMNAR, outputFrameType = ROW_BASED, sorted = DESCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_string_multiValueUnknown[inputFrameType = COLUMNAR, outputFrameType = ROW_BASED, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_string_multiValueUnknown[inputFrameType = ROW_BASED, outputFrameType = COLUMNAR, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_string_multiValueUnknown[inputFrameType = ROW_BASED, outputFrameType = ROW_BASED, sorted = ASCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_string_multiValueUnknown[inputFrameType = ROW_BASED, outputFrameType = ROW_BASED, sorted = DESCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_string_multiValueUnknown[inputFrameType = ROW_BASED, outputFrameType = ROW_BASED, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_string_multiValueUnknown[inputFrameType = null, outputFrameType = COLUMNAR, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_string_multiValueUnknown[inputFrameType = null, outputFrameType = ROW_BASED, sorted = ASCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_string_multiValueUnknown[inputFrameType = null, outputFrameType = ROW_BASED, sorted = DESCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_string_multiValueUnknown[inputFrameType = null, outputFrameType = ROW_BASED, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_typePairs[inputFrameType = COLUMNAR, outputFrameType = COLUMNAR, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_typePairs[inputFrameType = COLUMNAR, outputFrameType = ROW_BASED, sorted = ASCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_typePairs[inputFrameType = COLUMNAR, outputFrameType = ROW_BASED, sorted = DESCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_typePairs[inputFrameType = COLUMNAR, outputFrameType = ROW_BASED, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_typePairs[inputFrameType = ROW_BASED, outputFrameType = COLUMNAR, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_typePairs[inputFrameType = ROW_BASED, outputFrameType = ROW_BASED, sorted = ASCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_typePairs[inputFrameType = ROW_BASED, outputFrameType = ROW_BASED, sorted = DESCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_typePairs[inputFrameType = ROW_BASED, outputFrameType = ROW_BASED, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_typePairs[inputFrameType = null, outputFrameType = COLUMNAR, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_typePairs[inputFrameType = null, outputFrameType = ROW_BASED, sorted = ASCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_typePairs[inputFrameType = null, outputFrameType = ROW_BASED, sorted = DESCENDING]: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.FrameWriterTest#test_typePairs[inputFrameType = null, outputFrameType = ROW_BASED, sorted = NONE]: baseline=passed, patched=passed
+  - org.apache.druid.msq.exec.MSQWindowTest#testFailurePartitionByMVD_1: baseline=absent, patched=passed
+  - org.apache.druid.msq.exec.MSQWindowTest#testFailurePartitionByMVD_2: baseline=absent, patched=passed
+  - org.apache.druid.msq.exec.MSQWindowTest#testGroupByWithWikipedia: baseline=absent, patched=passed
+  - org.apache.druid.msq.exec.MSQWindowTest#testInsertWithWindow: baseline=absent, patched=passed
+  - org.apache.druid.msq.exec.MSQWindowTest#testInsertWithWindowEmptyOver: baseline=absent, patched=passed
+  - org.apache.druid.msq.exec.MSQWindowTest#testInsertWithWindowPartitionByOrderBy: baseline=absent, patched=passed
+  - org.apache.druid.msq.exec.MSQWindowTest#testReplaceGroupByOnWikipedia: baseline=absent, patched=passed
+  - org.apache.druid.msq.exec.MSQWindowTest#testReplaceWithPartitionedByDayOnWikipedia: baseline=absent, patched=passed
+  - org.apache.druid.msq.exec.MSQWindowTest#testReplaceWithWindowsAndUnnest: baseline=absent, patched=passed
+  - org.apache.druid.msq.exec.MSQWindowTest#testSelectWithWikipedia: baseline=absent, patched=passed
+  - org.apache.druid.msq.exec.MSQWindowTest#testSelectWithWikipediaEmptyOverWithCustomContext: baseline=absent, patched=passed
+  - org.apache.druid.msq.exec.MSQWindowTest#testSelectWithWikipediaWithPartitionKeyNotInSelect: baseline=absent, patched=passed
+  - org.apache.druid.msq.exec.MSQWindowTest#testSimpleWindowWithDuplicateSelectNode: baseline=absent, patched=passed
+  - org.apache.druid.msq.exec.MSQWindowTest#testSimpleWindowWithEmptyOver: baseline=absent, patched=passed
+  - org.apache.druid.msq.exec.MSQWindowTest#testSimpleWindowWithEmptyOverNoGroupBy: baseline=absent, patched=passed
+  - org.apache.druid.msq.exec.MSQWindowTest#testSimpleWindowWithJoins: baseline=absent, patched=passed
+  - org.apache.druid.msq.exec.MSQWindowTest#testSimpleWindowWithPartitionBy: baseline=absent, patched=passed
+  - org.apache.druid.msq.exec.MSQWindowTest#testWindowOnFooWith2WindowsBothPartitionByWithOrderReversed: baseline=absent, patched=passed
+  - org.apache.druid.msq.exec.MSQWindowTest#testWindowOnFooWith2WindowsBothWindowsHavingPartitionByInnerGroupBy: baseline=absent, patched=passed
+  - org.apache.druid.msq.exec.MSQWindowTest#testWindowOnFooWithDim2: baseline=absent, patched=passed
+  - org.apache.druid.msq.exec.MSQWindowTest#testWindowOnFooWithEmptyOverWithGroupBy: baseline=absent, patched=passed
+  - org.apache.druid.msq.exec.MSQWindowTest#testWindowOnFooWithEmptyOverWithJoin: baseline=absent, patched=passed
+  - org.apache.druid.msq.exec.MSQWindowTest#testWindowOnFooWithEmptyOverWithUnnest: baseline=absent, patched=passed
+  - org.apache.druid.msq.exec.MSQWindowTest#testWindowOnFooWithFirstWindowPartitionNextWindowEmpty: baseline=absent, patched=passed
+  - org.apache.druid.msq.exec.MSQWindowTest#testWindowOnFooWithGroupByAndInnerLimit: baseline=absent, patched=passed
+  - org.apache.druid.msq.exec.MSQWindowTest#testWindowOnFooWithNoGroupByAndEmptyOver: baseline=absent, patched=passed
+  - org.apache.druid.msq.exec.MSQWindowTest#testWindowOnFooWithNoGroupByAndPartition: baseline=absent, patched=passed
+  - org.apache.druid.msq.exec.MSQWindowTest#testWindowOnFooWithNoGroupByAndPartitionAndVirtualColumns: baseline=absent, patched=passed
+  - org.apache.druid.msq.exec.MSQWindowTest#testWindowOnFooWithNoGroupByAndPartitionByAnother: baseline=absent, patched=passed
+  - org.apache.druid.msq.exec.MSQWindowTest#testWindowOnFooWithNoGroupByAndPartitionOnTwoElements: baseline=absent, patched=passed
+  - org.apache.druid.msq.exec.MSQWindowTest#testWindowOnFooWithPartitionByAndInnerGroupBy: baseline=absent, patched=passed
+  - org.apache.druid.msq.exec.MSQWindowTest#testWindowOnFooWithPartitionByAndWithUnnest: baseline=absent, patched=passed
+  - org.apache.druid.msq.exec.MSQWindowTest#testWindowOnFooWithPartitionByOrderBYWithJoin: baseline=absent, patched=passed
+  - org.apache.druid.msq.exec.MSQWindowTest#testWindowOnMixOfEmptyAndNonEmptyOverWithMultipleWorkers: baseline=absent, patched=passed

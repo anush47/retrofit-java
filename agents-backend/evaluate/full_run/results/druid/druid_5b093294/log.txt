@@ -1,0 +1,32 @@
+patch_id=druid_5b093294
+project=druid
+mainline_commit=5b09329479117a54f68d5ce9e4c8b245d76a8f79
+backport_commit=3ba7badda390977805600942d71016b5af12751b
+mode=full
+started_at=2026-04-05T17:25:20.718835
+----------------------------------------
+Running full workflow graph
+Completed node=phase_0_optimistic
+Workflow completed successfully
+
+[druid/druid_5b093294] Setting up repositories for mode=full...
+[druid/druid_5b093294] Running full workflow graph...
+Router: Running Phase 0.
+Phase 0 (Optimistic): Checking direct patch applicability...
+Phase 0: Experiment mode — checking out parent of 3ba7badda390977805600942d71016b5af12751b...
+Phase 0: Building baseline by applying developer backport test hunks only...
+  Validation: extensions-core/multi-stage-query/src/test/java/org/apache/druid/msq/exec/MSQWindowTest.java - applying 1 hunk(s) one by one in bottom-to-top order: [1805]
+  Validation: extensions-core/multi-stage-query/src/test/java/org/apache/druid/msq/test/MSQTestBase.java - applying 3 hunk(s) one by one in bottom-to-top order: [589, 159, 75]
+  Validation: processing/src/test/java/org/apache/druid/frame/allocation/AppendableMemoryTest.java - applying 1 hunk(s) one by one in bottom-to-top order: [1]
+  Validation: processing/src/test/java/org/apache/druid/frame/write/FrameWriterTest.java - applying 4 hunk(s) one by one in bottom-to-top order: [675, 648, 378, 344]
+  Validation: ADDED operation for processing/src/test/java/org/apache/druid/frame/allocation/AppendableMemoryTest.java
+    Agent 4: Executing druid helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/druid/run_tests.sh
+ValidationToolkit: Warning - git clean had issues (exit code 1). Continuing anyway.
+Phase 0: git apply --check SUCCEEDED. Attempting actual patch application and test run.
+    Agent 4: Executing Druid helper build script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/druid/run_build.sh
+    Agent 4: Executing druid helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/druid/run_tests.sh
+Phase 0: Transition summary -> reason=Valid: Observed fail-to-pass and/or newly passing relevant tests with no regressions.; fail->pass(1): ['org.apache.druid.frame.allocation.AppendableMemoryTest#testReserveAdditionalWithLargeLastBlockAndSmallAllocator']; newly_passing(34): ['org.apache.druid.msq.exec.MSQWindowTest#testFailurePartitionByMVD_1', 'org.apache.druid.msq.exec.MSQWindowTest#testFailurePartitionByMVD_2', 'org.apache.druid.msq.exec.MSQWindowTest#testGroupByWithWikipedia', 'org.apache.druid.msq.exec.MSQWindowTest#testInsertWithWindow', 'org.apache.druid.msq.exec.MSQWindowTest#testInsertWithWindowEmptyOver', 'org.apache.druid.msq.exec.MSQWindowTest#testInsertWithWindowPartitionByOrderBy', 'org.apache.druid.msq.exec.MSQWindowTest#testReplaceGroupByOnWikipedia', 'org.apache.druid.msq.exec.MSQWindowTest#testReplaceWithPartitionedByDayOnWikipedia', 'org.apache.druid.msq.exec.MSQWindowTest#testReplaceWithWindowsAndUnnest', 'org.apache.druid.msq.exec.MSQWindowTest#testSelectWithWikipedia', 'org.apache.druid.msq.exec.MSQWindowTest#testSelectWithWikipediaEmptyOverWithCustomContext', 'org.apache.druid.msq.exec.MSQWindowTest#testSelectWithWikipediaWithPartitionKeyNotInSelect', 'org.apache.druid.msq.exec.MSQWindowTest#testSimpleWindowWithDuplicateSelectNode', 'org.apache.druid.msq.exec.MSQWindowTest#testSimpleWindowWithEmptyOver', 'org.apache.druid.msq.exec.MSQWindowTest#testSimpleWindowWithEmptyOverNoGroupBy', 'org.apache.druid.msq.exec.MSQWindowTest#testSimpleWindowWithJoins', 'org.apache.druid.msq.exec.MSQWindowTest#testSimpleWindowWithPartitionBy', 'org.apache.druid.msq.exec.MSQWindowTest#testWindowOnFooWith2WindowsBothPartitionByWithOrderReversed', 'org.apache.druid.msq.exec.MSQWindowTest#testWindowOnFooWith2WindowsBothWindowsHavingPartitionByInnerGroupBy', 'org.apache.druid.msq.exec.MSQWindowTest#testWindowOnFooWithDim2', 'org.apache.druid.msq.exec.MSQWindowTest#testWindowOnFooWithEmptyOverWithGroupBy', 'org.apache.druid.msq.exec.MSQWindowTest#testWindowOnFooWithEmptyOverWithJoin', 'org.apache.druid.msq.exec.MSQWindowTest#testWindowOnFooWithEmptyOverWithUnnest', 'org.apache.druid.msq.exec.MSQWindowTest#testWindowOnFooWithFirstWindowPartitionNextWindowEmpty', 'org.apache.druid.msq.exec.MSQWindowTest#testWindowOnFooWithGroupByAndInnerLimit', 'org.apache.druid.msq.exec.MSQWindowTest#testWindowOnFooWithNoGroupByAndEmptyOver', 'org.apache.druid.msq.exec.MSQWindowTest#testWindowOnFooWithNoGroupByAndPartition', 'org.apache.druid.msq.exec.MSQWindowTest#testWindowOnFooWithNoGroupByAndPartitionAndVirtualColumns', 'org.apache.druid.msq.exec.MSQWindowTest#testWindowOnFooWithNoGroupByAndPartitionByAnother', 'org.apache.druid.msq.exec.MSQWindowTest#testWindowOnFooWithNoGroupByAndPartitionOnTwoElements', 'org.apache.druid.msq.exec.MSQWindowTest#testWindowOnFooWithPartitionByAndInnerGroupBy', 'org.apache.druid.msq.exec.MSQWindowTest#testWindowOnFooWithPartitionByAndWithUnnest', 'org.apache.druid.msq.exec.MSQWindowTest#testWindowOnFooWithPartitionByOrderBYWithJoin', 'org.apache.druid.msq.exec.MSQWindowTest#testWindowOnMixOfEmptyAndNonEmptyOverWithMultipleWorkers']; pass->fail(0): []
+Phase 0: Transition-based test validation passed. Fast-path success.
+Router: Phase 0 succeeded - taking fast-path exit.
+  Completed: phase_0_optimistic
+[druid/druid_5b093294] Full workflow completed!
