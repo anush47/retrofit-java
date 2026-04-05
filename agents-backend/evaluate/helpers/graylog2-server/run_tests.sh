@@ -60,7 +60,7 @@ if docker run --rm \
              mvn test ${MAVEN_ARGS} -DfailIfNoTests=false -Denforcer.skip=true -Dskip.yarn -Dskip.npm -Dskip.installnodenpm -Dmaven.antrun.skip=true -Dmaven.javadoc.skip=true -Dcheckstyle.skip=true; \
              MVN_EXIT_CODE=\$?; \
              mkdir -p /repo/build/all-test-results; \
-             find . -name 'TEST-*.xml' -exec cp {} /repo/build/all-test-results/ \;; \
+             find . -type f -name 'TEST-*.xml' -not -path '*/build/*' -exec cp {} /repo/build/all-test-results/ \;; \
              exit \$MVN_EXIT_CODE"; then
     echo "✅ Tests Passed"
     exit 0

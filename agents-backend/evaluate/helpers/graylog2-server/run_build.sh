@@ -15,7 +15,8 @@ fi
 
 # 2. Build Docker image
 echo "--- Building Docker image... ---"
-docker build -t ${BUILDER_IMAGE_TAG} -f ${TOOLKIT_DIR}/Dockerfile .
+# Use TOOLKIT_DIR as context to avoid permission errors in target/ folders
+docker build -t ${BUILDER_IMAGE_TAG} -f ${TOOLKIT_DIR}/Dockerfile ${TOOLKIT_DIR}
 
 # 3. Run Build
 echo "--- Running Maven Build... ---"
