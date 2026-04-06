@@ -1,0 +1,174 @@
+{
+  "consistency_map": {},
+  "mapped_target_context": {
+    "libs/shared/src/main/java/io/crate/common/collections/Lists.java": [
+      {
+        "hunk_index": 1,
+        "mainline_method": "concat",
+        "target_file": "libs/shared/src/main/java/io/crate/common/collections/Lists.java",
+        "target_method": "concat",
+        "start_line": 74,
+        "end_line": 74,
+        "code_snippet": "        for (var item : items) {\n            result.add(item);\n        }\n        return result;\n    }\n\n    /**\n     * Create a new list that contains the elements of both arguments\n     */\n    public static <T> List<T> concat(Collection<? extends T> list1, Collection<? extends T> list2) {\n        ArrayList<T> list = new ArrayList<>(list1.size() + list2.size());\n        list.addAll(list1);\n        list.addAll(list2);\n        return list;\n    }\n\n    public static <T> List<T> concat(Collection<? extends T> list1, T item) {\n        ArrayList<T> xs = new ArrayList<>(list1.size() + 1);\n        xs.addAll(list1);\n        xs.add(item);\n        return xs;\n    }\n\n    @SafeVarargs\n    public static final <T> List<T> concat(T first, T ... tail) {\n        ArrayList<T> result = new ArrayList<>(1 + tail.length);\n        result.add(first);\n        for (int i = 0; i < tail.length; i++) {\n            result.add(tail[i]);\n        }\n        return result;\n    }\n\n    @SafeVarargs\n    public static final <T> List<T> concat(T first, T second, T ... tail) {\n        ArrayList<T> result = new ArrayList<>(2 + tail.length);\n        result.add(first);\n        result.add(second);\n        for (int i = 0; i < tail.length; i++) {\n            result.add(tail[i]);\n        }",
+        "anchor_confidence": "high",
+        "anchor_reason": "line_and_method_resolved",
+        "anchor_strategy": "deterministic_realign"
+      }
+    ],
+    "server/src/main/java/io/crate/execution/dml/Indexer.java": [
+      {
+        "hunk_index": 1,
+        "mainline_method": "<import>",
+        "target_file": "server/src/main/java/io/crate/execution/dml/Indexer.java",
+        "target_method": "<import>",
+        "start_line": 59,
+        "end_line": 59,
+        "code_snippet": "\nimport org.apache.lucene.document.Document;\nimport org.apache.lucene.document.Field;\nimport org.elasticsearch.Version;\nimport org.elasticsearch.index.mapper.ParsedDocument;\nimport org.jetbrains.annotations.Nullable;\n\nimport io.crate.analyze.SymbolEvaluator;\nimport io.crate.common.collections.Maps;\nimport io.crate.data.Input;\nimport io.crate.data.Row;\nimport io.crate.execution.engine.collect.CollectExpression;\nimport io.crate.execution.engine.collect.NestableCollectExpression;\nimport io.crate.expression.InputFactory;\nimport io.crate.expression.InputFactory.Context;\nimport io.crate.expression.reference.ReferenceResolver;\nimport io.crate.expression.symbol.DynamicReference;\nimport io.crate.expression.symbol.Literal;\nimport io.crate.expression.symbol.RefReplacer;\nimport io.crate.expression.symbol.Symbol;\nimport io.crate.expression.symbol.Symbols;\nimport io.crate.metadata.ColumnIdent;\nimport io.crate.metadata.GeneratedReference;\nimport io.crate.metadata.IndexType;\nimport io.crate.metadata.NodeContext;\nimport io.crate.metadata.PartitionName;\nimport io.crate.metadata.Reference;\nimport io.crate.metadata.RowGranularity;\nimport io.crate.metadata.TransactionContext;\nimport io.crate.metadata.doc.DocTableInfo;\nimport io.crate.metadata.doc.SysColumns;\nimport io.crate.planner.operators.SubQueryResults;\nimport io.crate.sql.tree.CheckConstraint;\nimport io.crate.sql.tree.ColumnPolicy;\nimport io.crate.types.ArrayType;\nimport io.crate.types.DataType;\nimport io.crate.types.DataTypes;\nimport io.crate.types.ObjectType;\n\n/**\n * <p>",
+        "anchor_confidence": "high",
+        "anchor_reason": "line_and_method_resolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 2,
+        "mainline_method": "<class_declaration>",
+        "target_file": "server/src/main/java/io/crate/execution/dml/Indexer.java",
+        "target_method": "<class_declaration>",
+        "start_line": 120,
+        "end_line": 120,
+        "code_snippet": " *\n * Schema update and creation of ParsedDocument is split into two steps to be\n * able to use information from the persisted {@link Reference} from the cluster\n * state. (Mostly for the OID information)\n **/\npublic class Indexer {\n\n    private final List<ValueIndexer<?>> valueIndexers;\n    private final List<Reference> columns;\n    private final Map<ColumnIdent, Synthetic> synthetics;\n    private final List<CollectExpression<IndexItem, Object>> expressions;\n    private final Map<ColumnIdent, ColumnConstraint> columnConstraints = new HashMap<>();\n    private final List<TableConstraint> tableConstraints;\n    private final List<IndexColumn> indexColumns;\n    private final List<Input<?>> returnValueInputs;\n    private final List<Synthetic> undeterministic = new ArrayList<>();\n    private final Function<ColumnIdent, Reference> getRef;\n    private final boolean writeOids;\n    private final Version tableVersionCreated;\n\n    record IndexColumn(Reference reference, List<Input<?>> inputs) {\n    }\n\n    static class RefResolver implements ReferenceResolver<CollectExpression<IndexItem, Object>> {\n\n        private final PartitionName partitionName;\n        private final List<Reference> targetColumns;\n        private final DocTableInfo table;\n        private final SymbolEvaluator symbolEval;\n\n        private RefResolver(SymbolEvaluator symbolEval,\n                            PartitionName partitionName,\n                            List<Reference> targetColumns,\n                            DocTableInfo table) {\n            this.symbolEval = symbolEval;\n            this.partitionName = partitionName;\n            this.targetColumns = targetColumns;\n            this.table = table;\n        }\n\n        @Override",
+        "anchor_confidence": "high",
+        "anchor_reason": "line_and_method_resolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 3,
+        "mainline_method": "hunk_3",
+        "target_file": "server/src/main/java/io/crate/execution/dml/Indexer.java",
+        "target_method": null,
+        "start_line": 496,
+        "end_line": 496,
+        "code_snippet": "            }\n            if (targetColumns.contains(ref)) {\n                continue;\n            }\n\n            createParentSynthetics(table, targetColumns, ref.column(), getRef);\n\n            Input<?> input = ctxForRefs.add(ref.generatedExpression());\n            ValueIndexer<Object> valueIndexer = (ValueIndexer<Object>) ref.valueType().valueIndexer(\n                table.ident(),\n                ref,\n                getRef\n            );\n            Synthetic synthetic = new Synthetic(ref, input, valueIndexer);\n            this.synthetics.put(ref.column(), synthetic);\n\n            if (!ref.isDeterministic()) {\n                undeterministic.add(synthetic);\n            }\n        }\n        this.indexColumns = new ArrayList<>(table.indexColumns().size());\n        for (var ref : table.indexColumns()) {\n            ArrayList<Input<?>> indexInputs = new ArrayList<>(ref.columns().size());\n\n            for (var sourceRef : ref.columns()) {\n                Reference reference = table.getReference(sourceRef.column());\n                assert reference.equals(sourceRef) : \"refs must match\";\n\n                Input<?> input = ctxForRefs.add(sourceRef);\n                indexInputs.add(input);\n            }\n            if (ref.indexType() != IndexType.NONE) {\n                indexColumns.add(new IndexColumn(ref, indexInputs));\n            }\n        }\n        if (returnValues == null) {\n            this.returnValueInputs = null;\n        } else {\n            Context<Input<?>> ctxForReturnValues = inputFactory.ctxForRefs(\n                txnCtx,\n                ref -> {",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 4,
+        "mainline_method": "hunk_4",
+        "target_file": "server/src/main/java/io/crate/execution/dml/Indexer.java",
+        "target_method": null,
+        "start_line": 944,
+        "end_line": 944,
+        "code_snippet": "                    assert valueIdx < insertValues.length : \"Target columns and values must have the same size\";\n                    root = (Map<String, Object>) insertValues[valueIdx];\n                }\n                ColumnIdent child = column.shiftRight();\n                Object value = synthetic.value();\n                // We don't override value if it exists.\n                // It's needed when:\n                // - users explicitly provide the whole object (including generated sub-column), then we take user provided value.\n                // - when upsert/update takes existing value from the existing document, it needs to take the whole object as is.\n                Maps.mergeInto(\n                    root,\n                    child.name(),\n                    child.path(),\n                    value,\n                    Map::putIfAbsent\n                );\n            }\n        }\n        return extendedValues.toArray();\n    }\n}",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 5,
+        "mainline_method": "hunk_5",
+        "target_file": "server/src/main/java/io/crate/execution/dml/Indexer.java",
+        "target_method": null,
+        "start_line": 768,
+        "end_line": 768,
+        "code_snippet": "            if (value == null) {\n                continue;\n            }\n            translogWriter.writeFieldName(valueIndexer.storageIdentLeafName());\n            valueIndexer.indexValue(value, docBuilder);\n        }\n\n        for (var entry : synthetics.entrySet()) {\n            ColumnIdent column = entry.getKey();\n            if (!column.isRoot()) {\n                continue;\n            }\n            Synthetic synthetic = entry.getValue();\n\n            Object value = synthetic.value();\n            if (value == null) {\n                continue;\n            }\n            ValueIndexer<Object> indexer = synthetic.indexer();\n            translogWriter.writeFieldName(indexer.storageIdentLeafName());\n            indexer.indexValue(value, docBuilder);\n        }\n\n        for (var indexColumn : indexColumns) {\n            String fqn = indexColumn.reference.storageIdent();\n            for (var input : indexColumn.inputs) {\n                Object value = input.value();\n                if (value == null) {\n                    continue;\n                }\n                if (value instanceof Iterable<?> it) {\n                    for (Object val : it) {\n                        if (val == null) {\n                            continue;\n                        }\n                        Field field = new Field(fqn, val.toString(), FulltextIndexer.FIELD_TYPE);\n                        docBuilder.addField(field);\n                    }\n                } else {\n                    Field field = new Field(fqn, value.toString(), FulltextIndexer.FIELD_TYPE);\n                    docBuilder.addField(field);",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 6,
+        "mainline_method": "valueForInsert",
+        "target_file": "server/src/main/java/io/crate/execution/dml/Indexer.java",
+        "target_method": "valueForInsert",
+        "start_line": 793,
+        "end_line": 793,
+        "code_snippet": "            for (var input : indexColumn.inputs) {\n                Object value = input.value();\n                if (value == null) {\n                    continue;\n                }\n                if (value instanceof Iterable<?> it) {\n                    for (Object val : it) {\n                        if (val == null) {\n                            continue;\n                        }\n                        Field field = new Field(fqn, val.toString(), FulltextIndexer.FIELD_TYPE);\n                        docBuilder.addField(field);\n                    }\n                } else {\n                    Field field = new Field(fqn, value.toString(), FulltextIndexer.FIELD_TYPE);\n                    docBuilder.addField(field);\n                }\n            }\n        }\n\n        for (var constraint : tableConstraints) {\n            constraint.verify(item.insertValues());\n        }\n\n        return docBuilder.build(item.id());\n    }\n\n    private static <T> T valueForInsert(DataType<T> valueType, Object value) {\n        return valueType.valueForInsert(valueType.sanitizeValue(value));\n    }\n\n    @Nullable\n    public Object[] returnValues(IndexItem item) {\n        if (this.returnValueInputs == null) {\n            return null;\n        }\n        expressions.forEach(x -> x.setNextRow(item));\n        Object[] result = new Object[this.returnValueInputs.size()];\n        for (int i = 0; i < result.length; i++) {\n            result[i] = this.returnValueInputs.get(i).value();\n        }",
+        "anchor_confidence": "high",
+        "anchor_reason": "line_and_method_resolved",
+        "anchor_strategy": "deterministic_realign"
+      }
+    ],
+    "server/src/main/java/io/crate/execution/dml/TranslogIndexer.java": [
+      {
+        "hunk_index": 1,
+        "mainline_method": "<import>",
+        "target_file": "server/src/main/java/io/crate/execution/dml/TranslogIndexer.java",
+        "target_method": "<import>",
+        "start_line": 26,
+        "end_line": 26,
+        "code_snippet": " * you may not use this file except in compliance with the License.  You may\n * obtain a copy of the License at\n *\n *     http://www.apache.org/licenses/LICENSE-2.0\n *\n * Unless required by applicable law or agreed to in writing, software\n * distributed under the License is distributed on an \"AS IS\" BASIS, WITHOUT\n * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the\n * License for the specific language governing permissions and limitations\n * under the License.\n *\n * However, if you have executed another commercial license agreement\n * with Crate these terms will supersede the license and you may use the\n * software solely pursuant to the terms of the relevant commercial agreement.\n */\n\npackage io.crate.execution.dml;\n\nimport java.io.IOException;\nimport java.io.UncheckedIOException;\nimport java.util.ArrayList;\nimport java.util.HashMap;\nimport java.util.List;\nimport java.util.Map;\n\nimport org.apache.lucene.document.Field;\nimport org.elasticsearch.Version;\nimport org.elasticsearch.common.bytes.BytesReference;\nimport org.elasticsearch.index.mapper.MapperParsingException;\nimport org.elasticsearch.index.mapper.ParsedDocument;\n\nimport io.crate.expression.reference.doc.lucene.SourceParser;\nimport io.crate.metadata.DocReferences;\nimport io.crate.metadata.RowGranularity;\nimport io.crate.metadata.doc.DocTableInfo;\nimport io.crate.sql.tree.ColumnPolicy;\nimport io.crate.types.DataType;\n\n/**\n * Parses transaction log entries based on column information from a {@link DocTableInfo}\n */",
+        "anchor_confidence": "high",
+        "anchor_reason": "line_and_method_resolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 2,
+        "mainline_method": "<class_declaration>",
+        "target_file": "server/src/main/java/io/crate/execution/dml/TranslogIndexer.java",
+        "target_method": "<class_declaration>",
+        "start_line": 53,
+        "end_line": 53,
+        "code_snippet": "import org.elasticsearch.common.bytes.BytesReference;\nimport org.elasticsearch.index.mapper.MapperParsingException;\nimport org.elasticsearch.index.mapper.ParsedDocument;\n\nimport io.crate.expression.reference.doc.lucene.SourceParser;\nimport io.crate.metadata.DocReferences;\nimport io.crate.metadata.RowGranularity;\nimport io.crate.metadata.doc.DocTableInfo;\nimport io.crate.sql.tree.ColumnPolicy;\nimport io.crate.types.DataType;\n\n/**\n * Parses transaction log entries based on column information from a {@link DocTableInfo}\n */\npublic class TranslogIndexer {\n\n    private record ColumnIndexer<T>(DataType<T> dataType, ValueIndexer<Object> valueIndexer) {\n    }\n\n    private final Map<String, ColumnIndexer<?>> indexers = new HashMap<>();\n    private final Map<String, List<String>> tableIndexSources = new HashMap<>();\n    private final boolean ignoreUnknownColumns;\n    private final SourceParser sourceParser;\n    private final Version tableVersionCreated;\n\n    /**\n     * Creates a new TranslogIndexer backed by a DocTableInfo instance\n     */\n    @SuppressWarnings(\"unchecked\")\n    public TranslogIndexer(DocTableInfo table) {\n        sourceParser = new SourceParser(table.droppedColumns(), table.lookupNameBySourceKey(), false);\n        for (var ref : table.columns()) {\n            var storageSupport = ref.valueType().storageSupport();\n            if (storageSupport != null) {\n                var columnIndexer = new ColumnIndexer<>(\n                    ref.valueType(),\n                    (ValueIndexer<Object>) storageSupport.valueIndexer(table.ident(), ref, table::getReference));\n                indexers.put(ref.column().name(), columnIndexer);\n            }\n            if (ref.granularity() == RowGranularity.DOC) {\n                sourceParser.register(DocReferences.toDocLookup(ref).column(), ref.valueType());",
+        "anchor_confidence": "high",
+        "anchor_reason": "line_and_method_resolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 3,
+        "mainline_method": "<class_declaration>",
+        "target_file": "server/src/main/java/io/crate/execution/dml/TranslogIndexer.java",
+        "target_method": "<class_declaration>",
+        "start_line": 76,
+        "end_line": 76,
+        "code_snippet": "    private final Version tableVersionCreated;\n\n    /**\n     * Creates a new TranslogIndexer backed by a DocTableInfo instance\n     */\n    @SuppressWarnings(\"unchecked\")\n    public TranslogIndexer(DocTableInfo table) {\n        sourceParser = new SourceParser(table.droppedColumns(), table.lookupNameBySourceKey(), false);\n        for (var ref : table.columns()) {\n            var storageSupport = ref.valueType().storageSupport();\n            if (storageSupport != null) {\n                var columnIndexer = new ColumnIndexer<>(\n                    ref.valueType(),\n                    (ValueIndexer<Object>) storageSupport.valueIndexer(table.ident(), ref, table::getReference));\n                indexers.put(ref.column().name(), columnIndexer);\n            }\n            if (ref.granularity() == RowGranularity.DOC) {\n                sourceParser.register(DocReferences.toDocLookup(ref).column(), ref.valueType());\n            }\n        }\n        for (var ref : table.indexColumns()) {\n            for (var source : ref.columns()) {\n                tableIndexSources.computeIfAbsent(source.column().fqn(), _ -> new ArrayList<>()).add(ref.storageIdent());\n            }\n        }\n        ignoreUnknownColumns = table.columnPolicy() != ColumnPolicy.STRICT;\n        tableVersionCreated = table.versionCreated();\n    }\n\n    /**\n     * Convert a transaction log entry to a ParsedDocument to be indexed\n     *\n     * @param id     the document ID\n     * @param source the transaction log entry bytes\n     */\n    public ParsedDocument index(String id, BytesReference source) {\n        try {\n            return populateLuceneFields(source).build(id);\n        } catch (IOException | UncheckedIOException e) {\n            throw new MapperParsingException(\"Error parsing translog source\", e);\n        }",
+        "anchor_confidence": "high",
+        "anchor_reason": "line_and_method_resolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 4,
+        "mainline_method": "index",
+        "target_file": "server/src/main/java/io/crate/execution/dml/TranslogIndexer.java",
+        "target_method": "index",
+        "start_line": 101,
+        "end_line": 101,
+        "code_snippet": "        ignoreUnknownColumns = table.columnPolicy() != ColumnPolicy.STRICT;\n        tableVersionCreated = table.versionCreated();\n    }\n\n    /**\n     * Convert a transaction log entry to a ParsedDocument to be indexed\n     *\n     * @param id     the document ID\n     * @param source the transaction log entry bytes\n     */\n    public ParsedDocument index(String id, BytesReference source) {\n        try {\n            return populateLuceneFields(source).build(id);\n        } catch (IOException | UncheckedIOException e) {\n            throw new MapperParsingException(\"Error parsing translog source\", e);\n        }\n\n    }\n\n    private IndexDocumentBuilder populateLuceneFields(BytesReference source) throws IOException {\n        Map<String, Object> docMap = sourceParser.parse(source, ignoreUnknownColumns == false);\n        IndexDocumentBuilder docBuilder = new IndexDocumentBuilder(new NoOpTranslogWriter(source), _ -> null, Map.of(), tableVersionCreated);\n        for (var entry : docMap.entrySet()) {\n            var column = entry.getKey();\n            var indexer = indexers.get(column);\n            if (indexer == null) {\n                if (isEmpty(entry.getValue())) {\n                    continue;\n                }\n                throw new TranslogMappingUpdateException(\"Unknown column in translog entry: \" + entry);\n            }\n\n            Object castValue = valueForInsert(indexer.dataType, entry.getValue());\n            if (castValue != null) {\n                indexer.valueIndexer.indexValue(castValue, docBuilder);\n                if (tableIndexSources.containsKey(column)) {\n                    addIndexField(docBuilder, tableIndexSources.get(column), castValue);\n                }\n            }\n        }\n        return docBuilder;",
+        "anchor_confidence": "high",
+        "anchor_reason": "line_and_method_resolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 5,
+        "mainline_method": "hunk_5",
+        "target_file": "server/src/main/java/io/crate/execution/dml/TranslogIndexer.java",
+        "target_method": null,
+        "start_line": 116,
+        "end_line": 116,
+        "code_snippet": "        }\n\n    }\n\n    private IndexDocumentBuilder populateLuceneFields(BytesReference source) throws IOException {\n        Map<String, Object> docMap = sourceParser.parse(source, ignoreUnknownColumns == false);\n        IndexDocumentBuilder docBuilder = new IndexDocumentBuilder(new NoOpTranslogWriter(source), _ -> null, Map.of(), tableVersionCreated);\n        for (var entry : docMap.entrySet()) {\n            var column = entry.getKey();\n            var indexer = indexers.get(column);\n            if (indexer == null) {\n                if (isEmpty(entry.getValue())) {\n                    continue;\n                }\n                throw new TranslogMappingUpdateException(\"Unknown column in translog entry: \" + entry);\n            }\n\n            Object castValue = valueForInsert(indexer.dataType, entry.getValue());\n            if (castValue != null) {\n                indexer.valueIndexer.indexValue(castValue, docBuilder);\n                if (tableIndexSources.containsKey(column)) {\n                    addIndexField(docBuilder, tableIndexSources.get(column), castValue);\n                }\n            }\n        }\n        return docBuilder;\n    }\n\n    private record NoOpTranslogWriter(BytesReference source) implements TranslogWriter {\n\n        @Override\n        public void startArray() {\n\n        }\n\n        @Override\n        public void endArray() {\n\n        }\n\n        @Override",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 6,
+        "mainline_method": "addIndexField",
+        "target_file": "server/src/main/java/io/crate/execution/dml/TranslogIndexer.java",
+        "target_method": "addIndexField",
+        "start_line": 199,
+        "end_line": 199,
+        "code_snippet": "            case Map<?, ?> m -> {\n                for (var entry : m.entrySet()) {\n                    if (isEmpty(entry.getValue()) == false) {\n                        return false;\n                    }\n                }\n                return true;\n            }\n            default -> {\n                return false;\n            }\n        }\n    }\n\n    private static <T> T valueForInsert(DataType<T> valueType, Object value) {\n        // Mapping could have changed since the translog entry was written, so we need to sanitize any column\n        // leniently (use NULL on sanitization errors) to avoid failing the index operation.\n        return valueType.valueForInsert(valueType.sanitizeValueLenient(value));\n    }\n\n    private static void addIndexField(IndexDocumentBuilder docBuilder, List<String> targetFields, Object value) {\n        if (value == null) {\n            return;\n        }\n        if (value instanceof Iterable<?> it) {\n            for (Object val : it) {\n                if (val == null) {\n                    continue;\n                }\n                targetFields.forEach(field -> addIndexField(docBuilder, field, val));\n            }\n        } else {\n            targetFields.forEach(field -> addIndexField(docBuilder, field, value));\n        }\n    }\n\n    private static void addIndexField(IndexDocumentBuilder docBuilder, String field, Object value) {\n        docBuilder.addField(new Field(field, value.toString(), FulltextIndexer.FIELD_TYPE));\n    }\n\n}",
+        "anchor_confidence": "high",
+        "anchor_reason": "line_and_method_resolved",
+        "anchor_strategy": "deterministic_realign"
+      }
+    ]
+  },
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "reason": "llm_usage_not_collected_in_this_node"
+  }
+}

@@ -1,0 +1,28 @@
+patch_id=elasticsearch_41dae025
+project=elasticsearch
+mainline_commit=41dae025e7d68ecfbf91c3547219ec7d663ab364
+backport_commit=730b538d967f1b51fa22be03bbbaffe28c377446
+mode=full
+started_at=2026-04-06T02:54:20.190691
+----------------------------------------
+Running full workflow graph
+Completed node=phase_0_optimistic
+Workflow completed successfully
+
+[elasticsearch/elasticsearch_41dae025] Setting up repositories for mode=full...
+[elasticsearch/elasticsearch_41dae025] Running full workflow graph...
+Router: Running Phase 0.
+Phase 0 (Optimistic): Checking direct patch applicability...
+Phase 0: Experiment mode — checking out parent of 730b538d967f1b51fa22be03bbbaffe28c377446...
+Phase 0: Building baseline by applying developer backport test hunks only...
+  Validation: modules/data-streams/src/internalClusterTest/java/org/elasticsearch/datastreams/lifecycle/DataStreamLifecycleServiceIT.java - applying 3 hunk(s) one by one in bottom-to-top order: [805, 786, 104]
+  Validation: server/src/test/java/org/elasticsearch/action/admin/indices/rollover/TransportRolloverActionTests.java - applying 4 hunk(s) one by one in bottom-to-top order: [583, 47, 20, 11]
+    Agent 4: Executing elasticsearch helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/elasticsearch/run_tests.sh
+Phase 0: git apply --check SUCCEEDED. Attempting actual patch application and test run.
+    Agent 4: Executing elasticsearch helper build script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/elasticsearch/run_build.sh
+    Agent 4: Executing elasticsearch helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/elasticsearch/run_tests.sh
+Phase 0: Transition summary -> reason=Valid: Observed fail-to-pass and/or newly passing relevant tests with no regressions.; fail->pass(3): ['org.elasticsearch.action.admin.indices.rollover.TransportRolloverActionTests#testCheckBlockForDataStreamFailureStores', 'org.elasticsearch.action.admin.indices.rollover.TransportRolloverActionTests#testCheckBlockForDataStreams', 'org.elasticsearch.datastreams.lifecycle.DataStreamLifecycleServiceIT#testErrorRecordingOnRetention']; newly_passing(0): []; pass->fail(0): []
+Phase 0: Transition-based test validation passed. Fast-path success.
+Router: Phase 0 succeeded - taking fast-path exit.
+  Completed: phase_0_optimistic
+[elasticsearch/elasticsearch_41dae025] Full workflow completed!

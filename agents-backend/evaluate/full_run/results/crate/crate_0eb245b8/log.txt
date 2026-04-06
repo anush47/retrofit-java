@@ -1,0 +1,78 @@
+patch_id=crate_0eb245b8
+project=crate
+mainline_commit=0eb245b8c752ffaaa5a11ae1d02bfdd96298670f
+backport_commit=55aaacf8795c18ec41f12e7428155fbd10a179d8
+mode=full
+started_at=2026-04-06T00:59:56.917855
+----------------------------------------
+Running full workflow graph
+Completed node=phase_0_optimistic
+Completed node=context_analyzer
+Completed node=structural_locator
+Completed node=hunk_generator
+Completed node=validation
+Workflow completed successfully
+
+[crate/crate_0eb245b8] Setting up repositories for mode=full...
+[crate/crate_0eb245b8] Running full workflow graph...
+Router: Running Phase 0.
+Phase 0 (Optimistic): Checking direct patch applicability...
+Phase 0: Experiment mode — checking out parent of 55aaacf8795c18ec41f12e7428155fbd10a179d8...
+Phase 0: Building baseline by applying developer backport test hunks only...
+  Validation: server/src/test/java/io/crate/expression/scalar/HasDatabasePrivilegeFunctionTest.java - applying 1 hunk(s) one by one in bottom-to-top order: [65]
+  Validation: server/src/test/java/io/crate/expression/scalar/HasSchemaPrivilegeFunctionTest.java - applying 1 hunk(s) one by one in bottom-to-top order: [61]
+    Agent 4: Executing crate helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_tests.sh
+Phase 0: git apply --check FAILED. Escalating to full pipeline.
+  Hint: error: patch failed: server/src/main/java/io/crate/expression/scalar/HasDatabasePrivilegeFunction.java:30
+error: server/src/main/java/io/crate/expression/scalar/HasDatabasePrivilegeFunction.java: patc
+Router: Phase 0 failed - entering full 4-agent pipeline.
+  Completed: phase_0_optimistic
+Agent 1 (Context Analyzer): Deterministic blueprint generation...
+Agent 1: Complete. Files=2 hunks=4 (deterministic).
+Agent 1: Detected 2 hunk(s) with variants.
+  Completed: context_analyzer
+Agent 2 (Structural Locator): Starting target location mapping...
+  Agent 2: 2 code file(s), 0 test file(s)
+LLM Provider: azure, Model: gpt-4.1-mini, Temperature: 0
+  Agent 2: Found 4 hunk(s) in hunk_chain
+  Agent 2: Locating target for server/src/main/java/io/crate/expression/scalar/HasDatabasePrivilegeFunction.java (2 hunk(s))...
+Phase 1 (Git) Match Found: server/src/main/java/io/crate/expression/scalar/HasDatabasePrivilegeFunction.java
+  Agent 2: Git resolution found target: server/src/main/java/io/crate/expression/scalar/HasDatabasePrivilegeFunction.java
+  Agent 2: Mapped hunk 1 (<import>) to <import> at lines 31-31
+  Agent 2: Mapped hunk 2 (hunk_2) to None at lines 44-44
+  Agent 2: Locating target for server/src/main/java/io/crate/expression/scalar/HasSchemaPrivilegeFunction.java (2 hunk(s))...
+Phase 1 (Git) Match Found: server/src/main/java/io/crate/expression/scalar/HasSchemaPrivilegeFunction.java
+  Agent 2: Git resolution found target: server/src/main/java/io/crate/expression/scalar/HasSchemaPrivilegeFunction.java
+  Agent 2: Mapped hunk 1 (<import>) to <import> at lines 29-29
+  Agent 2: Mapped hunk 2 (hunk_2) to None at lines 43-43
+  Agent 2: Trace written to structural_locator_trace.md
+Agent 2: Complete. Mapped 2 file(s). Total hunk mappings: 4. ConsistencyMap has 0 rename(s).
+Router: complexity=STRUCTURAL -> skip planning, go hunk_generator.
+  Completed: structural_locator
+Agent 3 (File Editor): Starting direct file-edit workflow...
+LLM Provider: azure, Model: gpt-4.1-mini, Temperature: 0
+  Agent 3: Built 2 deterministic fallback edit(s) for server/src/main/java/io/crate/expression/scalar/HasDatabasePrivilegeFunction.java.
+  Agent 3: Processing 2 edit(s) for server/src/main/java/io/crate/expression/scalar/HasDatabasePrivilegeFunction.java (op=MODIFIED)
+    Agent 3: Classified server/src/main/java/io/crate/expression/scalar/HasDatabasePrivilegeFunction.java as TYPE_II (deterministic path)
+    Agent 3: base_types=['TYPE_II'] execution_types=['TYPE_II']
+    Agent 3: Developer patch fast path for server/src/main/java/io/crate/expression/scalar/HasDatabasePrivilegeFunction.java (developer_fast_path_ok)
+  Agent 3: Built 2 deterministic fallback edit(s) for server/src/main/java/io/crate/expression/scalar/HasSchemaPrivilegeFunction.java.
+  Agent 3: Processing 2 edit(s) for server/src/main/java/io/crate/expression/scalar/HasSchemaPrivilegeFunction.java (op=MODIFIED)
+    Agent 3: Classified server/src/main/java/io/crate/expression/scalar/HasSchemaPrivilegeFunction.java as TYPE_II (deterministic path)
+    Agent 3: base_types=['TYPE_II'] execution_types=['TYPE_II']
+    Agent 3: Developer patch fast path for server/src/main/java/io/crate/expression/scalar/HasSchemaPrivilegeFunction.java (developer_fast_path_ok)
+  Agent 3 (File Editor): Done. 2 file(s) adapted, 2 edit record(s).
+  Completed: hunk_generator
+Agent 4 (Validation): Starting 'Prove Red, Make Green' loop...
+  Agent 4: Evaluation full-workflow mode (apply -> build -> relevant tests)...
+  Validation: server/src/main/java/io/crate/expression/scalar/HasDatabasePrivilegeFunction.java - applying 1 hunk(s) one by one in bottom-to-top order: [1]
+  Validation: server/src/main/java/io/crate/expression/scalar/HasSchemaPrivilegeFunction.java - applying 1 hunk(s) one by one in bottom-to-top order: [1]
+  Validation: docs/appendices/release-notes/5.6.4.rst - applying 1 hunk(s) one by one in bottom-to-top order: [47]
+  Validation: server/src/test/java/io/crate/expression/scalar/HasDatabasePrivilegeFunctionTest.java - applying 1 hunk(s) one by one in bottom-to-top order: [65]
+  Validation: server/src/test/java/io/crate/expression/scalar/HasSchemaPrivilegeFunctionTest.java - applying 1 hunk(s) one by one in bottom-to-top order: [61]
+    Agent 4: Executing crate helper build script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_build.sh
+    Agent 4: Executing crate helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_tests.sh
+Trace saved to validation_trace.md
+Router: Validation PASSED after 1 attempt(s). Done.
+  Completed: validation
+[crate/crate_0eb245b8] Full workflow completed!

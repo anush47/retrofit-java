@@ -1,0 +1,123 @@
+# Phase 0 Inputs
+
+- Mainline commit: 06841f04e0bd92beb081c2d101a8ce96d0ca903e
+- Backport commit: c48c2b7e1cf3a33aa022a55572bd3a64b67c533c
+- Java-only files for agentic phases: 1
+- Developer auxiliary hunks (test + non-Java): 3
+
+## Commit Pair Consistency
+- Pair mismatch: False
+- Reason: scope_overlap_ok
+- Mainline Java files: ['server/src/main/java/io/crate/execution/dml/Indexer.java']
+- Developer Java files: ['server/src/main/java/io/crate/execution/dml/Indexer.java']
+- Overlap Java files: ['server/src/main/java/io/crate/execution/dml/Indexer.java']
+- Overlap ratio (mainline): 1.0
+
+## Mainline Patch
+```diff
+From 06841f04e0bd92beb081c2d101a8ce96d0ca903e Mon Sep 17 00:00:00 2001
+From: Marios Trivyzas <matriv@gmail.com>
+Date: Fri, 23 Aug 2024 17:21:58 +0300
+Subject: [PATCH] Fix issue with empty array and dynamic col policy
+
+When an empty array (`[]`) was attempted to be added as a
+new column dynamically, together with 1 or more other cols
+(to be also added dynamically), then the schema of the table got
+updated with the rest of the non-array new columns, but no row
+was inserted.
+
+That was because the value indexer was completely removed for
+the column with the empty array, while the relevant value (`[]`),
+was not removed from the item to be indexed.
+
+To fix this, don't remove the value indexer, but just use the
+`DynamicIndexer` which was already selected for that column (being
+unable to guess the inner type of the array).
+
+Fixes: #16470
+---
+ docs/appendices/release-notes/5.8.2.rst       |  8 ++++++
+ .../java/io/crate/execution/dml/Indexer.java  |  7 +++--
+ .../io/crate/execution/dml/IndexerTest.java   | 27 +++++++++++++++++++
+ 3 files changed, 38 insertions(+), 4 deletions(-)
+
+diff --git a/docs/appendices/release-notes/5.8.2.rst b/docs/appendices/release-notes/5.8.2.rst
+index facf32b116..ed9644369d 100644
+--- a/docs/appendices/release-notes/5.8.2.rst
++++ b/docs/appendices/release-notes/5.8.2.rst
+@@ -47,6 +47,14 @@ See the :ref:`version_5.8.0` release notes for a full list of changes in the
+ Fixes
+ =====
+ 
++- Fixed an issue that would cause rows to not be inserted, on a table with
++  :ref:`dynamic column policy <sql-create-table-column-policy>`, when the row
++  contained an empty array (``[]``) for a new column (to be added dynamically),
++  together with one or more new columns (also to be added dynamically), e.g.::
++
++    CREATE TABLE t (id TEXT PRIMARY KEY) WITH (column_policy = 'dynamic');
++    INSERT INTO t (id, a ,b) VALUES ('abc',[],'Text');
++
+ - Fixed an issue that could lead to a ``SQLParseException[Couldn't create
+   executionContexts from ...`` error if using ``INSERT INTO`` with a ``SELECT``
+   query containing a trailing ``ORDER BY``.
+diff --git a/server/src/main/java/io/crate/execution/dml/Indexer.java b/server/src/main/java/io/crate/execution/dml/Indexer.java
+index a7b5af5b8d..f9def859c4 100644
+--- a/server/src/main/java/io/crate/execution/dml/Indexer.java
++++ b/server/src/main/java/io/crate/execution/dml/Indexer.java
+@@ -584,10 +584,9 @@ public class Indexer {
+                 // the reference may be invalid
+                 Reference newRef = getRef.apply(oldRef.column());
+                 if (newRef == null) {
+-                    // column was dropped or new column is invalid
+-                    it.remove();
+-                    valueIndexers.remove(idx);
+-                    // don't increase idx, since we removed the current element
++                    // column can be of an undetermined type, e.g. `[]` (array with undefined inner type)
++                    valueIndexers.get(idx).updateTargets(getRef);
++                    idx++;
+                     continue;
+                 }
+                 if (oldRef.equals(newRef) == false) {
+diff --git a/server/src/test/java/io/crate/execution/dml/IndexerTest.java b/server/src/test/java/io/crate/execution/dml/IndexerTest.java
+index 4ed4a06ee0..b81dec0ef7 100644
+--- a/server/src/test/java/io/crate/execution/dml/IndexerTest.java
++++ b/server/src/test/java/io/crate/execution/dml/IndexerTest.java
+@@ -1176,6 +1176,33 @@ public class IndexerTest extends CrateDummyClusterServiceUnitTest {
+             .hasMessageContainingAll("Failed CONSTRAINT", "CHECK (\"obj\"['x'] > 10) for values: [{x=5}]");
+     }
+ 
++    @Test
++    public void test_empty_arrays_together_with_another_field_added_as_new_cols_with_dynamic_policy() throws Exception {
++        SQLExecutor e = SQLExecutor.of(clusterService)
++            .addTable("create table tbl (i int) with (column_policy='dynamic')");
++        DocTableInfo table = e.resolveTableInfo("tbl");
++
++        var indexer = getIndexer(e, "tbl", "i", "empty_arr", "a");
++        indexer.updateTargets(table::getReference);
++        IndexItem item = item(1, List.of(), "foo");
++        List<Reference> newColumns = indexer.collectSchemaUpdates(item);
++        assertThat(newColumns).satisfiesExactly(
++            x -> assertThat(x.column()).isEqualTo(ColumnIdent.of("a"))
++        );
++        ParsedDocument doc = indexer.index(item);
++        assertThat(doc.source().utf8ToString()).isEqualToIgnoringWhitespace(
++            """
++            {"1":1,"_u_empty_arr":[],"_u_a":"foo"}
++            """
++        );
++        // prefix is stripped on non _raw lookups
++        assertThat(source(doc, table)).isEqualToIgnoringWhitespace(
++            """
++            {"a":"foo","i":1,"empty_arr":[]}
++            """
++        );
++    }
++
+     @Test
+     public void test_empty_arrays_are_prefixed_as_unknown() throws Exception {
+         SQLExecutor e = SQLExecutor.of(clusterService)
+-- 
+2.43.0
+
+
+```

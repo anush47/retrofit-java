@@ -1,0 +1,26 @@
+{
+  "semantic_blueprint": {
+    "root_cause_hypothesis": "Deterministic inference: target branch diverges from mainline; adapt hunks with exact target context.",
+    "fix_logic": "Apply each source hunk with target-verified context and symbol consistency while preserving behavior.",
+    "dependent_apis": [],
+    "patch_intent_summary": "Backport patch behavior to target branch with minimal, context-correct edits.",
+    "hunk_chain": [
+      {
+        "hunk_index": 1,
+        "file": "server/src/main/java/io/crate/analyze/where/EqualityExtractor.java",
+        "summary": "Modifies logic (+1/-1 lines).",
+        "role": "guard",
+        "connects_to_next": "",
+        "global_index": 1
+      }
+    ]
+  },
+  "patch_diff": "From 86114f2ec05fea5c5ab56a9cfbe07c6cab131fb4 Mon Sep 17 00:00:00 2001\nFrom: Mathias Fussenegger <f.mathias@zignar.net>\nDate: Mon, 13 Jan 2025 12:28:09 +0100\nSubject: [PATCH] Fix NPE in EqualityExtractor for pk/non-pk mixes\n\nA query like `WHERE (recorddesc ='user documents' OR recordid=110 ) AND\n(...)`\ncaused a NPE because `visitFunction` returned a `NULL` if first seeing a\nnon-pk followed by a PK.\n---\n docs/appendices/release-notes/5.9.7.rst                  | 4 ++++\n .../java/io/crate/analyze/where/EqualityExtractor.java   | 2 +-\n .../io/crate/analyze/where/EqualityExtractorTest.java    | 9 +++++++++\n 3 files changed, 14 insertions(+), 1 deletion(-)\n\ndiff --git a/docs/appendices/release-notes/5.9.7.rst b/docs/appendices/release-notes/5.9.7.rst\nindex de3d645921..6dca320174 100644\n--- a/docs/appendices/release-notes/5.9.7.rst\n+++ b/docs/appendices/release-notes/5.9.7.rst\n@@ -47,6 +47,10 @@ See the :ref:`version_5.9.0` release notes for a full list of changes in the\n Fixes\n =====\n \n+- Fixed an issue that could cause queries to run into a ``NullPointerException``\n+  if having a query condition like ``(nonPrimaryKey = ? AND primaryKeyPart =\n+  ?)``\n+\n - Fixed an issue that caused ``FILTER`` clauses on non-aggregate window\n   functions to be ignored instead of raising an unsupported error.\n \ndiff --git a/server/src/main/java/io/crate/analyze/where/EqualityExtractor.java b/server/src/main/java/io/crate/analyze/where/EqualityExtractor.java\nindex e78038eaf2..04c9c3ba57 100644\n--- a/server/src/main/java/io/crate/analyze/where/EqualityExtractor.java\n+++ b/server/src/main/java/io/crate/analyze/where/EqualityExtractor.java\n@@ -485,7 +485,7 @@ public class EqualityExtractor {\n                     proxyBelowPost = ctx.proxyBelow || proxyBelowPost;\n                 }\n                 if ((ctx.foundPKColumnUnderOr && ctx.foundNonPKColumnUnderOr) || ctx.foundPKColumnUnderNot) {\n-                    return null;\n+                    return Literal.BOOLEAN_FALSE;\n                 }\n                 ctx.isUnderNotPredicate = prevIsUnderNotPredicate;\n                 ctx.proxyBelow = proxyBelowPost;\ndiff --git a/server/src/test/java/io/crate/analyze/where/EqualityExtractorTest.java b/server/src/test/java/io/crate/analyze/where/EqualityExtractorTest.java\nindex a12c9d0157..d43a37e5e5 100644\n--- a/server/src/test/java/io/crate/analyze/where/EqualityExtractorTest.java\n+++ b/server/src/test/java/io/crate/analyze/where/EqualityExtractorTest.java\n@@ -477,6 +477,15 @@ public class EqualityExtractorTest extends CrateDummyClusterServiceUnitTest {\n             .hasMessage(\"Job killed. statement_timeout (10ms)\");\n     }\n \n+    @Test\n+    public void test_no_exact_result_on_partial_match() throws Exception {\n+        // https://github.com/crate/crate/issues/17197\n+        // It is important that the query first hits a non-pk column\n+        Symbol query = query(\"(i = 1 or x = 2) and (i = 2 and a = 'foo')\");\n+        List<List<Symbol>> analyzeExact = analyzeExact(query, List.of(ColumnIdent.of(\"x\")));\n+        assertThat(analyzeExact).isNull();\n+    }\n+\n     public static class TestToken extends Session.TimeoutToken {\n \n         private final int maxChecks;\n-- \n2.43.0\n\n",
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "reason": "deterministic_no_llm"
+  }
+}

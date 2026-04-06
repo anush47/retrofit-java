@@ -1,0 +1,34 @@
+{
+  "semantic_blueprint": {
+    "root_cause_hypothesis": "Deterministic inference: target branch diverges from mainline; adapt hunks with exact target context.",
+    "fix_logic": "Apply each source hunk with target-verified context and symbol consistency while preserving behavior.",
+    "dependent_apis": [],
+    "patch_intent_summary": "Backport patch behavior to target branch with minimal, context-correct edits.",
+    "hunk_chain": [
+      {
+        "hunk_index": 1,
+        "file": "server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java",
+        "summary": "Adds logic (+2 lines).",
+        "role": "guard",
+        "connects_to_next": "",
+        "global_index": 1
+      },
+      {
+        "hunk_index": 1,
+        "file": "server/src/main/java/io/crate/session/Session.java",
+        "summary": "Modifies logic (+1/-1 lines).",
+        "role": "core_fix",
+        "connects_to_next": "",
+        "global_index": 2
+      }
+    ]
+  },
+  "patch_diff": "From 9cdd94e1c1bd2b594bb9546aa86188c61cdd695a Mon Sep 17 00:00:00 2001\nFrom: jeeminso <jeeminso@gmail.com>\nDate: Thu, 20 Feb 2025 16:48:29 +0900\nSubject: [PATCH] Fix NPE due to JobContext.stmt incorrectly set to null\n\n---\n docs/appendices/release-notes/5.10.2.rst             |  3 +++\n .../protocols/postgres/PostgresWireProtocol.java     |  2 ++\n server/src/main/java/io/crate/session/Session.java   |  2 +-\n .../src/test/java/io/crate/session/SessionTest.java  | 12 ++++++++++++\n 4 files changed, 18 insertions(+), 1 deletion(-)\n\ndiff --git a/docs/appendices/release-notes/5.10.2.rst b/docs/appendices/release-notes/5.10.2.rst\nindex e582a0c0cc..a57deb0641 100644\n--- a/docs/appendices/release-notes/5.10.2.rst\n+++ b/docs/appendices/release-notes/5.10.2.rst\n@@ -59,3 +59,6 @@ Fixes\n     DELETE FROM t WHERE day < now() - INTERVAL '3 days';\n \n   where 'day' is ``TIMESTAMP`` type that is also the ``PARTITIONED BY`` column.\n+\n+- Fixed an issue that caused a ``NullPointerException`` when binding to a\n+  non-existing prepared statement via PostgreSQL wire protocol.\ndiff --git a/server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java b/server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java\nindex 4c40be2f5a..4286060220 100644\n--- a/server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java\n+++ b/server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java\n@@ -602,6 +602,8 @@ public class PostgresWireProtocol {\n     private void handleBindMessage(ByteBuf buffer, Channel channel) {\n         String portalName = readCString(buffer);\n         String statementName = readCString(buffer);\n+        assert portalName != null : \"portalName cannot be null\";\n+        assert statementName != null : \"statementName cannot be null\";\n \n         FormatCodes.FormatCode[] formatCodes = FormatCodes.fromBuffer(buffer);\n \ndiff --git a/server/src/main/java/io/crate/session/Session.java b/server/src/main/java/io/crate/session/Session.java\nindex fd5640333b..74844d5e60 100644\n--- a/server/src/main/java/io/crate/session/Session.java\n+++ b/server/src/main/java/io/crate/session/Session.java\n@@ -393,7 +393,7 @@ public class Session implements AutoCloseable {\n         try {\n             preparedStmt = getSafeStmt(statementName);\n         } catch (Throwable t) {\n-            jobsLogs.logPreExecutionFailure(UUIDs.dirtyUUID(), null, SQLExceptions.messageOf(t), sessionSettings.sessionUser());\n+            jobsLogs.logPreExecutionFailure(UUIDs.dirtyUUID(), statementName, SQLExceptions.messageOf(t), sessionSettings.sessionUser());\n             throw t;\n         }\n \ndiff --git a/server/src/test/java/io/crate/session/SessionTest.java b/server/src/test/java/io/crate/session/SessionTest.java\nindex b9de91dfe6..f17dfefa70 100644\n--- a/server/src/test/java/io/crate/session/SessionTest.java\n+++ b/server/src/test/java/io/crate/session/SessionTest.java\n@@ -434,4 +434,16 @@ public class SessionTest extends CrateDummyClusterServiceUnitTest {\n         }\n     }\n \n+    @Test\n+    public void test_binding_with_removed_prepared_statement_throws() {\n+        SQLExecutor sqlExecutor = SQLExecutor.builder(clusterService).build();\n+        try (Session session = sqlExecutor.createSession()) {\n+            session.parse(\"\", \"SELECT 1\", Collections.emptyList());\n+            session.close((byte) 'S', \"\");\n+            assertThatThrownBy(() -> session.bind(\"\", \"\", List.of(), null))\n+                .isExactlyInstanceOf(IllegalArgumentException.class)\n+                .hasMessage(\"No statement found with name: \");\n+        }\n+    }\n+\n }\n-- \n2.43.0\n\n",
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "reason": "deterministic_no_llm"
+  }
+}

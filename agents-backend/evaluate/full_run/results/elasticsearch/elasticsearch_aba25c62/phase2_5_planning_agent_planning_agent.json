@@ -1,0 +1,464 @@
+{
+  "hunk_generation_plan": {
+    "server/src/main/java/org/elasticsearch/cluster/metadata/IndexMetadata.java": [
+      {
+        "hunk_index": 0,
+        "target_file": "server/src/main/java/org/elasticsearch/cluster/metadata/IndexMetadata.java",
+        "operation_index": 0,
+        "edit_type": "insert_before",
+        "old_string": "        public long version() {",
+        "new_string": "        public Builder putRolloverInfos(Map<String, RolloverInfo> rolloverInfos) {\n            this.rolloverInfos.clear();\n            this.rolloverInfos.putAllFromMap(rolloverInfos);\n            return this;\n        }\n\n        public long version() {",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_insert_before",
+        "surround_before_3": [
+          "            return this;",
+          "        }",
+          ""
+        ],
+        "surround_after_3": [
+          "            return this.version;",
+          "        }",
+          ""
+        ],
+        "adaptation_type": "TYPE_II",
+        "base_adaptation_type": "TYPE_II",
+        "execution_type": "TYPE_II",
+        "location_match": false,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "public Builder putRolloverInfos(Map<String, RolloverInfo> rolloverInfos) {",
+          "this.rolloverInfos.clear();",
+          "this.rolloverInfos.putAllFromMap(rolloverInfos);"
+        ],
+        "required_symbols": [
+          "putRolloverInfos"
+        ],
+        "protected_symbols": [
+          "putRolloverInfos"
+        ],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 122,
+          "target_declared_methods_count": 122,
+          "matched_symbols_before": [],
+          "missing_symbols_before": [
+            "putRolloverInfos"
+          ]
+        }
+      }
+    ],
+    "x-pack/plugin/core/src/main/java/org/elasticsearch/xpack/core/security/user/InternalUsers.java": [
+      {
+        "hunk_index": 0,
+        "target_file": "x-pack/plugin/core/src/main/java/org/elasticsearch/xpack/core/security/user/InternalUsers.java",
+        "operation_index": 0,
+        "edit_type": "insert_before",
+        "old_string": "                        TransportAddIndexBlockAction.TYPE.name(),",
+        "new_string": "                        \"indices:admin/index/copy_lifecycle_index_metadata\",\n                        TransportAddIndexBlockAction.TYPE.name(),",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_insert_before",
+        "surround_before_3": [
+          "                        TransportDeleteIndexAction.TYPE.name(),",
+          "                        \"indices:admin/data_stream/index/reindex\",",
+          "                        \"indices:admin/index/create_from_source\","
+        ],
+        "surround_after_3": [
+          "                        OpenIndexAction.NAME,",
+          "                        TransportCloseIndexAction.NAME,",
+          "                        TransportCreateIndexAction.TYPE.name(),"
+        ],
+        "adaptation_type": "TYPE_I",
+        "base_adaptation_type": "TYPE_I",
+        "execution_type": "TYPE_I",
+        "location_match": true,
+        "surrounding_match": true,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "\"indices:admin/index/copy_lifecycle_index_metadata\","
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 2,
+          "target_declared_methods_count": 2,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      }
+    ],
+    "x-pack/plugin/migrate/src/main/java/org/elasticsearch/xpack/migrate/MigratePlugin.java": [
+      {
+        "hunk_index": 0,
+        "target_file": "x-pack/plugin/migrate/src/main/java/org/elasticsearch/xpack/migrate/MigratePlugin.java",
+        "operation_index": 0,
+        "edit_type": "insert_before",
+        "old_string": "import org.elasticsearch.xpack.migrate.action.CreateIndexFromSourceAction;",
+        "new_string": "import org.elasticsearch.xpack.migrate.action.CopyLifecycleIndexMetadataAction;\nimport org.elasticsearch.xpack.migrate.action.CopyLifecycleIndexMetadataTransportAction;\nimport org.elasticsearch.xpack.migrate.action.CreateIndexFromSourceAction;",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_insert_before",
+        "surround_before_3": [
+          "import org.elasticsearch.xcontent.ParseField;",
+          "import org.elasticsearch.xpack.migrate.action.CancelReindexDataStreamAction;",
+          "import org.elasticsearch.xpack.migrate.action.CancelReindexDataStreamTransportAction;"
+        ],
+        "surround_after_3": [
+          "import org.elasticsearch.xpack.migrate.action.CreateIndexFromSourceTransportAction;",
+          "import org.elasticsearch.xpack.migrate.action.GetMigrationReindexStatusAction;",
+          "import org.elasticsearch.xpack.migrate.action.GetMigrationReindexStatusTransportAction;"
+        ],
+        "adaptation_type": "TYPE_I",
+        "base_adaptation_type": "TYPE_I",
+        "execution_type": "TYPE_I",
+        "location_match": true,
+        "surrounding_match": true,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 5,
+          "target_declared_methods_count": 5,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 1,
+        "target_file": "x-pack/plugin/migrate/src/main/java/org/elasticsearch/xpack/migrate/MigratePlugin.java",
+        "operation_index": 0,
+        "edit_type": "insert_before",
+        "old_string": "        return actions;",
+        "new_string": "        actions.add(new ActionHandler<>(CopyLifecycleIndexMetadataAction.INSTANCE, CopyLifecycleIndexMetadataTransportAction.class));\n        return actions;",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_insert_before",
+        "surround_before_3": [
+          "        actions.add(new ActionHandler<>(CancelReindexDataStreamAction.INSTANCE, CancelReindexDataStreamTransportAction.class));",
+          "        actions.add(new ActionHandler<>(ReindexDataStreamIndexAction.INSTANCE, ReindexDataStreamIndexTransportAction.class));",
+          "        actions.add(new ActionHandler<>(CreateIndexFromSourceAction.INSTANCE, CreateIndexFromSourceTransportAction.class));"
+        ],
+        "surround_after_3": [
+          "    }",
+          "",
+          "    @Override"
+        ],
+        "adaptation_type": "TYPE_I",
+        "base_adaptation_type": "TYPE_I",
+        "execution_type": "TYPE_I",
+        "location_match": true,
+        "surrounding_match": true,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "actions.add(new ActionHandler<>(CopyLifecycleIndexMetadataAction.INSTANCE, CopyLifecycleIndexMetadataTransportAction.class));"
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 5,
+          "target_declared_methods_count": 5,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      }
+    ],
+    "x-pack/plugin/migrate/src/main/java/org/elasticsearch/xpack/migrate/action/CopyLifecycleIndexMetadataAction.java": [
+      {
+        "hunk_index": 0,
+        "target_file": "x-pack/plugin/migrate/src/main/java/org/elasticsearch/xpack/migrate/action/CreateIndexFromSourceAction.java",
+        "operation_index": 0,
+        "edit_type": "replace",
+        "old_string": "",
+        "new_string": "/*\n * Copyright Elasticsearch B.V. and/or licensed to Elasticsearch B.V. under one\n * or more contributor license agreements. Licensed under the Elastic License\n * 2.0; you may not use this file except in compliance with the Elastic License\n * 2.0.\n */\npackage org.elasticsearch.xpack.migrate.action;\n\nimport org.elasticsearch.action.ActionRequestValidationException;\nimport org.elasticsearch.action.ActionType;\nimport org.elasticsearch.action.IndicesRequest;\nimport org.elasticsearch.action.support.IndicesOptions;\nimport org.elasticsearch.action.support.master.AcknowledgedRequest;\nimport org.elasticsearch.action.support.master.AcknowledgedResponse;\nimport org.elasticsearch.common.io.stream.StreamInput;\nimport org.elasticsearch.common.io.stream.StreamOutput;\nimport org.elasticsearch.core.TimeValue;\nimport org.elasticsearch.tasks.CancellableTask;\nimport org.elasticsearch.tasks.Task;\nimport org.elasticsearch.tasks.TaskId;\n\nimport java.io.IOException;\nimport java.util.Map;\nimport java.util.Objects;\n\npublic class CopyLifecycleIndexMetadataAction extends ActionType<AcknowledgedResponse> {\n\n    public static final String NAME = \"indices:admin/index/copy_lifecycle_index_metadata\";\n\n    public static final ActionType<AcknowledgedResponse> INSTANCE = new CopyLifecycleIndexMetadataAction();\n\n    private CopyLifecycleIndexMetadataAction() {\n        super(NAME);\n    }\n\n    public static class Request extends AcknowledgedRequest<Request> implements IndicesRequest {\n        private final String sourceIndex;\n        private final String destIndex;\n\n        public Request(TimeValue masterNodeTimeout, String sourceIndex, String destIndex) {\n            super(masterNodeTimeout, DEFAULT_ACK_TIMEOUT);\n            this.sourceIndex = sourceIndex;\n            this.destIndex = destIndex;\n        }\n\n        public Request(StreamInput in) throws IOException {\n            super(in);\n            this.sourceIndex = in.readString();\n            this.destIndex = in.readString();\n        }\n\n        @Override\n        public void writeTo(StreamOutput out) throws IOException {\n            super.writeTo(out);\n            out.writeString(sourceIndex);\n            out.writeString(destIndex);\n        }\n\n        @Override\n        public ActionRequestValidationException validate() {\n            return null;\n        }\n\n        public String sourceIndex() {\n            return sourceIndex;\n        }\n\n        public String destIndex() {\n            return destIndex;\n        }\n\n        @Override\n        public boolean equals(Object o) {\n            if (this == o) return true;\n            if (o == null || getClass() != o.getClass()) return false;\n            Request request = (Request) o;\n            return Objects.equals(sourceIndex, request.sourceIndex) && Objects.equals(destIndex, request.destIndex);\n        }\n\n        @Override\n        public int hashCode() {\n            return Objects.hash(sourceIndex, destIndex);\n        }\n\n        @Override\n        public Task createTask(long id, String type, String action, TaskId parentTaskId, Map<String, String> headers) {\n            return new CancellableTask(id, type, action, getDescription(), parentTaskId, headers);\n        }\n\n        @Override\n        public String getDescription() {\n            return \"copying lifecycle metadata for index \" + sourceIndex;\n        }\n\n        @Override\n        public String[] indices() {\n            return new String[] { sourceIndex, destIndex };\n        }\n\n        @Override\n        public IndicesOptions indicesOptions() {\n            return IndicesOptions.strictSingleIndexNoExpandForbidClosed();\n        }\n    }\n}",
+        "verified": false,
+        "verification_result": "sanitize_old_not_found:empty",
+        "notes": "insert entire new class at start of target file; location differs but surrounding comments match|sanitize_old_not_found:empty",
+        "surround_before_3": [],
+        "surround_after_3": [
+          " * Copyright Elasticsearch B.V. and/or licensed to Elasticsearch B.V. under one",
+          " * or more contributor license agreements. Licensed under the Elastic License",
+          " * 2.0; you may not use this file except in compliance with the Elastic License"
+        ],
+        "adaptation_type": "TYPE_II",
+        "base_adaptation_type": "TYPE_II",
+        "execution_type": "TYPE_II",
+        "location_match": false,
+        "surrounding_match": true,
+        "blockers": [],
+        "namespace_only_possible": true,
+        "namespace_changes": [],
+        "required_invariants": [
+          "public class CopyLifecycleIndexMetadataAction extends ActionType<AcknowledgedResponse> {",
+          "public static final String NAME = \"indices:admin/index/copy_lifecycle_index_metadata\";",
+          "public static final ActionType<AcknowledgedResponse> INSTANCE = new CopyLifecycleIndexMetadataAction();",
+          "private CopyLifecycleIndexMetadataAction() {",
+          "public static class Request extends AcknowledgedRequest<Request> implements IndicesRequest {",
+          "private final String sourceIndex;",
+          "private final String destIndex;",
+          "public Request(TimeValue masterNodeTimeout, String sourceIndex, String destIndex) {"
+        ],
+        "required_symbols": [
+          "createTask",
+          "destIndex",
+          "equals",
+          "getDescription",
+          "hashCode",
+          "indices",
+          "indicesOptions",
+          "sourceIndex",
+          "validate",
+          "writeTo"
+        ],
+        "protected_symbols": [
+          "createTask",
+          "destIndex",
+          "equals",
+          "getDescription",
+          "hashCode",
+          "indices",
+          "indicesOptions",
+          "sourceIndex",
+          "validate",
+          "writeTo"
+        ],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 10,
+          "target_declared_methods_count": 15,
+          "matched_symbols_before": [
+            "createTask",
+            "destIndex",
+            "equals",
+            "getDescription",
+            "hashCode",
+            "indices",
+            "indicesOptions",
+            "sourceIndex",
+            "validate",
+            "writeTo"
+          ],
+          "missing_symbols_before": []
+        }
+      }
+    ],
+    "x-pack/plugin/migrate/src/main/java/org/elasticsearch/xpack/migrate/action/CopyLifecycleIndexMetadataTransportAction.java": [
+      {
+        "hunk_index": 0,
+        "target_file": "x-pack/plugin/ml/src/main/java/org/elasticsearch/xpack/ml/action/TransportUpdateModelSnapshotAction.java",
+        "operation_index": 0,
+        "edit_type": "replace",
+        "old_string": "",
+        "new_string": "/*\n * Copyright Elasticsearch B.V. and/or licensed to Elasticsearch B.V. under one\n * or more contributor license agreements. Licensed under the Elastic License\n * 2.0; you may not use this file except in compliance with the Elastic License\n * 2.0.\n */\n\npackage org.elasticsearch.xpack.migrate.action;\n\nimport org.apache.logging.log4j.LogManager;\nimport org.apache.logging.log4j.Logger;\nimport org.elasticsearch.action.ActionListener;\nimport org.elasticsearch.action.support.ActionFilters;\nimport org.elasticsearch.action.support.master.AcknowledgedResponse;\nimport org.elasticsearch.action.support.master.TransportMasterNodeAction;\nimport org.elasticsearch.cluster.AckedBatchedClusterStateUpdateTask;\nimport org.elasticsearch.cluster.ClusterState;\nimport org.elasticsearch.cluster.ClusterStateAckListener;\nimport org.elasticsearch.cluster.ClusterStateTaskExecutor;\nimport org.elasticsearch.cluster.SimpleBatchedAckListenerTaskExecutor;\nimport org.elasticsearch.cluster.block.ClusterBlockException;\nimport org.elasticsearch.cluster.block.ClusterBlockLevel;\nimport org.elasticsearch.cluster.metadata.IndexMetadata;\nimport org.elasticsearch.cluster.metadata.LifecycleExecutionState;\nimport org.elasticsearch.cluster.metadata.Metadata;\nimport org.elasticsearch.cluster.service.ClusterService;\nimport org.elasticsearch.cluster.service.MasterServiceTaskQueue;\nimport org.elasticsearch.common.Priority;\nimport org.elasticsearch.common.util.concurrent.EsExecutors;\nimport org.elasticsearch.core.TimeValue;\nimport org.elasticsearch.core.Tuple;\nimport org.elasticsearch.index.IndexNotFoundException;\nimport org.elasticsearch.injection.guice.Inject;\nimport org.elasticsearch.tasks.Task;\nimport org.elasticsearch.threadpool.ThreadPool;\nimport org.elasticsearch.transport.TransportService;\n\nimport java.util.HashMap;\n\npublic class CopyLifecycleIndexMetadataTransportAction extends TransportMasterNodeAction<\n    CopyLifecycleIndexMetadataAction.Request,\n    AcknowledgedResponse> {\n    private static final Logger logger = LogManager.getLogger(CopyLifecycleIndexMetadataTransportAction.class);\n    private final ClusterStateTaskExecutor<UpdateIndexMetadataTask> executor;\n    private final MasterServiceTaskQueue<UpdateIndexMetadataTask> taskQueue;\n\n    @Inject\n    public CopyLifecycleIndexMetadataTransportAction(\n        TransportService transportService,\n        ClusterService clusterService,\n        ThreadPool threadPool,\n        ActionFilters actionFilters\n    ) {\n        super(\n            CopyLifecycleIndexMetadataAction.NAME,\n            transportService,\n            clusterService,\n            threadPool,\n            actionFilters,\n            CopyLifecycleIndexMetadataAction.Request::new,\n            AcknowledgedResponse::readFrom,\n            EsExecutors.DIRECT_EXECUTOR_SERVICE\n        );\n        this.executor = new SimpleBatchedAckListenerTaskExecutor<>() {\n            @Override\n            public Tuple<ClusterState, ClusterStateAckListener> executeTask(UpdateIndexMetadataTask task, ClusterState clusterState) {\n                return new Tuple<>(applyUpdate(clusterState, task), task);\n            }\n        };\n        this.taskQueue = clusterService.createTaskQueue(\"migrate-copy-index-metadata\", Priority.NORMAL, this.executor);\n    }\n\n    @Override\n    protected void masterOperation(\n        Task task,\n        CopyLifecycleIndexMetadataAction.Request request,\n        ClusterState state,\n        ActionListener<AcknowledgedResponse> listener\n    ) {\n        taskQueue.submitTask(\n            \"migrate-copy-index-metadata\",\n            new UpdateIndexMetadataTask(request.sourceIndex(), request.destIndex(), request.ackTimeout(), listener),\n            request.masterNodeTimeout()\n        );\n    }\n\n    @Override\n    protected ClusterBlockException checkBlock(CopyLifecycleIndexMetadataAction.Request request, ClusterState state) {\n        return state.blocks().globalBlockedException(ClusterBlockLevel.METADATA_WRITE);\n    }\n\n    private static ClusterState applyUpdate(ClusterState state, UpdateIndexMetadataTask updateTask) {\n\n        IndexMetadata sourceMetadata = state.metadata().index(updateTask.sourceIndex);\n        if (sourceMetadata == null) {\n            throw new IndexNotFoundException(updateTask.sourceIndex);\n        }\n        IndexMetadata destMetadata = state.metadata().index(updateTask.destIndex);\n        if (destMetadata == null) {\n            throw new IndexNotFoundException(updateTask.destIndex);\n        }\n\n        IndexMetadata.Builder newDestMetadata = IndexMetadata.builder(destMetadata);\n\n        var sourceILM = sourceMetadata.getCustomData(LifecycleExecutionState.ILM_CUSTOM_METADATA_KEY);\n        if (sourceILM != null) {\n            newDestMetadata.putCustom(LifecycleExecutionState.ILM_CUSTOM_METADATA_KEY, sourceILM);\n        }\n\n        newDestMetadata.putRolloverInfos(sourceMetadata.getRolloverInfos())\n            // creation date is required for ILM to function\n            .creationDate(sourceMetadata.getCreationDate())\n            // creation date updates settings so must increment settings version\n            .settingsVersion(destMetadata.getSettingsVersion() + 1);\n\n        var indices = new HashMap<>(state.metadata().indices());\n        indices.put(updateTask.destIndex, newDestMetadata.build());\n\n        Metadata newMetadata = Metadata.builder(state.metadata()).indices(indices).build();\n        return ClusterState.builder(state).metadata(newMetadata).build();\n    }\n\n    static class UpdateIndexMetadataTask extends AckedBatchedClusterStateUpdateTask {\n        private final String sourceIndex;\n        private final String destIndex;\n\n        UpdateIndexMetadataTask(String sourceIndex, String destIndex, TimeValue ackTimeout, ActionListener<AcknowledgedResponse> listener) {\n            super(ackTimeout, listener);\n            this.sourceIndex = sourceIndex;\n            this.destIndex = destIndex;\n        }\n    }\n}",
+        "verified": false,
+        "verification_result": "sanitize_old_not_found:empty",
+        "notes": "insert entire mainline class content at start of target file; location differs but surrounding context matches|type_v_subagent_no_equivalent|sanitize_old_not_found:empty|forced_type_v:failed_stage_generation_contract",
+        "surround_before_3": [],
+        "surround_after_3": [
+          " * Copyright Elasticsearch B.V. and/or licensed to Elasticsearch B.V. under one",
+          " * or more contributor license agreements. Licensed under the Elastic License",
+          " * 2.0; you may not use this file except in compliance with the Elastic License"
+        ],
+        "adaptation_type": "TYPE_V",
+        "base_adaptation_type": "TYPE_II",
+        "execution_type": "TYPE_V",
+        "location_match": false,
+        "surrounding_match": true,
+        "blockers": [],
+        "namespace_only_possible": true,
+        "namespace_changes": [
+          {
+            "from": "org.elasticsearch.xpack.migrate.action",
+            "to": "org.elasticsearch.xpack.ml.action",
+            "reason": "Target file is in ml plugin package, mainline is in migrate plugin package"
+          },
+          {
+            "from": "CopyLifecycleIndexMetadataTransportAction",
+            "to": "TransportUpdateModelSnapshotAction",
+            "reason": "Class name differs between mainline and target"
+          }
+        ],
+        "required_invariants": [
+          "public class CopyLifecycleIndexMetadataTransportAction extends TransportMasterNodeAction<",
+          "CopyLifecycleIndexMetadataAction.Request,",
+          "AcknowledgedResponse> {",
+          "private static final Logger logger = LogManager.getLogger(CopyLifecycleIndexMetadataTransportAction.class);",
+          "private final ClusterStateTaskExecutor<UpdateIndexMetadataTask> executor;",
+          "private final MasterServiceTaskQueue<UpdateIndexMetadataTask> taskQueue;",
+          "public CopyLifecycleIndexMetadataTransportAction(",
+          "TransportService transportService,"
+        ],
+        "required_symbols": [
+          "applyUpdate",
+          "checkBlock",
+          "executeTask",
+          "masterOperation"
+        ],
+        "protected_symbols": [
+          "applyUpdate",
+          "checkBlock",
+          "executeTask",
+          "masterOperation"
+        ],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 4,
+          "target_declared_methods_count": 5,
+          "matched_symbols_before": [
+            "applyUpdate"
+          ],
+          "missing_symbols_before": [
+            "checkBlock",
+            "executeTask",
+            "masterOperation"
+          ]
+        }
+      }
+    ],
+    "x-pack/plugin/migrate/src/main/java/org/elasticsearch/xpack/migrate/action/ReindexDataStreamIndexTransportAction.java": [
+      {
+        "hunk_index": 0,
+        "target_file": "x-pack/plugin/migrate/src/main/java/org/elasticsearch/xpack/migrate/action/ReindexDataStreamIndexTransportAction.java",
+        "operation_index": 0,
+        "edit_type": "insert_before",
+        "old_string": "            .<AcknowledgedResponse>andThen(l -> sanityCheck(sourceIndexName, destIndexName, l, taskId))",
+        "new_string": "            .<AcknowledgedResponse>andThen(l -> copyIndexMetadataToDest(sourceIndexName, destIndexName, l, taskId))\n            .<AcknowledgedResponse>andThen(l -> sanityCheck(sourceIndexName, destIndexName, l, taskId))",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_insert_before",
+        "surround_before_3": [
+          "            .<AcknowledgedResponse>andThen(l -> createIndex(sourceIndex, destIndexName, l, taskId))",
+          "            .<BulkByScrollResponse>andThen(l -> reindex(sourceIndexName, destIndexName, l, taskId))",
+          "            .<AcknowledgedResponse>andThen(l -> copyOldSourceSettingsToDest(settingsBefore, destIndexName, l, taskId))"
+        ],
+        "surround_after_3": [
+          "            .<CloseIndexResponse>andThen(l -> closeIndexIfWasClosed(destIndexName, wasClosed, l, taskId))",
+          "            .andThenApply(ignored -> new ReindexDataStreamIndexAction.Response(destIndexName))",
+          "            .addListener(listener);"
+        ],
+        "adaptation_type": "TYPE_I",
+        "base_adaptation_type": "TYPE_I",
+        "execution_type": "TYPE_I",
+        "location_match": true,
+        "surrounding_match": true,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          ".<AcknowledgedResponse>andThen(l -> copyIndexMetadataToDest(sourceIndexName, destIndexName, l, taskId))"
+        ],
+        "required_symbols": [
+          "copyIndexMetadataToDest"
+        ],
+        "protected_symbols": [
+          "copyIndexMetadataToDest"
+        ],
+        "must_preserve_symbols": [
+          "copyIndexMetadataToDest"
+        ],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 17,
+          "target_declared_methods_count": 18,
+          "matched_symbols_before": [],
+          "missing_symbols_before": [
+            "copyIndexMetadataToDest"
+          ]
+        }
+      },
+      {
+        "hunk_index": 1,
+        "target_file": "x-pack/plugin/migrate/src/main/java/org/elasticsearch/xpack/migrate/action/ReindexDataStreamIndexTransportAction.java",
+        "operation_index": 0,
+        "edit_type": "insert_before",
+        "old_string": "    private static void copySettingOrUnset(Settings settingsBefore, Settings.Builder builder, String setting) {",
+        "new_string": "    private void copyIndexMetadataToDest(\n        String sourceIndexName,\n        String destIndexName,\n        ActionListener<AcknowledgedResponse> listener,\n        TaskId parentTaskId\n    ) {\n        logger.debug(\"Copying index metadata to destination index [{}] from source index [{}]\", destIndexName, sourceIndexName);\n        var request = new CopyLifecycleIndexMetadataAction.Request(TimeValue.MAX_VALUE, sourceIndexName, destIndexName);\n        request.setParentTask(parentTaskId);\n        var errorMessage = String.format(\n            Locale.ROOT,\n            \"Failed to acknowledge copying index metadata from source [%s] to dest [%s]\",\n            sourceIndexName,\n            destIndexName\n        );\n        client.execute(CopyLifecycleIndexMetadataAction.INSTANCE, request, failIfNotAcknowledged(listener, errorMessage));\n    }\n\n    private static void copySettingOrUnset(Settings settingsBefore, Settings.Builder builder, String setting) {",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_insert_before",
+        "surround_before_3": [
+          "        updateSettings(destIndexName, settings, listener, parentTaskId);",
+          "    }",
+          ""
+        ],
+        "surround_after_3": [
+          "        // if setting was explicitly added to the source index",
+          "        if (settingsBefore.get(setting) != null) {",
+          "            // copy it back to the dest index"
+        ],
+        "adaptation_type": "TYPE_II",
+        "base_adaptation_type": "TYPE_II",
+        "execution_type": "TYPE_II",
+        "location_match": false,
+        "surrounding_match": true,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "private void copyIndexMetadataToDest(",
+          "String sourceIndexName,",
+          "String destIndexName,",
+          "ActionListener<AcknowledgedResponse> listener,",
+          "TaskId parentTaskId",
+          "logger.debug(\"Copying index metadata to destination index [{}] from source index [{}]\", destIndexName, sourceIndexName);",
+          "var request = new CopyLifecycleIndexMetadataAction.Request(TimeValue.MAX_VALUE, sourceIndexName, destIndexName);",
+          "request.setParentTask(parentTaskId);"
+        ],
+        "required_symbols": [
+          "copyIndexMetadataToDest"
+        ],
+        "protected_symbols": [
+          "copyIndexMetadataToDest"
+        ],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 17,
+          "target_declared_methods_count": 18,
+          "matched_symbols_before": [],
+          "missing_symbols_before": [
+            "copyIndexMetadataToDest"
+          ]
+        }
+      }
+    ]
+  },
+  "last_plan_signature": "951589eccae5ee0aa540818f77723b09847691849778c12f530153396d6faf84",
+  "validation_repeated_plan_detected": false,
+  "force_type_v_until_success": true,
+  "force_type_v_reason": "failed_stage_generation_contract",
+  "force_type_v_retry_files": [
+    "x-pack/plugin/migrate/src/main/java/org/elasticsearch/xpack/migrate/action/CopyLifecycleIndexMetadataTransportAction.java",
+    "x-pack/plugin/ml/src/main/java/org/elasticsearch/xpack/ml/action/TransportUpdateModelSnapshotAction.java"
+  ],
+  "token_usage": {
+    "input_tokens": 10932,
+    "output_tokens": 3801,
+    "total_tokens": 14733,
+    "estimated": true,
+    "sources": [
+      "planning_agent.provider_usage",
+      "planning_agent.provider_usage",
+      "planning_agent.type_v_subagent.tiktoken"
+    ]
+  }
+}

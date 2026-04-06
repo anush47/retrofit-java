@@ -1,0 +1,89 @@
+# Phase 0 Inputs
+
+- Mainline commit: aa0d7513fde480ee27ca28faa110c9165cc19666
+- Backport commit: c4bdd6964d6edc8241bae522e79082f885566409
+- Java-only files for agentic phases: 1
+- Developer auxiliary hunks (test + non-Java): 3
+
+## Commit Pair Consistency
+- Pair mismatch: False
+- Reason: scope_overlap_ok
+- Mainline Java files: ['server/src/main/java/io/crate/analyze/expressions/ExpressionAnalyzer.java']
+- Developer Java files: ['server/src/main/java/io/crate/analyze/expressions/ExpressionAnalyzer.java']
+- Overlap Java files: ['server/src/main/java/io/crate/analyze/expressions/ExpressionAnalyzer.java']
+- Overlap ratio (mainline): 1.0
+
+## Mainline Patch
+```diff
+From aa0d7513fde480ee27ca28faa110c9165cc19666 Mon Sep 17 00:00:00 2001
+From: Mathias Fussenegger <f.mathias@zignar.net>
+Date: Tue, 7 Jan 2025 11:43:03 +0100
+Subject: [PATCH] Raise an error if FILTER is used with non-aggregate window
+ function
+
+Fixes https://github.com/crate/crate/issues/17168
+---
+ docs/appendices/release-notes/5.9.7.rst                   | 3 +++
+ .../io/crate/analyze/expressions/ExpressionAnalyzer.java  | 3 +++
+ .../java/io/crate/planner/operators/WindowAggTest.java    | 8 ++++++++
+ 3 files changed, 14 insertions(+)
+
+diff --git a/docs/appendices/release-notes/5.9.7.rst b/docs/appendices/release-notes/5.9.7.rst
+index c7aaed714b..de3d645921 100644
+--- a/docs/appendices/release-notes/5.9.7.rst
++++ b/docs/appendices/release-notes/5.9.7.rst
+@@ -47,6 +47,9 @@ See the :ref:`version_5.9.0` release notes for a full list of changes in the
+ Fixes
+ =====
+ 
++- Fixed an issue that caused ``FILTER`` clauses on non-aggregate window
++  functions to be ignored instead of raising an unsupported error.
++
+ - Fixed an issue leading to an error when exporting big tables via ``COPY TO``
+   to the :ref:`Azure Blob Storage <sql-copy-to-az>`.
+   This also has a positive effect on performance.
+diff --git a/server/src/main/java/io/crate/analyze/expressions/ExpressionAnalyzer.java b/server/src/main/java/io/crate/analyze/expressions/ExpressionAnalyzer.java
+index 008668e192..b9971f892d 100644
+--- a/server/src/main/java/io/crate/analyze/expressions/ExpressionAnalyzer.java
++++ b/server/src/main/java/io/crate/analyze/expressions/ExpressionAnalyzer.java
+@@ -1279,6 +1279,9 @@ public class ExpressionAnalyzer {
+                             functionName));
+                     }
+                 }
++            } else if (filter != null) {
++                throw new UnsupportedOperationException(
++                    "FILTER is not implemented for non-aggregate window functions (" + functionName + ")");
+             }
+             newFunction = new WindowFunction(
+                 signature,
+diff --git a/server/src/test/java/io/crate/planner/operators/WindowAggTest.java b/server/src/test/java/io/crate/planner/operators/WindowAggTest.java
+index 03d5c1fcd5..5043c17ebf 100644
+--- a/server/src/test/java/io/crate/planner/operators/WindowAggTest.java
++++ b/server/src/test/java/io/crate/planner/operators/WindowAggTest.java
+@@ -24,6 +24,7 @@ package io.crate.planner.operators;
+ import static io.crate.testing.Asserts.assertThat;
+ import static io.crate.testing.Asserts.isReference;
+ import static org.assertj.core.api.Assertions.assertThat;
++import static org.assertj.core.api.Assertions.assertThatThrownBy;
+ 
+ import org.junit.Before;
+ import org.junit.Test;
+@@ -143,6 +144,13 @@ public class WindowAggTest extends CrateDummyClusterServiceUnitTest {
+         assertThat(orderBy.orderBySymbols()).satisfiesExactly(isReference("y"), isReference("x"));
+     }
+ 
++    @Test
++    public void test_window_functions_do_not_support_filter_clause() throws Exception {
++        assertThatThrownBy(() -> plan("SELECT ROW_NUMBER() FILTER (WHERE x > 1) OVER (ORDER BY x) FROM t1"))
++            .isExactlyInstanceOf(UnsupportedOperationException.class)
++            .hasMessage("FILTER is not implemented for non-aggregate window functions (row_number)");
++    }
++
+     private WindowDefinition wd(String expression) {
+         Symbol symbol = e.asSymbol(expression);
+         assertThat(symbol).isExactlyInstanceOf(WindowFunction.class);
+-- 
+2.43.0
+
+
+```

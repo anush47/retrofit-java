@@ -1,0 +1,124 @@
+{
+  "consistency_map": {},
+  "mapped_target_context": {
+    "server/src/main/java/org/elasticsearch/action/admin/indices/create/TransportCreatePartitionsAction.java": [
+      {
+        "hunk_index": 1,
+        "mainline_method": "<import>",
+        "target_file": "server/src/main/java/org/elasticsearch/action/admin/indices/create/TransportCreatePartitionsAction.java",
+        "target_method": "<import>",
+        "start_line": 24,
+        "end_line": 24,
+        "code_snippet": " * additional information regarding copyright ownership.  Crate licenses\n * this file to you under the Apache License, Version 2.0 (the \"License\");\n * you may not use this file except in compliance with the License.  You may\n * obtain a copy of the License at\n *\n *   http://www.apache.org/licenses/LICENSE-2.0\n *\n * Unless required by applicable law or agreed to in writing, software\n * distributed under the License is distributed on an \"AS IS\" BASIS, WITHOUT\n * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the\n * License for the specific language governing permissions and limitations\n * under the License.\n *\n * However, if you have executed another commercial license agreement\n * with Crate these terms will supersede the license and you may use the\n * software solely pursuant to the terms of the relevant commercial agreement.\n */\n\npackage org.elasticsearch.action.admin.indices.create;\n\nimport static org.elasticsearch.cluster.metadata.IndexMetadata.INDEX_NUMBER_OF_SHARDS_SETTING;\nimport static org.elasticsearch.cluster.metadata.IndexMetadata.SETTING_WAIT_FOR_ACTIVE_SHARDS;\nimport static org.elasticsearch.cluster.metadata.MetadataCreateIndexService.setIndexVersionCreatedSetting;\nimport static org.elasticsearch.cluster.metadata.MetadataCreateIndexService.validateSoftDeletesSetting;\n\nimport java.io.IOException;\nimport java.util.ArrayList;\nimport java.util.Collections;\nimport java.util.List;\nimport java.util.Locale;\n\nimport org.elasticsearch.ElasticsearchException;\nimport org.elasticsearch.Version;\nimport org.elasticsearch.action.ActionListener;\nimport org.elasticsearch.action.support.ActiveShardCount;\nimport org.elasticsearch.action.support.ActiveShardsObserver;\nimport org.elasticsearch.action.support.master.AcknowledgedResponse;\nimport org.elasticsearch.action.support.master.TransportMasterNodeAction;\nimport org.elasticsearch.cluster.AckedClusterStateUpdateTask;\nimport org.elasticsearch.cluster.ClusterState;\nimport org.elasticsearch.cluster.ClusterStateTaskConfig;",
+        "anchor_confidence": "high",
+        "anchor_reason": "line_and_method_resolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 2,
+        "mainline_method": "<import>",
+        "target_file": "server/src/main/java/org/elasticsearch/action/admin/indices/create/TransportCreatePartitionsAction.java",
+        "target_method": "<import>",
+        "start_line": 66,
+        "end_line": 66,
+        "code_snippet": "import org.elasticsearch.cluster.ack.ClusterStateUpdateResponse;\nimport org.elasticsearch.cluster.block.ClusterBlockException;\nimport org.elasticsearch.cluster.block.ClusterBlockLevel;\nimport org.elasticsearch.cluster.metadata.IndexMetadata;\nimport org.elasticsearch.cluster.metadata.IndexTemplateMetadata;\nimport org.elasticsearch.cluster.metadata.MappingMetadata;\nimport org.elasticsearch.cluster.metadata.Metadata;\nimport org.elasticsearch.cluster.metadata.MetadataCreateIndexService;\nimport org.elasticsearch.cluster.routing.RoutingTable;\nimport org.elasticsearch.cluster.routing.allocation.AllocationService;\nimport org.elasticsearch.cluster.service.ClusterService;\nimport org.elasticsearch.common.Priority;\nimport org.elasticsearch.common.UUIDs;\nimport org.elasticsearch.common.ValidationException;\nimport org.elasticsearch.common.inject.Inject;\nimport org.elasticsearch.common.inject.Singleton;\nimport org.elasticsearch.common.io.stream.StreamInput;\nimport org.elasticsearch.common.settings.Settings;\nimport org.elasticsearch.index.Index;\nimport org.elasticsearch.index.IndexService;\nimport org.elasticsearch.indices.IndicesService;\nimport org.elasticsearch.indices.ShardLimitValidator;\nimport org.elasticsearch.indices.cluster.IndicesClusterStateService;\nimport org.elasticsearch.threadpool.ThreadPool;\nimport org.elasticsearch.transport.TransportService;\nimport org.jetbrains.annotations.Nullable;\nimport org.jetbrains.annotations.VisibleForTesting;\nimport org.joda.time.DateTime;\nimport org.joda.time.DateTimeZone;\n\nimport io.crate.metadata.IndexName;\nimport io.crate.metadata.PartitionName;\n\n\n/**\n * Creates one or more partitions within one cluster-state-update-task\n * <p>\n * This is more or less a more optimized version of {@link MetadataCreateIndexService}\n * <p>\n * It also has some limitations:\n * <p>",
+        "anchor_confidence": "high",
+        "anchor_reason": "line_and_method_resolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 3,
+        "mainline_method": "<class_declaration>",
+        "target_file": "server/src/main/java/org/elasticsearch/action/admin/indices/create/TransportCreatePartitionsAction.java",
+        "target_method": "<class_declaration>",
+        "start_line": 95,
+        "end_line": 95,
+        "code_snippet": "\nimport io.crate.metadata.IndexName;\nimport io.crate.metadata.PartitionName;\n\n\n/**\n * Creates one or more partitions within one cluster-state-update-task\n * <p>\n * This is more or less a more optimized version of {@link MetadataCreateIndexService}\n * <p>\n * It also has some limitations:\n * <p>\n * - all indices must actually have the same name pattern (only the first index is used to figure out which templates to use),\n *   which must be the case for partitions anyway.\n * - and alias / mappings / etc. are not taken from the request\n */\n@Singleton\npublic class TransportCreatePartitionsAction extends TransportMasterNodeAction<CreatePartitionsRequest, AcknowledgedResponse> {\n\n    private final IndicesService indicesService;\n    private final AllocationService allocationService;\n    private final ActiveShardsObserver activeShardsObserver;\n    private final ShardLimitValidator shardLimitValidator;\n    private final ClusterStateTaskExecutor<CreatePartitionsRequest> executor = (currentState, tasks) -> {\n        ClusterStateTaskExecutor.ClusterTasksResult.Builder<CreatePartitionsRequest> builder = ClusterStateTaskExecutor.ClusterTasksResult.builder();\n        for (CreatePartitionsRequest request : tasks) {\n            try {\n                currentState = executeCreateIndices(currentState, request);\n                builder.success(request);\n            } catch (Exception e) {\n                builder.failure(request, e);\n            }\n        }\n        return builder.build(currentState);\n    };\n\n    @Inject\n    public TransportCreatePartitionsAction(TransportService transportService,\n                                           ClusterService clusterService,\n                                           ThreadPool threadPool,\n                                           IndicesService indicesService,",
+        "anchor_confidence": "high",
+        "anchor_reason": "line_and_method_resolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 4,
+        "mainline_method": "<class_declaration>",
+        "target_file": "server/src/main/java/org/elasticsearch/action/admin/indices/create/TransportCreatePartitionsAction.java",
+        "target_method": "<class_declaration>",
+        "start_line": 117,
+        "end_line": 117,
+        "code_snippet": "    private final ShardLimitValidator shardLimitValidator;\n    private final ClusterStateTaskExecutor<CreatePartitionsRequest> executor = (currentState, tasks) -> {\n        ClusterStateTaskExecutor.ClusterTasksResult.Builder<CreatePartitionsRequest> builder = ClusterStateTaskExecutor.ClusterTasksResult.builder();\n        for (CreatePartitionsRequest request : tasks) {\n            try {\n                currentState = executeCreateIndices(currentState, request);\n                builder.success(request);\n            } catch (Exception e) {\n                builder.failure(request, e);\n            }\n        }\n        return builder.build(currentState);\n    };\n\n    @Inject\n    public TransportCreatePartitionsAction(TransportService transportService,\n                                           ClusterService clusterService,\n                                           ThreadPool threadPool,\n                                           IndicesService indicesService,\n                                           AllocationService allocationService,\n                                           ShardLimitValidator shardLimitValidator) {\n        super(CreatePartitionsAction.NAME, transportService, clusterService, threadPool, CreatePartitionsRequest::new);\n        this.indicesService = indicesService;\n        this.allocationService = allocationService;\n        this.activeShardsObserver = new ActiveShardsObserver(clusterService);\n        this.shardLimitValidator = shardLimitValidator;\n    }\n\n    @Override\n    protected String executor() {\n        return ThreadPool.Names.MANAGEMENT;\n    }\n\n    @Override\n    protected AcknowledgedResponse read(StreamInput in) throws IOException {\n        return new AcknowledgedResponse(in);\n    }\n\n    @Override\n    protected void masterOperation(final CreatePartitionsRequest request,\n                                   final ClusterState state,",
+        "anchor_confidence": "high",
+        "anchor_reason": "line_and_method_resolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 5,
+        "mainline_method": "hunk_5",
+        "target_file": "server/src/main/java/org/elasticsearch/action/admin/indices/create/TransportCreatePartitionsAction.java",
+        "target_method": null,
+        "start_line": 174,
+        "end_line": 174,
+        "code_snippet": "                                         \"enough shards to be started. Timeout={}, wait_for_active_shards={}. \" +\n                                         \"Consider decreasing the 'number_of_shards' table setting (currently: {}) or adding nodes to the cluster.\",\n                                request.indices(), request.timeout(),\n                                SETTING_WAIT_FOR_ACTIVE_SHARDS.get(templateMetadata.settings()),\n                                INDEX_NUMBER_OF_SHARDS_SETTING.get(templateMetadata.settings()));\n                        }\n                        listener.onResponse(new AcknowledgedResponse(response.isAcknowledged()));\n                    }, listener::onFailure);\n            } else {\n                logger.warn(\"[{}] Table partitions created, but publishing new cluster state timed out. Timeout={}\",\n                    request.indices(), request.timeout());\n                listener.onResponse(new AcknowledgedResponse(false));\n            }\n        }, listener::onFailure));\n    }\n\n    /**\n     * This code is more or less the same as the stuff in {@link MetadataCreateIndexService}\n     * but optimized for bulk operation without separate mapping/alias/index settings.\n     */\n    private ClusterState executeCreateIndices(ClusterState currentState, CreatePartitionsRequest request) throws Exception {\n        String removalReason = null;\n        Index testIndex = null;\n        try {\n            List<String> indicesToCreate = getValidatedIndicesToCreate(currentState, request);\n            if (indicesToCreate.isEmpty()) {\n                return currentState;\n            }\n\n            // We always have only 1 matching template per pattern/table.\n            // All indices in the request are related to a concrete partitioned table and\n            // they all match the same template. Thus, we can use any of them to find matching template.\n            String firstIndex = indicesToCreate.get(0);\n            String templateName = PartitionName.templateName(firstIndex);\n\n            IndexTemplateMetadata template = currentState.metadata().templates().get(templateName);\n            if (template == null) {\n                // Normally should be impossible, as it would mean that we are inserting into a partitioned table without template,\n                // i.e inserting after CREATE TABLE failed\n                throw new IllegalStateException(String.format(Locale.ENGLISH, \"Cannot find a template for partitioned table's index %s\", firstIndex));\n            }",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 6,
+        "mainline_method": "hunk_6",
+        "target_file": "server/src/main/java/org/elasticsearch/action/admin/indices/create/TransportCreatePartitionsAction.java",
+        "target_method": null,
+        "start_line": 189,
+        "end_line": 189,
+        "code_snippet": "\n    /**\n     * This code is more or less the same as the stuff in {@link MetadataCreateIndexService}\n     * but optimized for bulk operation without separate mapping/alias/index settings.\n     */\n    private ClusterState executeCreateIndices(ClusterState currentState, CreatePartitionsRequest request) throws Exception {\n        String removalReason = null;\n        Index testIndex = null;\n        try {\n            List<String> indicesToCreate = getValidatedIndicesToCreate(currentState, request);\n            if (indicesToCreate.isEmpty()) {\n                return currentState;\n            }\n\n            // We always have only 1 matching template per pattern/table.\n            // All indices in the request are related to a concrete partitioned table and\n            // they all match the same template. Thus, we can use any of them to find matching template.\n            String firstIndex = indicesToCreate.get(0);\n            String templateName = PartitionName.templateName(firstIndex);\n\n            IndexTemplateMetadata template = currentState.metadata().templates().get(templateName);\n            if (template == null) {\n                // Normally should be impossible, as it would mean that we are inserting into a partitioned table without template,\n                // i.e inserting after CREATE TABLE failed\n                throw new IllegalStateException(String.format(Locale.ENGLISH, \"Cannot find a template for partitioned table's index %s\", firstIndex));\n            }\n\n            // Use only first index to validate that index can be created.\n            // All indices share same template/settings so no need to repeat validation for each index.\n            Settings commonIndexSettings = createCommonIndexSettings(currentState, template);\n\n            final int numberOfShards = INDEX_NUMBER_OF_SHARDS_SETTING.get(commonIndexSettings);\n            final int numberOfReplicas = IndexMetadata.INDEX_NUMBER_OF_REPLICAS_SETTING.get(commonIndexSettings);\n            // Shard limit check has to take to account all new partitions.\n            final int numShardsToCreate = numberOfShards * (1 + numberOfReplicas) * indicesToCreate.size();\n            shardLimitValidator.checkShardLimit(numShardsToCreate, currentState)\n                .ifPresent(err -> {\n                    final ValidationException e = new ValidationException();\n                    e.addValidationError(err);\n                    throw e;\n                });",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 7,
+        "mainline_method": "hunk_7",
+        "target_file": "server/src/main/java/org/elasticsearch/action/admin/indices/create/TransportCreatePartitionsAction.java",
+        "target_method": null,
+        "start_line": 240,
+        "end_line": 240,
+        "code_snippet": "            }\n\n            IndexMetadata.Builder tmpImdBuilder = IndexMetadata.builder(firstIndex)\n                .setRoutingNumShards(routingNumShards);\n\n            // Set up everything, now locally create the index to see that things are ok, and apply\n            final IndexMetadata tmpImd = tmpImdBuilder.settings(Settings.builder()\n                    .put(commonIndexSettings)\n                    .put(IndexMetadata.SETTING_INDEX_UUID, UUIDs.randomBase64UUID())).build();\n            ActiveShardCount waitForActiveShards = tmpImd.getWaitForActiveShards();\n            if (!waitForActiveShards.validate(tmpImd.getNumberOfReplicas())) {\n                throw new IllegalArgumentException(\"invalid wait_for_active_shards[\" + waitForActiveShards +\n                    \"]: cannot be greater than number of shard copies [\" +\n                    (tmpImd.getNumberOfReplicas() + 1) + \"]\");\n            }\n            // create the index here (on the master) to validate it can be created, as well as adding the mapping\n            IndexService indexService = indicesService.createIndex(tmpImd, Collections.emptyList(), false);\n            testIndex = indexService.index();\n\n            // \"Probe\" creation of the first index passed validation. Now add all indices to the cluster state metadata and update routing.\n            Metadata.Builder newMetadataBuilder = Metadata.builder(currentState.metadata());\n            MappingMetadata mappingMetadata = new MappingMetadata(template.mapping());\n            for (String index : indicesToCreate) {\n                final IndexMetadata.Builder indexMetadataBuilder = IndexMetadata.builder(index)\n                    .setRoutingNumShards(routingNumShards)\n                    .settings(Settings.builder()\n                        .put(commonIndexSettings)\n                        .put(IndexMetadata.SETTING_INDEX_UUID, UUIDs.randomBase64UUID())\n                    );\n\n                indexMetadataBuilder.putMapping(mappingMetadata);\n                for (var aliasCursor : template.aliases().values()) {\n                    indexMetadataBuilder.putAlias(aliasCursor.value);\n                }\n                indexMetadataBuilder.state(IndexMetadata.State.OPEN);\n\n                final IndexMetadata indexMetadata;\n                try {\n                    indexMetadata = indexMetadataBuilder.build();\n                } catch (Exception e) {\n                    removalReason = \"failed to build index metadata\";",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 8,
+        "mainline_method": "upgradeTemplates",
+        "target_file": "server/src/main/java/org/elasticsearch/action/admin/indices/create/TransportCreatePartitionsAction.java",
+        "target_method": "upgradeTemplates",
+        "start_line": 350,
+        "end_line": 350,
+        "code_snippet": "    private Settings createCommonIndexSettings(ClusterState currentState, @Nullable IndexTemplateMetadata template) {\n        Settings.Builder indexSettingsBuilder = Settings.builder();\n        // apply template\n        if (template != null) {\n            indexSettingsBuilder.put(template.settings());\n        }\n\n        setIndexVersionCreatedSetting(indexSettingsBuilder, currentState);\n        validateSoftDeletesSetting(indexSettingsBuilder.build());\n\n        if (indexSettingsBuilder.get(IndexMetadata.SETTING_CREATION_DATE) == null) {\n            indexSettingsBuilder.put(IndexMetadata.SETTING_CREATION_DATE, new DateTime(DateTimeZone.UTC).getMillis());\n        }\n        return indexSettingsBuilder.build();\n    }\n\n    @Override\n    protected ClusterBlockException checkBlock(CreatePartitionsRequest request, ClusterState state) {\n        return state.blocks().indicesBlockedException(ClusterBlockLevel.METADATA_WRITE, request.indices().toArray(String[]::new));\n    }\n}",
+        "anchor_confidence": "high",
+        "anchor_reason": "line_and_method_resolved",
+        "anchor_strategy": "deterministic_realign"
+      }
+    ],
+    "server/src/main/java/org/elasticsearch/gateway/GatewayMetaState.java": [
+      {
+        "hunk_index": 1,
+        "mainline_method": "hunk_1",
+        "target_file": "server/src/main/java/org/elasticsearch/gateway/GatewayMetaState.java",
+        "target_method": null,
+        "start_line": 252,
+        "end_line": 252,
+        "code_snippet": "        for (IndexMetadata indexMetadata : metadata) {\n            String indexName = indexMetadata.getIndex().getName();\n            IndexMetadata newMetadata = metadataIndexUpgradeService.upgradeIndexMetadata(\n                indexMetadata,\n                IndexName.isPartitioned(indexName) ?\n                    upgradedIndexTemplateMetadata.get(PartitionName.templateName(indexName)) :\n                    null,\n                Version.CURRENT.minimumIndexCompatibilityVersion());\n            changed |= indexMetadata != newMetadata;\n            upgradedMetadata.put(newMetadata, false);\n        }\n\n        // upgrade global custom meta data\n        if (applyPluginUpgraders(metadata.customs(), metadataUpgrader.customMetadataUpgraders,\n                upgradedMetadata::removeCustom, upgradedMetadata::putCustom)) {\n            changed = true;\n        }\n        return changed ? upgradedMetadata.build() : metadata;\n    }\n\n    private static <Data> boolean applyPluginUpgraders(ImmutableOpenMap<String, Data> existingData,\n                                                       UnaryOperator<Map<String, Data>> upgrader,\n                                                       Consumer<String> removeData,\n                                                       BiConsumer<String, Data> putData) {\n        // collect current data\n        Map<String, Data> existingMap = new HashMap<>();\n        for (ObjectObjectCursor<String, Data> customCursor : existingData) {\n            existingMap.put(customCursor.key, customCursor.value);\n        }\n        // upgrade global custom meta data\n        Map<String, Data> upgradedCustoms = upgrader.apply(existingMap);\n        if (upgradedCustoms.equals(existingMap) == false) {\n            // remove all data first so a plugin can remove custom metadata or templates if needed\n            existingMap.keySet().forEach(removeData);\n            for (Map.Entry<String, Data> upgradedCustomEntry : upgradedCustoms.entrySet()) {\n                putData.accept(upgradedCustomEntry.getKey(), upgradedCustomEntry.getValue());\n            }\n            return true;\n        }\n        return false;\n    }",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      }
+    ]
+  },
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "reason": "llm_usage_not_collected_in_this_node"
+  }
+}

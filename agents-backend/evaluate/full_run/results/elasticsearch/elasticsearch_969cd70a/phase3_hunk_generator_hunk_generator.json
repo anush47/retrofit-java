@@ -1,0 +1,100 @@
+{
+  "adapted_file_edits": [
+    {
+      "target_file": "server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java",
+      "mainline_file": "server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java",
+      "old_string": "<developer patch fast path>",
+      "new_string": "diff --git a/server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java b/server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java\nindex fe2c4dc7f2c..e48c116cebf 100644\n--- a/server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java\n+++ b/server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java\n@@ -729,28 +729,20 @@ public final class DocumentParser {\n \n         XContentParser parser = context.parser();\n         XContentParser.Token token;\n-        int elements = 0;\n         while ((token = parser.nextToken()) != XContentParser.Token.END_ARRAY) {\n             if (token == XContentParser.Token.START_OBJECT) {\n-                elements = Integer.MAX_VALUE;\n                 parseObject(context, lastFieldName);\n             } else if (token == XContentParser.Token.START_ARRAY) {\n-                elements = Integer.MAX_VALUE;\n                 parseArray(context, lastFieldName);\n             } else if (token == XContentParser.Token.VALUE_NULL) {\n-                elements++;\n                 parseNullValue(context, lastFieldName);\n             } else if (token == null) {\n                 throwEOFOnParseArray(arrayFieldName, context);\n             } else {\n                 assert token.isValue();\n-                elements++;\n                 parseValue(context, lastFieldName);\n             }\n         }\n-        if (elements <= 1 && canRemoveSingleLeafElement) {\n-            context.removeLastIgnoredField(fullPath);\n-        }\n         postProcessDynamicArrayMapping(context, lastFieldName);\n     }",
+      "edit_type": "replace",
+      "verified": true,
+      "verification_result": "developer_fast_path_ok",
+      "applied": true,
+      "apply_result": "SUCCESS"
+    }
+  ],
+  "all_adapted_file_edits": [
+    [
+      {
+        "target_file": "server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java",
+        "mainline_file": "server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java",
+        "old_string": "<developer patch fast path>",
+        "new_string": "diff --git a/server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java b/server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java\nindex fe2c4dc7f2c..e48c116cebf 100644\n--- a/server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java\n+++ b/server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java\n@@ -729,28 +729,20 @@ public final class DocumentParser {\n \n         XContentParser parser = context.parser();\n         XContentParser.Token token;\n-        int elements = 0;\n         while ((token = parser.nextToken()) != XContentParser.Token.END_ARRAY) {\n             if (token == XContentParser.Token.START_OBJECT) {\n-                elements = Integer.MAX_VALUE;\n                 parseObject(context, lastFieldName);\n             } else if (token == XContentParser.Token.START_ARRAY) {\n-                elements = Integer.MAX_VALUE;\n                 parseArray(context, lastFieldName);\n             } else if (token == XContentParser.Token.VALUE_NULL) {\n-                elements++;\n                 parseNullValue(context, lastFieldName);\n             } else if (token == null) {\n                 throwEOFOnParseArray(arrayFieldName, context);\n             } else {\n                 assert token.isValue();\n-                elements++;\n                 parseValue(context, lastFieldName);\n             }\n         }\n-        if (elements <= 1 && canRemoveSingleLeafElement) {\n-            context.removeLastIgnoredField(fullPath);\n-        }\n         postProcessDynamicArrayMapping(context, lastFieldName);\n     }",
+        "edit_type": "replace",
+        "verified": true,
+        "verification_result": "developer_fast_path_ok",
+        "applied": true,
+        "apply_result": "SUCCESS"
+      }
+    ]
+  ],
+  "agent_trajectory_edits": [
+    []
+  ],
+  "adapted_code_hunks": [
+    {
+      "target_file": "server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java",
+      "mainline_file": "server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java",
+      "hunk_text": "diff --git a/server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java b/server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java\nindex fe2c4dc7f2c..e48c116cebf 100644\n--- a/server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java\n+++ b/server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java\n@@ -729,28 +729,20 @@ public final class DocumentParser {\n \n         XContentParser parser = context.parser();\n         XContentParser.Token token;\n-        int elements = 0;\n         while ((token = parser.nextToken()) != XContentParser.Token.END_ARRAY) {\n             if (token == XContentParser.Token.START_OBJECT) {\n-                elements = Integer.MAX_VALUE;\n                 parseObject(context, lastFieldName);\n             } else if (token == XContentParser.Token.START_ARRAY) {\n-                elements = Integer.MAX_VALUE;\n                 parseArray(context, lastFieldName);\n             } else if (token == XContentParser.Token.VALUE_NULL) {\n-                elements++;\n                 parseNullValue(context, lastFieldName);\n             } else if (token == null) {\n                 throwEOFOnParseArray(arrayFieldName, context);\n             } else {\n                 assert token.isValue();\n-                elements++;\n                 parseValue(context, lastFieldName);\n             }\n         }\n-        if (elements <= 1 && canRemoveSingleLeafElement) {\n-            context.removeLastIgnoredField(fullPath);\n-        }\n         postProcessDynamicArrayMapping(context, lastFieldName);\n     }\n \n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    }
+  ],
+  "validation_repeated_patch_detected": false,
+  "validation_repeated_plan_detected": false,
+  "best_effort_adapted_code_hunks": [
+    {
+      "target_file": "server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java",
+      "mainline_file": "server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java",
+      "hunk_text": "diff --git a/server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java b/server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java\nindex fe2c4dc7f2c..e48c116cebf 100644\n--- a/server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java\n+++ b/server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java\n@@ -729,28 +729,20 @@ public final class DocumentParser {\n \n         XContentParser parser = context.parser();\n         XContentParser.Token token;\n-        int elements = 0;\n         while ((token = parser.nextToken()) != XContentParser.Token.END_ARRAY) {\n             if (token == XContentParser.Token.START_OBJECT) {\n-                elements = Integer.MAX_VALUE;\n                 parseObject(context, lastFieldName);\n             } else if (token == XContentParser.Token.START_ARRAY) {\n-                elements = Integer.MAX_VALUE;\n                 parseArray(context, lastFieldName);\n             } else if (token == XContentParser.Token.VALUE_NULL) {\n-                elements++;\n                 parseNullValue(context, lastFieldName);\n             } else if (token == null) {\n                 throwEOFOnParseArray(arrayFieldName, context);\n             } else {\n                 assert token.isValue();\n-                elements++;\n                 parseValue(context, lastFieldName);\n             }\n         }\n-        if (elements <= 1 && canRemoveSingleLeafElement) {\n-            context.removeLastIgnoredField(fullPath);\n-        }\n         postProcessDynamicArrayMapping(context, lastFieldName);\n     }\n \n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    }
+  ],
+  "adapted_test_hunks": [],
+  "generation_checklist": [
+    {
+      "mainline_file": "server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java",
+      "target_file": "server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java",
+      "hunk_index": 0,
+      "adaptation_type": "TYPE_II",
+      "execution_types": [
+        "TYPE_II"
+      ],
+      "status": "success",
+      "reason": "developer_fast_path",
+      "todo_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ],
+      "completed_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ]
+    }
+  ],
+  "generated_patch_hash": "5a02da6f8b6595c1bb1cf4469379a899221d69407a5eb0cfc46371cebede9f40",
+  "force_type_v_until_success": false,
+  "force_type_v_reason": "",
+  "force_type_v_retry_files": [],
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "sources": []
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "consistency_map": {},
+  "mapped_target_context": {
+    "server/src/main/java/io/crate/role/TransportAlterRoleAction.java": [
+      {
+        "hunk_index": 1,
+        "mainline_method": "hunk_1",
+        "target_file": "server/src/main/java/io/crate/role/TransportAlterRoleAction.java",
+        "target_method": null,
+        "start_line": 150,
+        "end_line": 150,
+        "code_snippet": "            return false;\n        }\n\n        UsersPrivilegesMetadata oldUserPrivilegesMetadata = (UsersPrivilegesMetadata) mdBuilder.getCustom(UsersPrivilegesMetadata.TYPE);\n        RolesMetadata newMetadata = RolesMetadata.of(mdBuilder, oldUsersMetadata, oldUserPrivilegesMetadata, oldRolesMetadata);\n        boolean exists = false;\n        var role = newMetadata.roles().get(roleName);\n        if (role != null) {\n            if (role.isUser() == false) {\n                if (secureHash != null || resetPassword) {\n                    throw new UnsupportedFeatureException(\"Setting a password to a ROLE is not allowed\");\n                }\n                if (jwtProperties != null || resetJwtProperties) {\n                    throw new UnsupportedFeatureException(\"Setting JWT properties to a ROLE is not allowed\");\n                }\n            }\n\n            var newSecureHash = secureHash != null ? secureHash : (resetPassword ? null : role.password());\n            var newJwtProperties = jwtProperties != null ? jwtProperties : (resetJwtProperties ? null : role.jwtProperties());\n\n            if (newMetadata.contains(newJwtProperties)) {\n                throw new RoleAlreadyExistsException(\n                    \"Another role with the same combination of iss/username jwt properties already exists\"\n                );\n            }\n\n            newMetadata.roles().put(roleName, role.with(newSecureHash, newJwtProperties));\n            exists = true;\n        }\n        if (newMetadata.equals(oldRolesMetadata)) {\n            return exists;\n        }\n\n        assert !newMetadata.equals(oldRolesMetadata) : \"must not be equal to guarantee the cluster change action\";\n        mdBuilder.putCustom(RolesMetadata.TYPE, newMetadata);\n\n        return exists;\n    }\n\n    @Override\n    protected ClusterBlockException checkBlock(AlterRoleRequest request, ClusterState state) {",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      }
+    ]
+  },
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "reason": "llm_usage_not_collected_in_this_node"
+  }
+}

@@ -1,0 +1,27 @@
+patch_id=crate_be4baf1f
+project=crate
+mainline_commit=be4baf1f66ed25179a1a64bafc86783f74e9ddac
+backport_commit=057dd5d976a6e1087be569472a7b580156bff534
+mode=full
+started_at=2026-04-05T19:19:48.629929
+----------------------------------------
+Running full workflow graph
+Completed node=phase_0_optimistic
+Workflow completed successfully
+
+[crate/crate_be4baf1f] Setting up repositories for mode=full...
+[crate/crate_be4baf1f] Running full workflow graph...
+Router: Running Phase 0.
+Phase 0 (Optimistic): Checking direct patch applicability...
+Phase 0: Experiment mode — checking out parent of 057dd5d976a6e1087be569472a7b580156bff534...
+Phase 0: Building baseline by applying developer backport test hunks only...
+  Validation: server/src/test/java/io/crate/planner/operators/WindowAggTest.java - applying 1 hunk(s) one by one in bottom-to-top order: [62]
+    Agent 4: Executing crate helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_tests.sh
+Phase 0: git apply --check SUCCEEDED. Attempting actual patch application and test run.
+    Agent 4: Executing crate helper build script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_build.sh
+    Agent 4: Executing crate helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_tests.sh
+Phase 0: Transition summary -> reason=Valid: Observed fail-to-pass and/or newly passing relevant tests with no regressions.; fail->pass(1): ['io.crate.planner.operators.WindowAggTest#test_two_window_functions_with_same_window_definition_with_param_results_in_one_operator']; newly_passing(0): []; pass->fail(0): []
+Phase 0: Transition-based test validation passed. Fast-path success.
+Router: Phase 0 succeeded - taking fast-path exit.
+  Completed: phase_0_optimistic
+[crate/crate_be4baf1f] Full workflow completed!

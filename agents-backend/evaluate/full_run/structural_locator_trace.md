@@ -9,40 +9,42 @@
 
 ## Code File Mappings
 
-### `graylog2-server/src/main/java/org/graylog2/Configuration.java`
+### `x-pack/plugin/deprecation/src/main/java/org/elasticsearch/xpack/deprecation/DeprecationChecks.java`
 
 **Hunks in this file**: 2
 
-**Git Resolution**: Found `graylog2-server/src/main/java/org/graylog2/Configuration.java`
+**Git Resolution**: Found `x-pack/plugin/deprecation/src/main/java/org/elasticsearch/xpack/deprecation/DeprecationChecks.java`
 
 **Deterministic Mode**: raw-diff anchor mapping succeeded (no LLM call).
 
 | Hunk Idx | Role | Mainline Method | Target Method | Lines |
 |---|---|---|---|---|
-| 1 | core_fix | `maintainsStreamAwareFieldTypes` | `maintainsStreamAwareFieldTypes` | 295–295 |
-| 2 | guard | `withInputs` | `withInputs` | 714–714 |
-### `graylog2-server/src/main/java/org/graylog2/rest/resources/system/inputs/InputsResource.java`
+| 1 | propagation | `hunk_1` | `None` | 92–92 |
+| 2 | propagation | `hunk_2` | `None` | 101–101 |
+### `x-pack/plugin/deprecation/src/main/java/org/elasticsearch/xpack/deprecation/IndexDeprecationChecks.java`
 
-**Hunks in this file**: 1
+**Hunks in this file**: 2
 
-**Git Resolution**: Found `graylog2-server/src/main/java/org/graylog2/rest/resources/system/inputs/InputsResource.java`
-
-**Deterministic Mode**: raw-diff anchor mapping succeeded (no LLM call).
-
-| Hunk Idx | Role | Mainline Method | Target Method | Lines |
-|---|---|---|---|---|
-| 1 | guard | `throwBadRequestIfNotGlobal` | `throwBadRequestIfNotGlobal` | 309–309 |
-### `graylog2-server/src/main/java/org/graylog2/web/resources/AppConfigResource.java`
-
-**Hunks in this file**: 1
-
-**Git Resolution**: Found `graylog2-server/src/main/java/org/graylog2/web/resources/AppConfigResource.java`
+**Git Resolution**: Found `x-pack/plugin/deprecation/src/main/java/org/elasticsearch/xpack/deprecation/IndexDeprecationChecks.java`
 
 **Deterministic Mode**: raw-diff anchor mapping succeeded (no LLM call).
 
 | Hunk Idx | Role | Mainline Method | Target Method | Lines |
 |---|---|---|---|---|
-| 1 | core_fix | `hunk_1` | `None` | 105–105 |
+| 1 | propagation | `hunk_1` | `None` | 19–19 |
+| 2 | core_fix | `checkSourceModeInMapping` | `checkSourceModeInMapping` | 207–207 |
+### `x-pack/plugin/deprecation/src/main/java/org/elasticsearch/xpack/deprecation/NodeDeprecationChecks.java`
+
+**Hunks in this file**: 2
+
+**Git Resolution**: Found `x-pack/plugin/deprecation/src/main/java/org/elasticsearch/xpack/deprecation/NodeDeprecationChecks.java`
+
+**Deterministic Mode**: raw-diff anchor mapping succeeded (no LLM call).
+
+| Hunk Idx | Role | Mainline Method | Target Method | Lines |
+|---|---|---|---|---|
+| 1 | declaration | `<import>` | `<import>` | 10–10 |
+| 2 | guard | `hunk_2` | `None` | 1035–1035 |
 ## Test File Mappings
 
 

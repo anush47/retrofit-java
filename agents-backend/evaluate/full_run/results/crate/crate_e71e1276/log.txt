@@ -1,0 +1,27 @@
+patch_id=crate_e71e1276
+project=crate
+mainline_commit=e71e127665e14038f196eab7fd8ce56cb6aea2c3
+backport_commit=d60fe8f9802bd39da0b9358c7725fc1673ac5a18
+mode=full
+started_at=2026-04-05T19:43:19.162755
+----------------------------------------
+Running full workflow graph
+Completed node=phase_0_optimistic
+Workflow completed successfully
+
+[crate/crate_e71e1276] Setting up repositories for mode=full...
+[crate/crate_e71e1276] Running full workflow graph...
+Router: Running Phase 0.
+Phase 0 (Optimistic): Checking direct patch applicability...
+Phase 0: Experiment mode — checking out parent of d60fe8f9802bd39da0b9358c7725fc1673ac5a18...
+Phase 0: Building baseline by applying developer backport test hunks only...
+  Validation: server/src/test/java/io/crate/session/SessionTest.java - applying 3 hunk(s) one by one in bottom-to-top order: [396, 57, 38]
+    Agent 4: Executing crate helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_tests.sh
+Phase 0: git apply --check SUCCEEDED. Attempting actual patch application and test run.
+    Agent 4: Executing crate helper build script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_build.sh
+    Agent 4: Executing crate helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_tests.sh
+Phase 0: Transition summary -> reason=Valid: Observed fail-to-pass and/or newly passing relevant tests with no regressions.; fail->pass(1): ['io.crate.session.SessionTest#test_statement_timeout_schedule_is_removed_for_finished_jobs']; newly_passing(0): []; pass->fail(0): []
+Phase 0: Transition-based test validation passed. Fast-path success.
+Router: Phase 0 succeeded - taking fast-path exit.
+  Completed: phase_0_optimistic
+[crate/crate_e71e1276] Full workflow completed!

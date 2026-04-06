@@ -1,0 +1,49 @@
+# Transition Summary
+
+- Source: phase_outputs
+- Valid backport signal: True
+- Reason: Valid: Observed fail-to-pass and/or newly passing relevant tests with no regressions.
+- fail->pass (1): ['io.crate.analyze.where.EqualityExtractorTest#test_standalone_boolean_column_transformed_to_eq_true_expression']
+- newly passing (0): []
+- pass->fail (0): []
+
+## Touched Test States
+- Touched tests (from patch): ['io.crate.analyze.where.EqualityExtractorTest']
+  - io.crate.analyze.where.EqualityExtractorTest#testExtract2ColPKFrom1PartAndOtherPart2EqOr: baseline=passed, patched=passed
+  - io.crate.analyze.where.EqualityExtractorTest#testExtract2ColPKFromAnyEq: baseline=passed, patched=passed
+  - io.crate.analyze.where.EqualityExtractorTest#testExtract2ColPKFromAnyEqAnd: baseline=passed, patched=passed
+  - io.crate.analyze.where.EqualityExtractorTest#testExtract2ColPKFromNestedOrWithDuplicates: baseline=passed, patched=passed
+  - io.crate.analyze.where.EqualityExtractorTest#testExtract2ColPKWithAndAndNestedOr: baseline=passed, patched=passed
+  - io.crate.analyze.where.EqualityExtractorTest#testExtract2ColPKWithOrFullDistinctKeys: baseline=passed, patched=passed
+  - io.crate.analyze.where.EqualityExtractorTest#testExtract2ColPKWithOrFullDuplicateKeys: baseline=passed, patched=passed
+  - io.crate.analyze.where.EqualityExtractorTest#testExtractNoRoutingFromForeignOnly: baseline=passed, patched=passed
+  - io.crate.analyze.where.EqualityExtractorTest#testExtractNoRoutingFromOrWithForeignColumn: baseline=passed, patched=passed
+  - io.crate.analyze.where.EqualityExtractorTest#testExtractRoutingFromAnd: baseline=passed, patched=passed
+  - io.crate.analyze.where.EqualityExtractorTest#testExtractRoutingFromNestedOr: baseline=passed, patched=passed
+  - io.crate.analyze.where.EqualityExtractorTest#testExtractRoutingFromOr: baseline=passed, patched=passed
+  - io.crate.analyze.where.EqualityExtractorTest#testExtractSinglePK1FromAndAnyEq: baseline=passed, patched=passed
+  - io.crate.analyze.where.EqualityExtractorTest#testExtractSinglePKFromAnyEq: baseline=passed, patched=passed
+  - io.crate.analyze.where.EqualityExtractorTest#testExtractSinglePKFromAnyEqInOr: baseline=passed, patched=passed
+  - io.crate.analyze.where.EqualityExtractorTest#testExtractSinglePKFromOrInAnd: baseline=passed, patched=passed
+  - io.crate.analyze.where.EqualityExtractorTest#testNoExtract2ColPKFromAndEq1PartAnd2ForeignColumns: baseline=passed, patched=passed
+  - io.crate.analyze.where.EqualityExtractorTest#testNoExtract2ColPKFromAndWithEq1PartAnd1ForeignColumnInOr: baseline=passed, patched=passed
+  - io.crate.analyze.where.EqualityExtractorTest#testNoExtract2ColPKFromOnly1Part: baseline=passed, patched=passed
+  - io.crate.analyze.where.EqualityExtractorTest#testNoExtract2ColPKWithOr: baseline=passed, patched=passed
+  - io.crate.analyze.where.EqualityExtractorTest#testNoExtractOnNotEqualsOnSinglePk: baseline=passed, patched=passed
+  - io.crate.analyze.where.EqualityExtractorTest#testNoExtractSinglePKFromAnd: baseline=passed, patched=passed
+  - io.crate.analyze.where.EqualityExtractorTest#testNoPKExtractionIfMatchIsPresent: baseline=passed, patched=passed
+  - io.crate.analyze.where.EqualityExtractorTest#testNoPKExtractionOnNotIn: baseline=passed, patched=passed
+  - io.crate.analyze.where.EqualityExtractorTest#testNoPKExtractionWhenColumnsOnBothSidesOfEqual: baseline=passed, patched=passed
+  - io.crate.analyze.where.EqualityExtractorTest#test_no_exact_result_on_partial_match: baseline=passed, patched=passed
+  - io.crate.analyze.where.EqualityExtractorTest#test_no_pk_extraction_from_pk_eq_pk: baseline=passed, patched=passed
+  - io.crate.analyze.where.EqualityExtractorTest#test_no_pk_extraction_if_nonPK_column_under_or: baseline=passed, patched=passed
+  - io.crate.analyze.where.EqualityExtractorTest#test_no_pk_extraction_if_the_pk_is_under_is_null: baseline=passed, patched=passed
+  - io.crate.analyze.where.EqualityExtractorTest#test_no_pk_extraction_if_the_pk_is_under_not: baseline=passed, patched=passed
+  - io.crate.analyze.where.EqualityExtractorTest#test_pk_extraction_breaks_after_x_iterations: baseline=passed, patched=passed
+  - io.crate.analyze.where.EqualityExtractorTest#test_pk_extraction_if_another_col_is_under_not: baseline=passed, patched=passed
+  - io.crate.analyze.where.EqualityExtractorTest#test_pk_extraction_interrupted_when_exceeds_timeout: baseline=passed, patched=passed
+  - io.crate.analyze.where.EqualityExtractorTest#test_primary_key_comparison_is_not_detected_inside_cast_function: baseline=passed, patched=passed
+  - io.crate.analyze.where.EqualityExtractorTest#test_primary_key_extraction_if_combined_with_and_operator: baseline=passed, patched=passed
+  - io.crate.analyze.where.EqualityExtractorTest#test_primary_key_extraction_if_combined_with_and_scalar: baseline=passed, patched=passed
+  - io.crate.analyze.where.EqualityExtractorTest#test_primary_key_extraction_on_subscript_with_any: baseline=passed, patched=passed
+  - io.crate.analyze.where.EqualityExtractorTest#test_standalone_boolean_column_transformed_to_eq_true_expression: baseline=failed, patched=passed

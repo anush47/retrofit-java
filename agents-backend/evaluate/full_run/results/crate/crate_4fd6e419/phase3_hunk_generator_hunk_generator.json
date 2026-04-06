@@ -1,0 +1,307 @@
+{
+  "adapted_file_edits": [
+    {
+      "target_file": "server/src/main/java/io/crate/execution/MultiPhaseExecutor.java",
+      "mainline_file": "server/src/main/java/io/crate/execution/MultiPhaseExecutor.java",
+      "old_string": "<developer patch fast path>",
+      "new_string": "diff --git a/server/src/main/java/io/crate/execution/MultiPhaseExecutor.java b/server/src/main/java/io/crate/execution/MultiPhaseExecutor.java\nindex 59605aca85..4fc59ef46d 100644\n--- a/server/src/main/java/io/crate/execution/MultiPhaseExecutor.java\n+++ b/server/src/main/java/io/crate/execution/MultiPhaseExecutor.java\n@@ -21,8 +21,13 @@\n \n package io.crate.execution;\n \n+import static io.crate.data.breaker.BlockBasedRamAccounting.MAX_BLOCK_SIZE_IN_BYTES;\n+\n+import io.crate.breaker.ConcurrentRamAccounting;\n import io.crate.data.CollectingRowConsumer;\n import io.crate.data.Row;\n+import io.crate.data.breaker.BlockBasedRamAccounting;\n+import io.crate.data.breaker.RamAccounting;\n import io.crate.execution.engine.FirstColumnConsumers;\n import io.crate.expression.symbol.SelectSymbol;\n import io.crate.planner.DependencyCarrier;\n@@ -36,6 +41,8 @@ import java.util.List;\n import java.util.Map;\n import java.util.concurrent.CompletableFuture;\n \n+import org.elasticsearch.indices.breaker.HierarchyCircuitBreakerService;\n+\n public final class MultiPhaseExecutor {\n \n     private MultiPhaseExecutor() {\n@@ -45,13 +52,20 @@ public final class MultiPhaseExecutor {\n                                                              DependencyCarrier executor,\n                                                              PlannerContext plannerContext,\n                                                              Row params) {\n+        var ramAccounting = ConcurrentRamAccounting.forCircuitBreaker(\n+            \"multi-phase\",\n+            executor.circuitBreaker(HierarchyCircuitBreakerService.QUERY),\n+            plannerContext.transactionContext().sessionSettings().memoryLimitInBytes()\n+        );\n+\n         List<CompletableFuture<?>> dependencyFutures = new ArrayList<>(dependencies.size());\n         IdentityHashMap<SelectSymbol, Object> valueBySubQuery = new IdentityHashMap<>();\n+\n         for (Map.Entry<LogicalPlan, SelectSymbol> entry : dependencies.entrySet()) {\n             LogicalPlan depPlan = entry.getKey();\n             SelectSymbol selectSymbol = entry.getValue();\n \n-            CollectingRowConsumer<?, ?> rowConsumer = getConsumer(selectSymbol.getResultType());\n+            CollectingRowConsumer<?, ?> rowConsumer = getConsumer(selectSymbol, ramAccounting);\n             depPlan.execute(\n                 executor, PlannerContext.forSubPlan(plannerContext), rowConsumer, params, SubQueryResults.EMPTY);\n \n@@ -63,10 +77,19 @@ public final class MultiPhaseExecutor {\n         }\n         return CompletableFuture\n             .allOf(dependencyFutures.toArray(new CompletableFuture[0]))\n-            .thenApply(ignored -> new SubQueryResults(valueBySubQuery));\n+            .thenApply(ignored -> {\n+                ramAccounting.release();\n+                return new SubQueryResults(valueBySubQuery);\n+            });\n     }\n \n-    private static CollectingRowConsumer<?, ?> getConsumer(SelectSymbol.ResultType resultType) {\n-        return new CollectingRowConsumer<>(FirstColumnConsumers.getCollector(resultType));\n+    private static CollectingRowConsumer<?, ?> getConsumer(SelectSymbol selectSymbol, RamAccounting ramAccounting) {\n+        return new CollectingRowConsumer<>(\n+            FirstColumnConsumers.getCollector(\n+                selectSymbol.getResultType(),\n+                selectSymbol.innerType(),\n+                new BlockBasedRamAccounting(ramAccounting::addBytes, MAX_BLOCK_SIZE_IN_BYTES)\n+            )\n+        );\n     }\n }",
+      "edit_type": "replace",
+      "verified": true,
+      "verification_result": "developer_fast_path_ok",
+      "applied": true,
+      "apply_result": "SUCCESS"
+    },
+    {
+      "target_file": "server/src/main/java/io/crate/execution/engine/CorrelatedJoinProjector.java",
+      "mainline_file": "server/src/main/java/io/crate/execution/engine/CorrelatedJoinProjector.java",
+      "old_string": "<developer patch fast path>",
+      "new_string": "diff --git a/server/src/main/java/io/crate/execution/engine/CorrelatedJoinProjector.java b/server/src/main/java/io/crate/execution/engine/CorrelatedJoinProjector.java\nindex 22382ceea3..20b79c459c 100644\n--- a/server/src/main/java/io/crate/execution/engine/CorrelatedJoinProjector.java\n+++ b/server/src/main/java/io/crate/execution/engine/CorrelatedJoinProjector.java\n@@ -33,6 +33,7 @@ import io.crate.data.CloseableIterator;\n import io.crate.data.CollectingRowConsumer;\n import io.crate.data.Projector;\n import io.crate.data.Row;\n+import io.crate.data.breaker.RamAccounting;\n import io.crate.expression.symbol.SelectSymbol;\n import io.crate.expression.symbol.Symbol;\n import io.crate.planner.DependencyCarrier;\n@@ -75,7 +76,11 @@ public final class CorrelatedJoinProjector implements Projector {\n         private final Collector<Row, ?, ?> collector;\n \n         public BindAndExecuteSubQuery() {\n-            this.collector = FirstColumnConsumers.getCollector(correlatedSubQuery.getResultType());\n+            this.collector = FirstColumnConsumers.getCollector(\n+                correlatedSubQuery.getResultType(),\n+                correlatedSubQuery.innerType(),\n+                RamAccounting.NO_ACCOUNTING\n+            );\n         }\n \n         @Override",
+      "edit_type": "replace",
+      "verified": true,
+      "verification_result": "developer_fast_path_ok",
+      "applied": true,
+      "apply_result": "SUCCESS"
+    },
+    {
+      "target_file": "server/src/main/java/io/crate/execution/engine/FirstColumnConsumers.java",
+      "mainline_file": "server/src/main/java/io/crate/execution/engine/FirstColumnConsumers.java",
+      "old_string": "<developer patch fast path>",
+      "new_string": "diff --git a/server/src/main/java/io/crate/execution/engine/FirstColumnConsumers.java b/server/src/main/java/io/crate/execution/engine/FirstColumnConsumers.java\nindex 1f6dabdc28..fc3e237f85 100644\n--- a/server/src/main/java/io/crate/execution/engine/FirstColumnConsumers.java\n+++ b/server/src/main/java/io/crate/execution/engine/FirstColumnConsumers.java\n@@ -33,7 +33,9 @@ import java.util.function.UnaryOperator;\n import java.util.stream.Collector;\n \n import io.crate.data.Row;\n+import io.crate.data.breaker.RamAccounting;\n import io.crate.expression.symbol.SelectSymbol.ResultType;\n+import io.crate.types.DataType;\n \n /**\n  * Collectors to retrieve either {@link AllValues} or a {@link SingleValue} of the first column of each row.\n@@ -42,9 +44,13 @@ public class FirstColumnConsumers {\n \n     private static class AllValues implements Collector<Row, List<Object>, List<Object>> {\n \n-        public static final AllValues INSTANCE = new AllValues();\n+        private final RamAccounting ramAccounting;\n+        private final DataType<Object> dataType;\n \n-        private AllValues() {\n+        @SuppressWarnings(\"unchecked\")\n+        private AllValues(RamAccounting ramAccounting, DataType<?> dataType) {\n+            this.ramAccounting = ramAccounting;\n+            this.dataType = (DataType<Object>) dataType;\n         }\n \n         @Override\n@@ -55,7 +61,9 @@ public class FirstColumnConsumers {\n         @Override\n         public BiConsumer<List<Object>, Row> accumulator() {\n             return (agg, row) -> {\n-                agg.add(row.get(0));\n+                Object value = row.get(0);\n+                ramAccounting.addBytes(dataType.valueBytes(value));\n+                agg.add(value);\n             };\n         }\n \n@@ -123,11 +131,10 @@ public class FirstColumnConsumers {\n \n     }\n \n-    public static Collector<Row, ?, ?> getCollector(ResultType resultType) {\n-        return switch (resultType) {\n-            case SINGLE_COLUMN_MULTIPLE_VALUES -> AllValues.INSTANCE;\n-            case SINGLE_COLUMN_SINGLE_VALUE -> SingleValue.INSTANCE;\n-            case SINGLE_COLUMN_EXISTS -> AllValues.INSTANCE;\n-        };\n+    public static Collector<Row, ?, ?> getCollector(ResultType resultType, DataType<?> dataType, RamAccounting ramAccounting) {\n+        if (resultType == ResultType.SINGLE_COLUMN_SINGLE_VALUE) {\n+            return SingleValue.INSTANCE;\n+        }\n+        return new AllValues(ramAccounting, dataType);\n     }\n }",
+      "edit_type": "replace",
+      "verified": true,
+      "verification_result": "developer_fast_path_ok",
+      "applied": true,
+      "apply_result": "SUCCESS"
+    },
+    {
+      "target_file": "server/src/main/java/io/crate/expression/symbol/SelectSymbol.java",
+      "mainline_file": "server/src/main/java/io/crate/expression/symbol/SelectSymbol.java",
+      "old_string": "<developer patch fast path>",
+      "new_string": "diff --git a/server/src/main/java/io/crate/expression/symbol/SelectSymbol.java b/server/src/main/java/io/crate/expression/symbol/SelectSymbol.java\nindex b279c39c64..df3078fe24 100644\n--- a/server/src/main/java/io/crate/expression/symbol/SelectSymbol.java\n+++ b/server/src/main/java/io/crate/expression/symbol/SelectSymbol.java\n@@ -102,6 +102,10 @@ public class SelectSymbol implements Symbol {\n         return dataType;\n     }\n \n+    public DataType<?> innerType() {\n+        return dataType.innerType();\n+    }\n+\n     @Override\n     public String toString() {\n         return \"(\" + relation + \")\";",
+      "edit_type": "replace",
+      "verified": true,
+      "verification_result": "developer_fast_path_ok",
+      "applied": true,
+      "apply_result": "SUCCESS"
+    }
+  ],
+  "all_adapted_file_edits": [
+    [
+      {
+        "target_file": "server/src/main/java/io/crate/execution/MultiPhaseExecutor.java",
+        "mainline_file": "server/src/main/java/io/crate/execution/MultiPhaseExecutor.java",
+        "old_string": "<developer patch fast path>",
+        "new_string": "diff --git a/server/src/main/java/io/crate/execution/MultiPhaseExecutor.java b/server/src/main/java/io/crate/execution/MultiPhaseExecutor.java\nindex 59605aca85..4fc59ef46d 100644\n--- a/server/src/main/java/io/crate/execution/MultiPhaseExecutor.java\n+++ b/server/src/main/java/io/crate/execution/MultiPhaseExecutor.java\n@@ -21,8 +21,13 @@\n \n package io.crate.execution;\n \n+import static io.crate.data.breaker.BlockBasedRamAccounting.MAX_BLOCK_SIZE_IN_BYTES;\n+\n+import io.crate.breaker.ConcurrentRamAccounting;\n import io.crate.data.CollectingRowConsumer;\n import io.crate.data.Row;\n+import io.crate.data.breaker.BlockBasedRamAccounting;\n+import io.crate.data.breaker.RamAccounting;\n import io.crate.execution.engine.FirstColumnConsumers;\n import io.crate.expression.symbol.SelectSymbol;\n import io.crate.planner.DependencyCarrier;\n@@ -36,6 +41,8 @@ import java.util.List;\n import java.util.Map;\n import java.util.concurrent.CompletableFuture;\n \n+import org.elasticsearch.indices.breaker.HierarchyCircuitBreakerService;\n+\n public final class MultiPhaseExecutor {\n \n     private MultiPhaseExecutor() {\n@@ -45,13 +52,20 @@ public final class MultiPhaseExecutor {\n                                                              DependencyCarrier executor,\n                                                              PlannerContext plannerContext,\n                                                              Row params) {\n+        var ramAccounting = ConcurrentRamAccounting.forCircuitBreaker(\n+            \"multi-phase\",\n+            executor.circuitBreaker(HierarchyCircuitBreakerService.QUERY),\n+            plannerContext.transactionContext().sessionSettings().memoryLimitInBytes()\n+        );\n+\n         List<CompletableFuture<?>> dependencyFutures = new ArrayList<>(dependencies.size());\n         IdentityHashMap<SelectSymbol, Object> valueBySubQuery = new IdentityHashMap<>();\n+\n         for (Map.Entry<LogicalPlan, SelectSymbol> entry : dependencies.entrySet()) {\n             LogicalPlan depPlan = entry.getKey();\n             SelectSymbol selectSymbol = entry.getValue();\n \n-            CollectingRowConsumer<?, ?> rowConsumer = getConsumer(selectSymbol.getResultType());\n+            CollectingRowConsumer<?, ?> rowConsumer = getConsumer(selectSymbol, ramAccounting);\n             depPlan.execute(\n                 executor, PlannerContext.forSubPlan(plannerContext), rowConsumer, params, SubQueryResults.EMPTY);\n \n@@ -63,10 +77,19 @@ public final class MultiPhaseExecutor {\n         }\n         return CompletableFuture\n             .allOf(dependencyFutures.toArray(new CompletableFuture[0]))\n-            .thenApply(ignored -> new SubQueryResults(valueBySubQuery));\n+            .thenApply(ignored -> {\n+                ramAccounting.release();\n+                return new SubQueryResults(valueBySubQuery);\n+            });\n     }\n \n-    private static CollectingRowConsumer<?, ?> getConsumer(SelectSymbol.ResultType resultType) {\n-        return new CollectingRowConsumer<>(FirstColumnConsumers.getCollector(resultType));\n+    private static CollectingRowConsumer<?, ?> getConsumer(SelectSymbol selectSymbol, RamAccounting ramAccounting) {\n+        return new CollectingRowConsumer<>(\n+            FirstColumnConsumers.getCollector(\n+                selectSymbol.getResultType(),\n+                selectSymbol.innerType(),\n+                new BlockBasedRamAccounting(ramAccounting::addBytes, MAX_BLOCK_SIZE_IN_BYTES)\n+            )\n+        );\n     }\n }",
+        "edit_type": "replace",
+        "verified": true,
+        "verification_result": "developer_fast_path_ok",
+        "applied": true,
+        "apply_result": "SUCCESS"
+      },
+      {
+        "target_file": "server/src/main/java/io/crate/execution/engine/CorrelatedJoinProjector.java",
+        "mainline_file": "server/src/main/java/io/crate/execution/engine/CorrelatedJoinProjector.java",
+        "old_string": "<developer patch fast path>",
+        "new_string": "diff --git a/server/src/main/java/io/crate/execution/engine/CorrelatedJoinProjector.java b/server/src/main/java/io/crate/execution/engine/CorrelatedJoinProjector.java\nindex 22382ceea3..20b79c459c 100644\n--- a/server/src/main/java/io/crate/execution/engine/CorrelatedJoinProjector.java\n+++ b/server/src/main/java/io/crate/execution/engine/CorrelatedJoinProjector.java\n@@ -33,6 +33,7 @@ import io.crate.data.CloseableIterator;\n import io.crate.data.CollectingRowConsumer;\n import io.crate.data.Projector;\n import io.crate.data.Row;\n+import io.crate.data.breaker.RamAccounting;\n import io.crate.expression.symbol.SelectSymbol;\n import io.crate.expression.symbol.Symbol;\n import io.crate.planner.DependencyCarrier;\n@@ -75,7 +76,11 @@ public final class CorrelatedJoinProjector implements Projector {\n         private final Collector<Row, ?, ?> collector;\n \n         public BindAndExecuteSubQuery() {\n-            this.collector = FirstColumnConsumers.getCollector(correlatedSubQuery.getResultType());\n+            this.collector = FirstColumnConsumers.getCollector(\n+                correlatedSubQuery.getResultType(),\n+                correlatedSubQuery.innerType(),\n+                RamAccounting.NO_ACCOUNTING\n+            );\n         }\n \n         @Override",
+        "edit_type": "replace",
+        "verified": true,
+        "verification_result": "developer_fast_path_ok",
+        "applied": true,
+        "apply_result": "SUCCESS"
+      },
+      {
+        "target_file": "server/src/main/java/io/crate/execution/engine/FirstColumnConsumers.java",
+        "mainline_file": "server/src/main/java/io/crate/execution/engine/FirstColumnConsumers.java",
+        "old_string": "<developer patch fast path>",
+        "new_string": "diff --git a/server/src/main/java/io/crate/execution/engine/FirstColumnConsumers.java b/server/src/main/java/io/crate/execution/engine/FirstColumnConsumers.java\nindex 1f6dabdc28..fc3e237f85 100644\n--- a/server/src/main/java/io/crate/execution/engine/FirstColumnConsumers.java\n+++ b/server/src/main/java/io/crate/execution/engine/FirstColumnConsumers.java\n@@ -33,7 +33,9 @@ import java.util.function.UnaryOperator;\n import java.util.stream.Collector;\n \n import io.crate.data.Row;\n+import io.crate.data.breaker.RamAccounting;\n import io.crate.expression.symbol.SelectSymbol.ResultType;\n+import io.crate.types.DataType;\n \n /**\n  * Collectors to retrieve either {@link AllValues} or a {@link SingleValue} of the first column of each row.\n@@ -42,9 +44,13 @@ public class FirstColumnConsumers {\n \n     private static class AllValues implements Collector<Row, List<Object>, List<Object>> {\n \n-        public static final AllValues INSTANCE = new AllValues();\n+        private final RamAccounting ramAccounting;\n+        private final DataType<Object> dataType;\n \n-        private AllValues() {\n+        @SuppressWarnings(\"unchecked\")\n+        private AllValues(RamAccounting ramAccounting, DataType<?> dataType) {\n+            this.ramAccounting = ramAccounting;\n+            this.dataType = (DataType<Object>) dataType;\n         }\n \n         @Override\n@@ -55,7 +61,9 @@ public class FirstColumnConsumers {\n         @Override\n         public BiConsumer<List<Object>, Row> accumulator() {\n             return (agg, row) -> {\n-                agg.add(row.get(0));\n+                Object value = row.get(0);\n+                ramAccounting.addBytes(dataType.valueBytes(value));\n+                agg.add(value);\n             };\n         }\n \n@@ -123,11 +131,10 @@ public class FirstColumnConsumers {\n \n     }\n \n-    public static Collector<Row, ?, ?> getCollector(ResultType resultType) {\n-        return switch (resultType) {\n-            case SINGLE_COLUMN_MULTIPLE_VALUES -> AllValues.INSTANCE;\n-            case SINGLE_COLUMN_SINGLE_VALUE -> SingleValue.INSTANCE;\n-            case SINGLE_COLUMN_EXISTS -> AllValues.INSTANCE;\n-        };\n+    public static Collector<Row, ?, ?> getCollector(ResultType resultType, DataType<?> dataType, RamAccounting ramAccounting) {\n+        if (resultType == ResultType.SINGLE_COLUMN_SINGLE_VALUE) {\n+            return SingleValue.INSTANCE;\n+        }\n+        return new AllValues(ramAccounting, dataType);\n     }\n }",
+        "edit_type": "replace",
+        "verified": true,
+        "verification_result": "developer_fast_path_ok",
+        "applied": true,
+        "apply_result": "SUCCESS"
+      },
+      {
+        "target_file": "server/src/main/java/io/crate/expression/symbol/SelectSymbol.java",
+        "mainline_file": "server/src/main/java/io/crate/expression/symbol/SelectSymbol.java",
+        "old_string": "<developer patch fast path>",
+        "new_string": "diff --git a/server/src/main/java/io/crate/expression/symbol/SelectSymbol.java b/server/src/main/java/io/crate/expression/symbol/SelectSymbol.java\nindex b279c39c64..df3078fe24 100644\n--- a/server/src/main/java/io/crate/expression/symbol/SelectSymbol.java\n+++ b/server/src/main/java/io/crate/expression/symbol/SelectSymbol.java\n@@ -102,6 +102,10 @@ public class SelectSymbol implements Symbol {\n         return dataType;\n     }\n \n+    public DataType<?> innerType() {\n+        return dataType.innerType();\n+    }\n+\n     @Override\n     public String toString() {\n         return \"(\" + relation + \")\";",
+        "edit_type": "replace",
+        "verified": true,
+        "verification_result": "developer_fast_path_ok",
+        "applied": true,
+        "apply_result": "SUCCESS"
+      }
+    ]
+  ],
+  "agent_trajectory_edits": [
+    []
+  ],
+  "adapted_code_hunks": [
+    {
+      "target_file": "server/src/main/java/io/crate/execution/MultiPhaseExecutor.java",
+      "mainline_file": "server/src/main/java/io/crate/execution/MultiPhaseExecutor.java",
+      "hunk_text": "diff --git a/server/src/main/java/io/crate/execution/MultiPhaseExecutor.java b/server/src/main/java/io/crate/execution/MultiPhaseExecutor.java\nindex 59605aca85..4fc59ef46d 100644\n--- a/server/src/main/java/io/crate/execution/MultiPhaseExecutor.java\n+++ b/server/src/main/java/io/crate/execution/MultiPhaseExecutor.java\n@@ -21,8 +21,13 @@\n \n package io.crate.execution;\n \n+import static io.crate.data.breaker.BlockBasedRamAccounting.MAX_BLOCK_SIZE_IN_BYTES;\n+\n+import io.crate.breaker.ConcurrentRamAccounting;\n import io.crate.data.CollectingRowConsumer;\n import io.crate.data.Row;\n+import io.crate.data.breaker.BlockBasedRamAccounting;\n+import io.crate.data.breaker.RamAccounting;\n import io.crate.execution.engine.FirstColumnConsumers;\n import io.crate.expression.symbol.SelectSymbol;\n import io.crate.planner.DependencyCarrier;\n@@ -36,6 +41,8 @@ import java.util.List;\n import java.util.Map;\n import java.util.concurrent.CompletableFuture;\n \n+import org.elasticsearch.indices.breaker.HierarchyCircuitBreakerService;\n+\n public final class MultiPhaseExecutor {\n \n     private MultiPhaseExecutor() {\n@@ -45,13 +52,20 @@ public final class MultiPhaseExecutor {\n                                                              DependencyCarrier executor,\n                                                              PlannerContext plannerContext,\n                                                              Row params) {\n+        var ramAccounting = ConcurrentRamAccounting.forCircuitBreaker(\n+            \"multi-phase\",\n+            executor.circuitBreaker(HierarchyCircuitBreakerService.QUERY),\n+            plannerContext.transactionContext().sessionSettings().memoryLimitInBytes()\n+        );\n+\n         List<CompletableFuture<?>> dependencyFutures = new ArrayList<>(dependencies.size());\n         IdentityHashMap<SelectSymbol, Object> valueBySubQuery = new IdentityHashMap<>();\n+\n         for (Map.Entry<LogicalPlan, SelectSymbol> entry : dependencies.entrySet()) {\n             LogicalPlan depPlan = entry.getKey();\n             SelectSymbol selectSymbol = entry.getValue();\n \n-            CollectingRowConsumer<?, ?> rowConsumer = getConsumer(selectSymbol.getResultType());\n+            CollectingRowConsumer<?, ?> rowConsumer = getConsumer(selectSymbol, ramAccounting);\n             depPlan.execute(\n                 executor, PlannerContext.forSubPlan(plannerContext), rowConsumer, params, SubQueryResults.EMPTY);\n \n@@ -63,10 +77,19 @@ public final class MultiPhaseExecutor {\n         }\n         return CompletableFuture\n             .allOf(dependencyFutures.toArray(new CompletableFuture[0]))\n-            .thenApply(ignored -> new SubQueryResults(valueBySubQuery));\n+            .thenApply(ignored -> {\n+                ramAccounting.release();\n+                return new SubQueryResults(valueBySubQuery);\n+            });\n     }\n \n-    private static CollectingRowConsumer<?, ?> getConsumer(SelectSymbol.ResultType resultType) {\n-        return new CollectingRowConsumer<>(FirstColumnConsumers.getCollector(resultType));\n+    private static CollectingRowConsumer<?, ?> getConsumer(SelectSymbol selectSymbol, RamAccounting ramAccounting) {\n+        return new CollectingRowConsumer<>(\n+            FirstColumnConsumers.getCollector(\n+                selectSymbol.getResultType(),\n+                selectSymbol.innerType(),\n+                new BlockBasedRamAccounting(ramAccounting::addBytes, MAX_BLOCK_SIZE_IN_BYTES)\n+            )\n+        );\n     }\n }\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    },
+    {
+      "target_file": "server/src/main/java/io/crate/execution/engine/CorrelatedJoinProjector.java",
+      "mainline_file": "server/src/main/java/io/crate/execution/engine/CorrelatedJoinProjector.java",
+      "hunk_text": "diff --git a/server/src/main/java/io/crate/execution/engine/CorrelatedJoinProjector.java b/server/src/main/java/io/crate/execution/engine/CorrelatedJoinProjector.java\nindex 22382ceea3..20b79c459c 100644\n--- a/server/src/main/java/io/crate/execution/engine/CorrelatedJoinProjector.java\n+++ b/server/src/main/java/io/crate/execution/engine/CorrelatedJoinProjector.java\n@@ -33,6 +33,7 @@ import io.crate.data.CloseableIterator;\n import io.crate.data.CollectingRowConsumer;\n import io.crate.data.Projector;\n import io.crate.data.Row;\n+import io.crate.data.breaker.RamAccounting;\n import io.crate.expression.symbol.SelectSymbol;\n import io.crate.expression.symbol.Symbol;\n import io.crate.planner.DependencyCarrier;\n@@ -75,7 +76,11 @@ public final class CorrelatedJoinProjector implements Projector {\n         private final Collector<Row, ?, ?> collector;\n \n         public BindAndExecuteSubQuery() {\n-            this.collector = FirstColumnConsumers.getCollector(correlatedSubQuery.getResultType());\n+            this.collector = FirstColumnConsumers.getCollector(\n+                correlatedSubQuery.getResultType(),\n+                correlatedSubQuery.innerType(),\n+                RamAccounting.NO_ACCOUNTING\n+            );\n         }\n \n         @Override\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    },
+    {
+      "target_file": "server/src/main/java/io/crate/execution/engine/FirstColumnConsumers.java",
+      "mainline_file": "server/src/main/java/io/crate/execution/engine/FirstColumnConsumers.java",
+      "hunk_text": "diff --git a/server/src/main/java/io/crate/execution/engine/FirstColumnConsumers.java b/server/src/main/java/io/crate/execution/engine/FirstColumnConsumers.java\nindex 1f6dabdc28..fc3e237f85 100644\n--- a/server/src/main/java/io/crate/execution/engine/FirstColumnConsumers.java\n+++ b/server/src/main/java/io/crate/execution/engine/FirstColumnConsumers.java\n@@ -33,7 +33,9 @@ import java.util.function.UnaryOperator;\n import java.util.stream.Collector;\n \n import io.crate.data.Row;\n+import io.crate.data.breaker.RamAccounting;\n import io.crate.expression.symbol.SelectSymbol.ResultType;\n+import io.crate.types.DataType;\n \n /**\n  * Collectors to retrieve either {@link AllValues} or a {@link SingleValue} of the first column of each row.\n@@ -42,9 +44,13 @@ public class FirstColumnConsumers {\n \n     private static class AllValues implements Collector<Row, List<Object>, List<Object>> {\n \n-        public static final AllValues INSTANCE = new AllValues();\n+        private final RamAccounting ramAccounting;\n+        private final DataType<Object> dataType;\n \n-        private AllValues() {\n+        @SuppressWarnings(\"unchecked\")\n+        private AllValues(RamAccounting ramAccounting, DataType<?> dataType) {\n+            this.ramAccounting = ramAccounting;\n+            this.dataType = (DataType<Object>) dataType;\n         }\n \n         @Override\n@@ -55,7 +61,9 @@ public class FirstColumnConsumers {\n         @Override\n         public BiConsumer<List<Object>, Row> accumulator() {\n             return (agg, row) -> {\n-                agg.add(row.get(0));\n+                Object value = row.get(0);\n+                ramAccounting.addBytes(dataType.valueBytes(value));\n+                agg.add(value);\n             };\n         }\n \n@@ -123,11 +131,10 @@ public class FirstColumnConsumers {\n \n     }\n \n-    public static Collector<Row, ?, ?> getCollector(ResultType resultType) {\n-        return switch (resultType) {\n-            case SINGLE_COLUMN_MULTIPLE_VALUES -> AllValues.INSTANCE;\n-            case SINGLE_COLUMN_SINGLE_VALUE -> SingleValue.INSTANCE;\n-            case SINGLE_COLUMN_EXISTS -> AllValues.INSTANCE;\n-        };\n+    public static Collector<Row, ?, ?> getCollector(ResultType resultType, DataType<?> dataType, RamAccounting ramAccounting) {\n+        if (resultType == ResultType.SINGLE_COLUMN_SINGLE_VALUE) {\n+            return SingleValue.INSTANCE;\n+        }\n+        return new AllValues(ramAccounting, dataType);\n     }\n }\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    },
+    {
+      "target_file": "server/src/main/java/io/crate/expression/symbol/SelectSymbol.java",
+      "mainline_file": "server/src/main/java/io/crate/expression/symbol/SelectSymbol.java",
+      "hunk_text": "diff --git a/server/src/main/java/io/crate/expression/symbol/SelectSymbol.java b/server/src/main/java/io/crate/expression/symbol/SelectSymbol.java\nindex b279c39c64..df3078fe24 100644\n--- a/server/src/main/java/io/crate/expression/symbol/SelectSymbol.java\n+++ b/server/src/main/java/io/crate/expression/symbol/SelectSymbol.java\n@@ -102,6 +102,10 @@ public class SelectSymbol implements Symbol {\n         return dataType;\n     }\n \n+    public DataType<?> innerType() {\n+        return dataType.innerType();\n+    }\n+\n     @Override\n     public String toString() {\n         return \"(\" + relation + \")\";\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    }
+  ],
+  "validation_repeated_patch_detected": false,
+  "validation_repeated_plan_detected": false,
+  "best_effort_adapted_code_hunks": [
+    {
+      "target_file": "server/src/main/java/io/crate/execution/MultiPhaseExecutor.java",
+      "mainline_file": "server/src/main/java/io/crate/execution/MultiPhaseExecutor.java",
+      "hunk_text": "diff --git a/server/src/main/java/io/crate/execution/MultiPhaseExecutor.java b/server/src/main/java/io/crate/execution/MultiPhaseExecutor.java\nindex 59605aca85..4fc59ef46d 100644\n--- a/server/src/main/java/io/crate/execution/MultiPhaseExecutor.java\n+++ b/server/src/main/java/io/crate/execution/MultiPhaseExecutor.java\n@@ -21,8 +21,13 @@\n \n package io.crate.execution;\n \n+import static io.crate.data.breaker.BlockBasedRamAccounting.MAX_BLOCK_SIZE_IN_BYTES;\n+\n+import io.crate.breaker.ConcurrentRamAccounting;\n import io.crate.data.CollectingRowConsumer;\n import io.crate.data.Row;\n+import io.crate.data.breaker.BlockBasedRamAccounting;\n+import io.crate.data.breaker.RamAccounting;\n import io.crate.execution.engine.FirstColumnConsumers;\n import io.crate.expression.symbol.SelectSymbol;\n import io.crate.planner.DependencyCarrier;\n@@ -36,6 +41,8 @@ import java.util.List;\n import java.util.Map;\n import java.util.concurrent.CompletableFuture;\n \n+import org.elasticsearch.indices.breaker.HierarchyCircuitBreakerService;\n+\n public final class MultiPhaseExecutor {\n \n     private MultiPhaseExecutor() {\n@@ -45,13 +52,20 @@ public final class MultiPhaseExecutor {\n                                                              DependencyCarrier executor,\n                                                              PlannerContext plannerContext,\n                                                              Row params) {\n+        var ramAccounting = ConcurrentRamAccounting.forCircuitBreaker(\n+            \"multi-phase\",\n+            executor.circuitBreaker(HierarchyCircuitBreakerService.QUERY),\n+            plannerContext.transactionContext().sessionSettings().memoryLimitInBytes()\n+        );\n+\n         List<CompletableFuture<?>> dependencyFutures = new ArrayList<>(dependencies.size());\n         IdentityHashMap<SelectSymbol, Object> valueBySubQuery = new IdentityHashMap<>();\n+\n         for (Map.Entry<LogicalPlan, SelectSymbol> entry : dependencies.entrySet()) {\n             LogicalPlan depPlan = entry.getKey();\n             SelectSymbol selectSymbol = entry.getValue();\n \n-            CollectingRowConsumer<?, ?> rowConsumer = getConsumer(selectSymbol.getResultType());\n+            CollectingRowConsumer<?, ?> rowConsumer = getConsumer(selectSymbol, ramAccounting);\n             depPlan.execute(\n                 executor, PlannerContext.forSubPlan(plannerContext), rowConsumer, params, SubQueryResults.EMPTY);\n \n@@ -63,10 +77,19 @@ public final class MultiPhaseExecutor {\n         }\n         return CompletableFuture\n             .allOf(dependencyFutures.toArray(new CompletableFuture[0]))\n-            .thenApply(ignored -> new SubQueryResults(valueBySubQuery));\n+            .thenApply(ignored -> {\n+                ramAccounting.release();\n+                return new SubQueryResults(valueBySubQuery);\n+            });\n     }\n \n-    private static CollectingRowConsumer<?, ?> getConsumer(SelectSymbol.ResultType resultType) {\n-        return new CollectingRowConsumer<>(FirstColumnConsumers.getCollector(resultType));\n+    private static CollectingRowConsumer<?, ?> getConsumer(SelectSymbol selectSymbol, RamAccounting ramAccounting) {\n+        return new CollectingRowConsumer<>(\n+            FirstColumnConsumers.getCollector(\n+                selectSymbol.getResultType(),\n+                selectSymbol.innerType(),\n+                new BlockBasedRamAccounting(ramAccounting::addBytes, MAX_BLOCK_SIZE_IN_BYTES)\n+            )\n+        );\n     }\n }\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    },
+    {
+      "target_file": "server/src/main/java/io/crate/execution/engine/CorrelatedJoinProjector.java",
+      "mainline_file": "server/src/main/java/io/crate/execution/engine/CorrelatedJoinProjector.java",
+      "hunk_text": "diff --git a/server/src/main/java/io/crate/execution/engine/CorrelatedJoinProjector.java b/server/src/main/java/io/crate/execution/engine/CorrelatedJoinProjector.java\nindex 22382ceea3..20b79c459c 100644\n--- a/server/src/main/java/io/crate/execution/engine/CorrelatedJoinProjector.java\n+++ b/server/src/main/java/io/crate/execution/engine/CorrelatedJoinProjector.java\n@@ -33,6 +33,7 @@ import io.crate.data.CloseableIterator;\n import io.crate.data.CollectingRowConsumer;\n import io.crate.data.Projector;\n import io.crate.data.Row;\n+import io.crate.data.breaker.RamAccounting;\n import io.crate.expression.symbol.SelectSymbol;\n import io.crate.expression.symbol.Symbol;\n import io.crate.planner.DependencyCarrier;\n@@ -75,7 +76,11 @@ public final class CorrelatedJoinProjector implements Projector {\n         private final Collector<Row, ?, ?> collector;\n \n         public BindAndExecuteSubQuery() {\n-            this.collector = FirstColumnConsumers.getCollector(correlatedSubQuery.getResultType());\n+            this.collector = FirstColumnConsumers.getCollector(\n+                correlatedSubQuery.getResultType(),\n+                correlatedSubQuery.innerType(),\n+                RamAccounting.NO_ACCOUNTING\n+            );\n         }\n \n         @Override\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    },
+    {
+      "target_file": "server/src/main/java/io/crate/execution/engine/FirstColumnConsumers.java",
+      "mainline_file": "server/src/main/java/io/crate/execution/engine/FirstColumnConsumers.java",
+      "hunk_text": "diff --git a/server/src/main/java/io/crate/execution/engine/FirstColumnConsumers.java b/server/src/main/java/io/crate/execution/engine/FirstColumnConsumers.java\nindex 1f6dabdc28..fc3e237f85 100644\n--- a/server/src/main/java/io/crate/execution/engine/FirstColumnConsumers.java\n+++ b/server/src/main/java/io/crate/execution/engine/FirstColumnConsumers.java\n@@ -33,7 +33,9 @@ import java.util.function.UnaryOperator;\n import java.util.stream.Collector;\n \n import io.crate.data.Row;\n+import io.crate.data.breaker.RamAccounting;\n import io.crate.expression.symbol.SelectSymbol.ResultType;\n+import io.crate.types.DataType;\n \n /**\n  * Collectors to retrieve either {@link AllValues} or a {@link SingleValue} of the first column of each row.\n@@ -42,9 +44,13 @@ public class FirstColumnConsumers {\n \n     private static class AllValues implements Collector<Row, List<Object>, List<Object>> {\n \n-        public static final AllValues INSTANCE = new AllValues();\n+        private final RamAccounting ramAccounting;\n+        private final DataType<Object> dataType;\n \n-        private AllValues() {\n+        @SuppressWarnings(\"unchecked\")\n+        private AllValues(RamAccounting ramAccounting, DataType<?> dataType) {\n+            this.ramAccounting = ramAccounting;\n+            this.dataType = (DataType<Object>) dataType;\n         }\n \n         @Override\n@@ -55,7 +61,9 @@ public class FirstColumnConsumers {\n         @Override\n         public BiConsumer<List<Object>, Row> accumulator() {\n             return (agg, row) -> {\n-                agg.add(row.get(0));\n+                Object value = row.get(0);\n+                ramAccounting.addBytes(dataType.valueBytes(value));\n+                agg.add(value);\n             };\n         }\n \n@@ -123,11 +131,10 @@ public class FirstColumnConsumers {\n \n     }\n \n-    public static Collector<Row, ?, ?> getCollector(ResultType resultType) {\n-        return switch (resultType) {\n-            case SINGLE_COLUMN_MULTIPLE_VALUES -> AllValues.INSTANCE;\n-            case SINGLE_COLUMN_SINGLE_VALUE -> SingleValue.INSTANCE;\n-            case SINGLE_COLUMN_EXISTS -> AllValues.INSTANCE;\n-        };\n+    public static Collector<Row, ?, ?> getCollector(ResultType resultType, DataType<?> dataType, RamAccounting ramAccounting) {\n+        if (resultType == ResultType.SINGLE_COLUMN_SINGLE_VALUE) {\n+            return SingleValue.INSTANCE;\n+        }\n+        return new AllValues(ramAccounting, dataType);\n     }\n }\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    },
+    {
+      "target_file": "server/src/main/java/io/crate/expression/symbol/SelectSymbol.java",
+      "mainline_file": "server/src/main/java/io/crate/expression/symbol/SelectSymbol.java",
+      "hunk_text": "diff --git a/server/src/main/java/io/crate/expression/symbol/SelectSymbol.java b/server/src/main/java/io/crate/expression/symbol/SelectSymbol.java\nindex b279c39c64..df3078fe24 100644\n--- a/server/src/main/java/io/crate/expression/symbol/SelectSymbol.java\n+++ b/server/src/main/java/io/crate/expression/symbol/SelectSymbol.java\n@@ -102,6 +102,10 @@ public class SelectSymbol implements Symbol {\n         return dataType;\n     }\n \n+    public DataType<?> innerType() {\n+        return dataType.innerType();\n+    }\n+\n     @Override\n     public String toString() {\n         return \"(\" + relation + \")\";\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    }
+  ],
+  "adapted_test_hunks": [],
+  "generation_checklist": [
+    {
+      "mainline_file": "server/src/main/java/io/crate/execution/MultiPhaseExecutor.java",
+      "target_file": "server/src/main/java/io/crate/execution/MultiPhaseExecutor.java",
+      "hunk_index": 0,
+      "adaptation_type": "TYPE_II",
+      "execution_types": [
+        "TYPE_II"
+      ],
+      "status": "success",
+      "reason": "developer_fast_path",
+      "todo_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ],
+      "completed_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ]
+    },
+    {
+      "mainline_file": "server/src/main/java/io/crate/execution/engine/CorrelatedJoinProjector.java",
+      "target_file": "server/src/main/java/io/crate/execution/engine/CorrelatedJoinProjector.java",
+      "hunk_index": 0,
+      "adaptation_type": "TYPE_II",
+      "execution_types": [
+        "TYPE_II"
+      ],
+      "status": "success",
+      "reason": "developer_fast_path",
+      "todo_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ],
+      "completed_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ]
+    },
+    {
+      "mainline_file": "server/src/main/java/io/crate/execution/engine/FirstColumnConsumers.java",
+      "target_file": "server/src/main/java/io/crate/execution/engine/FirstColumnConsumers.java",
+      "hunk_index": 0,
+      "adaptation_type": "TYPE_II",
+      "execution_types": [
+        "TYPE_II"
+      ],
+      "status": "success",
+      "reason": "developer_fast_path",
+      "todo_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ],
+      "completed_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ]
+    },
+    {
+      "mainline_file": "server/src/main/java/io/crate/expression/symbol/SelectSymbol.java",
+      "target_file": "server/src/main/java/io/crate/expression/symbol/SelectSymbol.java",
+      "hunk_index": 0,
+      "adaptation_type": "TYPE_II",
+      "execution_types": [
+        "TYPE_II"
+      ],
+      "status": "success",
+      "reason": "developer_fast_path",
+      "todo_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ],
+      "completed_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ]
+    }
+  ],
+  "generated_patch_hash": "d0957cbaa0d86120d30bc0530e435b39e695e7c87d17e7f92a1d1734cf4dfb96",
+  "force_type_v_until_success": false,
+  "force_type_v_reason": "",
+  "force_type_v_retry_files": [],
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "sources": []
+  }
+}

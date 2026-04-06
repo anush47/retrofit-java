@@ -1,0 +1,27 @@
+patch_id=crate_d85eba28
+project=crate
+mainline_commit=d85eba28a369253079aca3676f102996e75fbc96
+backport_commit=b34878c67426ff36510d90593b589afd5b4facc4
+mode=full
+started_at=2026-04-05T21:42:04.379991
+----------------------------------------
+Running full workflow graph
+Completed node=phase_0_optimistic
+Workflow completed successfully
+
+[crate/crate_d85eba28] Setting up repositories for mode=full...
+[crate/crate_d85eba28] Running full workflow graph...
+Router: Running Phase 0.
+Phase 0 (Optimistic): Checking direct patch applicability...
+Phase 0: Experiment mode — checking out parent of b34878c67426ff36510d90593b589afd5b4facc4...
+Phase 0: Building baseline by applying developer backport test hunks only...
+  Validation: server/src/test/java/io/crate/planner/operators/EquiJoinDetectorTest.java - applying 2 hunk(s) one by one in bottom-to-top order: [106, 46]
+    Agent 4: Executing crate helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_tests.sh
+Phase 0: git apply --check SUCCEEDED. Attempting actual patch application and test run.
+    Agent 4: Executing crate helper build script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_build.sh
+    Agent 4: Executing crate helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_tests.sh
+Phase 0: Transition summary -> reason=Valid: Observed fail-to-pass and/or newly passing relevant tests with no regressions.; fail->pass(2): ['io.crate.planner.operators.EquiJoinDetectorTest#test_case_expression_with_nested_equality', 'io.crate.planner.operators.EquiJoinDetectorTest#test_if_expression_with_nested_equality']; newly_passing(0): []; pass->fail(0): []
+Phase 0: Transition-based test validation passed. Fast-path success.
+Router: Phase 0 succeeded - taking fast-path exit.
+  Completed: phase_0_optimistic
+[crate/crate_d85eba28] Full workflow completed!

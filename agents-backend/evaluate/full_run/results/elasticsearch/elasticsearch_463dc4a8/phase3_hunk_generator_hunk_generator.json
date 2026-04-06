@@ -1,0 +1,169 @@
+{
+  "adapted_file_edits": [
+    {
+      "target_file": "x-pack/plugin/core/src/main/java/org/elasticsearch/xpack/core/deprecation/DeprecatedIndexPredicate.java",
+      "mainline_file": "x-pack/plugin/core/src/main/java/org/elasticsearch/xpack/core/deprecation/DeprecatedIndexPredicate.java",
+      "old_string": "<developer patch fast path>",
+      "new_string": "diff --git a/x-pack/plugin/core/src/main/java/org/elasticsearch/xpack/core/deprecation/DeprecatedIndexPredicate.java b/x-pack/plugin/core/src/main/java/org/elasticsearch/xpack/core/deprecation/DeprecatedIndexPredicate.java\nindex 84091a40fb2..5380e23c462 100644\n--- a/x-pack/plugin/core/src/main/java/org/elasticsearch/xpack/core/deprecation/DeprecatedIndexPredicate.java\n+++ b/x-pack/plugin/core/src/main/java/org/elasticsearch/xpack/core/deprecation/DeprecatedIndexPredicate.java\n@@ -49,10 +49,15 @@ public class DeprecatedIndexPredicate {\n      */\n     public static boolean reindexRequired(IndexMetadata indexMetadata, boolean filterToBlockedStatus) {\n         return creationVersionBeforeMinimumWritableVersion(indexMetadata)\n+            && isNotSystem(indexMetadata)\n             && isNotSearchableSnapshot(indexMetadata)\n             && matchBlockedStatus(indexMetadata, filterToBlockedStatus);\n     }\n \n+    private static boolean isNotSystem(IndexMetadata indexMetadata) {\n+        return indexMetadata.isSystem() == false;\n+    }\n+\n     private static boolean isNotSearchableSnapshot(IndexMetadata indexMetadata) {\n         return indexMetadata.isSearchableSnapshot() == false;\n     }",
+      "edit_type": "replace",
+      "verified": true,
+      "verification_result": "developer_fast_path_ok",
+      "applied": true,
+      "apply_result": "SUCCESS"
+    },
+    {
+      "target_file": "x-pack/plugin/deprecation/src/main/java/org/elasticsearch/xpack/deprecation/DataStreamDeprecationChecker.java",
+      "mainline_file": "x-pack/plugin/deprecation/src/main/java/org/elasticsearch/xpack/deprecation/DataStreamDeprecationChecker.java",
+      "old_string": "<developer patch fast path>",
+      "new_string": "diff --git a/x-pack/plugin/deprecation/src/main/java/org/elasticsearch/xpack/deprecation/DataStreamDeprecationChecker.java b/x-pack/plugin/deprecation/src/main/java/org/elasticsearch/xpack/deprecation/DataStreamDeprecationChecker.java\nindex a67d8960e78..7f7c4d98584 100644\n--- a/x-pack/plugin/deprecation/src/main/java/org/elasticsearch/xpack/deprecation/DataStreamDeprecationChecker.java\n+++ b/x-pack/plugin/deprecation/src/main/java/org/elasticsearch/xpack/deprecation/DataStreamDeprecationChecker.java\n@@ -72,12 +72,14 @@ public class DataStreamDeprecationChecker implements ResourceDeprecationChecker\n         Map<String, List<DeprecationIssue>> dataStreamIssues = new HashMap<>();\n         for (String dataStreamName : dataStreamNames) {\n             DataStream dataStream = clusterState.metadata().dataStreams().get(dataStreamName);\n-            List<DeprecationIssue> issuesForSingleDataStream = DATA_STREAM_CHECKS.stream()\n-                .map(c -> c.apply(dataStream, clusterState))\n-                .filter(Objects::nonNull)\n-                .toList();\n-            if (issuesForSingleDataStream.isEmpty() == false) {\n-                dataStreamIssues.put(dataStreamName, issuesForSingleDataStream);\n+            if (dataStream.isSystem() == false) {\n+                List<DeprecationIssue> issuesForSingleDataStream = DATA_STREAM_CHECKS.stream()\n+                    .map(c -> c.apply(dataStream, clusterState))\n+                    .filter(Objects::nonNull)\n+                    .toList();\n+                if (issuesForSingleDataStream.isEmpty() == false) {\n+                    dataStreamIssues.put(dataStreamName, issuesForSingleDataStream);\n+                }\n             }\n         }\n         return dataStreamIssues.isEmpty() ? Map.of() : dataStreamIssues;",
+      "edit_type": "replace",
+      "verified": true,
+      "verification_result": "developer_fast_path_ok",
+      "applied": true,
+      "apply_result": "SUCCESS"
+    }
+  ],
+  "all_adapted_file_edits": [
+    [
+      {
+        "target_file": "x-pack/plugin/core/src/main/java/org/elasticsearch/xpack/core/deprecation/DeprecatedIndexPredicate.java",
+        "mainline_file": "x-pack/plugin/core/src/main/java/org/elasticsearch/xpack/core/deprecation/DeprecatedIndexPredicate.java",
+        "old_string": "<developer patch fast path>",
+        "new_string": "diff --git a/x-pack/plugin/core/src/main/java/org/elasticsearch/xpack/core/deprecation/DeprecatedIndexPredicate.java b/x-pack/plugin/core/src/main/java/org/elasticsearch/xpack/core/deprecation/DeprecatedIndexPredicate.java\nindex 84091a40fb2..5380e23c462 100644\n--- a/x-pack/plugin/core/src/main/java/org/elasticsearch/xpack/core/deprecation/DeprecatedIndexPredicate.java\n+++ b/x-pack/plugin/core/src/main/java/org/elasticsearch/xpack/core/deprecation/DeprecatedIndexPredicate.java\n@@ -49,10 +49,15 @@ public class DeprecatedIndexPredicate {\n      */\n     public static boolean reindexRequired(IndexMetadata indexMetadata, boolean filterToBlockedStatus) {\n         return creationVersionBeforeMinimumWritableVersion(indexMetadata)\n+            && isNotSystem(indexMetadata)\n             && isNotSearchableSnapshot(indexMetadata)\n             && matchBlockedStatus(indexMetadata, filterToBlockedStatus);\n     }\n \n+    private static boolean isNotSystem(IndexMetadata indexMetadata) {\n+        return indexMetadata.isSystem() == false;\n+    }\n+\n     private static boolean isNotSearchableSnapshot(IndexMetadata indexMetadata) {\n         return indexMetadata.isSearchableSnapshot() == false;\n     }",
+        "edit_type": "replace",
+        "verified": true,
+        "verification_result": "developer_fast_path_ok",
+        "applied": true,
+        "apply_result": "SUCCESS"
+      },
+      {
+        "target_file": "x-pack/plugin/deprecation/src/main/java/org/elasticsearch/xpack/deprecation/DataStreamDeprecationChecker.java",
+        "mainline_file": "x-pack/plugin/deprecation/src/main/java/org/elasticsearch/xpack/deprecation/DataStreamDeprecationChecker.java",
+        "old_string": "<developer patch fast path>",
+        "new_string": "diff --git a/x-pack/plugin/deprecation/src/main/java/org/elasticsearch/xpack/deprecation/DataStreamDeprecationChecker.java b/x-pack/plugin/deprecation/src/main/java/org/elasticsearch/xpack/deprecation/DataStreamDeprecationChecker.java\nindex a67d8960e78..7f7c4d98584 100644\n--- a/x-pack/plugin/deprecation/src/main/java/org/elasticsearch/xpack/deprecation/DataStreamDeprecationChecker.java\n+++ b/x-pack/plugin/deprecation/src/main/java/org/elasticsearch/xpack/deprecation/DataStreamDeprecationChecker.java\n@@ -72,12 +72,14 @@ public class DataStreamDeprecationChecker implements ResourceDeprecationChecker\n         Map<String, List<DeprecationIssue>> dataStreamIssues = new HashMap<>();\n         for (String dataStreamName : dataStreamNames) {\n             DataStream dataStream = clusterState.metadata().dataStreams().get(dataStreamName);\n-            List<DeprecationIssue> issuesForSingleDataStream = DATA_STREAM_CHECKS.stream()\n-                .map(c -> c.apply(dataStream, clusterState))\n-                .filter(Objects::nonNull)\n-                .toList();\n-            if (issuesForSingleDataStream.isEmpty() == false) {\n-                dataStreamIssues.put(dataStreamName, issuesForSingleDataStream);\n+            if (dataStream.isSystem() == false) {\n+                List<DeprecationIssue> issuesForSingleDataStream = DATA_STREAM_CHECKS.stream()\n+                    .map(c -> c.apply(dataStream, clusterState))\n+                    .filter(Objects::nonNull)\n+                    .toList();\n+                if (issuesForSingleDataStream.isEmpty() == false) {\n+                    dataStreamIssues.put(dataStreamName, issuesForSingleDataStream);\n+                }\n             }\n         }\n         return dataStreamIssues.isEmpty() ? Map.of() : dataStreamIssues;",
+        "edit_type": "replace",
+        "verified": true,
+        "verification_result": "developer_fast_path_ok",
+        "applied": true,
+        "apply_result": "SUCCESS"
+      }
+    ]
+  ],
+  "agent_trajectory_edits": [
+    []
+  ],
+  "adapted_code_hunks": [
+    {
+      "target_file": "x-pack/plugin/core/src/main/java/org/elasticsearch/xpack/core/deprecation/DeprecatedIndexPredicate.java",
+      "mainline_file": "x-pack/plugin/core/src/main/java/org/elasticsearch/xpack/core/deprecation/DeprecatedIndexPredicate.java",
+      "hunk_text": "diff --git a/x-pack/plugin/core/src/main/java/org/elasticsearch/xpack/core/deprecation/DeprecatedIndexPredicate.java b/x-pack/plugin/core/src/main/java/org/elasticsearch/xpack/core/deprecation/DeprecatedIndexPredicate.java\nindex 84091a40fb2..5380e23c462 100644\n--- a/x-pack/plugin/core/src/main/java/org/elasticsearch/xpack/core/deprecation/DeprecatedIndexPredicate.java\n+++ b/x-pack/plugin/core/src/main/java/org/elasticsearch/xpack/core/deprecation/DeprecatedIndexPredicate.java\n@@ -49,10 +49,15 @@ public class DeprecatedIndexPredicate {\n      */\n     public static boolean reindexRequired(IndexMetadata indexMetadata, boolean filterToBlockedStatus) {\n         return creationVersionBeforeMinimumWritableVersion(indexMetadata)\n+            && isNotSystem(indexMetadata)\n             && isNotSearchableSnapshot(indexMetadata)\n             && matchBlockedStatus(indexMetadata, filterToBlockedStatus);\n     }\n \n+    private static boolean isNotSystem(IndexMetadata indexMetadata) {\n+        return indexMetadata.isSystem() == false;\n+    }\n+\n     private static boolean isNotSearchableSnapshot(IndexMetadata indexMetadata) {\n         return indexMetadata.isSearchableSnapshot() == false;\n     }\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    },
+    {
+      "target_file": "x-pack/plugin/deprecation/src/main/java/org/elasticsearch/xpack/deprecation/DataStreamDeprecationChecker.java",
+      "mainline_file": "x-pack/plugin/deprecation/src/main/java/org/elasticsearch/xpack/deprecation/DataStreamDeprecationChecker.java",
+      "hunk_text": "diff --git a/x-pack/plugin/deprecation/src/main/java/org/elasticsearch/xpack/deprecation/DataStreamDeprecationChecker.java b/x-pack/plugin/deprecation/src/main/java/org/elasticsearch/xpack/deprecation/DataStreamDeprecationChecker.java\nindex a67d8960e78..7f7c4d98584 100644\n--- a/x-pack/plugin/deprecation/src/main/java/org/elasticsearch/xpack/deprecation/DataStreamDeprecationChecker.java\n+++ b/x-pack/plugin/deprecation/src/main/java/org/elasticsearch/xpack/deprecation/DataStreamDeprecationChecker.java\n@@ -72,12 +72,14 @@ public class DataStreamDeprecationChecker implements ResourceDeprecationChecker\n         Map<String, List<DeprecationIssue>> dataStreamIssues = new HashMap<>();\n         for (String dataStreamName : dataStreamNames) {\n             DataStream dataStream = clusterState.metadata().dataStreams().get(dataStreamName);\n-            List<DeprecationIssue> issuesForSingleDataStream = DATA_STREAM_CHECKS.stream()\n-                .map(c -> c.apply(dataStream, clusterState))\n-                .filter(Objects::nonNull)\n-                .toList();\n-            if (issuesForSingleDataStream.isEmpty() == false) {\n-                dataStreamIssues.put(dataStreamName, issuesForSingleDataStream);\n+            if (dataStream.isSystem() == false) {\n+                List<DeprecationIssue> issuesForSingleDataStream = DATA_STREAM_CHECKS.stream()\n+                    .map(c -> c.apply(dataStream, clusterState))\n+                    .filter(Objects::nonNull)\n+                    .toList();\n+                if (issuesForSingleDataStream.isEmpty() == false) {\n+                    dataStreamIssues.put(dataStreamName, issuesForSingleDataStream);\n+                }\n             }\n         }\n         return dataStreamIssues.isEmpty() ? Map.of() : dataStreamIssues;\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    }
+  ],
+  "validation_repeated_patch_detected": false,
+  "validation_repeated_plan_detected": false,
+  "best_effort_adapted_code_hunks": [
+    {
+      "target_file": "x-pack/plugin/core/src/main/java/org/elasticsearch/xpack/core/deprecation/DeprecatedIndexPredicate.java",
+      "mainline_file": "x-pack/plugin/core/src/main/java/org/elasticsearch/xpack/core/deprecation/DeprecatedIndexPredicate.java",
+      "hunk_text": "diff --git a/x-pack/plugin/core/src/main/java/org/elasticsearch/xpack/core/deprecation/DeprecatedIndexPredicate.java b/x-pack/plugin/core/src/main/java/org/elasticsearch/xpack/core/deprecation/DeprecatedIndexPredicate.java\nindex 84091a40fb2..5380e23c462 100644\n--- a/x-pack/plugin/core/src/main/java/org/elasticsearch/xpack/core/deprecation/DeprecatedIndexPredicate.java\n+++ b/x-pack/plugin/core/src/main/java/org/elasticsearch/xpack/core/deprecation/DeprecatedIndexPredicate.java\n@@ -49,10 +49,15 @@ public class DeprecatedIndexPredicate {\n      */\n     public static boolean reindexRequired(IndexMetadata indexMetadata, boolean filterToBlockedStatus) {\n         return creationVersionBeforeMinimumWritableVersion(indexMetadata)\n+            && isNotSystem(indexMetadata)\n             && isNotSearchableSnapshot(indexMetadata)\n             && matchBlockedStatus(indexMetadata, filterToBlockedStatus);\n     }\n \n+    private static boolean isNotSystem(IndexMetadata indexMetadata) {\n+        return indexMetadata.isSystem() == false;\n+    }\n+\n     private static boolean isNotSearchableSnapshot(IndexMetadata indexMetadata) {\n         return indexMetadata.isSearchableSnapshot() == false;\n     }\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    },
+    {
+      "target_file": "x-pack/plugin/deprecation/src/main/java/org/elasticsearch/xpack/deprecation/DataStreamDeprecationChecker.java",
+      "mainline_file": "x-pack/plugin/deprecation/src/main/java/org/elasticsearch/xpack/deprecation/DataStreamDeprecationChecker.java",
+      "hunk_text": "diff --git a/x-pack/plugin/deprecation/src/main/java/org/elasticsearch/xpack/deprecation/DataStreamDeprecationChecker.java b/x-pack/plugin/deprecation/src/main/java/org/elasticsearch/xpack/deprecation/DataStreamDeprecationChecker.java\nindex a67d8960e78..7f7c4d98584 100644\n--- a/x-pack/plugin/deprecation/src/main/java/org/elasticsearch/xpack/deprecation/DataStreamDeprecationChecker.java\n+++ b/x-pack/plugin/deprecation/src/main/java/org/elasticsearch/xpack/deprecation/DataStreamDeprecationChecker.java\n@@ -72,12 +72,14 @@ public class DataStreamDeprecationChecker implements ResourceDeprecationChecker\n         Map<String, List<DeprecationIssue>> dataStreamIssues = new HashMap<>();\n         for (String dataStreamName : dataStreamNames) {\n             DataStream dataStream = clusterState.metadata().dataStreams().get(dataStreamName);\n-            List<DeprecationIssue> issuesForSingleDataStream = DATA_STREAM_CHECKS.stream()\n-                .map(c -> c.apply(dataStream, clusterState))\n-                .filter(Objects::nonNull)\n-                .toList();\n-            if (issuesForSingleDataStream.isEmpty() == false) {\n-                dataStreamIssues.put(dataStreamName, issuesForSingleDataStream);\n+            if (dataStream.isSystem() == false) {\n+                List<DeprecationIssue> issuesForSingleDataStream = DATA_STREAM_CHECKS.stream()\n+                    .map(c -> c.apply(dataStream, clusterState))\n+                    .filter(Objects::nonNull)\n+                    .toList();\n+                if (issuesForSingleDataStream.isEmpty() == false) {\n+                    dataStreamIssues.put(dataStreamName, issuesForSingleDataStream);\n+                }\n             }\n         }\n         return dataStreamIssues.isEmpty() ? Map.of() : dataStreamIssues;\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    }
+  ],
+  "adapted_test_hunks": [],
+  "generation_checklist": [
+    {
+      "mainline_file": "x-pack/plugin/core/src/main/java/org/elasticsearch/xpack/core/deprecation/DeprecatedIndexPredicate.java",
+      "target_file": "x-pack/plugin/core/src/main/java/org/elasticsearch/xpack/core/deprecation/DeprecatedIndexPredicate.java",
+      "hunk_index": 0,
+      "adaptation_type": "TYPE_II",
+      "execution_types": [
+        "TYPE_II"
+      ],
+      "status": "success",
+      "reason": "developer_fast_path",
+      "todo_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ],
+      "completed_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ]
+    },
+    {
+      "mainline_file": "x-pack/plugin/deprecation/src/main/java/org/elasticsearch/xpack/deprecation/DataStreamDeprecationChecker.java",
+      "target_file": "x-pack/plugin/deprecation/src/main/java/org/elasticsearch/xpack/deprecation/DataStreamDeprecationChecker.java",
+      "hunk_index": 0,
+      "adaptation_type": "TYPE_II",
+      "execution_types": [
+        "TYPE_II"
+      ],
+      "status": "success",
+      "reason": "developer_fast_path",
+      "todo_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ],
+      "completed_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ]
+    }
+  ],
+  "generated_patch_hash": "bfb353f997cc121dbb7f8d4be4c8a3e3c574c72455d95dbff1dbc4c7a243a7ed",
+  "force_type_v_until_success": false,
+  "force_type_v_reason": "",
+  "force_type_v_retry_files": [],
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "sources": []
+  }
+}

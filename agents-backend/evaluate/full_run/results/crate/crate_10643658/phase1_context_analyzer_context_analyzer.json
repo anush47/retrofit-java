@@ -1,0 +1,64 @@
+{
+  "semantic_blueprint": {
+    "root_cause_hypothesis": "Deterministic inference: target branch diverges from mainline; adapt hunks with exact target context.",
+    "fix_logic": "Apply each source hunk with target-verified context and symbol consistency while preserving behavior.",
+    "dependent_apis": [
+      "getProfileBreakdown",
+      "createProfileBreakdown",
+      "getTree",
+      "getTypeFromElement",
+      "getDescriptionFromElement"
+    ],
+    "patch_intent_summary": "Backport patch behavior to target branch with minimal, context-correct edits.",
+    "hunk_chain": [
+      {
+        "hunk_index": 1,
+        "file": "server/src/main/java/org/elasticsearch/search/profile/query/QueryProfiler.java",
+        "summary": "Modifies logic (+1/-1 lines).",
+        "role": "core_fix",
+        "connects_to_next": "Prepares next hunk in same file with related context.",
+        "global_index": 1
+      },
+      {
+        "hunk_index": 2,
+        "file": "server/src/main/java/org/elasticsearch/search/profile/query/QueryProfiler.java",
+        "summary": "Modifies logic (+1/-1 lines).",
+        "role": "core_fix",
+        "connects_to_next": "Prepares next hunk in same file with related context.",
+        "global_index": 2
+      },
+      {
+        "hunk_index": 3,
+        "file": "server/src/main/java/org/elasticsearch/search/profile/query/QueryProfiler.java",
+        "summary": "Modifies logic (+1/-1 lines).",
+        "role": "core_fix",
+        "connects_to_next": "Prepares next hunk in same file with related context.",
+        "global_index": 3
+      },
+      {
+        "hunk_index": 4,
+        "file": "server/src/main/java/org/elasticsearch/search/profile/query/QueryProfiler.java",
+        "summary": "Modifies logic (+1/-1 lines).",
+        "role": "core_fix",
+        "connects_to_next": "Prepares next hunk in same file with related context.",
+        "global_index": 4
+      },
+      {
+        "hunk_index": 5,
+        "file": "server/src/main/java/org/elasticsearch/search/profile/query/QueryProfiler.java",
+        "summary": "Modifies logic (+1/-1 lines).",
+        "role": "core_fix",
+        "connects_to_next": "",
+        "global_index": 5
+      }
+    ]
+  },
+  "patch_diff": "From 106436589bb5bde52346e54d66f681117fbc5a8d Mon Sep 17 00:00:00 2001\nFrom: Sebastian Utz <su@rtme.net>\nDate: Thu, 26 Sep 2024 10:55:58 +0200\nSubject: [PATCH] Handle concurrent calls at the QueryProfiler\n\nThe QueryProfiler must be thread-safe as it needs to handle concurrent\naccess. Otherwise, this may lead to unexpected exception when profiling\nqueries using ``EXPLAIN ANALYZE`` statements\n\nRelates to https://github.com/elastic/elasticsearch/commit/947234a8ce2e3fae3605ee7b55075e0787ed986f.\n---\n docs/appendices/release-notes/5.8.4.rst       |  3 +\n .../search/profile/query/QueryProfiler.java   | 10 +-\n .../profile/query/QueryProfilerTest.java      | 96 +++++++++++++++++++\n 3 files changed, 104 insertions(+), 5 deletions(-)\n create mode 100644 server/src/test/java/org/elasticsearch/search/profile/query/QueryProfilerTest.java\n\ndiff --git a/docs/appendices/release-notes/5.8.4.rst b/docs/appendices/release-notes/5.8.4.rst\nindex e0b835ccca..893e453eec 100644\n--- a/docs/appendices/release-notes/5.8.4.rst\n+++ b/docs/appendices/release-notes/5.8.4.rst\n@@ -81,3 +81,6 @@ Fixes\n \n - Fixed an issue that caused :ref:`ANY <sql_any_array_comparison>` operator to\n   throw a ``ClassCastException`` when the arguments were nested arrays.\n+\n+- Fixed an issue which may cause a ``EXPLAIN ANALYZE`` to throw exception due\n+  to internal concurrent unsafe access.\ndiff --git a/server/src/main/java/org/elasticsearch/search/profile/query/QueryProfiler.java b/server/src/main/java/org/elasticsearch/search/profile/query/QueryProfiler.java\nindex 139adf4c80..97582ae75c 100644\n--- a/server/src/main/java/org/elasticsearch/search/profile/query/QueryProfiler.java\n+++ b/server/src/main/java/org/elasticsearch/search/profile/query/QueryProfiler.java\n@@ -66,7 +66,7 @@ public final class QueryProfiler {\n      * @param query The scoring query we wish to profile\n      * @return      A ProfileBreakdown for this query\n      */\n-    public QueryProfileBreakdown getProfileBreakdown(Query query) {\n+    public synchronized QueryProfileBreakdown getProfileBreakdown(Query query) {\n         int token = currentToken;\n \n         boolean stackEmpty = stack.isEmpty();\n@@ -122,7 +122,7 @@ public final class QueryProfiler {\n         return queryTimings;\n     }\n \n-    protected QueryProfileBreakdown createProfileBreakdown() {\n+    private QueryProfileBreakdown createProfileBreakdown() {\n         return new QueryProfileBreakdown();\n     }\n \n@@ -140,7 +140,7 @@ public final class QueryProfiler {\n      *\n      * @return a hierarchical representation of the profiled query tree\n      */\n-    public List<ProfileResult> getTree() {\n+    public synchronized List<ProfileResult> getTree() {\n         ArrayList<ProfileResult> results = new ArrayList<>(roots.size());\n         for (Integer root : roots) {\n             results.add(doGetTree(root));\n@@ -175,7 +175,7 @@ public final class QueryProfiler {\n         return new ProfileResult(type, description, timings, childrenProfileResults);\n     }\n \n-    protected String getTypeFromElement(Query query) {\n+    private String getTypeFromElement(Query query) {\n         // Anonymous classes won't have a name,\n         // we need to get the super class\n         if (query.getClass().getSimpleName().isEmpty()) {\n@@ -184,7 +184,7 @@ public final class QueryProfiler {\n         return query.getClass().getSimpleName();\n     }\n \n-    protected String getDescriptionFromElement(Query query) {\n+    private String getDescriptionFromElement(Query query) {\n         return query.toString();\n     }\n \ndiff --git a/server/src/test/java/org/elasticsearch/search/profile/query/QueryProfilerTest.java b/server/src/test/java/org/elasticsearch/search/profile/query/QueryProfilerTest.java\nnew file mode 100644\nindex 0000000000..e12b05ceb4\n--- /dev/null\n+++ b/server/src/test/java/org/elasticsearch/search/profile/query/QueryProfilerTest.java\n@@ -0,0 +1,96 @@\n+/*\n+ * Licensed to Crate.io GmbH (\"Crate\") under one or more contributor\n+ * license agreements.  See the NOTICE file distributed with this work for\n+ * additional information regarding copyright ownership.  Crate licenses\n+ * this file to you under the Apache License, Version 2.0 (the \"License\");\n+ * you may not use this file except in compliance with the License.  You may\n+ * obtain a copy of the License at\n+ *\n+ *     http://www.apache.org/licenses/LICENSE-2.0\n+ *\n+ * Unless required by applicable law or agreed to in writing, software\n+ * distributed under the License is distributed on an \"AS IS\" BASIS, WITHOUT\n+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the\n+ * License for the specific language governing permissions and limitations\n+ * under the License.\n+ *\n+ * However, if you have executed another commercial license agreement\n+ * with Crate these terms will supersede the license and you may use the\n+ * software solely pursuant to the terms of the relevant commercial agreement.\n+ */\n+\n+package org.elasticsearch.search.profile.query;\n+\n+import static org.assertj.core.api.Assertions.assertThat;\n+\n+import java.util.concurrent.CountDownLatch;\n+import java.util.concurrent.ExecutorService;\n+import java.util.concurrent.Executors;\n+import java.util.concurrent.TimeUnit;\n+import java.util.concurrent.atomic.AtomicReference;\n+\n+import org.apache.lucene.search.MatchAllDocsQuery;\n+import org.elasticsearch.test.ESTestCase;\n+import org.junit.After;\n+import org.junit.Before;\n+import org.junit.Test;\n+\n+public class QueryProfilerTest extends ESTestCase {\n+\n+    private ExecutorService executor;\n+\n+    @Override\n+    @Before\n+    public void setUp() throws Exception {\n+        super.setUp();\n+        executor = Executors.newFixedThreadPool(20);\n+    }\n+\n+    @Override\n+    @After\n+    public void tearDown() throws Exception {\n+        executor.shutdown();\n+        executor.awaitTermination(500, TimeUnit.MILLISECONDS);\n+        super.tearDown();\n+    }\n+\n+    @Test\n+    public void test_ensure_thread_safety() throws Exception {\n+        QueryProfiler profiler = new QueryProfiler();\n+        final AtomicReference<Throwable> lastThrowable = new AtomicReference<>();\n+\n+        int concurrency = 20;\n+\n+        final CountDownLatch writeLatch = new CountDownLatch(concurrency);\n+        for (int i = 0; i < concurrency; i++) {\n+            executor.submit(() -> {\n+                try {\n+                    profiler.getProfileBreakdown(new MatchAllDocsQuery());\n+                } catch (Exception e) {\n+                    lastThrowable.set(e);\n+                } finally {\n+                    writeLatch.countDown();\n+                }\n+            });\n+        }\n+        writeLatch.await(10, TimeUnit.SECONDS);\n+\n+        assertThat(lastThrowable.get()).isNull();\n+\n+        final CountDownLatch readLatch = new CountDownLatch(concurrency);\n+        for (int i = 0; i < concurrency; i++) {\n+            executor.submit(() -> {\n+                try {\n+                    profiler.getTree();\n+                } catch (Exception e) {\n+                    lastThrowable.set(e);\n+                } finally {\n+                    readLatch.countDown();\n+                }\n+            });\n+        }\n+        readLatch.await(10, TimeUnit.SECONDS);\n+\n+        assertThat(lastThrowable.get()).isNull();\n+    }\n+}\n-- \n2.43.0\n\n",
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "reason": "deterministic_no_llm"
+  }
+}

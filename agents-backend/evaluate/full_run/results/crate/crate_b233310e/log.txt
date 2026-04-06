@@ -1,0 +1,27 @@
+patch_id=crate_b233310e
+project=crate
+mainline_commit=b233310e3a55faa0f30c4065770e7187a49a10a5
+backport_commit=638d270e70a9fd26121d0bf3d19dc6b52c63b92a
+mode=full
+started_at=2026-04-05T21:10:13.180885
+----------------------------------------
+Running full workflow graph
+Completed node=phase_0_optimistic
+Workflow completed successfully
+
+[crate/crate_b233310e] Setting up repositories for mode=full...
+[crate/crate_b233310e] Running full workflow graph...
+Router: Running Phase 0.
+Phase 0 (Optimistic): Checking direct patch applicability...
+Phase 0: Experiment mode — checking out parent of 638d270e70a9fd26121d0bf3d19dc6b52c63b92a...
+Phase 0: Building baseline by applying developer backport test hunks only...
+  Validation: server/src/test/java/io/crate/analyze/where/EqualityExtractorTest.java - applying 5 hunk(s) one by one in bottom-to-top order: [498, 88, 75, 42, 34]
+    Agent 4: Executing crate helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_tests.sh
+Phase 0: git apply --check SUCCEEDED. Attempting actual patch application and test run.
+    Agent 4: Executing crate helper build script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_build.sh
+    Agent 4: Executing crate helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_tests.sh
+Phase 0: Transition summary -> reason=Valid: Observed fail-to-pass and/or newly passing relevant tests with no regressions.; fail->pass(1): ['io.crate.analyze.where.EqualityExtractorTest#test_standalone_boolean_column_transformed_to_eq_true_expression']; newly_passing(0): []; pass->fail(0): []
+Phase 0: Transition-based test validation passed. Fast-path success.
+Router: Phase 0 succeeded - taking fast-path exit.
+  Completed: phase_0_optimistic
+[crate/crate_b233310e] Full workflow completed!

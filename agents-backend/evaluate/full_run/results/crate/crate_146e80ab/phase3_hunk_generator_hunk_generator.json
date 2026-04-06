@@ -1,0 +1,100 @@
+{
+  "adapted_file_edits": [
+    {
+      "target_file": "server/src/main/java/io/crate/execution/engine/aggregation/impl/average/numeric/NumericAverageState.java",
+      "mainline_file": "server/src/main/java/io/crate/execution/engine/aggregation/impl/average/numeric/NumericAverageState.java",
+      "old_string": "<developer patch fast path>",
+      "new_string": "diff --git a/server/src/main/java/io/crate/execution/engine/aggregation/impl/average/numeric/NumericAverageState.java b/server/src/main/java/io/crate/execution/engine/aggregation/impl/average/numeric/NumericAverageState.java\nindex 8fba81072e..468a19123b 100644\n--- a/server/src/main/java/io/crate/execution/engine/aggregation/impl/average/numeric/NumericAverageState.java\n+++ b/server/src/main/java/io/crate/execution/engine/aggregation/impl/average/numeric/NumericAverageState.java\n@@ -22,6 +22,7 @@\n package io.crate.execution.engine.aggregation.impl.average.numeric;\n \n import java.math.BigDecimal;\n+import java.math.MathContext;\n import java.util.Objects;\n \n import org.jetbrains.annotations.NotNull;\n@@ -44,7 +45,10 @@ public class NumericAverageState<T extends NumericValueHolder> implements Compar\n \n     public BigDecimal value() {\n         if (count > 0) {\n-            return sum.value().divide(BigDecimal.valueOf(count));\n+            // We need to use divide with a MathContext to avoid ArithmeticException on infinite fractions.\n+            // Using best (finite) precision as we want to compute final result with the best precision.\n+            // If users want to reduce the precision of the final result, they can use explicit cast.\n+            return sum.value().divide(BigDecimal.valueOf(count), MathContext.DECIMAL128);\n         } else {\n             return null;\n         }",
+      "edit_type": "replace",
+      "verified": true,
+      "verification_result": "developer_fast_path_ok",
+      "applied": true,
+      "apply_result": "SUCCESS"
+    }
+  ],
+  "all_adapted_file_edits": [
+    [
+      {
+        "target_file": "server/src/main/java/io/crate/execution/engine/aggregation/impl/average/numeric/NumericAverageState.java",
+        "mainline_file": "server/src/main/java/io/crate/execution/engine/aggregation/impl/average/numeric/NumericAverageState.java",
+        "old_string": "<developer patch fast path>",
+        "new_string": "diff --git a/server/src/main/java/io/crate/execution/engine/aggregation/impl/average/numeric/NumericAverageState.java b/server/src/main/java/io/crate/execution/engine/aggregation/impl/average/numeric/NumericAverageState.java\nindex 8fba81072e..468a19123b 100644\n--- a/server/src/main/java/io/crate/execution/engine/aggregation/impl/average/numeric/NumericAverageState.java\n+++ b/server/src/main/java/io/crate/execution/engine/aggregation/impl/average/numeric/NumericAverageState.java\n@@ -22,6 +22,7 @@\n package io.crate.execution.engine.aggregation.impl.average.numeric;\n \n import java.math.BigDecimal;\n+import java.math.MathContext;\n import java.util.Objects;\n \n import org.jetbrains.annotations.NotNull;\n@@ -44,7 +45,10 @@ public class NumericAverageState<T extends NumericValueHolder> implements Compar\n \n     public BigDecimal value() {\n         if (count > 0) {\n-            return sum.value().divide(BigDecimal.valueOf(count));\n+            // We need to use divide with a MathContext to avoid ArithmeticException on infinite fractions.\n+            // Using best (finite) precision as we want to compute final result with the best precision.\n+            // If users want to reduce the precision of the final result, they can use explicit cast.\n+            return sum.value().divide(BigDecimal.valueOf(count), MathContext.DECIMAL128);\n         } else {\n             return null;\n         }",
+        "edit_type": "replace",
+        "verified": true,
+        "verification_result": "developer_fast_path_ok",
+        "applied": true,
+        "apply_result": "SUCCESS"
+      }
+    ]
+  ],
+  "agent_trajectory_edits": [
+    []
+  ],
+  "adapted_code_hunks": [
+    {
+      "target_file": "server/src/main/java/io/crate/execution/engine/aggregation/impl/average/numeric/NumericAverageState.java",
+      "mainline_file": "server/src/main/java/io/crate/execution/engine/aggregation/impl/average/numeric/NumericAverageState.java",
+      "hunk_text": "diff --git a/server/src/main/java/io/crate/execution/engine/aggregation/impl/average/numeric/NumericAverageState.java b/server/src/main/java/io/crate/execution/engine/aggregation/impl/average/numeric/NumericAverageState.java\nindex 8fba81072e..468a19123b 100644\n--- a/server/src/main/java/io/crate/execution/engine/aggregation/impl/average/numeric/NumericAverageState.java\n+++ b/server/src/main/java/io/crate/execution/engine/aggregation/impl/average/numeric/NumericAverageState.java\n@@ -22,6 +22,7 @@\n package io.crate.execution.engine.aggregation.impl.average.numeric;\n \n import java.math.BigDecimal;\n+import java.math.MathContext;\n import java.util.Objects;\n \n import org.jetbrains.annotations.NotNull;\n@@ -44,7 +45,10 @@ public class NumericAverageState<T extends NumericValueHolder> implements Compar\n \n     public BigDecimal value() {\n         if (count > 0) {\n-            return sum.value().divide(BigDecimal.valueOf(count));\n+            // We need to use divide with a MathContext to avoid ArithmeticException on infinite fractions.\n+            // Using best (finite) precision as we want to compute final result with the best precision.\n+            // If users want to reduce the precision of the final result, they can use explicit cast.\n+            return sum.value().divide(BigDecimal.valueOf(count), MathContext.DECIMAL128);\n         } else {\n             return null;\n         }\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    }
+  ],
+  "validation_repeated_patch_detected": false,
+  "validation_repeated_plan_detected": false,
+  "best_effort_adapted_code_hunks": [
+    {
+      "target_file": "server/src/main/java/io/crate/execution/engine/aggregation/impl/average/numeric/NumericAverageState.java",
+      "mainline_file": "server/src/main/java/io/crate/execution/engine/aggregation/impl/average/numeric/NumericAverageState.java",
+      "hunk_text": "diff --git a/server/src/main/java/io/crate/execution/engine/aggregation/impl/average/numeric/NumericAverageState.java b/server/src/main/java/io/crate/execution/engine/aggregation/impl/average/numeric/NumericAverageState.java\nindex 8fba81072e..468a19123b 100644\n--- a/server/src/main/java/io/crate/execution/engine/aggregation/impl/average/numeric/NumericAverageState.java\n+++ b/server/src/main/java/io/crate/execution/engine/aggregation/impl/average/numeric/NumericAverageState.java\n@@ -22,6 +22,7 @@\n package io.crate.execution.engine.aggregation.impl.average.numeric;\n \n import java.math.BigDecimal;\n+import java.math.MathContext;\n import java.util.Objects;\n \n import org.jetbrains.annotations.NotNull;\n@@ -44,7 +45,10 @@ public class NumericAverageState<T extends NumericValueHolder> implements Compar\n \n     public BigDecimal value() {\n         if (count > 0) {\n-            return sum.value().divide(BigDecimal.valueOf(count));\n+            // We need to use divide with a MathContext to avoid ArithmeticException on infinite fractions.\n+            // Using best (finite) precision as we want to compute final result with the best precision.\n+            // If users want to reduce the precision of the final result, they can use explicit cast.\n+            return sum.value().divide(BigDecimal.valueOf(count), MathContext.DECIMAL128);\n         } else {\n             return null;\n         }\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    }
+  ],
+  "adapted_test_hunks": [],
+  "generation_checklist": [
+    {
+      "mainline_file": "server/src/main/java/io/crate/execution/engine/aggregation/impl/average/numeric/NumericAverageState.java",
+      "target_file": "server/src/main/java/io/crate/execution/engine/aggregation/impl/average/numeric/NumericAverageState.java",
+      "hunk_index": 0,
+      "adaptation_type": "TYPE_II",
+      "execution_types": [
+        "TYPE_II"
+      ],
+      "status": "success",
+      "reason": "developer_fast_path",
+      "todo_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ],
+      "completed_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ]
+    }
+  ],
+  "generated_patch_hash": "d4a8aba4cee61ddaa117faa3c6e6ec5c75d0613ddb0848a4359ceb31ef302d9a",
+  "force_type_v_until_success": false,
+  "force_type_v_reason": "",
+  "force_type_v_retry_files": [],
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "sources": []
+  }
+}

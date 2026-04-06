@@ -1,0 +1,172 @@
+# Post-Pipeline Developer Patch Comparison
+
+**Exact Developer Patch (code-only)**: False
+
+**Comparison Method**: file_state
+
+## Commit Pair Consistency
+- Pair mismatch: False
+- Reason: scope_overlap_ok
+- Mainline Java files: ['server/src/main/java/org/elasticsearch/common/util/BigArrays.java']
+- Developer Java files: ['server/src/main/java/org/elasticsearch/common/util/BigArrays.java']
+- Overlap Java files: ['server/src/main/java/org/elasticsearch/common/util/BigArrays.java']
+- Overlap ratio (mainline): 1.0
+- Compare files scope used: ['server/src/main/java/org/elasticsearch/common/util/BigArrays.java']
+
+## File State Comparison
+- Compared files: ['server/src/main/java/org/elasticsearch/common/util/BigArrays.java']
+- Mismatched files: ['server/src/main/java/org/elasticsearch/common/util/BigArrays.java']
+- Error: None
+
+## Comparison Scope
+- Agent-only patch: code hunks produced by Agent 3
+- Final effective patch: agent code hunks + developer auxiliary hunks (still code-only for this report)
+
+## Agent-Only Hunk Comparison (code files)
+
+### server/src/main/java/org/elasticsearch/common/util/BigArrays.java
+
+- Developer hunks: 1
+- Generated hunks: 0
+
+#### Hunk 1
+
+Developer
+```diff
+@@ -52,15 +52,10 @@
+ 
+         long newSize;
+         if (minTargetSize < pageSize) {
+-            newSize = ArrayUtil.oversize((int)minTargetSize, bytesPerElement);
++            newSize = Math.min(ArrayUtil.oversize((int) minTargetSize, bytesPerElement), pageSize);
+         } else {
+-            newSize = minTargetSize + (minTargetSize >>> 3);
+-        }
+-
+-        if (newSize > pageSize) {
+-            // round to a multiple of pageSize
+-            newSize = newSize - (newSize % pageSize) + pageSize;
+-            assert newSize % pageSize == 0;
++            final long pages = (minTargetSize + pageSize - 1) / pageSize; // ceil(minTargetSize/pageSize)
++            newSize = pages * pageSize;
+         }
+ 
+         return newSize;
+
+```
+
+Generated
+```diff
+*No hunk*
+```
+
+Developer -> Generated (Unified Diff)
+```diff
+--- developer+++ generated@@ -1,19 +1 @@-@@ -52,15 +52,10 @@
+- 
+-         long newSize;
+-         if (minTargetSize < pageSize) {
+--            newSize = ArrayUtil.oversize((int)minTargetSize, bytesPerElement);
+-+            newSize = Math.min(ArrayUtil.oversize((int) minTargetSize, bytesPerElement), pageSize);
+-         } else {
+--            newSize = minTargetSize + (minTargetSize >>> 3);
+--        }
+--
+--        if (newSize > pageSize) {
+--            // round to a multiple of pageSize
+--            newSize = newSize - (newSize % pageSize) + pageSize;
+--            assert newSize % pageSize == 0;
+-+            final long pages = (minTargetSize + pageSize - 1) / pageSize; // ceil(minTargetSize/pageSize)
+-+            newSize = pages * pageSize;
+-         }
+- 
+-         return newSize;
++*No hunk*
+```
+
+
+
+## Full Generated Patch (Agent-Only, code-only)
+```diff
+
+```
+
+## Full Generated Patch (Final Effective, code-only)
+```diff
+
+```
+## Full Developer Backport Patch (full commit diff)
+```diff
+diff --git a/server/src/main/java/org/elasticsearch/common/util/BigArrays.java b/server/src/main/java/org/elasticsearch/common/util/BigArrays.java
+index f60e25687d..49fd693859 100644
+--- a/server/src/main/java/org/elasticsearch/common/util/BigArrays.java
++++ b/server/src/main/java/org/elasticsearch/common/util/BigArrays.java
+@@ -52,15 +52,10 @@ public class BigArrays {
+ 
+         long newSize;
+         if (minTargetSize < pageSize) {
+-            newSize = ArrayUtil.oversize((int)minTargetSize, bytesPerElement);
++            newSize = Math.min(ArrayUtil.oversize((int) minTargetSize, bytesPerElement), pageSize);
+         } else {
+-            newSize = minTargetSize + (minTargetSize >>> 3);
+-        }
+-
+-        if (newSize > pageSize) {
+-            // round to a multiple of pageSize
+-            newSize = newSize - (newSize % pageSize) + pageSize;
+-            assert newSize % pageSize == 0;
++            final long pages = (minTargetSize + pageSize - 1) / pageSize; // ceil(minTargetSize/pageSize)
++            newSize = pages * pageSize;
+         }
+ 
+         return newSize;
+diff --git a/server/src/test/java/org/elasticsearch/common/util/BigArraysTests.java b/server/src/test/java/org/elasticsearch/common/util/BigArraysTests.java
+new file mode 100644
+index 0000000000..8a1b91a8dc
+--- /dev/null
++++ b/server/src/test/java/org/elasticsearch/common/util/BigArraysTests.java
+@@ -0,0 +1,42 @@
++/*
++ * Licensed to Elasticsearch under one or more contributor
++ * license agreements. See the NOTICE file distributed with
++ * this work for additional information regarding copyright
++ * ownership. Elasticsearch licenses this file to you under
++ * the Apache License, Version 2.0 (the "License"); you may
++ * not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *    http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing,
++ * software distributed under the License is distributed on an
++ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
++ * KIND, either express or implied.  See the License for the
++ * specific language governing permissions and limitations
++ * under the License.
++ */
++
++package org.elasticsearch.common.util;
++
++import static org.assertj.core.api.Assertions.assertThat;
++
++import org.elasticsearch.test.ESTestCase;
++import org.junit.Test;
++
++public class BigArraysTests extends ESTestCase {
++
++    @Test
++    public void testOverSizeUsesMinPageCount() {
++        final int pageSize = 1 << (randomIntBetween(2, 16));
++        final int minSize = randomIntBetween(1, pageSize) * randomIntBetween(1, 100);
++        final long size = BigArrays.overSize(minSize, pageSize, 1);
++        assertThat(size).isGreaterThanOrEqualTo(minSize);
++        if (size >= pageSize) {
++            assertThat(size % pageSize)
++                .as(size + " is a multiple of " + pageSize)
++                .isEqualTo(0L);
++        }
++        assertThat(size - minSize).isLessThan(pageSize);
++    }
++}
+
+```

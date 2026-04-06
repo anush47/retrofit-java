@@ -1,0 +1,29 @@
+patch_id=crate_52821a16
+project=crate
+mainline_commit=52821a160a1a720097671cc0233b729f8d0c3355
+backport_commit=5226b6913ce7de2ea303454100eb253291bf3c8f
+mode=full
+started_at=2026-04-05T22:44:50.845937
+----------------------------------------
+Running full workflow graph
+Completed node=phase_0_optimistic
+Workflow completed successfully
+
+[crate/crate_52821a16] Setting up repositories for mode=full...
+[crate/crate_52821a16] Running full workflow graph...
+Router: Running Phase 0.
+Phase 0 (Optimistic): Checking direct patch applicability...
+Phase 0: Experiment mode — checking out parent of 5226b6913ce7de2ea303454100eb253291bf3c8f...
+Phase 0: Building baseline by applying developer backport test hunks only...
+  Validation: plugins/es-repository-azure/src/test/java/org/elasticsearch/repositories/azure/AzureStorageServiceTests.java - applying 2 hunk(s) one by one in bottom-to-top order: [59, 49]
+  Validation: plugins/es-repository-azure/src/test/java/org/elasticsearch/repositories/azure/AzureStorageSettingsTest.java - applying 1 hunk(s) one by one in bottom-to-top order: [1]
+  Validation: ADDED operation for plugins/es-repository-azure/src/test/java/org/elasticsearch/repositories/azure/AzureStorageSettingsTest.java
+    Agent 4: Executing crate helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_tests.sh
+Phase 0: git apply --check SUCCEEDED. Attempting actual patch application and test run.
+    Agent 4: Executing crate helper build script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_build.sh
+    Agent 4: Executing crate helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_tests.sh
+Phase 0: Transition summary -> reason=Valid: Observed fail-to-pass and/or newly passing relevant tests with no regressions.; fail->pass(1): ['org.elasticsearch.repositories.azure.AzureStorageSettingsTest#test_raise_exception_on_endpoint_uri_without_valid_host']; newly_passing(0): []; pass->fail(0): []
+Phase 0: Transition-based test validation passed. Fast-path success.
+Router: Phase 0 succeeded - taking fast-path exit.
+  Completed: phase_0_optimistic
+[crate/crate_52821a16] Full workflow completed!

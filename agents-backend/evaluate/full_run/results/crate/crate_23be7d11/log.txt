@@ -1,0 +1,27 @@
+patch_id=crate_23be7d11
+project=crate
+mainline_commit=23be7d11e41ddd233d397bd3a30dee7de0aba5dd
+backport_commit=96fc693d270505824ec2f455dff182abcb8c0a1b
+mode=full
+started_at=2026-04-05T23:33:49.194439
+----------------------------------------
+Running full workflow graph
+Completed node=phase_0_optimistic
+Workflow completed successfully
+
+[crate/crate_23be7d11] Setting up repositories for mode=full...
+[crate/crate_23be7d11] Running full workflow graph...
+Router: Running Phase 0.
+Phase 0 (Optimistic): Checking direct patch applicability...
+Phase 0: Experiment mode — checking out parent of 96fc693d270505824ec2f455dff182abcb8c0a1b...
+Phase 0: Building baseline by applying developer backport test hunks only...
+  Validation: server/src/test/java/io/crate/planner/optimizer/symbol/CollectQueryCastRulesTest.java - applying 4 hunk(s) one by one in bottom-to-top order: [129, 60, 43, 26]
+    Agent 4: Executing crate helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_tests.sh
+Phase 0: git apply --check SUCCEEDED. Attempting actual patch application and test run.
+    Agent 4: Executing crate helper build script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_build.sh
+    Agent 4: Executing crate helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_tests.sh
+Phase 0: Transition summary -> reason=Valid: Observed fail-to-pass and/or newly passing relevant tests with no regressions.; fail->pass(1): ['io.crate.planner.optimizer.symbol.CollectQueryCastRulesTest#test_all_operator_cast_on_left_reference_is_moved_to_cast_on_literal']; newly_passing(0): []; pass->fail(0): []
+Phase 0: Transition-based test validation passed. Fast-path success.
+Router: Phase 0 succeeded - taking fast-path exit.
+  Completed: phase_0_optimistic
+[crate/crate_23be7d11] Full workflow completed!

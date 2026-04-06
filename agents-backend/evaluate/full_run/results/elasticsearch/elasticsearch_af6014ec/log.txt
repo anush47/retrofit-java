@@ -1,0 +1,14 @@
+patch_id=elasticsearch_af6014ec
+project=elasticsearch
+mainline_commit=af6014ecb534a38e42b33c0783731ab0c0264e9b
+backport_commit=d2778383792d414973065084d5cbcf4da32a2399
+mode=full
+started_at=2026-04-06T02:03:13.503830
+----------------------------------------
+Phase0 cache fast-path success; skipping agentic workflow
+Completed from cache
+
+[elasticsearch/elasticsearch_af6014ec] Setting up repositories for mode=full...
+[elasticsearch/elasticsearch_af6014ec] Found cached Phase 0 results. Skipping Phase 0 and reusing baseline test state.
+[elasticsearch/elasticsearch_af6014ec] Cached Phase 0 fast-path success. Skipping agentic workflow.
+[elasticsearch/elasticsearch_af6014ec] Completed from cache without agentic workflow.

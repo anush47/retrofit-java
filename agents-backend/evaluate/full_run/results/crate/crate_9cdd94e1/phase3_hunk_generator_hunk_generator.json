@@ -1,0 +1,227 @@
+{
+  "adapted_file_edits": [
+    {
+      "target_file": "server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java",
+      "mainline_file": "server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java",
+      "old_string": "<deterministic file-editor diff>",
+      "new_string": "diff --git a/server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java b/server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java\nindex 4c40be2f5a..6dab15d258 100644\n--- a/server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java\n+++ b/server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java\n@@ -603,6 +603,8 @@ public class PostgresWireProtocol {\n         String portalName = readCString(buffer);\n         String statementName = readCString(buffer);\n \n+        assert portalName != null : \"portalName cannot be null\";\n+        assert statementName != null : \"statementName cannot be null\";\n         FormatCodes.FormatCode[] formatCodes = FormatCodes.fromBuffer(buffer);\n \n         short numParams = buffer.readShort();",
+      "edit_type": "replace",
+      "verified": true,
+      "verification_result": "Deterministic file editor applied",
+      "applied": true,
+      "apply_result": "SUCCESS"
+    },
+    {
+      "target_file": "server/src/main/java/io/crate/session/Session.java",
+      "mainline_file": "server/src/main/java/io/crate/session/Session.java",
+      "old_string": "<deterministic file-editor diff>",
+      "new_string": "diff --git a/server/src/main/java/io/crate/session/Session.java b/server/src/main/java/io/crate/session/Session.java\nindex fd5640333b..74844d5e60 100644\n--- a/server/src/main/java/io/crate/session/Session.java\n+++ b/server/src/main/java/io/crate/session/Session.java\n@@ -393,7 +393,7 @@ public class Session implements AutoCloseable {\n         try {\n             preparedStmt = getSafeStmt(statementName);\n         } catch (Throwable t) {\n-            jobsLogs.logPreExecutionFailure(UUIDs.dirtyUUID(), null, SQLExceptions.messageOf(t), sessionSettings.sessionUser());\n+            jobsLogs.logPreExecutionFailure(UUIDs.dirtyUUID(), statementName, SQLExceptions.messageOf(t), sessionSettings.sessionUser());\n             throw t;\n         }",
+      "edit_type": "replace",
+      "verified": true,
+      "verification_result": "Deterministic file editor applied",
+      "applied": true,
+      "apply_result": "SUCCESS"
+    }
+  ],
+  "all_adapted_file_edits": [
+    [
+      {
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java",
+        "mainline_file": "server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java",
+        "old_string": "<developer patch fast path>",
+        "new_string": "diff --git a/server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java b/server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java\nindex 4c40be2f5a..4286060220 100644\n--- a/server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java\n+++ b/server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java\n@@ -602,6 +602,8 @@ public class PostgresWireProtocol {\n     private void handleBindMessage(ByteBuf buffer, Channel channel) {\n         String portalName = readCString(buffer);\n         String statementName = readCString(buffer);\n+        assert portalName != null : \"portalName cannot be null\";\n+        assert statementName != null : \"statementName cannot be null\";\n \n         FormatCodes.FormatCode[] formatCodes = FormatCodes.fromBuffer(buffer);",
+        "edit_type": "replace",
+        "verified": true,
+        "verification_result": "developer_fast_path_ok",
+        "applied": true,
+        "apply_result": "SUCCESS"
+      },
+      {
+        "target_file": "server/src/main/java/io/crate/session/Session.java",
+        "mainline_file": "server/src/main/java/io/crate/session/Session.java",
+        "old_string": "<developer patch fast path>",
+        "new_string": "diff --git a/server/src/main/java/io/crate/session/Session.java b/server/src/main/java/io/crate/session/Session.java\nindex fd5640333b..74844d5e60 100644\n--- a/server/src/main/java/io/crate/session/Session.java\n+++ b/server/src/main/java/io/crate/session/Session.java\n@@ -393,7 +393,7 @@ public class Session implements AutoCloseable {\n         try {\n             preparedStmt = getSafeStmt(statementName);\n         } catch (Throwable t) {\n-            jobsLogs.logPreExecutionFailure(UUIDs.dirtyUUID(), null, SQLExceptions.messageOf(t), sessionSettings.sessionUser());\n+            jobsLogs.logPreExecutionFailure(UUIDs.dirtyUUID(), statementName, SQLExceptions.messageOf(t), sessionSettings.sessionUser());\n             throw t;\n         }",
+        "edit_type": "replace",
+        "verified": true,
+        "verification_result": "developer_fast_path_ok",
+        "applied": true,
+        "apply_result": "SUCCESS"
+      }
+    ],
+    [
+      {
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java",
+        "mainline_file": "server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java",
+        "old_string": "<deterministic file-editor diff>",
+        "new_string": "diff --git a/server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java b/server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java\nindex 4c40be2f5a..6dab15d258 100644\n--- a/server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java\n+++ b/server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java\n@@ -603,6 +603,8 @@ public class PostgresWireProtocol {\n         String portalName = readCString(buffer);\n         String statementName = readCString(buffer);\n \n+        assert portalName != null : \"portalName cannot be null\";\n+        assert statementName != null : \"statementName cannot be null\";\n         FormatCodes.FormatCode[] formatCodes = FormatCodes.fromBuffer(buffer);\n \n         short numParams = buffer.readShort();",
+        "edit_type": "replace",
+        "verified": true,
+        "verification_result": "Deterministic file editor applied",
+        "applied": true,
+        "apply_result": "SUCCESS"
+      },
+      {
+        "target_file": "server/src/main/java/io/crate/session/Session.java",
+        "mainline_file": "server/src/main/java/io/crate/session/Session.java",
+        "old_string": "<deterministic file-editor diff>",
+        "new_string": "diff --git a/server/src/main/java/io/crate/session/Session.java b/server/src/main/java/io/crate/session/Session.java\nindex fd5640333b..74844d5e60 100644\n--- a/server/src/main/java/io/crate/session/Session.java\n+++ b/server/src/main/java/io/crate/session/Session.java\n@@ -393,7 +393,7 @@ public class Session implements AutoCloseable {\n         try {\n             preparedStmt = getSafeStmt(statementName);\n         } catch (Throwable t) {\n-            jobsLogs.logPreExecutionFailure(UUIDs.dirtyUUID(), null, SQLExceptions.messageOf(t), sessionSettings.sessionUser());\n+            jobsLogs.logPreExecutionFailure(UUIDs.dirtyUUID(), statementName, SQLExceptions.messageOf(t), sessionSettings.sessionUser());\n             throw t;\n         }",
+        "edit_type": "replace",
+        "verified": true,
+        "verification_result": "Deterministic file editor applied",
+        "applied": true,
+        "apply_result": "SUCCESS"
+      }
+    ],
+    [
+      {
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java",
+        "mainline_file": "server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java",
+        "old_string": "<deterministic file-editor diff>",
+        "new_string": "diff --git a/server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java b/server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java\nindex 4c40be2f5a..6dab15d258 100644\n--- a/server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java\n+++ b/server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java\n@@ -603,6 +603,8 @@ public class PostgresWireProtocol {\n         String portalName = readCString(buffer);\n         String statementName = readCString(buffer);\n \n+        assert portalName != null : \"portalName cannot be null\";\n+        assert statementName != null : \"statementName cannot be null\";\n         FormatCodes.FormatCode[] formatCodes = FormatCodes.fromBuffer(buffer);\n \n         short numParams = buffer.readShort();",
+        "edit_type": "replace",
+        "verified": true,
+        "verification_result": "Deterministic file editor applied",
+        "applied": true,
+        "apply_result": "SUCCESS"
+      },
+      {
+        "target_file": "server/src/main/java/io/crate/session/Session.java",
+        "mainline_file": "server/src/main/java/io/crate/session/Session.java",
+        "old_string": "<deterministic file-editor diff>",
+        "new_string": "diff --git a/server/src/main/java/io/crate/session/Session.java b/server/src/main/java/io/crate/session/Session.java\nindex fd5640333b..74844d5e60 100644\n--- a/server/src/main/java/io/crate/session/Session.java\n+++ b/server/src/main/java/io/crate/session/Session.java\n@@ -393,7 +393,7 @@ public class Session implements AutoCloseable {\n         try {\n             preparedStmt = getSafeStmt(statementName);\n         } catch (Throwable t) {\n-            jobsLogs.logPreExecutionFailure(UUIDs.dirtyUUID(), null, SQLExceptions.messageOf(t), sessionSettings.sessionUser());\n+            jobsLogs.logPreExecutionFailure(UUIDs.dirtyUUID(), statementName, SQLExceptions.messageOf(t), sessionSettings.sessionUser());\n             throw t;\n         }",
+        "edit_type": "replace",
+        "verified": true,
+        "verification_result": "Deterministic file editor applied",
+        "applied": true,
+        "apply_result": "SUCCESS"
+      }
+    ]
+  ],
+  "agent_trajectory_edits": [
+    [],
+    [
+      {
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java",
+        "tool": "str_replace_in_file",
+        "args": {
+          "file_path": "server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java",
+          "edit_type": "insert_before",
+          "resolution_reason": "exact",
+          "resolved_old_preview": "        FormatCodes.FormatCode[] formatCodes = FormatCodes.fromBuffer(buffer);",
+          "resolved_new_preview": "        assert portalName != null : \"portalName cannot be null\";\n        assert statementName != null : \"statementName cannot be null\";\n        FormatCodes.FormatCode[] formatCodes = FormatCodes.fromB"
+        }
+      },
+      {
+        "target_file": "server/src/main/java/io/crate/session/Session.java",
+        "tool": "str_replace_in_file",
+        "args": {
+          "file_path": "server/src/main/java/io/crate/session/Session.java",
+          "edit_type": "replace",
+          "resolution_reason": "exact",
+          "resolved_old_preview": "            preparedStmt = getSafeStmt(statementName);\n        } catch (Throwable t) {\n            jobsLogs.logPreExecutionFailure(UUIDs.dirtyUUID(), null, SQLExceptions.messageOf(t), sessionSettings.",
+          "resolved_new_preview": "            preparedStmt = getSafeStmt(statementName);\n        } catch (Throwable t) {\n            jobsLogs.logPreExecutionFailure(UUIDs.dirtyUUID(), statementName, SQLExceptions.messageOf(t), session"
+        }
+      }
+    ],
+    [
+      {
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java",
+        "tool": "str_replace_in_file",
+        "args": {
+          "file_path": "server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java",
+          "edit_type": "insert_before",
+          "resolution_reason": "exact",
+          "resolved_old_preview": "        FormatCodes.FormatCode[] formatCodes = FormatCodes.fromBuffer(buffer);",
+          "resolved_new_preview": "        assert portalName != null : \"portalName cannot be null\";\n        assert statementName != null : \"statementName cannot be null\";\n        FormatCodes.FormatCode[] formatCodes = FormatCodes.fromB"
+        }
+      },
+      {
+        "target_file": "server/src/main/java/io/crate/session/Session.java",
+        "tool": "str_replace_in_file",
+        "args": {
+          "file_path": "server/src/main/java/io/crate/session/Session.java",
+          "edit_type": "replace",
+          "resolution_reason": "exact",
+          "resolved_old_preview": "            preparedStmt = getSafeStmt(statementName);\n        } catch (Throwable t) {\n            jobsLogs.logPreExecutionFailure(UUIDs.dirtyUUID(), null, SQLExceptions.messageOf(t), sessionSettings.",
+          "resolved_new_preview": "            preparedStmt = getSafeStmt(statementName);\n        } catch (Throwable t) {\n            jobsLogs.logPreExecutionFailure(UUIDs.dirtyUUID(), statementName, SQLExceptions.messageOf(t), session"
+        }
+      }
+    ]
+  ],
+  "adapted_code_hunks": [
+    {
+      "target_file": "server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java",
+      "mainline_file": "server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java",
+      "hunk_text": "diff --git a/server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java b/server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java\nindex 4c40be2f5a..6dab15d258 100644\n--- a/server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java\n+++ b/server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java\n@@ -603,6 +603,8 @@ public class PostgresWireProtocol {\n         String portalName = readCString(buffer);\n         String statementName = readCString(buffer);\n \n+        assert portalName != null : \"portalName cannot be null\";\n+        assert statementName != null : \"statementName cannot be null\";\n         FormatCodes.FormatCode[] formatCodes = FormatCodes.fromBuffer(buffer);\n \n         short numParams = buffer.readShort();\n",
+      "insertion_line": 603,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    },
+    {
+      "target_file": "server/src/main/java/io/crate/session/Session.java",
+      "mainline_file": "server/src/main/java/io/crate/session/Session.java",
+      "hunk_text": "diff --git a/server/src/main/java/io/crate/session/Session.java b/server/src/main/java/io/crate/session/Session.java\nindex fd5640333b..74844d5e60 100644\n--- a/server/src/main/java/io/crate/session/Session.java\n+++ b/server/src/main/java/io/crate/session/Session.java\n@@ -393,7 +393,7 @@ public class Session implements AutoCloseable {\n         try {\n             preparedStmt = getSafeStmt(statementName);\n         } catch (Throwable t) {\n-            jobsLogs.logPreExecutionFailure(UUIDs.dirtyUUID(), null, SQLExceptions.messageOf(t), sessionSettings.sessionUser());\n+            jobsLogs.logPreExecutionFailure(UUIDs.dirtyUUID(), statementName, SQLExceptions.messageOf(t), sessionSettings.sessionUser());\n             throw t;\n         }\n \n",
+      "insertion_line": 393,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    }
+  ],
+  "best_effort_adapted_code_hunks": [
+    {
+      "target_file": "server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java",
+      "mainline_file": "server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java",
+      "hunk_text": "diff --git a/server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java b/server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java\nindex 4c40be2f5a..6dab15d258 100644\n--- a/server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java\n+++ b/server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java\n@@ -603,6 +603,8 @@ public class PostgresWireProtocol {\n         String portalName = readCString(buffer);\n         String statementName = readCString(buffer);\n \n+        assert portalName != null : \"portalName cannot be null\";\n+        assert statementName != null : \"statementName cannot be null\";\n         FormatCodes.FormatCode[] formatCodes = FormatCodes.fromBuffer(buffer);\n \n         short numParams = buffer.readShort();\n",
+      "insertion_line": 603,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    },
+    {
+      "target_file": "server/src/main/java/io/crate/session/Session.java",
+      "mainline_file": "server/src/main/java/io/crate/session/Session.java",
+      "hunk_text": "diff --git a/server/src/main/java/io/crate/session/Session.java b/server/src/main/java/io/crate/session/Session.java\nindex fd5640333b..74844d5e60 100644\n--- a/server/src/main/java/io/crate/session/Session.java\n+++ b/server/src/main/java/io/crate/session/Session.java\n@@ -393,7 +393,7 @@ public class Session implements AutoCloseable {\n         try {\n             preparedStmt = getSafeStmt(statementName);\n         } catch (Throwable t) {\n-            jobsLogs.logPreExecutionFailure(UUIDs.dirtyUUID(), null, SQLExceptions.messageOf(t), sessionSettings.sessionUser());\n+            jobsLogs.logPreExecutionFailure(UUIDs.dirtyUUID(), statementName, SQLExceptions.messageOf(t), sessionSettings.sessionUser());\n             throw t;\n         }\n \n",
+      "insertion_line": 393,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    }
+  ],
+  "adapted_test_hunks": [],
+  "generation_checklist": [
+    {
+      "mainline_file": "<all>",
+      "target_file": "<all>",
+      "hunk_index": 0,
+      "status": "failed",
+      "reason": "generation_contract_failed",
+      "todo_steps": [
+        "replan"
+      ],
+      "completed_steps": []
+    }
+  ],
+  "validation_failed_stage": "generation_contract_failed",
+  "validation_repeated_patch_detected": true,
+  "validation_repeated_plan_detected": false,
+  "generated_patch_hash": "b83e7611bacb7073b0e902a34d20893c4c044ae5eeedd3b39291cc403cdf1c10",
+  "force_type_v_until_success": false,
+  "force_type_v_reason": "",
+  "force_type_v_retry_files": [],
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "sources": []
+  }
+}

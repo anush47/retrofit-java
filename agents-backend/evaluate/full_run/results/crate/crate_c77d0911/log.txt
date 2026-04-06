@@ -1,0 +1,106 @@
+patch_id=crate_c77d0911
+project=crate
+mainline_commit=c77d091150e74221bf13b8df3d8735649e544fdc
+backport_commit=f1cc59544a06bc77f7e03cc7798454c6c92ef3a5
+mode=full
+started_at=2026-04-06T00:46:31.343199
+----------------------------------------
+Running full workflow graph
+Completed node=phase_0_optimistic
+Completed node=context_analyzer
+Completed node=structural_locator
+Completed node=hunk_generator
+Completed node=validation
+Workflow completed successfully
+
+[crate/crate_c77d0911] Setting up repositories for mode=full...
+[crate/crate_c77d0911] Running full workflow graph...
+Router: Running Phase 0.
+Phase 0 (Optimistic): Checking direct patch applicability...
+Phase 0: Experiment mode — checking out parent of f1cc59544a06bc77f7e03cc7798454c6c92ef3a5...
+Phase 0: Building baseline by applying developer backport test hunks only...
+  Validation: server/src/test/java/io/crate/integrationtests/DeleteIntegrationTest.java - applying 2 hunk(s) one by one in bottom-to-top order: [306, 24]
+    Agent 4: Executing crate helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_tests.sh
+Phase 0: git apply --check FAILED. Escalating to full pipeline.
+  Hint: error: patch failed: docs/appendices/release-notes/5.6.5.rst:77
+error: docs/appendices/release-notes/5.6.5.rst: patch does not apply
+error: docs/appendices/release-notes/5.7.1.rst: No such file or dir
+Router: Phase 0 failed - entering full 4-agent pipeline.
+  Completed: phase_0_optimistic
+Agent 1 (Context Analyzer): Deterministic blueprint generation...
+Agent 1: Complete. Files=5 hunks=6 (deterministic).
+Agent 1: Detected 6 hunk(s) with variants.
+  Completed: context_analyzer
+Agent 2 (Structural Locator): Starting target location mapping...
+  Agent 2: 5 code file(s), 0 test file(s)
+LLM Provider: azure, Model: gpt-4.1-mini, Temperature: 0
+  Agent 2: Found 6 hunk(s) in hunk_chain
+  Agent 2: Locating target for server/src/main/java/io/crate/analyze/CopyAnalyzer.java (2 hunk(s))...
+Phase 1 (Git) Match Found: server/src/main/java/io/crate/analyze/CopyAnalyzer.java
+  Agent 2: Git resolution found target: server/src/main/java/io/crate/analyze/CopyAnalyzer.java
+  Agent 2: Mapped hunk 1 (hunk_1) to None at lines 76-76
+  Agent 2: Mapped hunk 2 (hunk_2) to None at lines 119-119
+  Agent 2: Locating target for server/src/main/java/io/crate/analyze/DeleteAnalyzer.java (1 hunk(s))...
+Phase 1 (Git) Match Found: server/src/main/java/io/crate/analyze/DeleteAnalyzer.java
+  Agent 2: Git resolution found target: server/src/main/java/io/crate/analyze/DeleteAnalyzer.java
+  Agent 2: Mapped hunk 1 (hunk_1) to None at lines 63-63
+  Agent 2: Locating target for server/src/main/java/io/crate/analyze/InsertAnalyzer.java (1 hunk(s))...
+Phase 1 (Git) Match Found: server/src/main/java/io/crate/analyze/InsertAnalyzer.java
+  Agent 2: Git resolution found target: server/src/main/java/io/crate/analyze/InsertAnalyzer.java
+  Agent 2: Mapped hunk 1 (hunk_1) to None at lines 316-316
+  Agent 2: Locating target for server/src/main/java/io/crate/analyze/UpdateAnalyzer.java (1 hunk(s))...
+Phase 1 (Git) Match Found: server/src/main/java/io/crate/analyze/UpdateAnalyzer.java
+  Agent 2: Git resolution found target: server/src/main/java/io/crate/analyze/UpdateAnalyzer.java
+  Agent 2: Mapped hunk 1 (hunk_1) to None at lines 110-110
+  Agent 2: Locating target for server/src/main/java/io/crate/analyze/where/WhereClauseAnalyzer.java (1 hunk(s))...
+Phase 1 (Git) Match Found: server/src/main/java/io/crate/analyze/where/WhereClauseAnalyzer.java
+  Agent 2: Git resolution found target: server/src/main/java/io/crate/analyze/where/WhereClauseAnalyzer.java
+  Agent 2: Mapped hunk 1 (hunk_1) to None at lines 115-115
+  Agent 2: Trace written to structural_locator_trace.md
+Agent 2: Complete. Mapped 5 file(s). Total hunk mappings: 6. ConsistencyMap has 0 rename(s).
+Router: complexity=STRUCTURAL -> skip planning, go hunk_generator.
+  Completed: structural_locator
+Agent 3 (File Editor): Starting direct file-edit workflow...
+LLM Provider: azure, Model: gpt-4.1-mini, Temperature: 0
+  Agent 3: Built 2 deterministic fallback edit(s) for server/src/main/java/io/crate/analyze/CopyAnalyzer.java.
+  Agent 3: Processing 2 edit(s) for server/src/main/java/io/crate/analyze/CopyAnalyzer.java (op=MODIFIED)
+    Agent 3: Classified server/src/main/java/io/crate/analyze/CopyAnalyzer.java as TYPE_II (deterministic path)
+    Agent 3: base_types=['TYPE_II'] execution_types=['TYPE_II']
+    Agent 3: Developer patch fast path for server/src/main/java/io/crate/analyze/CopyAnalyzer.java (developer_fast_path_ok)
+  Agent 3: Built 1 deterministic fallback edit(s) for server/src/main/java/io/crate/analyze/DeleteAnalyzer.java.
+  Agent 3: Processing 1 edit(s) for server/src/main/java/io/crate/analyze/DeleteAnalyzer.java (op=MODIFIED)
+    Agent 3: Classified server/src/main/java/io/crate/analyze/DeleteAnalyzer.java as TYPE_II (deterministic path)
+    Agent 3: base_types=['TYPE_II'] execution_types=['TYPE_II']
+    Agent 3: Developer patch fast path for server/src/main/java/io/crate/analyze/DeleteAnalyzer.java (developer_fast_path_ok)
+  Agent 3: Built 1 deterministic fallback edit(s) for server/src/main/java/io/crate/analyze/InsertAnalyzer.java.
+  Agent 3: Processing 1 edit(s) for server/src/main/java/io/crate/analyze/InsertAnalyzer.java (op=MODIFIED)
+    Agent 3: Classified server/src/main/java/io/crate/analyze/InsertAnalyzer.java as TYPE_II (deterministic path)
+    Agent 3: base_types=['TYPE_II'] execution_types=['TYPE_II']
+    Agent 3: Developer patch fast path for server/src/main/java/io/crate/analyze/InsertAnalyzer.java (developer_fast_path_ok)
+  Agent 3: Built 1 deterministic fallback edit(s) for server/src/main/java/io/crate/analyze/UpdateAnalyzer.java.
+  Agent 3: Processing 1 edit(s) for server/src/main/java/io/crate/analyze/UpdateAnalyzer.java (op=MODIFIED)
+    Agent 3: Classified server/src/main/java/io/crate/analyze/UpdateAnalyzer.java as TYPE_II (deterministic path)
+    Agent 3: base_types=['TYPE_II'] execution_types=['TYPE_II']
+    Agent 3: Developer patch fast path for server/src/main/java/io/crate/analyze/UpdateAnalyzer.java (developer_fast_path_ok)
+  Agent 3: Built 1 deterministic fallback edit(s) for server/src/main/java/io/crate/analyze/where/WhereClauseAnalyzer.java.
+  Agent 3: Processing 1 edit(s) for server/src/main/java/io/crate/analyze/where/WhereClauseAnalyzer.java (op=MODIFIED)
+    Agent 3: Classified server/src/main/java/io/crate/analyze/where/WhereClauseAnalyzer.java as TYPE_II (deterministic path)
+    Agent 3: base_types=['TYPE_II'] execution_types=['TYPE_II']
+    Agent 3: Developer patch fast path for server/src/main/java/io/crate/analyze/where/WhereClauseAnalyzer.java (developer_fast_path_ok)
+  Agent 3 (File Editor): Done. 5 file(s) adapted, 5 edit record(s).
+  Completed: hunk_generator
+Agent 4 (Validation): Starting 'Prove Red, Make Green' loop...
+  Agent 4: Evaluation full-workflow mode (apply -> build -> relevant tests)...
+  Validation: server/src/main/java/io/crate/analyze/CopyAnalyzer.java - applying 1 hunk(s) one by one in bottom-to-top order: [1]
+  Validation: server/src/main/java/io/crate/analyze/DeleteAnalyzer.java - applying 1 hunk(s) one by one in bottom-to-top order: [1]
+  Validation: server/src/main/java/io/crate/analyze/InsertAnalyzer.java - applying 1 hunk(s) one by one in bottom-to-top order: [1]
+  Validation: server/src/main/java/io/crate/analyze/UpdateAnalyzer.java - applying 1 hunk(s) one by one in bottom-to-top order: [1]
+  Validation: server/src/main/java/io/crate/analyze/where/WhereClauseAnalyzer.java - applying 1 hunk(s) one by one in bottom-to-top order: [1]
+  Validation: docs/appendices/release-notes/5.6.5.rst - applying 1 hunk(s) one by one in bottom-to-top order: [80]
+  Validation: server/src/test/java/io/crate/integrationtests/DeleteIntegrationTest.java - applying 2 hunk(s) one by one in bottom-to-top order: [306, 24]
+    Agent 4: Executing crate helper build script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_build.sh
+    Agent 4: Executing crate helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_tests.sh
+Trace saved to validation_trace.md
+Router: Validation PASSED after 1 attempt(s). Done.
+  Completed: validation
+[crate/crate_c77d0911] Full workflow completed!

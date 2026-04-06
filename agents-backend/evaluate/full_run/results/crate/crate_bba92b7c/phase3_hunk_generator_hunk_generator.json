@@ -1,0 +1,93 @@
+{
+  "adapted_file_edits": [],
+  "all_adapted_file_edits": [
+    [
+      {
+        "target_file": "server/src/main/java/io/crate/metadata/cluster/AlterTableClusterStateExecutor.java",
+        "mainline_file": "server/src/main/java/io/crate/metadata/cluster/AlterTableClusterStateExecutor.java",
+        "old_string": "<developer patch fast path>",
+        "new_string": "diff --git a/server/src/main/java/io/crate/metadata/cluster/AlterTableClusterStateExecutor.java b/server/src/main/java/io/crate/metadata/cluster/AlterTableClusterStateExecutor.java\nindex b9583b183a..e06c2e9ffc 100644\n--- a/server/src/main/java/io/crate/metadata/cluster/AlterTableClusterStateExecutor.java\n+++ b/server/src/main/java/io/crate/metadata/cluster/AlterTableClusterStateExecutor.java\n@@ -253,18 +253,16 @@ public class AlterTableClusterStateExecutor extends DDLClusterStateTaskExecutor<\n     @VisibleForTesting\n     static Settings filterSettings(Settings settings, List<Setting<?>> settingsFilter) {\n         Settings.Builder settingsBuilder = Settings.builder();\n+        Set<String> settingNames = settings.keySet();\n         for (Setting<?> setting : settingsFilter) {\n+            String key = setting.getKey();\n             if (setting.isGroupSetting()) {\n-                String prefix = setting.getKey(); // getKey() returns prefix for a group setting\n-                var settingsGroup = settings.getByPrefix(prefix);\n+                var settingsGroup = settings.getByPrefix(key);\n                 for (String name : settingsGroup.keySet()) {\n-                    settingsBuilder.put(prefix + name, settingsGroup.get(name)); // No dot added as prefix already has dot at the end.\n-                }\n-            } else {\n-                String value = settings.get(setting.getKey());\n-                if (value != null) {\n-                    settingsBuilder.put(setting.getKey(), value);\n+                    settingsBuilder.put(key + name, settingsGroup.get(name)); // No dot added as prefix already has dot at the end.\n                 }\n+            } else if (settingNames.contains(key)) {\n+                settingsBuilder.put(key, settings.get(key));\n             }\n         }\n         return settingsBuilder.build();",
+        "edit_type": "replace",
+        "verified": true,
+        "verification_result": "developer_fast_path_ok",
+        "applied": true,
+        "apply_result": "SUCCESS"
+      }
+    ],
+    [],
+    []
+  ],
+  "agent_trajectory_edits": [
+    [],
+    [
+      {
+        "target_file": "server/src/main/java/io/crate/metadata/cluster/AlterTableClusterStateExecutor.java",
+        "tool": "str_replace_in_file",
+        "args": {
+          "file_path": "server/src/main/java/io/crate/metadata/cluster/AlterTableClusterStateExecutor.java",
+          "edit_type": "replace",
+          "resolution_reason": "multiline_anchor_reconstructed",
+          "resolved_old_preview": "                var settingsGroup = settings.getByPrefix(prefix);\n                for (String name : settingsGroup.keySet()) {\n                    settingsBuilder.put(prefix + name, settingsGroup.get(",
+          "resolved_new_preview": "        Set<String> settingNames = settings.keySet();\n            String key = setting.getKey();\n                var settingsGroup = settings.getByPrefix(key);\n                    settingsBuilder.put("
+        }
+      }
+    ],
+    []
+  ],
+  "adapted_code_hunks": [
+    {
+      "target_file": "server/src/main/java/io/crate/metadata/cluster/AlterTableClusterStateExecutor.java",
+      "mainline_file": "server/src/main/java/io/crate/metadata/cluster/AlterTableClusterStateExecutor.java",
+      "hunk_text": "diff --git a/server/src/main/java/io/crate/metadata/cluster/AlterTableClusterStateExecutor.java b/server/src/main/java/io/crate/metadata/cluster/AlterTableClusterStateExecutor.java\nindex b9583b183a..e06c2e9ffc 100644\n--- a/server/src/main/java/io/crate/metadata/cluster/AlterTableClusterStateExecutor.java\n+++ b/server/src/main/java/io/crate/metadata/cluster/AlterTableClusterStateExecutor.java\n@@ -253,18 +253,16 @@ public class AlterTableClusterStateExecutor extends DDLClusterStateTaskExecutor<\n     @VisibleForTesting\n     static Settings filterSettings(Settings settings, List<Setting<?>> settingsFilter) {\n         Settings.Builder settingsBuilder = Settings.builder();\n+        Set<String> settingNames = settings.keySet();\n         for (Setting<?> setting : settingsFilter) {\n+            String key = setting.getKey();\n             if (setting.isGroupSetting()) {\n-                String prefix = setting.getKey(); // getKey() returns prefix for a group setting\n-                var settingsGroup = settings.getByPrefix(prefix);\n+                var settingsGroup = settings.getByPrefix(key);\n                 for (String name : settingsGroup.keySet()) {\n-                    settingsBuilder.put(prefix + name, settingsGroup.get(name)); // No dot added as prefix already has dot at the end.\n-                }\n-            } else {\n-                String value = settings.get(setting.getKey());\n-                if (value != null) {\n-                    settingsBuilder.put(setting.getKey(), value);\n+                    settingsBuilder.put(key + name, settingsGroup.get(name)); // No dot added as prefix already has dot at the end.\n                 }\n+            } else if (settingNames.contains(key)) {\n+                settingsBuilder.put(key, settings.get(key));\n             }\n         }\n         return settingsBuilder.build();\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    }
+  ],
+  "best_effort_adapted_code_hunks": [
+    {
+      "target_file": "server/src/main/java/io/crate/metadata/cluster/AlterTableClusterStateExecutor.java",
+      "mainline_file": "server/src/main/java/io/crate/metadata/cluster/AlterTableClusterStateExecutor.java",
+      "hunk_text": "diff --git a/server/src/main/java/io/crate/metadata/cluster/AlterTableClusterStateExecutor.java b/server/src/main/java/io/crate/metadata/cluster/AlterTableClusterStateExecutor.java\nindex b9583b183a..e06c2e9ffc 100644\n--- a/server/src/main/java/io/crate/metadata/cluster/AlterTableClusterStateExecutor.java\n+++ b/server/src/main/java/io/crate/metadata/cluster/AlterTableClusterStateExecutor.java\n@@ -253,18 +253,16 @@ public class AlterTableClusterStateExecutor extends DDLClusterStateTaskExecutor<\n     @VisibleForTesting\n     static Settings filterSettings(Settings settings, List<Setting<?>> settingsFilter) {\n         Settings.Builder settingsBuilder = Settings.builder();\n+        Set<String> settingNames = settings.keySet();\n         for (Setting<?> setting : settingsFilter) {\n+            String key = setting.getKey();\n             if (setting.isGroupSetting()) {\n-                String prefix = setting.getKey(); // getKey() returns prefix for a group setting\n-                var settingsGroup = settings.getByPrefix(prefix);\n+                var settingsGroup = settings.getByPrefix(key);\n                 for (String name : settingsGroup.keySet()) {\n-                    settingsBuilder.put(prefix + name, settingsGroup.get(name)); // No dot added as prefix already has dot at the end.\n-                }\n-            } else {\n-                String value = settings.get(setting.getKey());\n-                if (value != null) {\n-                    settingsBuilder.put(setting.getKey(), value);\n+                    settingsBuilder.put(key + name, settingsGroup.get(name)); // No dot added as prefix already has dot at the end.\n                 }\n+            } else if (settingNames.contains(key)) {\n+                settingsBuilder.put(key, settings.get(key));\n             }\n         }\n         return settingsBuilder.build();\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    }
+  ],
+  "adapted_test_hunks": [],
+  "generation_checklist": [
+    {
+      "mainline_file": "<all>",
+      "target_file": "<all>",
+      "hunk_index": 0,
+      "status": "failed",
+      "reason": "generation_contract_failed",
+      "todo_steps": [
+        "replan"
+      ],
+      "completed_steps": []
+    }
+  ],
+  "validation_failed_stage": "generation_contract_failed",
+  "validation_repeated_patch_detected": true,
+  "validation_repeated_plan_detected": false,
+  "generated_patch_hash": "095f56ca5f3c63a9b77bef78ef27cac2b591fb2c7d3b15fe6d7d56d2517f2c56",
+  "force_type_v_until_success": true,
+  "force_type_v_reason": "failed_stage_generation_contract",
+  "force_type_v_retry_files": [
+    "server/src/main/java/io/crate/metadata/cluster/AlterTableClusterStateExecutor.java"
+  ],
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "sources": []
+  }
+}

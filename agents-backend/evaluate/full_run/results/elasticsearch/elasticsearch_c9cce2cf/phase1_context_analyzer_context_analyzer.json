@@ -1,0 +1,57 @@
+{
+  "semantic_blueprint": {
+    "root_cause_hypothesis": "Deterministic inference: target branch diverges from mainline; adapt hunks with exact target context.",
+    "fix_logic": "Apply each source hunk with target-verified context and symbol consistency while preserving behavior.",
+    "dependent_apis": [
+      "if",
+      "MappedFieldType",
+      "valueFetcher",
+      "UnsupportedOperationException",
+      "typeName",
+      "termQuery"
+    ],
+    "patch_intent_summary": "Backport patch behavior to target branch with minimal, context-correct edits.",
+    "hunk_chain": [
+      {
+        "hunk_index": 1,
+        "file": "server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java",
+        "summary": "Adds logic (+1 lines).",
+        "role": "declaration",
+        "connects_to_next": "Prepares next hunk in same file with related context.",
+        "global_index": 1
+      },
+      {
+        "hunk_index": 2,
+        "file": "server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java",
+        "summary": "Adds logic (+2 lines).",
+        "role": "core_fix",
+        "connects_to_next": "Prepares next hunk in same file with related context.",
+        "global_index": 2
+      },
+      {
+        "hunk_index": 3,
+        "file": "server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java",
+        "summary": "Adds logic (+8 lines).",
+        "role": "guard",
+        "connects_to_next": "Prepares next hunk in same file with related context.",
+        "global_index": 3
+      },
+      {
+        "hunk_index": 4,
+        "file": "server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java",
+        "summary": "Modifies logic (+18/-14 lines).",
+        "role": "guard",
+        "connects_to_next": "",
+        "global_index": 4
+      }
+    ]
+  },
+  "patch_diff": "From c9cce2cfaa3cd2e1fc01f895881605a20bde4367 Mon Sep 17 00:00:00 2001\nFrom: Kostas Krikellas <131142368+kkrik-es@users.noreply.github.com>\nDate: Sat, 25 Jan 2025 13:49:29 +0200\nSubject: [PATCH] Restore single-element array removal in synthetic source\n (#120844)\n\n---\n .../index/mapper/DocumentParser.java          | 43 +++++++++++++------\n .../mapper/IgnoredSourceFieldMapperTests.java | 21 ++++++++-\n 2 files changed, 49 insertions(+), 15 deletions(-)\n\ndiff --git a/server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java b/server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java\nindex 5a417c541d7..ac3f019636b 100644\n--- a/server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java\n+++ b/server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java\n@@ -57,6 +57,7 @@ public final class DocumentParser {\n     static final NodeFeature FIX_PARSING_SUBOBJECTS_FALSE_DYNAMIC_FALSE = new NodeFeature(\n         \"mapper.fix_parsing_subobjects_false_dynamic_false\"\n     );\n+    private static final String NOOP_FIELD_MAPPER_NAME = \"no-op\";\n \n     private final XContentParserConfiguration parserConfiguration;\n     private final MappingParserContext mappingParserContext;\n@@ -706,6 +707,8 @@ public final class DocumentParser {\n \n             canRemoveSingleLeafElement = mapper instanceof FieldMapper\n                 && mode == Mapper.SourceKeepMode.ARRAYS\n+                && context.inArrayScope() == false\n+                && mapper.leafName().equals(NOOP_FIELD_MAPPER_NAME) == false\n                 && fieldWithFallbackSyntheticSource == false\n                 && copyToFieldHasValuesInDocument == false;\n \n@@ -729,20 +732,28 @@ public final class DocumentParser {\n \n         XContentParser parser = context.parser();\n         XContentParser.Token token;\n+        int elements = 0;\n         while ((token = parser.nextToken()) != XContentParser.Token.END_ARRAY) {\n             if (token == XContentParser.Token.START_OBJECT) {\n+                elements = 2;\n                 parseObject(context, lastFieldName);\n             } else if (token == XContentParser.Token.START_ARRAY) {\n+                elements = 2;\n                 parseArray(context, lastFieldName);\n             } else if (token == XContentParser.Token.VALUE_NULL) {\n+                elements++;\n                 parseNullValue(context, lastFieldName);\n             } else if (token == null) {\n                 throwEOFOnParseArray(arrayFieldName, context);\n             } else {\n                 assert token.isValue();\n+                elements++;\n                 parseValue(context, lastFieldName);\n             }\n         }\n+        if (elements <= 1 && canRemoveSingleLeafElement) {\n+            context.removeLastIgnoredField(fullPath);\n+        }\n         postProcessDynamicArrayMapping(context, lastFieldName);\n     }\n \n@@ -917,22 +928,26 @@ public final class DocumentParser {\n     }\n \n     private static FieldMapper noopFieldMapper(String path) {\n-        return new FieldMapper(\"no-op\", new MappedFieldType(\"no-op\", false, false, false, TextSearchInfo.NONE, Collections.emptyMap()) {\n-            @Override\n-            public ValueFetcher valueFetcher(SearchExecutionContext context, String format) {\n-                throw new UnsupportedOperationException();\n-            }\n+        return new FieldMapper(\n+            NOOP_FIELD_MAPPER_NAME,\n+            new MappedFieldType(NOOP_FIELD_MAPPER_NAME, false, false, false, TextSearchInfo.NONE, Collections.emptyMap()) {\n+                @Override\n+                public ValueFetcher valueFetcher(SearchExecutionContext context, String format) {\n+                    throw new UnsupportedOperationException();\n+                }\n \n-            @Override\n-            public String typeName() {\n-                throw new UnsupportedOperationException();\n-            }\n+                @Override\n+                public String typeName() {\n+                    throw new UnsupportedOperationException();\n+                }\n \n-            @Override\n-            public Query termQuery(Object value, SearchExecutionContext context) {\n-                throw new UnsupportedOperationException();\n-            }\n-        }, FieldMapper.BuilderParams.empty()) {\n+                @Override\n+                public Query termQuery(Object value, SearchExecutionContext context) {\n+                    throw new UnsupportedOperationException();\n+                }\n+            },\n+            FieldMapper.BuilderParams.empty()\n+        ) {\n \n             @Override\n             protected void parseCreateField(DocumentParserContext context) {\ndiff --git a/server/src/test/java/org/elasticsearch/index/mapper/IgnoredSourceFieldMapperTests.java b/server/src/test/java/org/elasticsearch/index/mapper/IgnoredSourceFieldMapperTests.java\nindex 2b36c0ce0b5..d12bf5dc2e3 100644\n--- a/server/src/test/java/org/elasticsearch/index/mapper/IgnoredSourceFieldMapperTests.java\n+++ b/server/src/test/java/org/elasticsearch/index/mapper/IgnoredSourceFieldMapperTests.java\n@@ -743,7 +743,9 @@ public class IgnoredSourceFieldMapperTests extends MapperServiceTestCase {\n             b.startObject(\"int_value\").field(\"type\", \"integer\").endObject();\n         })).documentMapper();\n         var syntheticSource = syntheticSource(documentMapper, b -> b.array(\"int_value\", new int[] { 10 }));\n-        assertEquals(\"{\\\"int_value\\\":[10]}\", syntheticSource);\n+        assertEquals(\"{\\\"int_value\\\":10}\", syntheticSource);\n+        ParsedDocument doc = documentMapper.parse(source(syntheticSource));\n+        assertNull(doc.rootDoc().getField(\"_ignored_source\"));\n     }\n \n     public void testIndexStoredArraySourceSingleLeafElementAndNull() throws IOException {\n@@ -754,6 +756,23 @@ public class IgnoredSourceFieldMapperTests extends MapperServiceTestCase {\n         assertEquals(\"{\\\"value\\\":[\\\"foo\\\",null]}\", syntheticSource);\n     }\n \n+    public void testIndexStoredArraySourceSingleLeafElementInObjectArray() throws IOException {\n+        DocumentMapper documentMapper = createMapperServiceWithStoredArraySource(mapping(b -> {\n+            b.startObject(\"path\").field(\"synthetic_source_keep\", \"none\").startObject(\"properties\");\n+            {\n+                b.startObject(\"int_value\").field(\"type\", \"integer\").endObject();\n+            }\n+            b.endObject().endObject();\n+        })).documentMapper();\n+        var syntheticSource = syntheticSource(documentMapper, b -> {\n+            b.startArray(\"path\");\n+            b.startObject().field(\"int_value\", 10).endObject();\n+            b.startObject().array(\"int_value\", new int[] { 20 }).endObject();\n+            b.endArray();\n+        });\n+        assertEquals(\"{\\\"path\\\":{\\\"int_value\\\":[10,20]}}\", syntheticSource);\n+    }\n+\n     public void testIndexStoredArraySourceSingleObjectElement() throws IOException {\n         DocumentMapper documentMapper = createMapperServiceWithStoredArraySource(mapping(b -> {\n             b.startObject(\"path\").startObject(\"properties\");\n-- \n2.43.0\n\n",
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "reason": "deterministic_no_llm"
+  }
+}

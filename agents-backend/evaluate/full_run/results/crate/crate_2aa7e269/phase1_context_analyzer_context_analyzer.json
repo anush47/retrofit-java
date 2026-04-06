@@ -1,0 +1,42 @@
+{
+  "semantic_blueprint": {
+    "root_cause_hypothesis": "Deterministic inference: target branch diverges from mainline; adapt hunks with exact target context.",
+    "fix_logic": "Apply each source hunk with target-verified context and symbol consistency while preserving behavior.",
+    "dependent_apis": [],
+    "patch_intent_summary": "Backport patch behavior to target branch with minimal, context-correct edits.",
+    "hunk_chain": [
+      {
+        "hunk_index": 1,
+        "file": "server/src/main/java/io/crate/execution/dml/Indexer.java",
+        "summary": "Adds logic (+1 lines).",
+        "role": "declaration",
+        "connects_to_next": "Prepares next hunk in same file with related context.",
+        "global_index": 1
+      },
+      {
+        "hunk_index": 2,
+        "file": "server/src/main/java/io/crate/execution/dml/Indexer.java",
+        "summary": "Modifies logic (+1/-1 lines).",
+        "role": "core_fix",
+        "connects_to_next": "Prepares next hunk in same file with related context.",
+        "global_index": 2
+      },
+      {
+        "hunk_index": 3,
+        "file": "server/src/main/java/io/crate/execution/dml/Indexer.java",
+        "summary": "Modifies logic (+1/-1 lines).",
+        "role": "guard",
+        "connects_to_next": "",
+        "global_index": 3
+      }
+    ]
+  },
+  "patch_diff": "From 2aa7e269ec7bc92d6f4dfa68392f6293905861d7 Mon Sep 17 00:00:00 2001\nFrom: Sebastian Utz <su@rtme.net>\nDate: Mon, 31 Mar 2025 13:46:19 +0200\nSubject: [PATCH] Fix new column collection to not contain duplicates\n\nDuplicated new columns weren't a real issue besides memory consumption\nuntil the field limit detection on dynamically added columns was fixed\nby https://github.com/crate/crate/commit/ea6fa68af2.\n\nFixes #17691.\n---\n .../java/io/crate/execution/dml/Indexer.java  |  5 ++-\n .../io/crate/execution/dml/IndexerTest.java   | 41 +++++++++++++++++++\n 2 files changed, 44 insertions(+), 2 deletions(-)\n\ndiff --git a/server/src/main/java/io/crate/execution/dml/Indexer.java b/server/src/main/java/io/crate/execution/dml/Indexer.java\nindex 3df5f13e95..6884d22467 100644\n--- a/server/src/main/java/io/crate/execution/dml/Indexer.java\n+++ b/server/src/main/java/io/crate/execution/dml/Indexer.java\n@@ -31,6 +31,7 @@ import java.util.Collection;\n import java.util.Collections;\n import java.util.Comparator;\n import java.util.HashMap;\n+import java.util.LinkedHashSet;\n import java.util.List;\n import java.util.Locale;\n import java.util.Map;\n@@ -679,7 +680,7 @@ public class Indexer {\n      * Looks for new columns in the values of the given IndexItem and returns them.\n      */\n     public List<Reference> collectSchemaUpdates(IndexItem item) throws IOException {\n-        ArrayList<Reference> newColumns = new ArrayList<>();\n+        LinkedHashSet<Reference> newColumns = new LinkedHashSet<>();\n         Consumer<? super Reference> onDynamicColumn = ref -> {\n             ref.column().validForCreate();\n             newColumns.add(ref);\n@@ -718,7 +719,7 @@ public class Indexer {\n                 synthetics::get\n             );\n         }\n-        return newColumns;\n+        return newColumns.stream().toList();\n     }\n \n     /**\ndiff --git a/server/src/test/java/io/crate/execution/dml/IndexerTest.java b/server/src/test/java/io/crate/execution/dml/IndexerTest.java\nindex 1d58bec8d6..5570912a55 100644\n--- a/server/src/test/java/io/crate/execution/dml/IndexerTest.java\n+++ b/server/src/test/java/io/crate/execution/dml/IndexerTest.java\n@@ -25,6 +25,7 @@ import static io.crate.execution.dml.ArrayIndexer.ARRAY_LENGTH_FIELD_PREFIX;\n import static io.crate.execution.dml.ArrayIndexer.ARRAY_VALUES_FIELD_PREFIX;\n import static io.crate.execution.dml.ArrayIndexer.toArrayLengthFieldName;\n import static io.crate.testing.Asserts.assertThat;\n+import static io.crate.testing.Asserts.isReference;\n import static io.crate.types.GeoShapeType.Names.TREE_BKD;\n import static io.crate.types.GeoShapeType.Names.TREE_GEOHASH;\n import static io.crate.types.GeoShapeType.Names.TREE_LEGACY_QUADTREE;\n@@ -41,6 +42,7 @@ import java.util.List;\n import java.util.Map;\n import java.util.function.Function;\n import java.util.function.Supplier;\n+import java.util.stream.IntStream;\n import java.util.stream.Stream;\n \n import org.apache.lucene.document.Field;\n@@ -350,6 +352,45 @@ public class IndexerTest extends CrateDummyClusterServiceUnitTest {\n         );\n     }\n \n+    @Test\n+    public void test_collect_columns_of_dynamic_object_array() throws Exception {\n+        SQLExecutor executor = SQLExecutor.of(clusterService)\n+            .addTable(\"CREATE TABLE tbl (data OBJECT(DYNAMIC))\");\n+        DocTableInfo table = executor.resolveTableInfo(\"tbl\");\n+        Reference x = table.getReference(ColumnIdent.of(\"data\"));\n+        Indexer indexer = new Indexer(\n+            table.ident().indexNameOrAlias(),\n+            table,\n+            Version.CURRENT,\n+            new CoordinatorTxnCtx(executor.getSessionSettings()),\n+            executor.nodeCtx,\n+            List.of(x),\n+            null\n+        );\n+\n+        // Create 1 object with a nested object array of 2 elements with 4 columns each\n+        Map<String, Object> item = Map.of(\n+            \"a\", 1,\n+            \"b\", \"foo\",\n+            \"c\", 2,\n+            \"d\", 123\n+        );\n+        ArrayList<Map<String, Object>> list = new ArrayList<>();\n+        IntStream.range(0, 2).forEach(_ -> list.add(item));\n+        Map<String, Object> data = new HashMap<>();\n+        data.put(\"list\", list);\n+\n+        var references = indexer.collectSchemaUpdates(item(data));\n+        // Must result in 5 columns, duplicates of each of the 2 elements must be ignored\n+        assertThat(references).satisfiesExactly(\n+            isReference(\"data['list']\"),\n+            isReference(\"data['list']['a']\"),\n+            isReference(\"data['list']['b']\"),\n+            isReference(\"data['list']['c']\"),\n+            isReference(\"data['list']['d']\")\n+        );\n+    }\n+\n     @Test\n     public void test_generated_partitioned_column_is_not_indexed_or_included_in_source() throws Exception {\n         String partition = new PartitionName(new RelationName(\"doc\", \"tbl\"), List.of(\"3\")).asIndexName();\n-- \n2.43.0\n\n",
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "reason": "deterministic_no_llm"
+  }
+}

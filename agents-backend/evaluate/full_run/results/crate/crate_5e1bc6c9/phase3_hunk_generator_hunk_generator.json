@@ -1,0 +1,100 @@
+{
+  "adapted_file_edits": [
+    {
+      "target_file": "server/src/main/java/io/crate/planner/operators/SubQueryResults.java",
+      "mainline_file": "server/src/main/java/io/crate/planner/operators/SubQueryResults.java",
+      "old_string": "<developer patch fast path>",
+      "new_string": "diff --git a/server/src/main/java/io/crate/planner/operators/SubQueryResults.java b/server/src/main/java/io/crate/planner/operators/SubQueryResults.java\nindex 57077b2404..832eee0345 100644\n--- a/server/src/main/java/io/crate/planner/operators/SubQueryResults.java\n+++ b/server/src/main/java/io/crate/planner/operators/SubQueryResults.java\n@@ -22,6 +22,7 @@\n package io.crate.planner.operators;\n \n import java.util.Collections;\n+import java.util.HashMap;\n import java.util.List;\n import java.util.Map;\n \n@@ -46,11 +47,10 @@ public class SubQueryResults {\n     private Row inputRow = Row.EMPTY;\n \n     public SubQueryResults(Map<SelectSymbol, Object> valuesBySubQuery) {\n-        this.valuesBySubQuery = valuesBySubQuery;\n-        this.boundOuterColumns = EMPTY_OUTER_COLUMNS;\n+        this(valuesBySubQuery, EMPTY_OUTER_COLUMNS);\n     }\n \n-    public SubQueryResults(Map<SelectSymbol, Object> valuesBySubQuery,\n+    private SubQueryResults(Map<SelectSymbol, Object> valuesBySubQuery,\n                            ObjectIntMap<OuterColumn> boundOuterColumns) {\n         this.valuesBySubQuery = valuesBySubQuery;\n         this.boundOuterColumns = boundOuterColumns;\n@@ -90,7 +90,15 @@ public class SubQueryResults {\n     }\n \n     public static SubQueryResults merge(SubQueryResults subQueryResults1, SubQueryResults subQueryResults2) {\n-        // Correlated subquery related fields.\n+        // Correlated subquery related fields, expect only one of them to contain correlated subquery fields.\n+        assert subQueryResults1.boundOuterColumns.isEmpty()\n+            || subQueryResults2.boundOuterColumns.isEmpty()\n+            : \"Can't merge two SubQueryResults with non-empty boundOuterColumns\";\n+\n+        assert subQueryResults1.inputRow.equals(Row.EMPTY)\n+            || subQueryResults2.inputRow.equals(Row.EMPTY)\n+            : \"Can't merge two SubQueryResults with non-empty inputRow\";\n+\n         Row mergedRow = subQueryResults1.inputRow;\n         ObjectIntMap<OuterColumn> mergedBoundOuterColumns = subQueryResults1.boundOuterColumns;\n         if (mergedRow.equals(Row.EMPTY)) {\n@@ -100,11 +108,11 @@ public class SubQueryResults {\n             mergedBoundOuterColumns = subQueryResults2.boundOuterColumns;\n         }\n \n-        // Regular sub-select field.\n-        Map<SelectSymbol, Object> mergedValuesBySubQuery = subQueryResults1.valuesBySubQuery;\n-        if (mergedValuesBySubQuery.isEmpty()) {\n-            mergedValuesBySubQuery = subQueryResults2.valuesBySubQuery;\n-        }\n+        // Fully merge regular sub-select field.\n+        Map<SelectSymbol, Object> mergedValuesBySubQuery = new HashMap<>();\n+        mergedValuesBySubQuery.putAll(subQueryResults1.valuesBySubQuery);\n+        mergedValuesBySubQuery.putAll(subQueryResults2.valuesBySubQuery);\n+\n \n         SubQueryResults combinedSubQueryResults = new SubQueryResults(mergedValuesBySubQuery, mergedBoundOuterColumns);\n         combinedSubQueryResults.bindOuterColumnInputRow(mergedRow);",
+      "edit_type": "replace",
+      "verified": true,
+      "verification_result": "developer_fast_path_ok",
+      "applied": true,
+      "apply_result": "SUCCESS"
+    }
+  ],
+  "all_adapted_file_edits": [
+    [
+      {
+        "target_file": "server/src/main/java/io/crate/planner/operators/SubQueryResults.java",
+        "mainline_file": "server/src/main/java/io/crate/planner/operators/SubQueryResults.java",
+        "old_string": "<developer patch fast path>",
+        "new_string": "diff --git a/server/src/main/java/io/crate/planner/operators/SubQueryResults.java b/server/src/main/java/io/crate/planner/operators/SubQueryResults.java\nindex 57077b2404..832eee0345 100644\n--- a/server/src/main/java/io/crate/planner/operators/SubQueryResults.java\n+++ b/server/src/main/java/io/crate/planner/operators/SubQueryResults.java\n@@ -22,6 +22,7 @@\n package io.crate.planner.operators;\n \n import java.util.Collections;\n+import java.util.HashMap;\n import java.util.List;\n import java.util.Map;\n \n@@ -46,11 +47,10 @@ public class SubQueryResults {\n     private Row inputRow = Row.EMPTY;\n \n     public SubQueryResults(Map<SelectSymbol, Object> valuesBySubQuery) {\n-        this.valuesBySubQuery = valuesBySubQuery;\n-        this.boundOuterColumns = EMPTY_OUTER_COLUMNS;\n+        this(valuesBySubQuery, EMPTY_OUTER_COLUMNS);\n     }\n \n-    public SubQueryResults(Map<SelectSymbol, Object> valuesBySubQuery,\n+    private SubQueryResults(Map<SelectSymbol, Object> valuesBySubQuery,\n                            ObjectIntMap<OuterColumn> boundOuterColumns) {\n         this.valuesBySubQuery = valuesBySubQuery;\n         this.boundOuterColumns = boundOuterColumns;\n@@ -90,7 +90,15 @@ public class SubQueryResults {\n     }\n \n     public static SubQueryResults merge(SubQueryResults subQueryResults1, SubQueryResults subQueryResults2) {\n-        // Correlated subquery related fields.\n+        // Correlated subquery related fields, expect only one of them to contain correlated subquery fields.\n+        assert subQueryResults1.boundOuterColumns.isEmpty()\n+            || subQueryResults2.boundOuterColumns.isEmpty()\n+            : \"Can't merge two SubQueryResults with non-empty boundOuterColumns\";\n+\n+        assert subQueryResults1.inputRow.equals(Row.EMPTY)\n+            || subQueryResults2.inputRow.equals(Row.EMPTY)\n+            : \"Can't merge two SubQueryResults with non-empty inputRow\";\n+\n         Row mergedRow = subQueryResults1.inputRow;\n         ObjectIntMap<OuterColumn> mergedBoundOuterColumns = subQueryResults1.boundOuterColumns;\n         if (mergedRow.equals(Row.EMPTY)) {\n@@ -100,11 +108,11 @@ public class SubQueryResults {\n             mergedBoundOuterColumns = subQueryResults2.boundOuterColumns;\n         }\n \n-        // Regular sub-select field.\n-        Map<SelectSymbol, Object> mergedValuesBySubQuery = subQueryResults1.valuesBySubQuery;\n-        if (mergedValuesBySubQuery.isEmpty()) {\n-            mergedValuesBySubQuery = subQueryResults2.valuesBySubQuery;\n-        }\n+        // Fully merge regular sub-select field.\n+        Map<SelectSymbol, Object> mergedValuesBySubQuery = new HashMap<>();\n+        mergedValuesBySubQuery.putAll(subQueryResults1.valuesBySubQuery);\n+        mergedValuesBySubQuery.putAll(subQueryResults2.valuesBySubQuery);\n+\n \n         SubQueryResults combinedSubQueryResults = new SubQueryResults(mergedValuesBySubQuery, mergedBoundOuterColumns);\n         combinedSubQueryResults.bindOuterColumnInputRow(mergedRow);",
+        "edit_type": "replace",
+        "verified": true,
+        "verification_result": "developer_fast_path_ok",
+        "applied": true,
+        "apply_result": "SUCCESS"
+      }
+    ]
+  ],
+  "agent_trajectory_edits": [
+    []
+  ],
+  "adapted_code_hunks": [
+    {
+      "target_file": "server/src/main/java/io/crate/planner/operators/SubQueryResults.java",
+      "mainline_file": "server/src/main/java/io/crate/planner/operators/SubQueryResults.java",
+      "hunk_text": "diff --git a/server/src/main/java/io/crate/planner/operators/SubQueryResults.java b/server/src/main/java/io/crate/planner/operators/SubQueryResults.java\nindex 57077b2404..832eee0345 100644\n--- a/server/src/main/java/io/crate/planner/operators/SubQueryResults.java\n+++ b/server/src/main/java/io/crate/planner/operators/SubQueryResults.java\n@@ -22,6 +22,7 @@\n package io.crate.planner.operators;\n \n import java.util.Collections;\n+import java.util.HashMap;\n import java.util.List;\n import java.util.Map;\n \n@@ -46,11 +47,10 @@ public class SubQueryResults {\n     private Row inputRow = Row.EMPTY;\n \n     public SubQueryResults(Map<SelectSymbol, Object> valuesBySubQuery) {\n-        this.valuesBySubQuery = valuesBySubQuery;\n-        this.boundOuterColumns = EMPTY_OUTER_COLUMNS;\n+        this(valuesBySubQuery, EMPTY_OUTER_COLUMNS);\n     }\n \n-    public SubQueryResults(Map<SelectSymbol, Object> valuesBySubQuery,\n+    private SubQueryResults(Map<SelectSymbol, Object> valuesBySubQuery,\n                            ObjectIntMap<OuterColumn> boundOuterColumns) {\n         this.valuesBySubQuery = valuesBySubQuery;\n         this.boundOuterColumns = boundOuterColumns;\n@@ -90,7 +90,15 @@ public class SubQueryResults {\n     }\n \n     public static SubQueryResults merge(SubQueryResults subQueryResults1, SubQueryResults subQueryResults2) {\n-        // Correlated subquery related fields.\n+        // Correlated subquery related fields, expect only one of them to contain correlated subquery fields.\n+        assert subQueryResults1.boundOuterColumns.isEmpty()\n+            || subQueryResults2.boundOuterColumns.isEmpty()\n+            : \"Can't merge two SubQueryResults with non-empty boundOuterColumns\";\n+\n+        assert subQueryResults1.inputRow.equals(Row.EMPTY)\n+            || subQueryResults2.inputRow.equals(Row.EMPTY)\n+            : \"Can't merge two SubQueryResults with non-empty inputRow\";\n+\n         Row mergedRow = subQueryResults1.inputRow;\n         ObjectIntMap<OuterColumn> mergedBoundOuterColumns = subQueryResults1.boundOuterColumns;\n         if (mergedRow.equals(Row.EMPTY)) {\n@@ -100,11 +108,11 @@ public class SubQueryResults {\n             mergedBoundOuterColumns = subQueryResults2.boundOuterColumns;\n         }\n \n-        // Regular sub-select field.\n-        Map<SelectSymbol, Object> mergedValuesBySubQuery = subQueryResults1.valuesBySubQuery;\n-        if (mergedValuesBySubQuery.isEmpty()) {\n-            mergedValuesBySubQuery = subQueryResults2.valuesBySubQuery;\n-        }\n+        // Fully merge regular sub-select field.\n+        Map<SelectSymbol, Object> mergedValuesBySubQuery = new HashMap<>();\n+        mergedValuesBySubQuery.putAll(subQueryResults1.valuesBySubQuery);\n+        mergedValuesBySubQuery.putAll(subQueryResults2.valuesBySubQuery);\n+\n \n         SubQueryResults combinedSubQueryResults = new SubQueryResults(mergedValuesBySubQuery, mergedBoundOuterColumns);\n         combinedSubQueryResults.bindOuterColumnInputRow(mergedRow);\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    }
+  ],
+  "validation_repeated_patch_detected": false,
+  "validation_repeated_plan_detected": false,
+  "best_effort_adapted_code_hunks": [
+    {
+      "target_file": "server/src/main/java/io/crate/planner/operators/SubQueryResults.java",
+      "mainline_file": "server/src/main/java/io/crate/planner/operators/SubQueryResults.java",
+      "hunk_text": "diff --git a/server/src/main/java/io/crate/planner/operators/SubQueryResults.java b/server/src/main/java/io/crate/planner/operators/SubQueryResults.java\nindex 57077b2404..832eee0345 100644\n--- a/server/src/main/java/io/crate/planner/operators/SubQueryResults.java\n+++ b/server/src/main/java/io/crate/planner/operators/SubQueryResults.java\n@@ -22,6 +22,7 @@\n package io.crate.planner.operators;\n \n import java.util.Collections;\n+import java.util.HashMap;\n import java.util.List;\n import java.util.Map;\n \n@@ -46,11 +47,10 @@ public class SubQueryResults {\n     private Row inputRow = Row.EMPTY;\n \n     public SubQueryResults(Map<SelectSymbol, Object> valuesBySubQuery) {\n-        this.valuesBySubQuery = valuesBySubQuery;\n-        this.boundOuterColumns = EMPTY_OUTER_COLUMNS;\n+        this(valuesBySubQuery, EMPTY_OUTER_COLUMNS);\n     }\n \n-    public SubQueryResults(Map<SelectSymbol, Object> valuesBySubQuery,\n+    private SubQueryResults(Map<SelectSymbol, Object> valuesBySubQuery,\n                            ObjectIntMap<OuterColumn> boundOuterColumns) {\n         this.valuesBySubQuery = valuesBySubQuery;\n         this.boundOuterColumns = boundOuterColumns;\n@@ -90,7 +90,15 @@ public class SubQueryResults {\n     }\n \n     public static SubQueryResults merge(SubQueryResults subQueryResults1, SubQueryResults subQueryResults2) {\n-        // Correlated subquery related fields.\n+        // Correlated subquery related fields, expect only one of them to contain correlated subquery fields.\n+        assert subQueryResults1.boundOuterColumns.isEmpty()\n+            || subQueryResults2.boundOuterColumns.isEmpty()\n+            : \"Can't merge two SubQueryResults with non-empty boundOuterColumns\";\n+\n+        assert subQueryResults1.inputRow.equals(Row.EMPTY)\n+            || subQueryResults2.inputRow.equals(Row.EMPTY)\n+            : \"Can't merge two SubQueryResults with non-empty inputRow\";\n+\n         Row mergedRow = subQueryResults1.inputRow;\n         ObjectIntMap<OuterColumn> mergedBoundOuterColumns = subQueryResults1.boundOuterColumns;\n         if (mergedRow.equals(Row.EMPTY)) {\n@@ -100,11 +108,11 @@ public class SubQueryResults {\n             mergedBoundOuterColumns = subQueryResults2.boundOuterColumns;\n         }\n \n-        // Regular sub-select field.\n-        Map<SelectSymbol, Object> mergedValuesBySubQuery = subQueryResults1.valuesBySubQuery;\n-        if (mergedValuesBySubQuery.isEmpty()) {\n-            mergedValuesBySubQuery = subQueryResults2.valuesBySubQuery;\n-        }\n+        // Fully merge regular sub-select field.\n+        Map<SelectSymbol, Object> mergedValuesBySubQuery = new HashMap<>();\n+        mergedValuesBySubQuery.putAll(subQueryResults1.valuesBySubQuery);\n+        mergedValuesBySubQuery.putAll(subQueryResults2.valuesBySubQuery);\n+\n \n         SubQueryResults combinedSubQueryResults = new SubQueryResults(mergedValuesBySubQuery, mergedBoundOuterColumns);\n         combinedSubQueryResults.bindOuterColumnInputRow(mergedRow);\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    }
+  ],
+  "adapted_test_hunks": [],
+  "generation_checklist": [
+    {
+      "mainline_file": "server/src/main/java/io/crate/planner/operators/SubQueryResults.java",
+      "target_file": "server/src/main/java/io/crate/planner/operators/SubQueryResults.java",
+      "hunk_index": 0,
+      "adaptation_type": "TYPE_II",
+      "execution_types": [
+        "TYPE_II"
+      ],
+      "status": "success",
+      "reason": "developer_fast_path",
+      "todo_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ],
+      "completed_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ]
+    }
+  ],
+  "generated_patch_hash": "1d75b0a95678e980aaa6433eebcb8ecf53782e3685a54f68f81969d4a9046baa",
+  "force_type_v_until_success": false,
+  "force_type_v_reason": "",
+  "force_type_v_retry_files": [],
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "sources": []
+  }
+}

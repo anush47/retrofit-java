@@ -1,0 +1,27 @@
+patch_id=crate_73778220
+project=crate
+mainline_commit=73778220a2031cdbc0f19fee7bbf4dc32b1fe991
+backport_commit=963aaf1bd8c93e142a99ff6c8355f063316fc17d
+mode=full
+started_at=2026-04-06T01:05:29.766458
+----------------------------------------
+Running full workflow graph
+Completed node=phase_0_optimistic
+Workflow completed successfully
+
+[crate/crate_73778220] Setting up repositories for mode=full...
+[crate/crate_73778220] Running full workflow graph...
+Router: Running Phase 0.
+Phase 0 (Optimistic): Checking direct patch applicability...
+Phase 0: Experiment mode — checking out parent of 963aaf1bd8c93e142a99ff6c8355f063316fc17d...
+Phase 0: Building baseline by applying developer backport test hunks only...
+  Validation: server/src/test/java/io/crate/planner/operators/JoinTest.java - applying 1 hunk(s) one by one in bottom-to-top order: [986]
+    Agent 4: Executing crate helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_tests.sh
+Phase 0: git apply --check SUCCEEDED. Attempting actual patch application and test run.
+    Agent 4: Executing crate helper build script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_build.sh
+    Agent 4: Executing crate helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_tests.sh
+Phase 0: Transition summary -> reason=Valid: Observed fail-to-pass and/or newly passing relevant tests with no regressions.; fail->pass(1): ['io.crate.planner.operators.JoinTest#test_using_clause_specifying_multiple_columns_with_a_non_existing_column_raises_error']; newly_passing(0): []; pass->fail(0): []
+Phase 0: Transition-based test validation passed. Fast-path success.
+Router: Phase 0 succeeded - taking fast-path exit.
+  Completed: phase_0_optimistic
+[crate/crate_73778220] Full workflow completed!

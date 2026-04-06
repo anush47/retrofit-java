@@ -1,0 +1,48 @@
+# Transition Summary
+
+- Source: phase_outputs
+- Valid backport signal: True
+- Reason: Valid: Observed fail-to-pass and/or newly passing relevant tests with no regressions.
+- fail->pass (1): ['io.crate.planner.operators.JoinTest#test_using_clause_specifying_multiple_columns_with_a_non_existing_column_raises_error']
+- newly passing (0): []
+- pass->fail (0): []
+
+## Touched Test States
+- Touched tests (from patch): ['io.crate.planner.operators.JoinTest']
+  - io.crate.planner.operators.JoinTest#testBlockNestedLoopWhenLeftSideIsSmallerAndOneExecutionNode: baseline=passed, patched=passed
+  - io.crate.planner.operators.JoinTest#testBlockNestedLoopWhenRightSideIsSmallerAndOneExecutionNode: baseline=passed, patched=passed
+  - io.crate.planner.operators.JoinTest#testBlockNestedLoopWhenTableSizeUnknownAndOneExecutionNode: baseline=passed, patched=passed
+  - io.crate.planner.operators.JoinTest#testForbidJoinWhereMatchOnBothTables: baseline=passed, patched=passed
+  - io.crate.planner.operators.JoinTest#testHashJoin_TableOrderInLogicalAndExecutionPlan: baseline=passed, patched=passed
+  - io.crate.planner.operators.JoinTest#testHashJoin_TablesSwitchWhenRightBiggerThanLeft: baseline=passed, patched=passed
+  - io.crate.planner.operators.JoinTest#testMixedHashJoinNestedLoop: baseline=passed, patched=passed
+  - io.crate.planner.operators.JoinTest#testMultipleHashJoins: baseline=passed, patched=passed
+  - io.crate.planner.operators.JoinTest#testNestedLoop_TablesAreNotSwitchedAfterOrderByPushDown: baseline=passed, patched=passed
+  - io.crate.planner.operators.JoinTest#testNestedLoop_TablesAreNotSwitchedIfLeftHasAPushedDownOrderBy: baseline=passed, patched=passed
+  - io.crate.planner.operators.JoinTest#testNestedLoop_TablesAreSwitchedIfBlockJoinAndRightIsSmallerThanLeft: baseline=passed, patched=passed
+  - io.crate.planner.operators.JoinTest#testNestedLoop_TablesAreSwitchedIfLeftIsSmallerThanRight: baseline=passed, patched=passed
+  - io.crate.planner.operators.JoinTest#testNoBlockNestedLoopWithOrderBy: baseline=passed, patched=passed
+  - io.crate.planner.operators.JoinTest#testPlanChainedJoinsWithWindowFunctionInOutput: baseline=passed, patched=passed
+  - io.crate.planner.operators.JoinTest#testSameOutputIsNotDeDuplicated: baseline=passed, patched=passed
+  - io.crate.planner.operators.JoinTest#test_can_create_execution_plan_from_join_condition_depending_on_multiple_aliased_tables: baseline=passed, patched=passed
+  - io.crate.planner.operators.JoinTest#test_can_create_execution_plan_from_join_condition_depending_on_multiple_tables: baseline=passed, patched=passed
+  - io.crate.planner.operators.JoinTest#test_constant_expression_in_left_join_condition_is_pushed_down_to_relation: baseline=passed, patched=passed
+  - io.crate.planner.operators.JoinTest#test_correlated_subquery_can_access_all_tables_from_outer_query_that_joins_multiple_tables: baseline=passed, patched=passed
+  - io.crate.planner.operators.JoinTest#test_filter_on_aliased_symbol_is_moved_below_join_if_left_join_can_be_rewritten_to_inner_join: baseline=passed, patched=passed
+  - io.crate.planner.operators.JoinTest#test_hashjoin_tables_are_not_switched_when_expected_numbers_of_rows_are_negative: baseline=passed, patched=passed
+  - io.crate.planner.operators.JoinTest#test_join_using_non_matching_column_types_raises_error: baseline=passed, patched=passed
+  - io.crate.planner.operators.JoinTest#test_join_with_alias_and_order_by_alias_with_limit_creates_valid_plan: baseline=passed, patched=passed
+  - io.crate.planner.operators.JoinTest#test_multiple_nested_join_raises_error: baseline=passed, patched=passed
+  - io.crate.planner.operators.JoinTest#test_nested_join_pair_ordering: baseline=passed, patched=passed
+  - io.crate.planner.operators.JoinTest#test_nested_join_pair_ordering_with_three_relations_in_join_condition: baseline=passed, patched=passed
+  - io.crate.planner.operators.JoinTest#test_nested_join_pg_query_join_pair_ordering: baseline=passed, patched=passed
+  - io.crate.planner.operators.JoinTest#test_nested_joins_with_explicit_and_implicit_join_condition: baseline=passed, patched=passed
+  - io.crate.planner.operators.JoinTest#test_nested_joins_with_non_existing_columns_raises_error: baseline=passed, patched=passed
+  - io.crate.planner.operators.JoinTest#test_nested_joins_with_sub_query_join_pair_ordering: baseline=passed, patched=passed
+  - io.crate.planner.operators.JoinTest#test_nested_joins_with_using_duplicate_columns_raises_error: baseline=passed, patched=passed
+  - io.crate.planner.operators.JoinTest#test_nestedloop_tables_are_not_switched_when_expected_numbers_of_rows_are_negative: baseline=passed, patched=passed
+  - io.crate.planner.operators.JoinTest#test_nestedloop_tables_are_not_switched_when_rhs_expected_numbers_of_rows_are_negative_on_a_single_node: baseline=passed, patched=passed
+  - io.crate.planner.operators.JoinTest#test_relationnames_order_in_nested_loop_join: baseline=passed, patched=passed
+  - io.crate.planner.operators.JoinTest#test_rewrite_left_join_to_inner_with_subquery: baseline=passed, patched=passed
+  - io.crate.planner.operators.JoinTest#test_subscript_inside_query_spec_of_a_join_is_part_of_the_source_outputs: baseline=passed, patched=passed
+  - io.crate.planner.operators.JoinTest#test_using_clause_specifying_multiple_columns_with_a_non_existing_column_raises_error: baseline=failed, patched=passed

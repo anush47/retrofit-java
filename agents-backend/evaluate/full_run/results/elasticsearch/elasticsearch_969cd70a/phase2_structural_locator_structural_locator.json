@@ -1,0 +1,26 @@
+{
+  "consistency_map": {},
+  "mapped_target_context": {
+    "server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java": [
+      {
+        "hunk_index": 1,
+        "mainline_method": "hunk_1",
+        "target_file": "server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java",
+        "target_method": null,
+        "start_line": 732,
+        "end_line": 732,
+        "code_snippet": "            if (objectWithFallbackSyntheticSource\n                || fieldWithFallbackSyntheticSource\n                || fieldWithStoredArraySource\n                || copyToFieldHasValuesInDocument) {\n                context = context.addIgnoredFieldFromContext(IgnoredSourceFieldMapper.NameValue.fromContext(context, fullPath, null));\n            } else if (mapper instanceof ObjectMapper objectMapper && (objectMapper.isEnabled() == false)) {\n                // No need to call #addIgnoredFieldFromContext as both singleton and array instances of this object\n                // get tracked through ignored source.\n                context.addIgnoredField(IgnoredSourceFieldMapper.NameValue.fromContext(context, fullPath, context.encodeFlattenedToken()));\n                return;\n            }\n        }\n\n        // In synthetic source, if any array element requires storing its source as-is, it takes precedence over\n        // elements from regular source loading that are then skipped from the synthesized array source.\n        // To prevent this, we track that parsing sub-context is within array scope.\n        context = context.maybeCloneForArray(mapper);\n\n        XContentParser parser = context.parser();\n        XContentParser.Token token;\n        int elements = 0;\n        while ((token = parser.nextToken()) != XContentParser.Token.END_ARRAY) {\n            if (token == XContentParser.Token.START_OBJECT) {\n                elements = Integer.MAX_VALUE;\n                parseObject(context, lastFieldName);\n            } else if (token == XContentParser.Token.START_ARRAY) {\n                elements = Integer.MAX_VALUE;\n                parseArray(context, lastFieldName);\n            } else if (token == XContentParser.Token.VALUE_NULL) {\n                elements++;\n                parseNullValue(context, lastFieldName);\n            } else if (token == null) {\n                throwEOFOnParseArray(arrayFieldName, context);\n            } else {\n                assert token.isValue();\n                elements++;\n                parseValue(context, lastFieldName);\n            }\n        }\n        if (elements <= 1 && canRemoveSingleLeafElement) {\n            context.removeLastIgnoredField(fullPath);",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      }
+    ]
+  },
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "reason": "llm_usage_not_collected_in_this_node"
+  }
+}

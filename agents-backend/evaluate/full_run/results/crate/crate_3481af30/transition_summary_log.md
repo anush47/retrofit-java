@@ -1,0 +1,92 @@
+# Transition Summary
+
+- Source: phase_outputs
+- Valid backport signal: False
+- Reason: Invalid: No fail-to-pass or newly passing relevant tests were observed.
+- fail->pass (0): []
+- newly passing (0): []
+- pass->fail (0): []
+
+## Touched Test States
+- Touched tests (from patch): ['io.crate.planner.SelectPlannerTest']
+  - io.crate.planner.SelectPlannerTest#test2TableJoinWithNoMatch: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#test3TableJoinQuerySplitting: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#test3TableJoinWithNoMatch: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#testAggregationCanBeUsedAsArgumentToTableFunction: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#testAggregationOnGeneratedColumns: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#testAggregationOnTopOfTableFunctionIsNotPossibleWithoutSeparateSubQuery: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#testCollectAndMergePlan: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#testCollectAndMergePlanFunction: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#testCollectAndMergePlanHighLimit: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#testCollectAndMergePlanNoFetch: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#testCollectAndMergePlanPartitioned: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#testCountDistinctPlan: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#testCountOnPartitionedTable: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#testFilterOnPKSubsetResultsInPKLookupPlanIfTheOtherPKPartIsGenerated: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#testGetPlan: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#testGetPlanPartitioned: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#testGetPlanStringLiteral: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#testGetWithVersion: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#testGlobalAggregateOn2TableJoinWithNoMatch: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#testGlobalAggregateOn3TableJoinWithNoMatch: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#testGlobalAggregateWithWhereOnPartitionColumn: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#testGlobalAggregationHaving: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#testGlobalAggregationOn3TableJoinWithImplicitJoinConditions: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#testGlobalAggregationPlan: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#testGlobalCountPlan: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#testHandlerSideRouting: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#testHasNoResultFromHaving: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#testInnerJoinResultsInHashJoinIfHashJoinIsEnabled: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#testLimitThatIsBiggerThanPageSizeCausesQTFPUshPlan: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#testMultiGetPlan: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#testOrderByOnTableFunctionMustOrderAfterProjectSet: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#testOuterJoinToInnerJoinRewrite: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#testQAFPagingIsEnabledOnHighLimit: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#testQAFPagingIsEnabledOnHighOffset: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#testQTFPagingIsEnabledOnHighLimit: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#testQueryRequiresScalar: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#testReferenceToNestedAggregatedField: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#testScalarCanBeUsedAroundTableGeneratingFunctionInSelectList: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#testSelectAnalyzedReferenceInFunctionAggregation: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#testSelectFromUnnestResultsInTableFunctionPlan: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#testSelectPartitionedTableOrderByPartitionedColumnInFunction: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#testSeqNoAndPrimaryTermFilteringRequirePrimaryKey: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#testShardQueueSizeCalculation: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#testShardSelect: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#testShardSelectWithOrderBy: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#testSortOnUnknownColumn: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#testTableFunctionIsExecutedAfterAggregation: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#testTablePartitionsAreNarrowedToMatchWhereClauseOfParentQuery: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#testUnnestInSelectListResultsInPlanWithProjectSetOperator: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#testWherePKAndMatchDoesNotResultInESGet: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#testWindowFunctionsWithPartitionByAreExecutedDistributed: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#test_collect_execution_plan_is_narrowed_to_matching_generated_partition_columns: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#test_collect_phase_narrows_shard_selection_based_on_clustered_by_columns: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#test_columns_used_in_hash_join_condition_are_not_duplicated_in_outputs: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#test_columns_used_in_nl_join_condition_are_not_duplicated_in_outputs: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#test_distinct_with_limit_and_offset_keeps_offset: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#test_distinct_with_limit_is_optimized_to_limitandoffset_distinct: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#test_duplicate_aggregate_filter_expression_on_top_of_alias: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#test_equi_join_with_scalar_using_parameter_placeholders: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#test_filter_and_eval_on_get_operator_use_shard_projections: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#test_filter_by_internal_id_result_in_get_plan: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#test_filter_on_aliased_object_col_in_view_is_pushed_down_to_collect: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#test_filter_on_aliased_subselect_output: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#test_filter_on_object_col_is_pushed_down_to_collect_with_view: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#test_float_and_double_implicit_cast_dont_hang_on_range_validation: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#test_group_by_on_pk_lookup_uses_shard_projections: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#test_group_by_on_subscript_on_obj_output_of_sub_relation: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#test_group_by_without_aggregates_and_with_limit_is_optimized_to_limitandoffset_distinct: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#test_join_with_no_match_where_clause_pushes_down_no_match: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#test_match_used_on_table_with_alias_is_resolved_to_a_function: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#test_non_euqi_join_with_scalar_using_parameter_placeholders: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#test_non_recursive_nested_with: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#test_non_recursive_with_is_rewritten_to_nested_subselects: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#test_order_by_on_aggregation_with_alias_in_select_list: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#test_order_by_on_subscript_on_obj_output_of_sub_relation: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#test_queries_in_count_operator_are_optimized: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#test_select_from_table_function_with_filter_on_not_selected_column: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#test_select_where_id_and_seq_missing_primary_term: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#test_select_where_seq_and_primary_term_missing_id: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#test_table_function_without_from_can_bind_parameters: baseline=passed, patched=passed
+  - io.crate.planner.SelectPlannerTest#test_window_function_with_function_used_in_order_by_injects_eval_below_window_agg_ordering: baseline=passed, patched=passed

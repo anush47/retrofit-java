@@ -1,0 +1,26 @@
+{
+  "consistency_map": {},
+  "mapped_target_context": {
+    "server/src/main/java/org/elasticsearch/common/settings/IndexScopedSettings.java": [
+      {
+        "hunk_index": 1,
+        "mainline_method": "hunk_1",
+        "target_file": "server/src/main/java/org/elasticsearch/common/settings/IndexScopedSettings.java",
+        "target_method": null,
+        "start_line": 153,
+        "end_line": 153,
+        "code_snippet": "        super(settings, metadata.getSettings(), other);\n    }\n\n    public IndexScopedSettings copy(Settings settings, IndexMetadata metadata) {\n        return new IndexScopedSettings(settings, this, metadata);\n    }\n\n    @Override\n    protected void validateSettingKey(Setting<?> setting) {\n        if (setting.getKey().startsWith(\"index.\") == false) {\n            throw new IllegalArgumentException(\"illegal settings key: [\" + setting.getKey() + \"] must start with [index.]\");\n        }\n        super.validateSettingKey(setting);\n    }\n\n    @Override\n    public boolean isPrivateSetting(String key) {\n        switch (key) {\n            case IndexMetadata.SETTING_CREATION_DATE:\n            case IndexMetadata.SETTING_INDEX_UUID:\n            case IndexMetadata.SETTING_VERSION_CREATED:\n            case IndexMetadata.SETTING_HISTORY_UUID:\n            case IndexMetadata.SETTING_VERSION_UPGRADED:\n            case IndexMetadata.SETTING_INDEX_PROVIDED_NAME:\n            case MergePolicyConfig.INDEX_MERGE_ENABLED:\n            case IndexMetadata.INDEX_SHRINK_SOURCE_UUID_KEY:\n            case IndexMetadata.INDEX_SHRINK_SOURCE_NAME_KEY:\n            case IndexMetadata.INDEX_RESIZE_SOURCE_UUID_KEY:\n            case IndexMetadata.INDEX_RESIZE_SOURCE_NAME_KEY:\n                return true;\n            default:\n                return IndexMetadata.INDEX_ROUTING_INITIAL_RECOVERY_GROUP_SETTING.getRawKey().match(key);\n        }\n    }\n}",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      }
+    ]
+  },
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "reason": "llm_usage_not_collected_in_this_node"
+  }
+}

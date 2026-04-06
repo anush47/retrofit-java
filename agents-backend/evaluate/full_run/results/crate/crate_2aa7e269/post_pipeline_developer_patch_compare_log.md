@@ -1,0 +1,312 @@
+# Post-Pipeline Developer Patch Comparison
+
+**Exact Developer Patch (code-only)**: True
+
+**Comparison Method**: file_state
+
+## Commit Pair Consistency
+- Pair mismatch: False
+- Reason: scope_overlap_ok
+- Mainline Java files: ['server/src/main/java/io/crate/execution/dml/Indexer.java']
+- Developer Java files: ['server/src/main/java/io/crate/execution/dml/Indexer.java']
+- Overlap Java files: ['server/src/main/java/io/crate/execution/dml/Indexer.java']
+- Overlap ratio (mainline): 1.0
+- Compare files scope used: ['server/src/main/java/io/crate/execution/dml/Indexer.java']
+
+## File State Comparison
+- Compared files: ['server/src/main/java/io/crate/execution/dml/Indexer.java']
+- Mismatched files: []
+- Error: None
+
+## Comparison Scope
+- Agent-only patch: code hunks produced by Agent 3
+- Final effective patch: agent code hunks + developer auxiliary hunks (still code-only for this report)
+
+## Agent-Only Hunk Comparison (code files)
+
+### server/src/main/java/io/crate/execution/dml/Indexer.java
+
+- Developer hunks: 3
+- Generated hunks: 3
+
+#### Hunk 1
+
+Developer
+```diff
+@@ -31,6 +31,7 @@
+ import java.util.Collections;
+ import java.util.Comparator;
+ import java.util.HashMap;
++import java.util.LinkedHashSet;
+ import java.util.List;
+ import java.util.Locale;
+ import java.util.Map;
+
+```
+
+Generated
+```diff
+@@ -31,6 +31,7 @@
+ import java.util.Collections;
+ import java.util.Comparator;
+ import java.util.HashMap;
++import java.util.LinkedHashSet;
+ import java.util.List;
+ import java.util.Locale;
+ import java.util.Map;
+
+```
+
+Developer -> Generated (Unified Diff)
+```diff
+(No textual difference)
+
+```
+
+#### Hunk 2
+
+Developer
+```diff
+@@ -678,7 +679,7 @@
+      * Looks for new columns in the values of the given IndexItem and returns them.
+      */
+     public List<Reference> collectSchemaUpdates(IndexItem item) throws IOException {
+-        ArrayList<Reference> newColumns = new ArrayList<>();
++        LinkedHashSet<Reference> newColumns = new LinkedHashSet<>();
+         Consumer<? super Reference> onDynamicColumn = ref -> {
+             ref.column().validForCreate();
+             newColumns.add(ref);
+
+```
+
+Generated
+```diff
+@@ -678,7 +679,7 @@
+      * Looks for new columns in the values of the given IndexItem and returns them.
+      */
+     public List<Reference> collectSchemaUpdates(IndexItem item) throws IOException {
+-        ArrayList<Reference> newColumns = new ArrayList<>();
++        LinkedHashSet<Reference> newColumns = new LinkedHashSet<>();
+         Consumer<? super Reference> onDynamicColumn = ref -> {
+             ref.column().validForCreate();
+             newColumns.add(ref);
+
+```
+
+Developer -> Generated (Unified Diff)
+```diff
+(No textual difference)
+
+```
+
+#### Hunk 3
+
+Developer
+```diff
+@@ -717,7 +718,7 @@
+                 synthetics::get
+             );
+         }
+-        return newColumns;
++        return newColumns.stream().toList();
+     }
+ 
+     /**
+
+```
+
+Generated
+```diff
+@@ -717,7 +718,7 @@
+                 synthetics::get
+             );
+         }
+-        return newColumns;
++        return newColumns.stream().toList();
+     }
+ 
+     /**
+
+```
+
+Developer -> Generated (Unified Diff)
+```diff
+(No textual difference)
+
+```
+
+
+
+## Full Generated Patch (Agent-Only, code-only)
+```diff
+diff --git a/server/src/main/java/io/crate/execution/dml/Indexer.java b/server/src/main/java/io/crate/execution/dml/Indexer.java
+index 216fcf3062..6e9b21a35d 100644
+--- a/server/src/main/java/io/crate/execution/dml/Indexer.java
++++ b/server/src/main/java/io/crate/execution/dml/Indexer.java
+@@ -31,6 +31,7 @@ import java.util.Collection;
+ import java.util.Collections;
+ import java.util.Comparator;
+ import java.util.HashMap;
++import java.util.LinkedHashSet;
+ import java.util.List;
+ import java.util.Locale;
+ import java.util.Map;
+@@ -678,7 +679,7 @@ public class Indexer {
+      * Looks for new columns in the values of the given IndexItem and returns them.
+      */
+     public List<Reference> collectSchemaUpdates(IndexItem item) throws IOException {
+-        ArrayList<Reference> newColumns = new ArrayList<>();
++        LinkedHashSet<Reference> newColumns = new LinkedHashSet<>();
+         Consumer<? super Reference> onDynamicColumn = ref -> {
+             ref.column().validForCreate();
+             newColumns.add(ref);
+@@ -717,7 +718,7 @@ public class Indexer {
+                 synthetics::get
+             );
+         }
+-        return newColumns;
++        return newColumns.stream().toList();
+     }
+ 
+     /**
+
+```
+
+## Full Generated Patch (Final Effective, code-only)
+```diff
+diff --git a/server/src/main/java/io/crate/execution/dml/Indexer.java b/server/src/main/java/io/crate/execution/dml/Indexer.java
+index 216fcf3062..6e9b21a35d 100644
+--- a/server/src/main/java/io/crate/execution/dml/Indexer.java
++++ b/server/src/main/java/io/crate/execution/dml/Indexer.java
+@@ -31,6 +31,7 @@ import java.util.Collection;
+ import java.util.Collections;
+ import java.util.Comparator;
+ import java.util.HashMap;
++import java.util.LinkedHashSet;
+ import java.util.List;
+ import java.util.Locale;
+ import java.util.Map;
+@@ -678,7 +679,7 @@ public class Indexer {
+      * Looks for new columns in the values of the given IndexItem and returns them.
+      */
+     public List<Reference> collectSchemaUpdates(IndexItem item) throws IOException {
+-        ArrayList<Reference> newColumns = new ArrayList<>();
++        LinkedHashSet<Reference> newColumns = new LinkedHashSet<>();
+         Consumer<? super Reference> onDynamicColumn = ref -> {
+             ref.column().validForCreate();
+             newColumns.add(ref);
+@@ -717,7 +718,7 @@ public class Indexer {
+                 synthetics::get
+             );
+         }
+-        return newColumns;
++        return newColumns.stream().toList();
+     }
+ 
+     /**
+
+```
+## Full Developer Backport Patch (full commit diff)
+```diff
+diff --git a/server/src/main/java/io/crate/execution/dml/Indexer.java b/server/src/main/java/io/crate/execution/dml/Indexer.java
+index 216fcf3062..6e9b21a35d 100644
+--- a/server/src/main/java/io/crate/execution/dml/Indexer.java
++++ b/server/src/main/java/io/crate/execution/dml/Indexer.java
+@@ -31,6 +31,7 @@ import java.util.Collection;
+ import java.util.Collections;
+ import java.util.Comparator;
+ import java.util.HashMap;
++import java.util.LinkedHashSet;
+ import java.util.List;
+ import java.util.Locale;
+ import java.util.Map;
+@@ -678,7 +679,7 @@ public class Indexer {
+      * Looks for new columns in the values of the given IndexItem and returns them.
+      */
+     public List<Reference> collectSchemaUpdates(IndexItem item) throws IOException {
+-        ArrayList<Reference> newColumns = new ArrayList<>();
++        LinkedHashSet<Reference> newColumns = new LinkedHashSet<>();
+         Consumer<? super Reference> onDynamicColumn = ref -> {
+             ref.column().validForCreate();
+             newColumns.add(ref);
+@@ -717,7 +718,7 @@ public class Indexer {
+                 synthetics::get
+             );
+         }
+-        return newColumns;
++        return newColumns.stream().toList();
+     }
+ 
+     /**
+diff --git a/server/src/test/java/io/crate/execution/dml/IndexerTest.java b/server/src/test/java/io/crate/execution/dml/IndexerTest.java
+index 16934ff9a0..389054c4cb 100644
+--- a/server/src/test/java/io/crate/execution/dml/IndexerTest.java
++++ b/server/src/test/java/io/crate/execution/dml/IndexerTest.java
+@@ -24,11 +24,11 @@ package io.crate.execution.dml;
+ import static io.crate.execution.dml.ArrayIndexer.ARRAY_LENGTH_FIELD_PREFIX;
+ import static io.crate.execution.dml.ArrayIndexer.toArrayLengthFieldName;
+ import static io.crate.testing.Asserts.assertThat;
++import static io.crate.testing.Asserts.isReference;
+ import static io.crate.types.GeoShapeType.Names.TREE_BKD;
+ import static io.crate.types.GeoShapeType.Names.TREE_GEOHASH;
+ import static io.crate.types.GeoShapeType.Names.TREE_LEGACY_QUADTREE;
+ import static io.crate.types.GeoShapeType.Names.TREE_QUADTREE;
+-import static org.assertj.core.api.Assertions.assertThat;
+ import static org.assertj.core.api.Assertions.assertThatThrownBy;
+ import static org.elasticsearch.cluster.metadata.Metadata.COLUMN_OID_UNASSIGNED;
+ 
+@@ -42,6 +42,7 @@ import java.util.List;
+ import java.util.Map;
+ import java.util.function.Function;
+ import java.util.function.Supplier;
++import java.util.stream.IntStream;
+ import java.util.stream.Stream;
+ 
+ import org.apache.lucene.document.Field;
+@@ -346,6 +347,44 @@ public class IndexerTest extends CrateDummyClusterServiceUnitTest {
+         );
+     }
+ 
++    @Test
++    public void test_collect_columns_of_dynamic_object_array() throws Exception {
++        SQLExecutor executor = SQLExecutor.of(clusterService)
++            .addTable("CREATE TABLE tbl (data OBJECT(DYNAMIC))");
++        DocTableInfo table = executor.resolveTableInfo("tbl");
++        Reference x = table.getReference(ColumnIdent.of("data"));
++        Indexer indexer = new Indexer(
++            table.ident().indexNameOrAlias(),
++            table,
++            new CoordinatorTxnCtx(executor.getSessionSettings()),
++            executor.nodeCtx,
++            List.of(x),
++            null
++        );
++
++        // Create 1 object with a nested object array of 2 elements with 4 columns each
++        Map<String, Object> item = Map.of(
++            "a", 1,
++            "b", "foo",
++            "c", 2,
++            "d", 123
++        );
++        ArrayList<Map<String, Object>> list = new ArrayList<>();
++        IntStream.range(0, 2).forEach(_ -> list.add(item));
++        Map<String, Object> data = new HashMap<>();
++        data.put("list", list);
++
++        var references = indexer.collectSchemaUpdates(item(data));
++        // Must result in 5 columns, duplicates of each of the 2 elements must be ignored
++        assertThat(references).satisfiesExactly(
++            isReference("data['list']"),
++            isReference("data['list']['a']"),
++            isReference("data['list']['b']"),
++            isReference("data['list']['c']"),
++            isReference("data['list']['d']")
++        );
++    }
++
+     @Test
+     public void test_generated_partitioned_column_is_not_indexed_or_included_in_source() throws Exception {
+         String partition = new PartitionName(new RelationName("doc", "tbl"), List.of("3")).asIndexName();
+
+```

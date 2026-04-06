@@ -1,0 +1,47 @@
+# Transition Summary
+
+- Source: phase_outputs
+- Valid backport signal: True
+- Reason: Valid: Observed fail-to-pass and/or newly passing relevant tests with no regressions.
+- fail->pass (2): ['io.crate.execution.engine.aggregation.impl.average.numeric.NumericAverageStateTest#test_can_stream_bigdecimal_with_precision_eq_scale', 'io.crate.types.NumericTypeTest#test_scale_must_be_lt_precision']
+- newly passing (0): []
+- pass->fail (0): []
+
+## Touched Test States
+- Touched tests (from patch): ['io.crate.execution.engine.aggregation.impl.average.numeric.NumericAverageStateTest', 'io.crate.types.NumericTypeTest']
+  - io.crate.execution.engine.aggregation.impl.average.numeric.NumericAverageStateTest#test_can_stream_bigdecimal_with_precision_eq_scale: baseline=error, patched=passed
+  - io.crate.types.NumericTypeTest#test_cast_array_to_numeric_throws_exception: baseline=passed, patched=passed
+  - io.crate.types.NumericTypeTest#test_cast_boolean_to_smallint_throws_exception: baseline=passed, patched=passed
+  - io.crate.types.NumericTypeTest#test_cast_number_if_precision_is_lost_throws_exception: baseline=passed, patched=passed
+  - io.crate.types.NumericTypeTest#test_cast_object_to_smallint_throws_exception: baseline=passed, patched=passed
+  - io.crate.types.NumericTypeTest#test_cast_row_to_numeric_throws_exception: baseline=passed, patched=passed
+  - io.crate.types.NumericTypeTest#test_comparisons_operators_with_different_precision_and_negative_values: baseline=passed, patched=passed
+  - io.crate.types.NumericTypeTest#test_equals_with_different_precision: baseline=passed, patched=passed
+  - io.crate.types.NumericTypeTest#test_implicit_cast_decimal_types_to_numeric_with_precision: baseline=passed, patched=passed
+  - io.crate.types.NumericTypeTest#test_implicit_cast_decimal_types_to_numeric_with_precision_and_scale: baseline=passed, patched=passed
+  - io.crate.types.NumericTypeTest#test_implicit_cast_decimal_types_to_unscaled_numeric: baseline=passed, patched=passed
+  - io.crate.types.NumericTypeTest#test_implicit_cast_floating_point_to_numeric_with_precision: baseline=passed, patched=passed
+  - io.crate.types.NumericTypeTest#test_implicit_cast_floating_point_to_numeric_with_precision_and_scale: baseline=passed, patched=passed
+  - io.crate.types.NumericTypeTest#test_implicit_cast_floating_point_to_unscaled_numeric: baseline=passed, patched=passed
+  - io.crate.types.NumericTypeTest#test_implicit_cast_null_value: baseline=passed, patched=passed
+  - io.crate.types.NumericTypeTest#test_implicit_cast_text_to_unscaled_numeric: baseline=passed, patched=passed
+  - io.crate.types.NumericTypeTest#test_implicit_cast_text_types_to_numeric_with_precision: baseline=passed, patched=passed
+  - io.crate.types.NumericTypeTest#test_implicit_cast_text_types_to_numeric_with_precision_and_scale: baseline=passed, patched=passed
+  - io.crate.types.NumericTypeTest#test_implicit_cast_to_itself: baseline=passed, patched=passed
+  - io.crate.types.NumericTypeTest#test_numeric_null_value_streaming: baseline=passed, patched=passed
+  - io.crate.types.NumericTypeTest#test_numeric_value_streaming: baseline=passed, patched=passed
+  - io.crate.types.NumericTypeTest#test_numeric_value_streaming_does_not_loose_scale: baseline=passed, patched=passed
+  - io.crate.types.NumericTypeTest#test_numeric_with_precision_and_scale_serialization_round_trip: baseline=passed, patched=passed
+  - io.crate.types.NumericTypeTest#test_precision_is_required_if_scale_is_set: baseline=passed, patched=passed
+  - io.crate.types.NumericTypeTest#test_reference_resolver: baseline=passed, patched=passed
+  - io.crate.types.NumericTypeTest#test_reference_resolver_docvalues_off: baseline=passed, patched=passed
+  - io.crate.types.NumericTypeTest#test_reference_resolver_index_and_docvalues_off: baseline=passed, patched=passed
+  - io.crate.types.NumericTypeTest#test_reference_resolver_index_off: baseline=passed, patched=passed
+  - io.crate.types.NumericTypeTest#test_reference_resolver_with_list: baseline=passed, patched=passed
+  - io.crate.types.NumericTypeTest#test_sanitize_numeric_value: baseline=passed, patched=passed
+  - io.crate.types.NumericTypeTest#test_scale_cant_be_negative: baseline=passed, patched=passed
+  - io.crate.types.NumericTypeTest#test_scale_must_be_lt_precision: baseline=failed, patched=passed
+  - io.crate.types.NumericTypeTest#test_translog_streaming_roundtrip: baseline=passed, patched=passed
+  - io.crate.types.NumericTypeTest#test_type_streaming_roundtrip: baseline=passed, patched=passed
+  - io.crate.types.NumericTypeTest#test_unscaled_numeric_serialization_round_trip: baseline=passed, patched=passed
+  - io.crate.types.NumericTypeTest#test_value_streaming_roundtrip: baseline=passed, patched=passed

@@ -1,0 +1,27 @@
+patch_id=crate_eb253156
+project=crate
+mainline_commit=eb25315655e602a61877f00adc097222802f8d02
+backport_commit=9197f064a3f8f9fee762ce48e45c62311dc0d55a
+mode=full
+started_at=2026-04-05T19:48:55.280680
+----------------------------------------
+Running full workflow graph
+Completed node=phase_0_optimistic
+Workflow completed successfully
+
+[crate/crate_eb253156] Setting up repositories for mode=full...
+[crate/crate_eb253156] Running full workflow graph...
+Router: Running Phase 0.
+Phase 0 (Optimistic): Checking direct patch applicability...
+Phase 0: Experiment mode — checking out parent of 9197f064a3f8f9fee762ce48e45c62311dc0d55a...
+Phase 0: Building baseline by applying developer backport test hunks only...
+  Validation: server/src/test/java/io/crate/execution/dml/upsert/TransportShardUpsertActionTest.java - applying 1 hunk(s) one by one in bottom-to-top order: [324]
+    Agent 4: Executing crate helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_tests.sh
+Phase 0: git apply --check SUCCEEDED. Attempting actual patch application and test run.
+    Agent 4: Executing crate helper build script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_build.sh
+    Agent 4: Executing crate helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_tests.sh
+Phase 0: Transition summary -> reason=Valid: Observed fail-to-pass and/or newly passing relevant tests with no regressions.; fail->pass(1): ['io.crate.execution.dml.upsert.TransportShardUpsertActionTest#test_primary_aborted_remaining_items_must_be_skipped_on_replica']; newly_passing(0): []; pass->fail(0): []
+Phase 0: Transition-based test validation passed. Fast-path success.
+Router: Phase 0 succeeded - taking fast-path exit.
+  Completed: phase_0_optimistic
+[crate/crate_eb253156] Full workflow completed!

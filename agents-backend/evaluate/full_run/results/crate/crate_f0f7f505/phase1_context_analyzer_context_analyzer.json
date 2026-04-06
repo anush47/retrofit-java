@@ -1,0 +1,52 @@
+{
+  "semantic_blueprint": {
+    "root_cause_hypothesis": "Deterministic inference: target branch diverges from mainline; adapt hunks with exact target context.",
+    "fix_logic": "Apply each source hunk with target-verified context and symbol consistency while preserving behavior.",
+    "dependent_apis": [
+      "evaluate"
+    ],
+    "patch_intent_summary": "Backport patch behavior to target branch with minimal, context-correct edits.",
+    "hunk_chain": [
+      {
+        "hunk_index": 1,
+        "file": "server/src/main/java/io/crate/expression/scalar/ArrayPositionFunction.java",
+        "summary": "Modifies logic (+1/-1 lines).",
+        "role": "core_fix",
+        "connects_to_next": "Prepares next hunk in same file with related context.",
+        "global_index": 1
+      },
+      {
+        "hunk_index": 2,
+        "file": "server/src/main/java/io/crate/expression/scalar/ArrayPositionFunction.java",
+        "summary": "Modifies logic (+3/-3 lines).",
+        "role": "core_fix",
+        "connects_to_next": "Prepares next hunk in same file with related context.",
+        "global_index": 2
+      },
+      {
+        "hunk_index": 3,
+        "file": "server/src/main/java/io/crate/expression/scalar/ArrayPositionFunction.java",
+        "summary": "Modifies logic (+1/-1 lines).",
+        "role": "propagation",
+        "connects_to_next": "Prepares next hunk in same file with related context.",
+        "global_index": 3
+      },
+      {
+        "hunk_index": 4,
+        "file": "server/src/main/java/io/crate/expression/scalar/ArrayPositionFunction.java",
+        "summary": "Modifies logic (+1/-1 lines).",
+        "role": "core_fix",
+        "connects_to_next": "",
+        "global_index": 4
+      }
+    ]
+  },
+  "patch_diff": "From f0f7f5051a75eb1362ae76f83a5e63db3d94b7e3 Mon Sep 17 00:00:00 2001\nFrom: Marios Trivyzas <matriv@gmail.com>\nDate: Tue, 11 Feb 2025 11:58:44 +0200\nSubject: [PATCH] Fix Nullability for array_position\n\nRemove `STRICTNULL` from `array_position` as with the flag it returns\nwrong results when used on the `WHERE` clause on a table cols wrapped\nwith the `NOT` predicate.\n\nFixes: #17378\n---\n docs/appendices/release-notes/5.10.1.rst             |  6 ++++++\n docs/appendices/release-notes/5.9.10.rst             |  6 ++++++\n .../expression/scalar/ArrayPositionFunction.java     | 12 ++++++------\n .../lucene/ThreeValuedLogicQueryBuilderTest.java     |  8 ++++++++\n 4 files changed, 26 insertions(+), 6 deletions(-)\n\ndiff --git a/docs/appendices/release-notes/5.10.1.rst b/docs/appendices/release-notes/5.10.1.rst\nindex 2f138ed4e8..8a2726649d 100644\n--- a/docs/appendices/release-notes/5.10.1.rst\n+++ b/docs/appendices/release-notes/5.10.1.rst\n@@ -132,3 +132,9 @@ Fixes\n   :ref:`information_schema_key_column_usage` and ``pg_class`` tables,\n   ``<table_name>_pk`` and ``<table_name>_pkey`` respectively, when a custom\n   name is not explicitly provided during table creation.\n+\n+- Fixed an issue that would cause :ref:`array_position<scalar-array_position>`\n+  to return wrong results when used on a column with NULL values in the\n+  ``WHERE`` combined with a ``NOT`` predicate. e.g.::\n+\n+    SELECT * FROM tbl WHERE NOT array_position(string_array_col, 'foo');\ndiff --git a/docs/appendices/release-notes/5.9.10.rst b/docs/appendices/release-notes/5.9.10.rst\nindex 98ed719c58..1d643ccdea 100644\n--- a/docs/appendices/release-notes/5.9.10.rst\n+++ b/docs/appendices/release-notes/5.9.10.rst\n@@ -103,3 +103,9 @@ Fixes\n   :ref:`information_schema_key_column_usage` and ``pg_class`` tables,\n   ``<table_name>_pk`` and ``<table_name>_pkey`` respectively, when a custom\n   name is not explicitly provided during table creation.\n+\n+- Fixed an issue that would cause :ref:`array_position<scalar-array_position>`\n+  to return wrong results when used on a column with NULL values in the\n+  ``WHERE`` combined with a ``NOT`` predicate. e.g.::\n+\n+    SELECT * FROM tbl WHERE NOT array_position(string_array_col, 'foo');\ndiff --git a/server/src/main/java/io/crate/expression/scalar/ArrayPositionFunction.java b/server/src/main/java/io/crate/expression/scalar/ArrayPositionFunction.java\nindex 1e8dbafdfc..b978f5d419 100644\n--- a/server/src/main/java/io/crate/expression/scalar/ArrayPositionFunction.java\n+++ b/server/src/main/java/io/crate/expression/scalar/ArrayPositionFunction.java\n@@ -54,7 +54,7 @@ public class ArrayPositionFunction extends Scalar<Integer, List<Object>> {\n                                 TypeSignature.parse(\"T\"))\n                         .returnType(DataTypes.INTEGER.getTypeSignature())\n                         .typeVariableConstraints(typeVariable(\"T\"))\n-                        .features(Feature.DETERMINISTIC, Feature.STRICTNULL)\n+                        .features(Feature.DETERMINISTIC)\n                         .build(),\n                 ArrayPositionFunction::new);\n \n@@ -65,15 +65,15 @@ public class ArrayPositionFunction extends Scalar<Integer, List<Object>> {\n                                 DataTypes.INTEGER.getTypeSignature())\n                         .returnType(DataTypes.INTEGER.getTypeSignature())\n                         .typeVariableConstraints(typeVariable(\"T\"))\n-                        .features(Feature.DETERMINISTIC, Feature.STRICTNULL)\n+                        .features(Feature.DETERMINISTIC)\n                         .build(),\n                 ArrayPositionFunction::new);\n     }\n \n     @Override\n-    public Integer evaluate(TransactionContext txnCtx, NodeContext nodeContext, Input[] args) {\n+    public Integer evaluate(TransactionContext txnCtx, NodeContext nodeContext, Input<List<Object>>[] args) {\n \n-        List<Object> elements = (List<Object>) args[0].value();\n+        List<Object> elements = args[0].value();\n         if (elements == null || elements.isEmpty()) {\n             return null;\n         }\n@@ -90,7 +90,7 @@ public class ArrayPositionFunction extends Scalar<Integer, List<Object>> {\n             return null;\n         }\n \n-        Object element = null;\n+        Object element;\n         for (int i = beginIndex; i < elements.size(); i++) {\n             element = elements.get(i);\n             if (Objects.equals(targetValue, element)) {\n@@ -107,7 +107,7 @@ public class ArrayPositionFunction extends Scalar<Integer, List<Object>> {\n             return 0;\n         }\n \n-        Integer beginPosition = (Integer) position;\n+        int beginPosition = (Integer) position;\n         if (beginPosition < 1 || beginPosition > elementsSize) {\n             return null;\n         }\ndiff --git a/server/src/test/java/io/crate/lucene/ThreeValuedLogicQueryBuilderTest.java b/server/src/test/java/io/crate/lucene/ThreeValuedLogicQueryBuilderTest.java\nindex 23484a7bdb..aa81411885 100644\n--- a/server/src/test/java/io/crate/lucene/ThreeValuedLogicQueryBuilderTest.java\n+++ b/server/src/test/java/io/crate/lucene/ThreeValuedLogicQueryBuilderTest.java\n@@ -141,4 +141,12 @@ public class ThreeValuedLogicQueryBuilderTest extends LuceneQueryBuilderTest {\n         assertThat(convert(\"NOT (cast(obj as string))\")).hasToString(\n             \"+(+*:* -cast(obj AS TEXT)) #(NOT cast(obj AS TEXT))\");\n     }\n+\n+    @Test\n+    public void test_not_on_array_position() {\n+        assertThat(convert(\"NOT (array_position(string_array, 'foo'))\")).hasToString(\n+            \"+(+*:* -array_position(string_array, 'foo')) #(NOT array_position(string_array, 'foo'))\");\n+        assertThat(convert(\"NOT (array_position(string_array, 'foo', 10))\")).hasToString(\n+            \"+(+*:* -array_position(string_array, 'foo', 10)) #(NOT array_position(string_array, 'foo', 10))\");\n+    }\n }\n-- \n2.43.0\n\n",
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "reason": "deterministic_no_llm"
+  }
+}

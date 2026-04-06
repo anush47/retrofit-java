@@ -1,0 +1,156 @@
+{
+  "consistency_map": {},
+  "mapped_target_context": {
+    "server/src/main/java/io/crate/metadata/cluster/OpenTableClusterStateTaskExecutor.java": [
+      {
+        "hunk_index": 1,
+        "mainline_method": "hunk_1",
+        "target_file": "server/src/main/java/io/crate/metadata/cluster/OpenTableClusterStateTaskExecutor.java",
+        "target_method": null,
+        "start_line": 95,
+        "end_line": 95,
+        "code_snippet": "        final Version minIndexCompatibilityVersion = currentState.nodes().getMaxNodeVersion()\n            .minimumIndexCompatibilityVersion();\n        for (IndexMetadata closedMetadata : indicesToOpen) {\n            final String indexName = closedMetadata.getIndex().getName();\n            blocksBuilder.removeIndexBlockWithId(indexName, TransportCloseTable.INDEX_CLOSED_BLOCK_ID);\n\n            if (closedMetadata.getState() == IndexMetadata.State.OPEN) {\n                continue;\n            }\n            final Settings.Builder updatedSettings = Settings.builder().put(closedMetadata.getSettings());\n            updatedSettings.remove(IndexMetadata.VERIFIED_BEFORE_CLOSE_SETTING.getKey());\n\n            IndexMetadata updatedIndexMetadata = IndexMetadata.builder(closedMetadata)\n                .state(IndexMetadata.State.OPEN)\n                .settingsVersion(closedMetadata.getSettingsVersion() + 1)\n                .settings(updatedSettings)\n                .build();\n\n            // The index might be closed because we couldn't import it due to old incompatible version\n            // We need to check that this index can be upgraded to the current version\n            updatedIndexMetadata = metadataIndexUpgradeService.upgradeIndexMetadata(updatedIndexMetadata, templateMetadata, minIndexCompatibilityVersion);\n            try {\n                indicesService.verifyIndexMetadata(updatedIndexMetadata, updatedIndexMetadata);\n            } catch (Exception e) {\n                throw new ElasticsearchException(\"Failed to verify index \" + indexName, e);\n            }\n\n            mdBuilder.put(updatedIndexMetadata, true);\n        }\n\n        // remove closed flag at possible partitioned table template\n        if (templateMetadata != null) {\n            mdBuilder.put(updateOpenCloseOnPartitionTemplate(templateMetadata, true));\n        }\n\n        // The Metadata will always be overridden (and not merged!) when applying it on a cluster state builder.\n        // So we must re-build the state with the latest modifications before we pass this state to possible modifiers.\n        // Otherwise they would operate on the old Metadata and would just ignore any modifications.\n        ClusterState updatedState = ClusterState.builder(currentState).metadata(mdBuilder).blocks(blocksBuilder).build();\n\n        // call possible registered modifiers",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      }
+    ],
+    "server/src/main/java/org/elasticsearch/cluster/metadata/MetadataIndexUpgradeService.java": [
+      {
+        "hunk_index": 1,
+        "mainline_method": "<import>",
+        "target_file": "server/src/main/java/org/elasticsearch/cluster/metadata/MetadataIndexUpgradeService.java",
+        "target_method": "<import>",
+        "start_line": 28,
+        "end_line": 28,
+        "code_snippet": " * You may obtain a copy of the License at\n *\n *    http://www.apache.org/licenses/LICENSE-2.0\n *\n * Unless required by applicable law or agreed to in writing,\n * software distributed under the License is distributed on an\n * \"AS IS\" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY\n * KIND, either express or implied.  See the License for the\n * specific language governing permissions and limitations\n * under the License.\n */\n\npackage org.elasticsearch.cluster.metadata;\n\nimport java.util.Collection;\nimport java.util.function.BiFunction;\n\nimport org.apache.logging.log4j.LogManager;\nimport org.apache.logging.log4j.Logger;\nimport org.apache.logging.log4j.message.ParameterizedMessage;\nimport org.elasticsearch.Version;\nimport org.elasticsearch.common.settings.IndexScopedSettings;\nimport org.elasticsearch.common.settings.Settings;\n\nimport io.crate.metadata.NodeContext;\nimport io.crate.metadata.doc.DocTableInfoFactory;\n\n/**\n * This service is responsible for upgrading legacy index metadata to the current version\n * <p>\n * Every time an existing index is introduced into cluster this service should be used\n * to upgrade the existing index metadata to the latest version of the cluster. It typically\n * occurs during cluster upgrade, when dangling indices are imported into the cluster or indices\n * are restored from a repository.\n */\npublic class MetadataIndexUpgradeService {\n\n    private static final Logger LOGGER = LogManager.getLogger(MetadataIndexUpgradeService.class);\n\n    private final IndexScopedSettings indexScopedSettings;\n    private final BiFunction<IndexMetadata, IndexTemplateMetadata, IndexMetadata> upgraders;",
+        "anchor_confidence": "high",
+        "anchor_reason": "line_and_method_resolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 2,
+        "mainline_method": "<class_declaration>",
+        "target_file": "server/src/main/java/org/elasticsearch/cluster/metadata/MetadataIndexUpgradeService.java",
+        "target_method": "<class_declaration>",
+        "start_line": 53,
+        "end_line": 53,
+        "code_snippet": "import io.crate.metadata.doc.DocTableInfoFactory;\n\n/**\n * This service is responsible for upgrading legacy index metadata to the current version\n * <p>\n * Every time an existing index is introduced into cluster this service should be used\n * to upgrade the existing index metadata to the latest version of the cluster. It typically\n * occurs during cluster upgrade, when dangling indices are imported into the cluster or indices\n * are restored from a repository.\n */\npublic class MetadataIndexUpgradeService {\n\n    private static final Logger LOGGER = LogManager.getLogger(MetadataIndexUpgradeService.class);\n\n    private final IndexScopedSettings indexScopedSettings;\n    private final BiFunction<IndexMetadata, IndexTemplateMetadata, IndexMetadata> upgraders;\n    private final DocTableInfoFactory tableFactory;\n\n    public MetadataIndexUpgradeService(NodeContext nodeContext,\n                                       IndexScopedSettings indexScopedSettings,\n                                       Collection<BiFunction<IndexMetadata, IndexTemplateMetadata, IndexMetadata>> indexMetadataUpgraders) {\n        this.tableFactory = new DocTableInfoFactory(nodeContext);\n        this.indexScopedSettings = indexScopedSettings;\n        this.upgraders = (indexMetadata, indexTemplateMetadata) -> {\n            IndexMetadata newIndexMetadata = indexMetadata;\n            for (BiFunction<IndexMetadata, IndexTemplateMetadata, IndexMetadata> upgrader : indexMetadataUpgraders) {\n                newIndexMetadata = upgrader.apply(newIndexMetadata, indexTemplateMetadata);\n            }\n            return newIndexMetadata;\n        };\n    }\n\n    /**\n     * Checks that the index can be upgraded to the current version of the master node.\n     *\n     * <p>\n     * If the index does not need upgrade it returns the index metadata unchanged, otherwise it returns a modified index metadata. If index\n     * cannot be updated the method throws an exception.\n     */\n    public IndexMetadata upgradeIndexMetadata(IndexMetadata indexMetadata, IndexTemplateMetadata indexTemplateMetadata, Version minimumIndexCompatibilityVersion) {\n        // Throws an exception if there are too-old segments:",
+        "anchor_confidence": "high",
+        "anchor_reason": "line_and_method_resolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 3,
+        "mainline_method": "hunk_3",
+        "target_file": "server/src/main/java/org/elasticsearch/cluster/metadata/MetadataIndexUpgradeService.java",
+        "target_method": null,
+        "start_line": 157,
+        "end_line": 157,
+        "code_snippet": "    /**\n     * Marks index as upgraded so we don't have to test it again\n     */\n    private IndexMetadata markAsUpgraded(IndexMetadata indexMetadata) {\n        Settings settings = Settings.builder().put(indexMetadata.getSettings()).put(IndexMetadata.SETTING_VERSION_UPGRADED, Version.CURRENT).build();\n        return IndexMetadata.builder(indexMetadata).settings(settings).build();\n    }\n\n    IndexMetadata archiveBrokenIndexSettings(IndexMetadata indexMetadata) {\n        final Settings settings = indexMetadata.getSettings();\n        final Settings upgrade = indexScopedSettings.archiveUnknownOrInvalidSettings(\n            settings,\n            e -> LOGGER.warn(\"{} ignoring unknown index setting: [{}] with value [{}]; archiving\", indexMetadata.getIndex(), e.getKey(), e.getValue()),\n            (e, ex) -> LOGGER.warn(() -> new ParameterizedMessage(\"{} ignoring invalid index setting: [{}] with value [{}]; archiving\", indexMetadata.getIndex(), e.getKey(), e.getValue()), ex));\n        if (upgrade != settings) {\n            return IndexMetadata.builder(indexMetadata).settings(upgrade).build();\n        } else {\n            return indexMetadata;\n        }\n    }\n}",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 4,
+        "mainline_method": "upgradeIndexMetadata",
+        "target_file": "server/src/main/java/org/elasticsearch/cluster/metadata/MetadataIndexUpgradeService.java",
+        "target_method": "upgradeIndexMetadata",
+        "start_line": 72,
+        "end_line": 72,
+        "code_snippet": "                                       IndexScopedSettings indexScopedSettings,\n                                       Collection<BiFunction<IndexMetadata, IndexTemplateMetadata, IndexMetadata>> indexMetadataUpgraders) {\n        this.tableFactory = new DocTableInfoFactory(nodeContext);\n        this.indexScopedSettings = indexScopedSettings;\n        this.upgraders = (indexMetadata, indexTemplateMetadata) -> {\n            IndexMetadata newIndexMetadata = indexMetadata;\n            for (BiFunction<IndexMetadata, IndexTemplateMetadata, IndexMetadata> upgrader : indexMetadataUpgraders) {\n                newIndexMetadata = upgrader.apply(newIndexMetadata, indexTemplateMetadata);\n            }\n            return newIndexMetadata;\n        };\n    }\n\n    /**\n     * Checks that the index can be upgraded to the current version of the master node.\n     *\n     * <p>\n     * If the index does not need upgrade it returns the index metadata unchanged, otherwise it returns a modified index metadata. If index\n     * cannot be updated the method throws an exception.\n     */\n    public IndexMetadata upgradeIndexMetadata(IndexMetadata indexMetadata, IndexTemplateMetadata indexTemplateMetadata, Version minimumIndexCompatibilityVersion) {\n        // Throws an exception if there are too-old segments:\n        if (isUpgraded(indexMetadata)) {\n            return indexMetadata;\n        }\n        checkSupportedVersion(indexMetadata, minimumIndexCompatibilityVersion);\n        IndexMetadata newMetadata = indexMetadata;\n        // we have to run this first otherwise in we try to create IndexSettings\n        // with broken settings and fail in checkMappingsCompatibility\n        newMetadata = archiveBrokenIndexSettings(newMetadata);\n        newMetadata = upgraders.apply(newMetadata, indexTemplateMetadata);\n        checkMappingsCompatibility(newMetadata);\n        return markAsUpgraded(newMetadata);\n    }\n\n\n    /**\n     * Checks if the index was already opened by this version of Elasticsearch and doesn't require any additional checks.\n     */\n    boolean isUpgraded(IndexMetadata indexMetadata) {\n        return indexMetadata.getUpgradedVersion().onOrAfter(Version.CURRENT);",
+        "anchor_confidence": "high",
+        "anchor_reason": "line_and_method_resolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 5,
+        "mainline_method": "checkMappingsCompatibility",
+        "target_file": "server/src/main/java/org/elasticsearch/cluster/metadata/MetadataIndexUpgradeService.java",
+        "target_method": "checkMappingsCompatibility",
+        "start_line": 120,
+        "end_line": 120,
+        "code_snippet": "    private void checkSupportedVersion(IndexMetadata indexMetadata, Version minimumIndexCompatibilityVersion) {\n        if (indexMetadata.getState() == IndexMetadata.State.OPEN\n            && isSupportedVersion(indexMetadata, minimumIndexCompatibilityVersion) == false) {\n            throw new IllegalStateException(\"The index [\" + indexMetadata.getIndex() + \"] was created with version [\"\n                + indexMetadata.getCreationVersion() + \"] but the minimum compatible version is [\"\n                + minimumIndexCompatibilityVersion + \"].\"\n                + \"It should be re-indexed in the previous major version of CrateDB before upgrading to \" + Version.CURRENT + \".\");\n        }\n    }\n\n    /*\n     * Returns true if this index can be supported by the current version of elasticsearch\n     */\n    private static boolean isSupportedVersion(IndexMetadata indexMetadata, Version minimumIndexCompatibilityVersion) {\n        return indexMetadata.getCreationVersion().onOrAfter(minimumIndexCompatibilityVersion);\n    }\n\n    /**\n     * Checks the mappings for compatibility with the current version\n     */\n    private void checkMappingsCompatibility(IndexMetadata indexMetadata) {\n        try {\n            tableFactory.validateSchema(indexMetadata);\n\n            // We cannot instantiate real analysis server or similarity service at this point because the node\n            // might not have been started yet. However, we don't really need real analyzers or similarities at\n            // this stage - so we can fake it using constant maps accepting every key.\n            // This is ok because all used similarities and analyzers for this index were known before the upgrade.\n            // Missing analyzers and similarities plugin will still trigger the appropriate error during the\n            // actual upgrade.\n\n        } catch (Exception ex) {\n            // Wrap the inner exception so we have the index name in the exception message\n            throw new IllegalStateException(\"unable to upgrade the mappings for the index [\" + indexMetadata.getIndex() + \"]\", ex);\n        }\n    }\n\n    /**\n     * Marks index as upgraded so we don't have to test it again\n     */\n    private IndexMetadata markAsUpgraded(IndexMetadata indexMetadata) {",
+        "anchor_confidence": "high",
+        "anchor_reason": "line_and_method_resolved",
+        "anchor_strategy": "deterministic_realign"
+      }
+    ],
+    "server/src/main/java/org/elasticsearch/gateway/GatewayMetaState.java": [
+      {
+        "hunk_index": 1,
+        "mainline_method": "<import>",
+        "target_file": "server/src/main/java/org/elasticsearch/gateway/GatewayMetaState.java",
+        "target_method": "<import>",
+        "start_line": 69,
+        "end_line": 69,
+        "code_snippet": "import org.elasticsearch.cluster.metadata.IndexMetadata;\nimport org.elasticsearch.cluster.metadata.IndexTemplateMetadata;\nimport org.elasticsearch.cluster.metadata.Manifest;\nimport org.elasticsearch.cluster.metadata.Metadata;\nimport org.elasticsearch.cluster.metadata.MetadataIndexUpgradeService;\nimport org.elasticsearch.cluster.node.DiscoveryNode;\nimport org.elasticsearch.cluster.service.ClusterService;\nimport org.elasticsearch.common.collect.ImmutableOpenMap;\nimport org.elasticsearch.common.settings.Settings;\nimport org.elasticsearch.common.util.concurrent.AbstractRunnable;\nimport org.elasticsearch.common.util.concurrent.EsExecutors;\nimport org.elasticsearch.common.util.concurrent.EsThreadPoolExecutor;\nimport org.elasticsearch.env.NodeMetadata;\nimport org.elasticsearch.node.Node;\nimport org.elasticsearch.plugins.MetadataUpgrader;\nimport org.elasticsearch.threadpool.ThreadPool;\nimport org.elasticsearch.transport.TransportService;\n\nimport com.carrotsearch.hppc.cursors.ObjectObjectCursor;\n\nimport io.crate.common.collections.Tuple;\nimport io.crate.common.exceptions.Exceptions;\nimport io.crate.common.io.IOUtils;\nimport io.crate.metadata.IndexName;\nimport io.crate.metadata.PartitionName;\n\n/**\n * Loads (and maybe upgrades) cluster metadata at startup, and persistently stores cluster metadata for future restarts.\n *\n * When started, ensures that this version is compatible with the state stored on disk, and performs a state upgrade if necessary. Note that\n * the state being loaded when constructing the instance of this class is not necessarily the state that will be used as {@link\n * ClusterState#metadata()} because it might be stale or incomplete. Master-eligible nodes must perform an election to find a complete and\n * non-stale state, and master-ineligible nodes receive the real cluster state from the elected master after joining the cluster.\n */\npublic class GatewayMetaState implements Closeable {\n\n    /**\n     * Fake node ID for a voting configuration written by a master-ineligible data node to indicate that its on-disk state is potentially\n     * stale (since it is written asynchronously after application, rather than before acceptance). This node ID means that if the node is\n     * restarted as a master-eligible node then it does not win any elections until it has received a fresh cluster state.\n     */",
+        "anchor_confidence": "high",
+        "anchor_reason": "line_and_method_resolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 2,
+        "mainline_method": "hunk_2",
+        "target_file": "server/src/main/java/org/elasticsearch/gateway/GatewayMetaState.java",
+        "target_method": null,
+        "start_line": 239,
+        "end_line": 239,
+        "code_snippet": "        // upgrade current templates\n        if (applyPluginUpgraders(\n            metadata.templates(),\n            metadataUpgrader.indexTemplateMetadataUpgraders,\n            upgradedMetadata::removeTemplate,\n            (s, indexTemplateMetadata) -> {\n                upgradedIndexTemplateMetadata.put(s, indexTemplateMetadata);\n                upgradedMetadata.put(indexTemplateMetadata);\n            })) {\n            changed = true;\n        }\n\n        // upgrade index meta data\n        for (IndexMetadata indexMetadata : metadata) {\n            String indexName = indexMetadata.getIndex().getName();\n            IndexMetadata newMetadata = metadataIndexUpgradeService.upgradeIndexMetadata(\n                indexMetadata,\n                IndexName.isPartitioned(indexName) ?\n                    upgradedIndexTemplateMetadata.get(PartitionName.templateName(indexName)) :\n                    null,\n                Version.CURRENT.minimumIndexCompatibilityVersion());\n            changed |= indexMetadata != newMetadata;\n            upgradedMetadata.put(newMetadata, false);\n        }\n\n        // upgrade global custom meta data\n        if (applyPluginUpgraders(metadata.customs(), metadataUpgrader.customMetadataUpgraders,\n                upgradedMetadata::removeCustom, upgradedMetadata::putCustom)) {\n            changed = true;\n        }\n        return changed ? upgradedMetadata.build() : metadata;\n    }\n\n    public static <Data> boolean applyPluginUpgraders(ImmutableOpenMap<String, Data> existingData,\n                                                       UnaryOperator<Map<String, Data>> upgrader,\n                                                       Consumer<String> removeData,\n                                                       BiConsumer<String, Data> putData) {\n        // collect current data\n        Map<String, Data> existingMap = new HashMap<>();\n        for (ObjectObjectCursor<String, Data> customCursor : existingData) {\n            existingMap.put(customCursor.key, customCursor.value);",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      }
+    ],
+    "server/src/main/java/org/elasticsearch/gateway/LocalAllocateDangledIndices.java": [
+      {
+        "hunk_index": 1,
+        "mainline_method": "hunk_1",
+        "target_file": "server/src/main/java/org/elasticsearch/gateway/LocalAllocateDangledIndices.java",
+        "target_method": null,
+        "start_line": 132,
+        "end_line": 132,
+        "code_snippet": "                indexNames[i] = request.indices[i].getIndex().getName();\n            }\n            clusterService.submitStateUpdateTask(\"allocation dangled indices \" + Arrays.toString(indexNames), new ClusterStateUpdateTask() {\n                @Override\n                public ClusterState execute(ClusterState currentState) {\n                    if (currentState.blocks().disableStatePersistence()) {\n                        return currentState;\n                    }\n                    Metadata.Builder metadata = Metadata.builder(currentState.metadata());\n                    ClusterBlocks.Builder blocks = ClusterBlocks.builder().blocks(currentState.blocks());\n                    RoutingTable.Builder routingTableBuilder = RoutingTable.builder(currentState.routingTable());\n                    final Version minIndexCompatibilityVersion = currentState.nodes().getMaxNodeVersion()\n                        .minimumIndexCompatibilityVersion();\n                    boolean importNeeded = false;\n                    StringBuilder sb = new StringBuilder();\n                    for (IndexMetadata indexMetadata : request.indices) {\n                        if (indexMetadata.getCreationVersion().before(minIndexCompatibilityVersion)) {\n                            LOGGER.warn(\"ignoring dangled index [{}] on node [{}]\" +\n                                \" since it's created version [{}] is not supported by at least one node in the cluster minVersion [{}]\",\n                                indexMetadata.getIndex(), request.fromNode, indexMetadata.getCreationVersion(),\n                                minIndexCompatibilityVersion);\n                            continue;\n                        }\n                        if (currentState.metadata().hasIndex(indexMetadata.getIndex())) {\n                            continue;\n                        }\n                        if (currentState.metadata().hasAlias(indexMetadata.getIndex().getName())) {\n                            LOGGER.warn(\"ignoring dangled index [{}] on node [{}] due to an existing alias with the same name\",\n                                    indexMetadata.getIndex(), request.fromNode);\n                            continue;\n                        }\n                        importNeeded = true;\n\n                        IndexMetadata upgradedIndexMetadata;\n                        try {\n                            // The dangled index might be from an older version, we need to make sure it's compatible\n                            // with the current version and upgrade it if needed.\n                            String indexName = indexMetadata.getIndex().getName();\n                            upgradedIndexMetadata = metadataIndexUpgradeService.upgradeIndexMetadata(\n                                indexMetadata,\n                                IndexName.isPartitioned(indexName) ?",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      }
+    ],
+    "server/src/main/java/org/elasticsearch/node/Node.java": [
+      {
+        "hunk_index": 1,
+        "mainline_method": "hunk_1",
+        "target_file": "server/src/main/java/org/elasticsearch/node/Node.java",
+        "target_method": null,
+        "start_line": 590,
+        "end_line": 590,
+        "code_snippet": "                    .collect(Collectors.toList());\n            customMetadataUpgraders.add(new CustomMetadataUpgraderLoader(settings));\n\n            List<UnaryOperator<Map<String, IndexTemplateMetadata>>> indexTemplateMetadataUpgraders =\n                pluginsService.filterPlugins(Plugin.class).stream()\n                    .map(Plugin::getIndexTemplateMetadataUpgrader)\n                    .collect(Collectors.toList());\n            indexTemplateMetadataUpgraders.add(new IndexTemplateUpgrader());\n\n            List<BiFunction<IndexMetadata, IndexTemplateMetadata, IndexMetadata>> indexMetadataUpgraders =\n                pluginsService.filterPlugins(Plugin.class).stream()\n                    .map(Plugin::getIndexMetadataUpgrader).collect(Collectors.toList());\n            indexMetadataUpgraders.add(new MetadataIndexUpgrader());\n\n            final MetadataUpgrader metadataUpgrader = new MetadataUpgrader(\n                customMetadataUpgraders,\n                indexTemplateMetadataUpgraders);\n            final MetadataIndexUpgradeService metadataIndexUpgradeService = new MetadataIndexUpgradeService(\n                nodeContext,\n                indexScopedSettings,\n                indexMetadataUpgraders);\n            final Netty4Transport transport = new Netty4Transport(\n                settings,\n                Version.CURRENT,\n                threadPool,\n                networkService,\n                pageCacheRecycler,\n                namedWriteableRegistry,\n                circuitBreakerService,\n                nettyBootstrap,\n                authentication,\n                sslContextProvider\n            );\n            final TransportService transportService = newTransportService(\n                settings,\n                transport,\n                threadPool,\n                localNodeFactory,\n                settingsModule.getClusterSettings()\n            );\n            final GatewayMetaState gatewayMetaState = new GatewayMetaState();",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      }
+    ],
+    "server/src/main/java/org/elasticsearch/snapshots/RestoreService.java": [
+      {
+        "hunk_index": 1,
+        "mainline_method": "hunk_1",
+        "target_file": "server/src/main/java/org/elasticsearch/snapshots/RestoreService.java",
+        "target_method": null,
+        "start_line": 505,
+        "end_line": 505,
+        "code_snippet": "                    String index = indexEntry.getValue();\n                    boolean partial = checkPartial(index);\n                    SnapshotRecoverySource recoverySource = new SnapshotRecoverySource(restoreUUID, snapshot,\n                        snapshotInfo.version(), repositoryData.resolveIndexId(index));\n                    IndexMetadata snapshotIndexMetadata = metadata.index(index);\n                    if (snapshotIndexMetadata == null) {\n                        throw new IndexNotFoundException(\n                            \"Failed to find index '\" + index + \"' at the metadata of the current snapshot '\" + snapshot + \"'\",\n                            index\n                        );\n                    }\n                    snapshotIndexMetadata = updateIndexSettings(snapshotIndexMetadata,\n                                                                request.indexSettings(), request.ignoreIndexSettings());\n                    try {\n                        String indexName = snapshotIndexMetadata.getIndex().getName();\n                        snapshotIndexMetadata = metadataIndexUpgradeService.upgradeIndexMetadata(\n                            snapshotIndexMetadata,\n                            IndexName.isPartitioned(indexName) ?\n                                currentState.metadata().templates().get(PartitionName.templateName(indexName)) :\n                                null,\n                            minIndexCompatibilityVersion);\n                    } catch (Exception ex) {\n                        throw new SnapshotRestoreException(snapshot, \"cannot restore index [\" + index +\n                                                                        \"] because it cannot be upgraded\", ex);\n                    }\n                    // Check that the index is closed or doesn't exist\n                    String renamedIndexName = indexEntry.getKey();\n                    IndexMetadata currentIndexMetadata = currentState.metadata().index(renamedIndexName);\n                    IntSet ignoreShards = new IntHashSet();\n                    final Index renamedIndex;\n                    if (currentIndexMetadata == null) {\n                        // Index doesn't exist - create it and start recovery\n                        // Make sure that the index we are about to create has a validate name\n                        IndexName.validate(renamedIndexName);\n                        createIndexService.validateIndexSettings(renamedIndexName, snapshotIndexMetadata.getSettings(), false);\n                        IndexMetadata.Builder indexMdBuilder = IndexMetadata.builder(snapshotIndexMetadata)\n                            .state(IndexMetadata.State.OPEN)\n                            .index(renamedIndexName);\n\n                        if (request.hasNonDefaultRenamePatterns() && snapshotIndexMetadata.getAliases().isEmpty() == false) {\n                            // Partitioned tables are created with an alias.",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      }
+    ]
+  },
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "reason": "llm_usage_not_collected_in_this_node"
+  }
+}

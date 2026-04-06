@@ -1,0 +1,40 @@
+{
+  "consistency_map": {},
+  "mapped_target_context": {
+    "server/src/main/java/io/crate/metadata/doc/DocTableInfo.java": [
+      {
+        "hunk_index": 1,
+        "mainline_method": "hunk_1",
+        "target_file": "server/src/main/java/io/crate/metadata/doc/DocTableInfo.java",
+        "target_method": null,
+        "start_line": 425,
+        "end_line": 425,
+        "code_snippet": "\n    public String[] concreteIndices(Metadata metadata) {\n        try {\n            return IndexNameExpressionResolver.concreteIndexNames(\n                metadata,\n                isPartitioned\n                    ? IndicesOptions.lenientExpandOpen()\n                    : IndicesOptions.strictExpandOpen(),\n                ident.indexNameOrAlias()\n            );\n        } catch (IndexNotFoundException e) {\n            throw new RelationUnknown(ident.fqn(), e);\n        }\n    }\n\n    public String[] concreteOpenIndices(Metadata metadata) {\n        String[] concreteIndices = concreteIndices(metadata);\n        if (!isPartitioned) {\n            IndexMetadata index = metadata.index(ident.indexNameOrAlias());\n            if (index == null) {\n                if (concreteIndices.length > 0) {\n                    index = metadata.index(concreteIndices[0]);\n                    LOGGER.info(\n                        \"Found indices={} for relation={} without index template. Orphaned partition?\",\n                        concreteIndices,\n                        ident\n                    );\n                }\n                if (index == null) {\n                    throw new RelationUnknown(ident);\n                }\n            }\n            if (concreteIndices.length == 0) {\n                throw new RelationUnknown(ident);\n            }\n            return concreteIndices;\n        } else {\n            return IndexNameExpressionResolver.concreteIndexNames(\n                metadata,\n                IndicesOptions.fromOptions(true, true, true, false, IndicesOptions.strictExpandOpenAndForbidClosed()),\n                ident.indexNameOrAlias()",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      }
+    ],
+    "server/src/main/java/io/crate/metadata/doc/DocTableInfoFactory.java": [
+      {
+        "hunk_index": 1,
+        "mainline_method": "hunk_1",
+        "target_file": "server/src/main/java/io/crate/metadata/doc/DocTableInfoFactory.java",
+        "target_method": null,
+        "start_line": 141,
+        "end_line": 141,
+        "code_snippet": "        Version versionCreated;\n        Version versionUpgraded;\n        Map<String, Object> mappingSource;\n        Settings tableParameters;\n        IndexMetadata.State state;\n        String[] concreteIndices;\n        try {\n            concreteIndices = IndexNameExpressionResolver.concreteIndexNames(\n                metadata,\n                indexTemplateMetadata == null\n                    ? IndicesOptions.strictExpandOpen()\n                    : IndicesOptions.lenientExpandOpen(),\n                relation.indexNameOrAlias()\n            );\n        } catch (IndexNotFoundException e) {\n            throw new RelationUnknown(relation.fqn(), e);\n        }\n        if (indexTemplateMetadata == null) {\n            IndexMetadata index = metadata.index(relation.indexNameOrAlias());\n            if (index == null) {\n                if (concreteIndices.length > 0) {\n                    index = metadata.index(concreteIndices[0]);\n                    LOGGER.info(\n                        \"Found indices={} for relation={} without index template. Orphaned partition?\",\n                        concreteIndices,\n                        relation\n                    );\n                }\n                if (index == null) {\n                    throw new RelationUnknown(relation);\n                }\n            }\n            tableParameters = index.getSettings();\n            versionCreated = IndexMetadata.SETTING_INDEX_VERSION_CREATED.get(tableParameters);\n            versionUpgraded = tableParameters.getAsVersion(IndexMetadata.SETTING_VERSION_UPGRADED, null);\n            state = index.getState();\n            MappingMetadata mapping = index.mapping();\n            mappingSource = mapping == null ? Map.of() : mapping.sourceAsMap();\n            if (concreteIndices.length == 0) {\n                throw new RelationUnknown(relation);\n            }",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      }
+    ]
+  },
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "reason": "llm_usage_not_collected_in_this_node"
+  }
+}

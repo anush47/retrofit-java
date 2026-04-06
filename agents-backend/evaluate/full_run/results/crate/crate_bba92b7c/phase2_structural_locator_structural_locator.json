@@ -1,0 +1,26 @@
+{
+  "consistency_map": {},
+  "mapped_target_context": {
+    "server/src/main/java/io/crate/metadata/cluster/AlterTableClusterStateExecutor.java": [
+      {
+        "hunk_index": 1,
+        "mainline_method": "filterSettings",
+        "target_file": "server/src/main/java/io/crate/metadata/cluster/AlterTableClusterStateExecutor.java",
+        "target_method": "filterSettings",
+        "start_line": 258,
+        "end_line": 258,
+        "code_snippet": "        } catch (IllegalArgumentException iae) {\n            validationErrors.add(iae.getMessage());\n            for (Throwable t : iae.getSuppressed()) {\n                validationErrors.add(t.getMessage());\n            }\n        }\n        List<String> indexSettingsValidation = metadataCreateIndexService.getIndexSettingsValidationErrors(settings, true);\n        validationErrors.addAll(indexSettingsValidation);\n        if (!validationErrors.isEmpty()) {\n            ValidationException validationException = new ValidationException();\n            validationException.addValidationErrors(validationErrors);\n            throw new InvalidIndexTemplateException(name, validationException.getMessage());\n        }\n    }\n\n    @VisibleForTesting\n    static Settings filterSettings(Settings settings, List<Setting<?>> settingsFilter) {\n        Settings.Builder settingsBuilder = Settings.builder();\n        for (Setting<?> setting : settingsFilter) {\n            if (setting.isGroupSetting()) {\n                String prefix = setting.getKey(); // getKey() returns prefix for a group setting\n                var settingsGroup = settings.getByPrefix(prefix);\n                for (String name : settingsGroup.keySet()) {\n                    settingsBuilder.put(prefix + name, settingsGroup.get(name)); // No dot added as prefix already has dot at the end.\n                }\n            } else {\n                String value = settings.get(setting.getKey());\n                if (value != null) {\n                    settingsBuilder.put(setting.getKey(), value);\n                }\n            }\n        }\n        return settingsBuilder.build();\n    }\n\n    public static Index[] resolveIndices(ClusterState currentState, String indexExpressions) {\n        return IndexNameExpressionResolver.concreteIndices(\n            currentState.metadata(),\n            FIND_OPEN_AND_CLOSED_INDICES_IGNORE_UNAVAILABLE_AND_NON_EXISTING,\n            indexExpressions\n        );",
+        "anchor_confidence": "high",
+        "anchor_reason": "line_and_method_resolved",
+        "anchor_strategy": "deterministic_realign"
+      }
+    ]
+  },
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "reason": "llm_usage_not_collected_in_this_node"
+  }
+}

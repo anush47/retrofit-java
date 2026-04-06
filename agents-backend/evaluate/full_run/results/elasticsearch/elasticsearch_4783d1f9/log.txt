@@ -1,0 +1,71 @@
+patch_id=elasticsearch_4783d1f9
+project=elasticsearch
+mainline_commit=4783d1f991633dbc3b7397fe13c63b6b7d70dc37
+backport_commit=a9cb5cd575bf8c30000b5af404a7087294f1a858
+mode=full
+started_at=2026-04-06T05:05:04.360701
+----------------------------------------
+Running full workflow graph
+Completed node=phase_0_optimistic
+Completed node=context_analyzer
+Completed node=structural_locator
+Completed node=planning_agent
+Completed node=hunk_generator
+Completed node=validation
+Workflow completed successfully
+
+[elasticsearch/elasticsearch_4783d1f9] Setting up repositories for mode=full...
+[elasticsearch/elasticsearch_4783d1f9] Running full workflow graph...
+Router: Running Phase 0.
+Phase 0 (Optimistic): Checking direct patch applicability...
+Phase 0: Experiment mode — checking out parent of a9cb5cd575bf8c30000b5af404a7087294f1a858...
+Phase 0: Building baseline by applying developer backport test hunks only...
+  Validation: x-pack/plugin/ml/src/test/java/org/elasticsearch/xpack/ml/inference/ltr/QueryFeatureExtractorTests.java - applying 3 hunk(s) one by one in bottom-to-top order: [128, 32, 23]
+    Agent 4: Executing elasticsearch helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/elasticsearch/run_tests.sh
+Phase 0: git apply --check SUCCEEDED. Attempting actual patch application and test run.
+    Agent 4: Executing elasticsearch helper build script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/elasticsearch/run_build.sh
+    Agent 4: Executing elasticsearch helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/elasticsearch/run_tests.sh
+Phase 0: Transition summary -> reason=Inconclusive: Relevant target tests were not observed in baseline or patched runs.; fail->pass(0): []; newly_passing(0): []; pass->fail(0): []
+Phase 0: Transition-based test validation failed. Rolling back.
+Router: Phase 0 failed - entering full 4-agent pipeline.
+  Completed: phase_0_optimistic
+Agent 1 (Context Analyzer): Deterministic blueprint generation...
+Agent 1: Complete. Files=1 hunks=1 (deterministic).
+Agent 1: Detected 1 hunk(s) with variants.
+  Completed: context_analyzer
+Agent 2 (Structural Locator): Starting target location mapping...
+  Agent 2: 1 code file(s), 0 test file(s)
+LLM Provider: azure, Model: gpt-4.1-mini, Temperature: 0
+  Agent 2: Found 1 hunk(s) in hunk_chain
+  Agent 2: Locating target for x-pack/plugin/ml/src/main/java/org/elasticsearch/xpack/ml/inference/ltr/QueryFeatureExtractor.java (1 hunk(s))...
+Phase 1 (Git) Match Found: x-pack/plugin/ml/src/main/java/org/elasticsearch/xpack/ml/inference/ltr/QueryFeatureExtractor.java
+  Agent 2: Git resolution found target: x-pack/plugin/ml/src/main/java/org/elasticsearch/xpack/ml/inference/ltr/QueryFeatureExtractor.java
+  Agent 2: Mapped hunk 1 (hunk_1) to None at lines 58-58
+  Agent 2: Trace written to structural_locator_trace.md
+Agent 2: Complete. Mapped 1 file(s). Total hunk mappings: 1. ConsistencyMap has 0 rename(s).
+Router: complexity=REWRITE -> planning_agent.
+  Completed: structural_locator
+Planning Agent: Building per-hunk str_replace edit plans...
+LLM Provider: azure, Model: gpt-4.1-mini, Temperature: 0
+Planning Agent: Complete. Planned 2 adapted edit(s).
+  Completed: planning_agent
+Agent 3 (File Editor): Starting direct file-edit workflow...
+LLM Provider: azure, Model: gpt-4.1-mini, Temperature: 0
+  Agent 3: Processing 2 edit(s) for x-pack/plugin/ml/src/main/java/org/elasticsearch/xpack/ml/inference/ltr/QueryFeatureExtractor.java (op=MODIFIED)
+    Agent 3: Classified x-pack/plugin/ml/src/main/java/org/elasticsearch/xpack/ml/inference/ltr/QueryFeatureExtractor.java as TYPE_I (deterministic path)
+    Agent 3: base_types=['TYPE_I'] execution_types=['TYPE_I']
+    Agent 3: Developer patch fast path for x-pack/plugin/ml/src/main/java/org/elasticsearch/xpack/ml/inference/ltr/QueryFeatureExtractor.java (developer_fast_path_ok)
+  Agent 3 (File Editor): Done. 1 file(s) adapted, 1 edit record(s).
+  Completed: hunk_generator
+Agent 4 (Validation): Starting 'Prove Red, Make Green' loop...
+  Agent 4: Evaluation full-workflow mode (apply -> build -> relevant tests)...
+  Validation: x-pack/plugin/ml/src/main/java/org/elasticsearch/xpack/ml/inference/ltr/QueryFeatureExtractor.java - applying 1 hunk(s) one by one in bottom-to-top order: [1]
+  Validation: docs/changelog/120809.yaml - applying 1 hunk(s) one by one in bottom-to-top order: [1]
+  Validation: x-pack/plugin/ml/src/test/java/org/elasticsearch/xpack/ml/inference/ltr/QueryFeatureExtractorTests.java - applying 3 hunk(s) one by one in bottom-to-top order: [128, 32, 23]
+  Validation: ADDED operation for docs/changelog/120809.yaml
+    Agent 4: Executing elasticsearch helper build script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/elasticsearch/run_build.sh
+    Agent 4: Executing elasticsearch helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/elasticsearch/run_tests.sh
+Trace saved to validation_trace.md
+Router: Validation failed due to test infrastructure/runner issue. Stopping retries as infrastructure-inconclusive.
+  Completed: validation
+[elasticsearch/elasticsearch_4783d1f9] Full workflow completed!

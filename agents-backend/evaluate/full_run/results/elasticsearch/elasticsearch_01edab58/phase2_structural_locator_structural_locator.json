@@ -1,0 +1,172 @@
+{
+  "consistency_map": {},
+  "mapped_target_context": {
+    "x-pack/plugin/async-search/src/main/java/org/elasticsearch/xpack/search/AsyncSearchTask.java": [
+      {
+        "hunk_index": 1,
+        "mainline_method": "hunk_1",
+        "target_file": "x-pack/plugin/async-search/src/main/java/org/elasticsearch/xpack/search/AsyncSearchTask.java",
+        "target_method": null,
+        "start_line": 10,
+        "end_line": 10,
+        "code_snippet": "/*\n * Copyright Elasticsearch B.V. and/or licensed to Elasticsearch B.V. under one\n * or more contributor license agreements. Licensed under the Elastic License\n * 2.0; you may not use this file except in compliance with the Elastic License\n * 2.0.\n */\npackage org.elasticsearch.xpack.search;\n\nimport org.apache.lucene.search.TotalHits;\nimport org.apache.lucene.util.SetOnce;\nimport org.elasticsearch.ElasticsearchException;\nimport org.elasticsearch.ElasticsearchStatusException;\nimport org.elasticsearch.ExceptionsHelper;\nimport org.elasticsearch.action.ActionListener;\nimport org.elasticsearch.action.admin.cluster.node.tasks.cancel.CancelTasksRequest;\nimport org.elasticsearch.action.admin.cluster.node.tasks.list.ListTasksResponse;\nimport org.elasticsearch.action.search.CCSSingleCoordinatorSearchProgressListener;\nimport org.elasticsearch.action.search.SearchProgressActionListener;\nimport org.elasticsearch.action.search.SearchRequest;\nimport org.elasticsearch.action.search.SearchResponse;\nimport org.elasticsearch.action.search.SearchResponse.Clusters;\nimport org.elasticsearch.action.search.SearchShard;\nimport org.elasticsearch.action.search.SearchTask;\nimport org.elasticsearch.action.search.ShardSearchFailure;\nimport org.elasticsearch.action.search.TransportSearchAction;\nimport org.elasticsearch.client.internal.Client;\nimport org.elasticsearch.core.Releasable;\nimport org.elasticsearch.core.Releasables;\nimport org.elasticsearch.core.TimeValue;\nimport org.elasticsearch.search.SearchShardTarget;",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 2,
+        "mainline_method": "<class_declaration>",
+        "target_file": "x-pack/plugin/async-search/src/main/java/org/elasticsearch/xpack/search/AsyncSearchTask.java",
+        "target_method": "<class_declaration>",
+        "start_line": 76,
+        "end_line": 76,
+        "code_snippet": " */\nfinal class AsyncSearchTask extends SearchTask implements AsyncTask, Releasable {\n    private final AsyncExecutionId searchId;\n    private final Client client;\n    private final ThreadPool threadPool;\n    private final Supplier<AggregationReduceContext> aggReduceContextSupplier;\n    private final Listener progressListener;\n\n    private final Map<String, String> originHeaders;\n\n    private boolean ccsMinimizeRoundtrips;\n    private boolean hasInitialized;\n    private boolean hasCompleted;\n    private long completionId;\n    private final List<Runnable> initListeners = new ArrayList<>();\n    private final Map<Long, Consumer<AsyncSearchResponse>> completionListeners = new HashMap<>();\n\n    private volatile long expirationTimeMillis;\n    private final AtomicBoolean isCancelling = new AtomicBoolean(false);\n\n    private final SetOnce<MutableSearchResponse> searchResponse = new SetOnce<>();\n\n    /**\n     * Creates an instance of {@link AsyncSearchTask}.\n     *\n     * @param id The id of the task.\n     * @param type The type of the task.\n     * @param action The action name.\n     * @param parentTaskId The parent task id.\n     * @param originHeaders All the request context headers.\n     * @param taskHeaders The filtered request headers for the task.\n     * @param searchId The {@link AsyncExecutionId} of the task.\n     * @param threadPool The threadPool to schedule runnable.\n     * @param aggReduceContextSupplierFactory A factory that creates as supplier to create final reduce contexts, we need a factory in\n     *                                        order to inject the task itself to the reduce context.\n     */\n    AsyncSearchTask(\n        long id,\n        String type,\n        String action,\n        TaskId parentTaskId,",
+        "anchor_confidence": "high",
+        "anchor_reason": "line_and_method_resolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 3,
+        "mainline_method": "hunk_3",
+        "target_file": "x-pack/plugin/async-search/src/main/java/org/elasticsearch/xpack/search/AsyncSearchTask.java",
+        "target_method": null,
+        "start_line": 112,
+        "end_line": 112,
+        "code_snippet": "    AsyncSearchTask(\n        long id,\n        String type,\n        String action,\n        TaskId parentTaskId,\n        Supplier<String> descriptionSupplier,\n        TimeValue keepAlive,\n        Map<String, String> originHeaders,\n        Map<String, String> taskHeaders,\n        AsyncExecutionId searchId,\n        Client client,\n        ThreadPool threadPool,\n        Function<Supplier<Boolean>, Supplier<AggregationReduceContext>> aggReduceContextSupplierFactory\n    ) {\n        super(id, type, action, () -> \"async_search{\" + descriptionSupplier.get() + \"}\", parentTaskId, taskHeaders);\n        this.expirationTimeMillis = getStartTime() + keepAlive.getMillis();\n        this.originHeaders = originHeaders;\n        this.searchId = searchId;\n        this.client = client;\n        this.threadPool = threadPool;\n        this.aggReduceContextSupplier = aggReduceContextSupplierFactory.apply(this::isCancelled);\n        this.progressListener = new Listener();\n        setProgressListener(progressListener);\n    }\n\n    /**\n     * Returns all of the request contexts headers\n     */\n    @Override\n    public Map<String, String> getOriginHeaders() {\n        return originHeaders;\n    }\n\n    /**\n     * Returns the {@link AsyncExecutionId} of the task\n     */\n    @Override\n    public AsyncExecutionId getExecutionId() {\n        return searchId;\n    }\n",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 4,
+        "mainline_method": "getResponse",
+        "target_file": "x-pack/plugin/async-search/src/main/java/org/elasticsearch/xpack/search/AsyncSearchTask.java",
+        "target_method": "getResponse",
+        "start_line": 343,
+        "end_line": 343,
+        "code_snippet": "            finalResponse.decRef();\n        }\n    }\n\n    /**\n     * Returns the current {@link AsyncSearchResponse}.\n     */\n    private AsyncSearchResponse getResponse() {\n        return getResponse(false);\n    }\n\n    /**\n     * Returns the current {@link AsyncSearchResponse} and restores the response headers\n     * in the local thread context.\n     */\n    private AsyncSearchResponse getResponseWithHeaders() {\n        return getResponse(true);\n    }\n\n    private AsyncSearchResponse getResponse(boolean restoreResponseHeaders) {\n        MutableSearchResponse mutableSearchResponse = searchResponse.get();\n        assert mutableSearchResponse != null;\n        checkCancellation();\n        AsyncSearchResponse asyncSearchResponse;\n        try {\n            asyncSearchResponse = mutableSearchResponse.toAsyncSearchResponse(this, expirationTimeMillis, restoreResponseHeaders);\n        } catch (Exception e) {\n            ElasticsearchException exception = new ElasticsearchStatusException(\n                \"Async search: error while reducing partial results\",\n                ExceptionsHelper.status(e),\n                e\n            );\n            asyncSearchResponse = mutableSearchResponse.toAsyncSearchResponse(this, expirationTimeMillis, exception);\n        }\n        return asyncSearchResponse;\n    }\n\n    // checks if the search task should be cancelled\n    private synchronized void checkCancellation() {\n        long now = System.currentTimeMillis();\n        if (hasCompleted == false && expirationTimeMillis < now) {",
+        "anchor_confidence": "high",
+        "anchor_reason": "line_and_method_resolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 5,
+        "mainline_method": "getStatusResponse",
+        "target_file": "x-pack/plugin/async-search/src/main/java/org/elasticsearch/xpack/search/AsyncSearchTask.java",
+        "target_method": "getStatusResponse",
+        "start_line": 373,
+        "end_line": 373,
+        "code_snippet": "                e\n            );\n            asyncSearchResponse = mutableSearchResponse.toAsyncSearchResponse(this, expirationTimeMillis, exception);\n        }\n        return asyncSearchResponse;\n    }\n\n    // checks if the search task should be cancelled\n    private synchronized void checkCancellation() {\n        long now = System.currentTimeMillis();\n        if (hasCompleted == false && expirationTimeMillis < now) {\n            // we cancel expired search task even if they are still running\n            cancelTask(() -> {}, \"async search has expired\");\n        }\n    }\n\n    /**\n     * Returns the status from {@link AsyncSearchTask}\n     */\n    public static AsyncStatusResponse getStatusResponse(AsyncSearchTask asyncTask) {\n        MutableSearchResponse mutableSearchResponse = asyncTask.searchResponse.get();\n        assert mutableSearchResponse != null;\n        return mutableSearchResponse.toStatusResponse(\n            asyncTask.searchId.getEncoded(),\n            asyncTask.getStartTime(),\n            asyncTask.expirationTimeMillis\n        );\n    }\n\n    @Override\n    public void close() {\n        Releasables.close(searchResponse.get());\n    }\n\n    class Listener extends SearchProgressActionListener {\n\n        // needed when there's a single coordinator for all CCS search phases (minimize_roundtrips=false)\n        private CCSSingleCoordinatorSearchProgressListener delegate;\n\n        @Override\n        protected void onQueryResult(int shardIndex, QuerySearchResult queryResult) {",
+        "anchor_confidence": "high",
+        "anchor_reason": "line_and_method_resolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 6,
+        "mainline_method": "close",
+        "target_file": "x-pack/plugin/async-search/src/main/java/org/elasticsearch/xpack/search/AsyncSearchTask.java",
+        "target_method": "close",
+        "start_line": 384,
+        "end_line": 384,
+        "code_snippet": "            // we cancel expired search task even if they are still running\n            cancelTask(() -> {}, \"async search has expired\");\n        }\n    }\n\n    /**\n     * Returns the status from {@link AsyncSearchTask}\n     */\n    public static AsyncStatusResponse getStatusResponse(AsyncSearchTask asyncTask) {\n        MutableSearchResponse mutableSearchResponse = asyncTask.searchResponse.get();\n        assert mutableSearchResponse != null;\n        return mutableSearchResponse.toStatusResponse(\n            asyncTask.searchId.getEncoded(),\n            asyncTask.getStartTime(),\n            asyncTask.expirationTimeMillis\n        );\n    }\n\n    @Override\n    public void close() {\n        Releasables.close(searchResponse.get());\n    }\n\n    class Listener extends SearchProgressActionListener {\n\n        // needed when there's a single coordinator for all CCS search phases (minimize_roundtrips=false)\n        private CCSSingleCoordinatorSearchProgressListener delegate;\n\n        @Override\n        protected void onQueryResult(int shardIndex, QuerySearchResult queryResult) {\n            checkCancellation();\n            if (delegate != null) {\n                delegate.onQueryResult(shardIndex, queryResult);\n            }\n        }\n\n        @Override\n        protected void onRankFeatureResult(int shardIndex) {\n            checkCancellation();\n            if (delegate != null) {\n                delegate.onRankFeatureResult(shardIndex);",
+        "anchor_confidence": "high",
+        "anchor_reason": "line_and_method_resolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 7,
+        "mainline_method": "hunk_7",
+        "target_file": "x-pack/plugin/async-search/src/main/java/org/elasticsearch/xpack/search/AsyncSearchTask.java",
+        "target_method": null,
+        "start_line": 423,
+        "end_line": 423,
+        "code_snippet": "            if (delegate != null) {\n                delegate.onRankFeatureResult(shardIndex);\n            }\n        }\n\n        @Override\n        protected void onFetchResult(int shardIndex) {\n            checkCancellation();\n            if (delegate != null) {\n                delegate.onFetchResult(shardIndex);\n            }\n        }\n\n        @Override\n        protected void onQueryFailure(int shardIndex, SearchShardTarget shardTarget, Exception exc) {\n            // best effort to cancel expired tasks\n            checkCancellation();\n            if (delegate != null) {\n                delegate.onQueryFailure(shardIndex, shardTarget, exc);\n            }\n            searchResponse.get()\n                .addQueryFailure(\n                    shardIndex,\n                    // the nodeId is null if all replicas of this shard failed\n                    new ShardSearchFailure(exc, shardTarget.getNodeId() != null ? shardTarget : null)\n                );\n        }\n\n        @Override\n        protected void onRankFeatureFailure(int shardIndex, SearchShardTarget shardTarget, Exception exc) {\n            // best effort to cancel expired tasks\n            checkCancellation();\n        }\n\n        @Override\n        protected void onFetchFailure(int shardIndex, SearchShardTarget shardTarget, Exception exc) {\n            // best effort to cancel expired tasks\n            checkCancellation();\n            // ignore fetch failures: they make the shards count confusing if we count them as shard failures because the query\n            // phase ran fine and we don't want to end up with e.g. total: 5 successful: 5 failed: 5.\n            // Given that partial results include only aggs they are not affected by fetch failures. Async search receives the fetch",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 8,
+        "mainline_method": "hunk_8",
+        "target_file": "x-pack/plugin/async-search/src/main/java/org/elasticsearch/xpack/search/AsyncSearchTask.java",
+        "target_method": null,
+        "start_line": 470,
+        "end_line": 470,
+        "code_snippet": "         * onListShards is guaranteed to be the first SearchProgressListener method called and\n         * the search will not progress until this returns, so this is a safe place to initialize state\n         * that is needed for handling subsequent callbacks.\n         */\n        @Override\n        protected void onListShards(\n            List<SearchShard> shards,\n            List<SearchShard> skipped,\n            Clusters clusters,\n            boolean fetchPhase,\n            TransportSearchAction.SearchTimeProvider timeProvider\n        ) {\n            // best effort to cancel expired tasks\n            checkCancellation();\n            assert clusters.isCcsMinimizeRoundtrips() != null : \"CCS minimize_roundtrips value must be set in this context\";\n            ccsMinimizeRoundtrips = clusters.isCcsMinimizeRoundtrips();\n            if (ccsMinimizeRoundtrips == false && clusters.hasClusterObjects()) {\n                delegate = new CCSSingleCoordinatorSearchProgressListener();\n                delegate.onListShards(shards, skipped, clusters, fetchPhase, timeProvider);\n            }\n            searchResponse.set(\n                new MutableSearchResponse(shards.size() + skipped.size(), skipped.size(), clusters, threadPool.getThreadContext())\n            );\n            executeInitListeners();\n        }\n\n        @Override\n        public void onPartialReduce(List<SearchShard> shards, TotalHits totalHits, InternalAggregations aggregations, int reducePhase) {\n            // best effort to cancel expired tasks\n            checkCancellation();\n            if (delegate != null) {\n                delegate.onPartialReduce(shards, totalHits, aggregations, reducePhase);\n            }\n            // The way that the MutableSearchResponse will build the aggs.\n            Supplier<InternalAggregations> reducedAggs;\n            if (aggregations == null) {\n                // There aren't any aggs to reduce.\n                reducedAggs = () -> null;\n            } else {\n                /*\n                 * Keep a reference to the partially reduced aggs and reduce it on the fly when someone asks",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 9,
+        "mainline_method": "hunk_9",
+        "target_file": "x-pack/plugin/async-search/src/main/java/org/elasticsearch/xpack/search/AsyncSearchTask.java",
+        "target_method": null,
+        "start_line": 499,
+        "end_line": 499,
+        "code_snippet": "            checkCancellation();\n            if (delegate != null) {\n                delegate.onPartialReduce(shards, totalHits, aggregations, reducePhase);\n            }\n            // The way that the MutableSearchResponse will build the aggs.\n            Supplier<InternalAggregations> reducedAggs;\n            if (aggregations == null) {\n                // There aren't any aggs to reduce.\n                reducedAggs = () -> null;\n            } else {\n                /*\n                 * Keep a reference to the partially reduced aggs and reduce it on the fly when someone asks\n                 * for it. It's important that we wait until someone needs\n                 * the result so we don't perform the final reduce only to\n                 * throw it away. And it is important that we keep the reference\n                 * to the aggregations because SearchPhaseController\n                 * *already* has that reference so we're not creating more garbage.\n                 */\n                reducedAggs = () -> InternalAggregations.topLevelReduce(singletonList(aggregations), aggReduceContextSupplier.get());\n            }\n            searchResponse.get().updatePartialResponse(shards.size(), totalHits, reducedAggs, reducePhase);\n        }\n\n        /**\n         * Called when the final reduce of <b>local</b> shards is done.\n         * During a CCS search, there may still be shard searches in progress on remote clusters when this is called.\n         */\n        @Override\n        public void onFinalReduce(List<SearchShard> shards, TotalHits totalHits, InternalAggregations aggregations, int reducePhase) {\n            // best effort to cancel expired tasks\n            checkCancellation();\n            if (delegate != null) {\n                delegate.onFinalReduce(shards, totalHits, aggregations, reducePhase);\n            }\n            searchResponse.get().updatePartialResponse(shards.size(), totalHits, () -> aggregations, reducePhase);\n        }\n\n        /**\n         * Indicates that a cluster has finished a search operation. Used for CCS minimize_roundtrips=true only.\n         *\n         * @param clusterAlias alias of cluster that has finished a search operation and returned a SearchResponse.",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 10,
+        "mainline_method": "hunk_10",
+        "target_file": "x-pack/plugin/async-search/src/main/java/org/elasticsearch/xpack/search/AsyncSearchTask.java",
+        "target_method": null,
+        "start_line": 513,
+        "end_line": 513,
+        "code_snippet": "                 * throw it away. And it is important that we keep the reference\n                 * to the aggregations because SearchPhaseController\n                 * *already* has that reference so we're not creating more garbage.\n                 */\n                reducedAggs = () -> InternalAggregations.topLevelReduce(singletonList(aggregations), aggReduceContextSupplier.get());\n            }\n            searchResponse.get().updatePartialResponse(shards.size(), totalHits, reducedAggs, reducePhase);\n        }\n\n        /**\n         * Called when the final reduce of <b>local</b> shards is done.\n         * During a CCS search, there may still be shard searches in progress on remote clusters when this is called.\n         */\n        @Override\n        public void onFinalReduce(List<SearchShard> shards, TotalHits totalHits, InternalAggregations aggregations, int reducePhase) {\n            // best effort to cancel expired tasks\n            checkCancellation();\n            if (delegate != null) {\n                delegate.onFinalReduce(shards, totalHits, aggregations, reducePhase);\n            }\n            searchResponse.get().updatePartialResponse(shards.size(), totalHits, () -> aggregations, reducePhase);\n        }\n\n        /**\n         * Indicates that a cluster has finished a search operation. Used for CCS minimize_roundtrips=true only.\n         *\n         * @param clusterAlias alias of cluster that has finished a search operation and returned a SearchResponse.\n         *                     The cluster alias for the local cluster is RemoteClusterAware.LOCAL_CLUSTER_GROUP_KEY.\n         * @param clusterResponse SearchResponse from cluster 'clusterAlias'\n         */\n        @Override\n        public void onClusterResponseMinimizeRoundtrips(String clusterAlias, SearchResponse clusterResponse) {\n            // no need to call the delegate progress listener, since this method is only called for minimize_roundtrips=true\n            searchResponse.get().updateResponseMinimizeRoundtrips(clusterAlias, clusterResponse);\n        }\n\n        @Override\n        public void onResponse(SearchResponse response) {\n            searchResponse.get().updateFinalResponse(response, ccsMinimizeRoundtrips);\n            executeCompletionListeners();\n        }",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 11,
+        "mainline_method": "onClusterResponseMinimizeRoundtrips",
+        "target_file": "x-pack/plugin/async-search/src/main/java/org/elasticsearch/xpack/search/AsyncSearchTask.java",
+        "target_method": "onClusterResponseMinimizeRoundtrips",
+        "start_line": 526,
+        "end_line": 526,
+        "code_snippet": "        @Override\n        public void onFinalReduce(List<SearchShard> shards, TotalHits totalHits, InternalAggregations aggregations, int reducePhase) {\n            // best effort to cancel expired tasks\n            checkCancellation();\n            if (delegate != null) {\n                delegate.onFinalReduce(shards, totalHits, aggregations, reducePhase);\n            }\n            searchResponse.get().updatePartialResponse(shards.size(), totalHits, () -> aggregations, reducePhase);\n        }\n\n        /**\n         * Indicates that a cluster has finished a search operation. Used for CCS minimize_roundtrips=true only.\n         *\n         * @param clusterAlias alias of cluster that has finished a search operation and returned a SearchResponse.\n         *                     The cluster alias for the local cluster is RemoteClusterAware.LOCAL_CLUSTER_GROUP_KEY.\n         * @param clusterResponse SearchResponse from cluster 'clusterAlias'\n         */\n        @Override\n        public void onClusterResponseMinimizeRoundtrips(String clusterAlias, SearchResponse clusterResponse) {\n            // no need to call the delegate progress listener, since this method is only called for minimize_roundtrips=true\n            searchResponse.get().updateResponseMinimizeRoundtrips(clusterAlias, clusterResponse);\n        }\n\n        @Override\n        public void onResponse(SearchResponse response) {\n            searchResponse.get().updateFinalResponse(response, ccsMinimizeRoundtrips);\n            executeCompletionListeners();\n        }\n\n        @Override\n        public void onFailure(Exception exc) {\n            // if the failure occurred before calling onListShards\n            var r = new MutableSearchResponse(-1, -1, null, threadPool.getThreadContext());\n            if (searchResponse.trySet(r) == false) {\n                r.close();\n            }\n            searchResponse.get()\n                .updateWithFailure(new ElasticsearchStatusException(\"error while executing search\", ExceptionsHelper.status(exc), exc));\n            executeInitListeners();\n            executeCompletionListeners();\n        }",
+        "anchor_confidence": "high",
+        "anchor_reason": "line_and_method_resolved",
+        "anchor_strategy": "deterministic_realign"
+      }
+    ],
+    "x-pack/plugin/async-search/src/main/java/org/elasticsearch/xpack/search/MutableSearchResponse.java": [
+      {
+        "hunk_index": 1,
+        "mainline_method": "hunk_1",
+        "target_file": "x-pack/plugin/async-search/src/main/java/org/elasticsearch/xpack/search/MutableSearchResponse.java",
+        "target_method": null,
+        "start_line": 42,
+        "end_line": 42,
+        "code_snippet": "import org.elasticsearch.search.SearchHits;\nimport org.elasticsearch.search.aggregations.InternalAggregations;\nimport org.elasticsearch.transport.RemoteClusterAware;\nimport org.elasticsearch.xpack.core.search.action.AsyncSearchResponse;\nimport org.elasticsearch.xpack.core.search.action.AsyncStatusResponse;\n\nimport java.util.ArrayList;\nimport java.util.List;\nimport java.util.Map;\nimport java.util.function.Supplier;\n\nimport static org.elasticsearch.xpack.core.async.AsyncTaskIndexService.restoreResponseHeadersContext;\n\n/**\n * A mutable search response that allows to update and create partial response synchronously.\n * Synchronized methods ensure that updates of the content are blocked if another thread is\n * creating an async response concurrently. This limits the number of final reduction that can\n * run concurrently to 1 and ensures that we pause the search progress when an {@link AsyncSearchResponse} is built.\n */\nclass MutableSearchResponse implements Releasable {\n    private final int totalShards;\n    private final int skippedShards;\n    private final Clusters clusters;\n    private final AtomicArray<ShardSearchFailure> queryFailures;\n    private final ThreadContext threadContext;\n\n    private boolean isPartial;\n    private int successfulShards;\n    private TotalHits totalHits;\n    /**\n     * How we get the reduced aggs when {@link #finalResponse} isn't populated.\n     * We default to returning no aggs, this {@code -> null}. We'll replace\n     * this as we receive updates on the search progress listener.\n     */\n    private Supplier<InternalAggregations> reducedAggsSource = () -> null;\n    private int reducePhase;\n    /**\n     * The response produced by the search API. Once we receive it we stop\n     * building our own {@linkplain SearchResponse}s when get async search\n     * is called, and instead return this.\n     */",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 2,
+        "mainline_method": "updateShardsAndClusters",
+        "target_file": "x-pack/plugin/async-search/src/main/java/org/elasticsearch/xpack/search/MutableSearchResponse.java",
+        "target_method": "updateShardsAndClusters",
+        "start_line": 85,
+        "end_line": 85,
+        "code_snippet": "    private Map<String, List<String>> responseHeaders;\n    /**\n     * Set to true when the local cluster has completed (its full SearchResponse\n     * has been received. Only used for CCS minimize_roundtrips=true.\n     */\n    private boolean localClusterComplete;\n    /**\n     * For CCS minimize_roundtrips=true, we collect SearchResponses from each cluster in\n     * order to provide partial results before all clusters have reported back results.\n     */\n    private List<SearchResponse> clusterResponses;\n    /**\n     * Set to true when the final SearchResponse has been received\n     * or a fatal error has occurred.\n     */\n    private boolean frozen;\n\n    /**\n     * Creates a new mutable search response.\n     *\n     * @param totalShards The number of shards that participate in the request, or -1 to indicate a failure.\n     * @param skippedShards The number of skipped shards, or -1 to indicate a failure.\n     * @param clusters The remote clusters statistics.\n     * @param threadContext The thread context to retrieve the final response headers.\n     */\n    MutableSearchResponse(int totalShards, int skippedShards, Clusters clusters, ThreadContext threadContext) {\n        this.totalShards = totalShards;\n        this.skippedShards = skippedShards;\n\n        this.clusters = clusters;\n        this.queryFailures = totalShards == -1 ? null : new AtomicArray<>(totalShards - skippedShards);\n        this.isPartial = true;\n        this.threadContext = threadContext;\n        this.totalHits = Lucene.TOTAL_HITS_GREATER_OR_EQUAL_TO_ZERO;\n        this.localClusterComplete = false;\n    }\n\n    /**\n     * Updates the response with the result of a partial reduction.\n     *\n     * @param successfulShards",
+        "anchor_confidence": "high",
+        "anchor_reason": "line_and_method_resolved",
+        "anchor_strategy": "deterministic_realign"
+      }
+    ]
+  },
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "reason": "llm_usage_not_collected_in_this_node"
+  }
+}

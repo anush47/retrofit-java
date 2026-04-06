@@ -1,0 +1,40 @@
+{
+  "consistency_map": {},
+  "mapped_target_context": {
+    "server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java": [
+      {
+        "hunk_index": 1,
+        "mainline_method": "handleBindMessage",
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java",
+        "target_method": "handleBindMessage",
+        "start_line": 602,
+        "end_line": 602,
+        "code_snippet": "    /**\n     * Bind Message\n     * Header:\n     * | 'B' | int32 len\n     * <p>\n     * Body:\n     * <pre>\n     * | string portalName | string statementName\n     * | int16 numFormatCodes\n     *      foreach\n     *      | int16 formatCode\n     * | int16 numParams\n     *      foreach\n     *      | int32 valueLength\n     *      | byteN value\n     * | int16 numResultColumnFormatCodes\n     *      foreach\n     *      | int16 formatCode\n     * </pre>\n     */\n    private void handleBindMessage(ByteBuf buffer, Channel channel) {\n        String portalName = readCString(buffer);\n        String statementName = readCString(buffer);\n\n        FormatCodes.FormatCode[] formatCodes = FormatCodes.fromBuffer(buffer);\n\n        short numParams = buffer.readShort();\n        List<Object> params = createList(numParams);\n        for (int i = 0; i < numParams; i++) {\n            int valueLength = buffer.readInt();\n            if (valueLength == -1) {\n                params.add(null);\n            } else {\n                DataType paramType = session.getParamType(statementName, i);\n                PGType pgType = PGTypes.get(paramType);\n                FormatCodes.FormatCode formatCode = getFormatCode(formatCodes, i);\n                switch (formatCode) {\n                    case TEXT:\n                        params.add(pgType.readTextValue(buffer, valueLength));\n                        break;\n",
+        "anchor_confidence": "high",
+        "anchor_reason": "line_and_method_resolved",
+        "anchor_strategy": "deterministic_realign"
+      }
+    ],
+    "server/src/main/java/io/crate/session/Session.java": [
+      {
+        "hunk_index": 1,
+        "mainline_method": "hunk_1",
+        "target_file": "server/src/main/java/io/crate/session/Session.java",
+        "target_method": null,
+        "start_line": 396,
+        "end_line": 396,
+        "code_snippet": "                sessionSettings.sessionUser());\n            throw t;\n        }\n\n        preparedStatements.put(\n            statementName,\n            new PreparedStmt(statement, analyzedStatement, query, parameterTypes, timeoutToken));\n    }\n\n    public void bind(String portalName,\n                     String statementName,\n                     List<Object> params,\n                     @Nullable FormatCodes.FormatCode[] resultFormatCodes) {\n        if (LOGGER.isDebugEnabled()) {\n            LOGGER.debug(\"method=bind portalName={} statementName={} params={}\", portalName, statementName, params);\n        }\n        PreparedStmt preparedStmt;\n        try {\n            preparedStmt = getSafeStmt(statementName);\n        } catch (Throwable t) {\n            jobsLogs.logPreExecutionFailure(UUIDs.dirtyUUID(), null, SQLExceptions.messageOf(t), sessionSettings.sessionUser());\n            throw t;\n        }\n\n        Portal portal = new Portal(\n            portalName,\n            preparedStmt,\n            params,\n            resultFormatCodes);\n        Portal oldPortal = portals.put(portalName, portal);\n        if (oldPortal != null) {\n            // According to the wire protocol spec named portals should be removed explicitly and only\n            // unnamed portals are implicitly closed/overridden.\n            // We don't comply with the spec because we allow batching of statements, see #execute\n            oldPortal.closeActiveConsumer();\n        }\n\n        // Clients might try to describe a declared query, need to store a portal to allow that.\n        if (preparedStmt.analyzedStatement() instanceof AnalyzedDeclare analyzedDeclare) {\n            Declare declare = analyzedDeclare.declare();\n            String cursorName = declare.cursorName();",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      }
+    ]
+  },
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "reason": "llm_usage_not_collected_in_this_node"
+  }
+}

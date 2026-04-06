@@ -1,0 +1,30 @@
+patch_id=crate_84d1851e
+project=crate
+mainline_commit=84d1851e28e3981da050fb78d96abdc5a49235f9
+backport_commit=99f8462af0432b39ccab8c342d471e815be10ccd
+mode=full
+started_at=2026-04-06T00:18:23.117645
+----------------------------------------
+Running full workflow graph
+Completed node=phase_0_optimistic
+Workflow completed successfully
+
+[crate/crate_84d1851e] Setting up repositories for mode=full...
+[crate/crate_84d1851e] Running full workflow graph...
+Router: Running Phase 0.
+Phase 0 (Optimistic): Checking direct patch applicability...
+Phase 0: Experiment mode — checking out parent of 99f8462af0432b39ccab8c342d471e815be10ccd...
+Phase 0: Building baseline by applying developer backport test hunks only...
+  Validation: server/src/test/java/io/crate/expression/operator/LikeOperatorTest.java - applying 1 hunk(s) one by one in bottom-to-top order: [223]
+  Validation: server/src/test/java/io/crate/expression/operator/any/AnyLikeOperatorTest.java - applying 2 hunk(s) one by one in bottom-to-top order: [148, 22]
+  Validation: server/src/test/java/io/crate/expression/operator/any/AnyNotLikeOperatorTest.java - applying 2 hunk(s) one by one in bottom-to-top order: [148, 22]
+  Validation: server/src/test/java/io/crate/lucene/LikeQueryBuilderTest.java - applying 3 hunk(s) one by one in bottom-to-top order: [167, 34, 23]
+    Agent 4: Executing crate helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_tests.sh
+Phase 0: git apply --check SUCCEEDED. Attempting actual patch application and test run.
+    Agent 4: Executing crate helper build script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_build.sh
+    Agent 4: Executing crate helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_tests.sh
+Phase 0: Transition summary -> reason=Valid: Observed fail-to-pass and/or newly passing relevant tests with no regressions.; fail->pass(5): ['io.crate.expression.operator.LikeOperatorTest#test_like_ilike_with_trailing_escape_char_throws_error', 'io.crate.expression.operator.any.AnyLikeOperatorTest#test_any_like_ilike_with_trailing_escape_character', 'io.crate.expression.operator.any.AnyNotLikeOperatorTest#test_any_not_like_ilike_with_trailing_escape_character', 'io.crate.lucene.LikeQueryBuilderTest#test_like_ilike_any_with_trailing_escape_char', 'io.crate.lucene.LikeQueryBuilderTest#test_like_ilike_with_trailing_escape_char']; newly_passing(0): []; pass->fail(0): []
+Phase 0: Transition-based test validation passed. Fast-path success.
+Router: Phase 0 succeeded - taking fast-path exit.
+  Completed: phase_0_optimistic
+[crate/crate_84d1851e] Full workflow completed!

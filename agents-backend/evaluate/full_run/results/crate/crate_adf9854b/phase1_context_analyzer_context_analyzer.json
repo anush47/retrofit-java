@@ -1,0 +1,77 @@
+{
+  "semantic_blueprint": {
+    "root_cause_hypothesis": "Deterministic inference: target branch diverges from mainline; adapt hunks with exact target context.",
+    "fix_logic": "Apply each source hunk with target-verified context and symbol consistency while preserving behavior.",
+    "dependent_apis": [
+      "with",
+      "Role"
+    ],
+    "patch_intent_summary": "Backport patch behavior to target branch with minimal, context-correct edits.",
+    "hunk_chain": [
+      {
+        "hunk_index": 1,
+        "file": "server/src/main/java/io/crate/role/PrivilegesModifier.java",
+        "summary": "Modifies logic (+1/-1 lines).",
+        "role": "core_fix",
+        "connects_to_next": "Prepares next hunk in same file with related context.",
+        "global_index": 1
+      },
+      {
+        "hunk_index": 2,
+        "file": "server/src/main/java/io/crate/role/PrivilegesModifier.java",
+        "summary": "Modifies logic (+1/-1 lines).",
+        "role": "core_fix",
+        "connects_to_next": "Prepares next hunk in same file with related context.",
+        "global_index": 2
+      },
+      {
+        "hunk_index": 3,
+        "file": "server/src/main/java/io/crate/role/PrivilegesModifier.java",
+        "summary": "Modifies logic (+1/-1 lines).",
+        "role": "core_fix",
+        "connects_to_next": "Prepares next hunk in same file with related context.",
+        "global_index": 3
+      },
+      {
+        "hunk_index": 4,
+        "file": "server/src/main/java/io/crate/role/PrivilegesModifier.java",
+        "summary": "Modifies logic (+1/-1 lines).",
+        "role": "core_fix",
+        "connects_to_next": "",
+        "global_index": 4
+      },
+      {
+        "hunk_index": 1,
+        "file": "server/src/main/java/io/crate/role/Role.java",
+        "summary": "Modifies logic (+6/-2 lines).",
+        "role": "guard",
+        "connects_to_next": "Prepares next hunk in same file with related context.",
+        "global_index": 5
+      },
+      {
+        "hunk_index": 2,
+        "file": "server/src/main/java/io/crate/role/Role.java",
+        "summary": "Modifies logic (+1/-1 lines).",
+        "role": "propagation",
+        "connects_to_next": "",
+        "global_index": 6
+      },
+      {
+        "hunk_index": 1,
+        "file": "server/src/main/java/io/crate/role/metadata/RolesMetadata.java",
+        "summary": "Modifies logic (+1/-8 lines).",
+        "role": "core_fix",
+        "connects_to_next": "",
+        "global_index": 7
+      }
+    ]
+  },
+  "patch_diff": "From adf9854bdb9cbf08dde206c0a1e005a5ea3379c9 Mon Sep 17 00:00:00 2001\nFrom: Sebastian Utz <su@rtme.net>\nDate: Mon, 7 Oct 2024 14:53:20 +0200\nSubject: [PATCH] Fix role granting to not loose existing privileges.\n\nIf a role is granted of another role, it's privileges must remain.\n\nFixes #16710.\n---\n docs/appendices/release-notes/5.8.4.rst       |  4 +++\n .../io/crate/role/PrivilegesModifier.java     |  8 ++---\n server/src/main/java/io/crate/role/Role.java  | 10 ++++--\n .../io/crate/role/metadata/RolesMetadata.java |  9 +----\n .../crate/role/TransportRoleActionTest.java   |  4 +--\n .../role/metadata/RolesMetadataTest.java      | 33 ++++++++++++++++---\n 6 files changed, 47 insertions(+), 21 deletions(-)\n\ndiff --git a/docs/appendices/release-notes/5.8.4.rst b/docs/appendices/release-notes/5.8.4.rst\nindex 8efeeea306..de2df0826f 100644\n--- a/docs/appendices/release-notes/5.8.4.rst\n+++ b/docs/appendices/release-notes/5.8.4.rst\n@@ -112,3 +112,7 @@ Fixes\n \n - Fixed an issue which may cause a ``EXPLAIN ANALYZE`` to throw exception due\n   to internal concurrent unsafe access.\n+\n+- Fixed an issue causing a role to loose it's concrete privileges once it gets\n+  granted another role using the :ref:`GRANT role TO role <ref-grant>`\n+  statement.\ndiff --git a/server/src/main/java/io/crate/role/PrivilegesModifier.java b/server/src/main/java/io/crate/role/PrivilegesModifier.java\nindex 2effd6d7bf..8fdf086f88 100644\n--- a/server/src/main/java/io/crate/role/PrivilegesModifier.java\n+++ b/server/src/main/java/io/crate/role/PrivilegesModifier.java\n@@ -96,7 +96,7 @@ public final class PrivilegesModifier {\n             }\n \n             if (affectedCount > 0) {\n-                roles.put(userName, role.with(privileges));\n+                roles.put(userName, role.with(new RolePrivileges(privileges)));\n             }\n         }\n \n@@ -139,7 +139,7 @@ public final class PrivilegesModifier {\n                     privileges.add(privilege);\n                 }\n             }\n-            newRoles.put(entry.getKey(), role.with(privileges));\n+            newRoles.put(entry.getKey(), role.with(new RolePrivileges(privileges)));\n         }\n \n         if (privilegesChanged) {\n@@ -171,7 +171,7 @@ public final class PrivilegesModifier {\n                     updatedPrivileges.add(privilege);\n                 }\n             }\n-            newRoles.put(role.name(), role.with(updatedPrivileges));\n+            newRoles.put(role.name(), role.with(new RolePrivileges(updatedPrivileges)));\n         }\n         mdBuilder.putCustom(RolesMetadata.TYPE, new RolesMetadata(newRoles));\n         return affectedPrivileges;\n@@ -201,7 +201,7 @@ public final class PrivilegesModifier {\n                     updatedPrivileges.add(privilege);\n                 }\n             }\n-            newRoles.put(user, role.with(updatedPrivileges));\n+            newRoles.put(user, role.with(new RolePrivileges(updatedPrivileges)));\n         }\n         return new RolesMetadata(newRoles);\n     }\ndiff --git a/server/src/main/java/io/crate/role/Role.java b/server/src/main/java/io/crate/role/Role.java\nindex a8cd7d657c..40218ffeba 100644\n--- a/server/src/main/java/io/crate/role/Role.java\n+++ b/server/src/main/java/io/crate/role/Role.java\n@@ -241,8 +241,12 @@ public class Role implements Writeable, ToXContent {\n \n     }\n \n-    public Role with(Set<Privilege> privileges) {\n-        return new Role(name, new RolePrivileges(privileges), grantedRoles, properties, false);\n+    public Role with(RolePrivileges privileges) {\n+        return new Role(name, privileges, grantedRoles, properties, isSuperUser);\n+    }\n+\n+    public Role with(Set<GrantedRole> grantedRoles) {\n+        return new Role(name, privileges, grantedRoles, properties, isSuperUser);\n     }\n \n     public Role with(@Nullable SecureHash password,\n@@ -257,7 +261,7 @@ public class Role implements Writeable, ToXContent {\n                 password,\n                 jwtProperties,\n                 sessionSettings),\n-            false\n+            isSuperUser\n         );\n     }\n \ndiff --git a/server/src/main/java/io/crate/role/metadata/RolesMetadata.java b/server/src/main/java/io/crate/role/metadata/RolesMetadata.java\nindex 7bbedb9b76..d9b16337a0 100644\n--- a/server/src/main/java/io/crate/role/metadata/RolesMetadata.java\n+++ b/server/src/main/java/io/crate/role/metadata/RolesMetadata.java\n@@ -239,14 +239,7 @@ public class RolesMetadata extends AbstractNamedDiffable<Metadata.Custom> implem\n             }\n         }\n         if (affectedCount > 0) {\n-            roles.put(role.name(), new Role(\n-                role.name(),\n-                role.isUser(),\n-                Set.of(),\n-                grantedRoles,\n-                role.password(),\n-                role.jwtProperties(),\n-                role.sessionSettings()));\n+            roles.put(role.name(), role.with(grantedRoles));\n         }\n         return affectedCount;\n     }\ndiff --git a/server/src/test/java/io/crate/role/TransportRoleActionTest.java b/server/src/test/java/io/crate/role/TransportRoleActionTest.java\nindex 9783fa7307..f6febfc72f 100644\n--- a/server/src/test/java/io/crate/role/TransportRoleActionTest.java\n+++ b/server/src/test/java/io/crate/role/TransportRoleActionTest.java\n@@ -170,9 +170,9 @@ public class TransportRoleActionTest extends CrateDummyClusterServiceUnitTest {\n         assertThat(res).isTrue();\n \n         var newFordUser = DUMMY_USERS_WITHOUT_PASSWORD.get(\"Ford\")\n-                .with(OLD_DUMMY_USERS_PRIVILEGES.get(\"Ford\"));\n+                .with(new RolePrivileges(OLD_DUMMY_USERS_PRIVILEGES.get(\"Ford\")));\n         var newArthurUser = DUMMY_USERS_WITHOUT_PASSWORD.get(\"Arthur\")\n-                .with(OLD_DUMMY_USERS_PRIVILEGES.get(\"Arthur\"))\n+                .with(new RolePrivileges(OLD_DUMMY_USERS_PRIVILEGES.get(\"Arthur\")))\n                 .with(newPasswd, null, Map.of());\n         assertThat(roles(mdBuilder)).containsExactlyInAnyOrderEntriesOf(\n             Map.of(\"Arthur\", newArthurUser,\ndiff --git a/server/src/test/java/io/crate/role/metadata/RolesMetadataTest.java b/server/src/test/java/io/crate/role/metadata/RolesMetadataTest.java\nindex 8bfd7a580b..816bb380c7 100644\n--- a/server/src/test/java/io/crate/role/metadata/RolesMetadataTest.java\n+++ b/server/src/test/java/io/crate/role/metadata/RolesMetadataTest.java\n@@ -54,8 +54,12 @@ import org.junit.Test;\n import io.crate.role.GrantedRole;\n import io.crate.role.GrantedRolesChange;\n import io.crate.role.JwtProperties;\n+import io.crate.role.Permission;\n import io.crate.role.Policy;\n+import io.crate.role.Privilege;\n import io.crate.role.Role;\n+import io.crate.role.RolePrivileges;\n+import io.crate.role.Securable;\n \n public class RolesMetadataTest extends ESTestCase {\n \n@@ -161,8 +165,8 @@ public class RolesMetadataTest extends ESTestCase {\n             new UsersPrivilegesMetadata(OLD_DUMMY_USERS_PRIVILEGES)\n         );\n         assertThat(rolesMetadata.roles()).containsExactlyInAnyOrderEntriesOf(\n-            Map.of(\"Arthur\", DUMMY_USERS.get(\"Arthur\").with(OLD_DUMMY_USERS_PRIVILEGES.get(\"Arthur\")),\n-                \"Ford\", DUMMY_USERS.get(\"Ford\").with(OLD_DUMMY_USERS_PRIVILEGES.get(\"Ford\"))));\n+            Map.of(\"Arthur\", DUMMY_USERS.get(\"Arthur\").with(new RolePrivileges(OLD_DUMMY_USERS_PRIVILEGES.get(\"Arthur\"))),\n+                \"Ford\", DUMMY_USERS.get(\"Ford\").with(new RolePrivileges(OLD_DUMMY_USERS_PRIVILEGES.get(\"Ford\")))));\n     }\n \n     @Test\n@@ -175,8 +179,8 @@ public class RolesMetadataTest extends ESTestCase {\n             .putCustom(RolesMetadata.TYPE, oldRolesMetadata);\n         var newRolesMetadata = RolesMetadata.of(mdBuilder, oldUsersMetadata, oldUserPrivilegesMetadata, oldRolesMetadata);\n         assertThat(newRolesMetadata.roles()).containsExactlyInAnyOrderEntriesOf(\n-            Map.of(\"Arthur\", DUMMY_USERS.get(\"Arthur\").with(OLD_DUMMY_USERS_PRIVILEGES.get(\"Arthur\")),\n-                \"Ford\", DUMMY_USERS.get(\"Ford\").with(OLD_DUMMY_USERS_PRIVILEGES.get(\"Ford\"))));\n+            Map.of(\"Arthur\", DUMMY_USERS.get(\"Arthur\").with(new RolePrivileges(OLD_DUMMY_USERS_PRIVILEGES.get(\"Arthur\"))),\n+                \"Ford\", DUMMY_USERS.get(\"Ford\").with(new RolePrivileges(OLD_DUMMY_USERS_PRIVILEGES.get(\"Ford\")))));\n     }\n \n     @Test\n@@ -276,4 +280,25 @@ public class RolesMetadataTest extends ESTestCase {\n             .hasMessage(\"failed to parse jwt, unknown property 'prop'\");\n \n     }\n+\n+    @Test\n+    public void test_grant_roles_do_not_loose_existing_privileges() {\n+        var rolesMetadata = new RolesMetadata();\n+        rolesMetadata.roles().put(\"Ford\", userOf(\n+            \"Ford\",\n+            Set.of(new Privilege(Policy.GRANT, Permission.DQL, Securable.CLUSTER, null, \"crate\")),\n+            Set.of(),\n+            getSecureHash(\"fords-pwd\"))\n+        );\n+        rolesMetadata.roles().put(\"role1\", roleOf(\"role1\"));\n+        assertThat(rolesMetadata.roles().get(\"Ford\").privileges().size()).isEqualTo(1);\n+\n+        var affectedRolePrivileges = rolesMetadata.applyRolePrivileges(List.of(\"Ford\"), new GrantedRolesChange(\n+            Policy.GRANT,\n+            Set.of(\"role1\"),\n+            \"theGrantor\"));\n+\n+        assertThat(affectedRolePrivileges).isEqualTo(1);\n+        assertThat(rolesMetadata.roles().get(\"Ford\").privileges().size()).isEqualTo(1);\n+    }\n }\n-- \n2.43.0\n\n",
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "reason": "deterministic_no_llm"
+  }
+}

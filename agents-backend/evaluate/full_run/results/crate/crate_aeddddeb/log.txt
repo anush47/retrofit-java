@@ -1,0 +1,27 @@
+patch_id=crate_aeddddeb
+project=crate
+mainline_commit=aeddddeba6a7f487891cc8b131fc87bfdf157623
+backport_commit=1f3ed5c7b64bc1850a6c4bc2c21c09e26cb469af
+mode=full
+started_at=2026-04-05T20:24:33.883286
+----------------------------------------
+Running full workflow graph
+Completed node=phase_0_optimistic
+Workflow completed successfully
+
+[crate/crate_aeddddeb] Setting up repositories for mode=full...
+[crate/crate_aeddddeb] Running full workflow graph...
+Router: Running Phase 0.
+Phase 0 (Optimistic): Checking direct patch applicability...
+Phase 0: Experiment mode — checking out parent of 1f3ed5c7b64bc1850a6c4bc2c21c09e26cb469af...
+Phase 0: Building baseline by applying developer backport test hunks only...
+  Validation: server/src/test/java/io/crate/metadata/sys/SysAllocationsTableInfoTest.java - applying 3 hunk(s) one by one in bottom-to-top order: [66, 34, 23]
+    Agent 4: Executing crate helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_tests.sh
+Phase 0: git apply --check SUCCEEDED. Attempting actual patch application and test run.
+    Agent 4: Executing crate helper build script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_build.sh
+    Agent 4: Executing crate helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_tests.sh
+Phase 0: Transition summary -> reason=Valid: Observed fail-to-pass and/or newly passing relevant tests with no regressions.; fail->pass(1): ['io.crate.metadata.sys.SysAllocationsTableInfoTest#test_exception_is_thrown_when_no_master_is_discovered']; newly_passing(0): []; pass->fail(0): []
+Phase 0: Transition-based test validation passed. Fast-path success.
+Router: Phase 0 succeeded - taking fast-path exit.
+  Completed: phase_0_optimistic
+[crate/crate_aeddddeb] Full workflow completed!

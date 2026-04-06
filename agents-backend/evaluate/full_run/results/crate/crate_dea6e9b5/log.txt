@@ -1,0 +1,27 @@
+patch_id=crate_dea6e9b5
+project=crate
+mainline_commit=dea6e9b5ff707dd58ab9cebf9219d4565dd42e50
+backport_commit=06a83ce3f994fb75808df6a198200d7d1e08ab3a
+mode=full
+started_at=2026-04-05T23:17:38.966236
+----------------------------------------
+Running full workflow graph
+Completed node=phase_0_optimistic
+Workflow completed successfully
+
+[crate/crate_dea6e9b5] Setting up repositories for mode=full...
+[crate/crate_dea6e9b5] Running full workflow graph...
+Router: Running Phase 0.
+Phase 0 (Optimistic): Checking direct patch applicability...
+Phase 0: Experiment mode — checking out parent of 06a83ce3f994fb75808df6a198200d7d1e08ab3a...
+Phase 0: Building baseline by applying developer backport test hunks only...
+  Validation: server/src/test/java/io/crate/role/RolePropertiesTest.java - applying 2 hunk(s) one by one in bottom-to-top order: [124, 24]
+    Agent 4: Executing crate helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_tests.sh
+Phase 0: git apply --check SUCCEEDED. Attempting actual patch application and test run.
+    Agent 4: Executing crate helper build script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_build.sh
+    Agent 4: Executing crate helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_tests.sh
+Phase 0: Transition summary -> reason=Valid: Observed fail-to-pass and/or newly passing relevant tests with no regressions.; fail->pass(1): ['io.crate.role.RolePropertiesTest#test_can_read_empty_role_properties_from_x_content']; newly_passing(0): []; pass->fail(0): []
+Phase 0: Transition-based test validation passed. Fast-path success.
+Router: Phase 0 succeeded - taking fast-path exit.
+  Completed: phase_0_optimistic
+[crate/crate_dea6e9b5] Full workflow completed!

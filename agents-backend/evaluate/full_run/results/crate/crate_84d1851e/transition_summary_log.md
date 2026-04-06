@@ -1,0 +1,71 @@
+# Transition Summary
+
+- Source: phase_outputs
+- Valid backport signal: True
+- Reason: Valid: Observed fail-to-pass and/or newly passing relevant tests with no regressions.
+- fail->pass (5): ['io.crate.expression.operator.LikeOperatorTest#test_like_ilike_with_trailing_escape_char_throws_error', 'io.crate.expression.operator.any.AnyLikeOperatorTest#test_any_like_ilike_with_trailing_escape_character', 'io.crate.expression.operator.any.AnyNotLikeOperatorTest#test_any_not_like_ilike_with_trailing_escape_character', 'io.crate.lucene.LikeQueryBuilderTest#test_like_ilike_any_with_trailing_escape_char', 'io.crate.lucene.LikeQueryBuilderTest#test_like_ilike_with_trailing_escape_char']
+- newly passing (0): []
+- pass->fail (0): []
+
+## Touched Test States
+- Touched tests (from patch): ['io.crate.expression.operator.LikeOperatorTest', 'io.crate.expression.operator.any.AnyLikeOperatorTest', 'io.crate.expression.operator.any.AnyNotLikeOperatorTest', 'io.crate.lucene.LikeQueryBuilderTest']
+  - io.crate.expression.operator.LikeOperatorTest#testExpressionToRegexEscaping: baseline=passed, patched=passed
+  - io.crate.expression.operator.LikeOperatorTest#testExpressionToRegexEscapingMutli: baseline=passed, patched=passed
+  - io.crate.expression.operator.LikeOperatorTest#testExpressionToRegexEscapingPercent: baseline=passed, patched=passed
+  - io.crate.expression.operator.LikeOperatorTest#testExpressionToRegexEscapingUnderline: baseline=passed, patched=passed
+  - io.crate.expression.operator.LikeOperatorTest#testExpressionToRegexExactlyOne: baseline=passed, patched=passed
+  - io.crate.expression.operator.LikeOperatorTest#testExpressionToRegexMaliciousPatterns: baseline=passed, patched=passed
+  - io.crate.expression.operator.LikeOperatorTest#testExpressionToRegexZeroOrMore: baseline=passed, patched=passed
+  - io.crate.expression.operator.LikeOperatorTest#testIlikeOperator: baseline=passed, patched=passed
+  - io.crate.expression.operator.LikeOperatorTest#testLikeOnMultilineStatement: baseline=passed, patched=passed
+  - io.crate.expression.operator.LikeOperatorTest#testLikeOperator: baseline=passed, patched=passed
+  - io.crate.expression.operator.LikeOperatorTest#testNormalizeSymbolEqual: baseline=passed, patched=passed
+  - io.crate.expression.operator.LikeOperatorTest#testNormalizeSymbolLikeExactlyOne: baseline=passed, patched=passed
+  - io.crate.expression.operator.LikeOperatorTest#testNormalizeSymbolLikeMixed: baseline=passed, patched=passed
+  - io.crate.expression.operator.LikeOperatorTest#testNormalizeSymbolLikeZeroOrMore: baseline=passed, patched=passed
+  - io.crate.expression.operator.LikeOperatorTest#testPatternIsNoLiteral: baseline=passed, patched=passed
+  - io.crate.expression.operator.LikeOperatorTest#testPatternToRegexPrependsBackSlashBeforeCurlyBraces: baseline=passed, patched=passed
+  - io.crate.expression.operator.LikeOperatorTest#test_custom_escape_character: baseline=passed, patched=passed
+  - io.crate.expression.operator.LikeOperatorTest#test_like_ilike_with_trailing_escape_char_throws_error: baseline=failed, patched=passed
+  - io.crate.expression.operator.LikeOperatorTest#test_like_with_empty_escape_disables_escaping: baseline=passed, patched=passed
+  - io.crate.expression.operator.LikeOperatorTest#test_like_with_non_single_char_escape_throws_error: baseline=passed, patched=passed
+  - io.crate.expression.operator.LikeOperatorTest#test_wildcard_escaped_in_c_style_string: baseline=passed, patched=passed
+  - io.crate.expression.operator.any.AnyLikeOperatorTest#testEvaluateLikeMixed: baseline=passed, patched=passed
+  - io.crate.expression.operator.any.AnyLikeOperatorTest#testEvaluateNull: baseline=passed, patched=passed
+  - io.crate.expression.operator.any.AnyLikeOperatorTest#testEvaluateStraight: baseline=passed, patched=passed
+  - io.crate.expression.operator.any.AnyLikeOperatorTest#testNegateLike: baseline=passed, patched=passed
+  - io.crate.expression.operator.any.AnyLikeOperatorTest#testNormalizeSingleSymbolEqual: baseline=passed, patched=passed
+  - io.crate.expression.operator.any.AnyLikeOperatorTest#testNormalizeSymbolLikeExactlyOne: baseline=passed, patched=passed
+  - io.crate.expression.operator.any.AnyLikeOperatorTest#testNormalizeSymbolLikeMixed: baseline=passed, patched=passed
+  - io.crate.expression.operator.any.AnyLikeOperatorTest#testNormalizeSymbolLikeZeroOrMore: baseline=passed, patched=passed
+  - io.crate.expression.operator.any.AnyLikeOperatorTest#testNormalizeSymbolNull: baseline=passed, patched=passed
+  - io.crate.expression.operator.any.AnyLikeOperatorTest#test_any_like_ilike_with_trailing_escape_character: baseline=failed, patched=passed
+  - io.crate.expression.operator.any.AnyLikeOperatorTest#test_non_string_values: baseline=passed, patched=passed
+  - io.crate.expression.operator.any.AnyLikeOperatorTest#test_patterns_on_right_arg: baseline=passed, patched=passed
+  - io.crate.expression.operator.any.AnyLikeOperatorTest#test_wildcard_escaped_in_c_style_string: baseline=passed, patched=passed
+  - io.crate.expression.operator.any.AnyNotLikeOperatorTest#testEvaluateLikeMixed: baseline=passed, patched=passed
+  - io.crate.expression.operator.any.AnyNotLikeOperatorTest#testEvaluateNull: baseline=passed, patched=passed
+  - io.crate.expression.operator.any.AnyNotLikeOperatorTest#testEvaluateStraight: baseline=passed, patched=passed
+  - io.crate.expression.operator.any.AnyNotLikeOperatorTest#testNegateNotLike: baseline=passed, patched=passed
+  - io.crate.expression.operator.any.AnyNotLikeOperatorTest#testNormalizeSingleSymbolEqual: baseline=passed, patched=passed
+  - io.crate.expression.operator.any.AnyNotLikeOperatorTest#testNormalizeSymbolLikeExactlyOne: baseline=passed, patched=passed
+  - io.crate.expression.operator.any.AnyNotLikeOperatorTest#testNormalizeSymbolLikeMixed: baseline=passed, patched=passed
+  - io.crate.expression.operator.any.AnyNotLikeOperatorTest#testNormalizeSymbolLikeZeroOrMore: baseline=passed, patched=passed
+  - io.crate.expression.operator.any.AnyNotLikeOperatorTest#testNormalizeSymbolNull: baseline=passed, patched=passed
+  - io.crate.expression.operator.any.AnyNotLikeOperatorTest#test_any_not_like_ilike_with_trailing_escape_character: baseline=failed, patched=passed
+  - io.crate.expression.operator.any.AnyNotLikeOperatorTest#test_patterns_on_right_arg: baseline=passed, patched=passed
+  - io.crate.expression.operator.any.AnyNotLikeOperatorTest#test_wildcard_escaped_in_c_style_string: baseline=passed, patched=passed
+  - io.crate.lucene.LikeQueryBuilderTest#testILikeAnyOnArrayLiteral: baseline=passed, patched=passed
+  - io.crate.lucene.LikeQueryBuilderTest#testLikeAnyOnArrayLiteral: baseline=passed, patched=passed
+  - io.crate.lucene.LikeQueryBuilderTest#testLikeWithBothSidesReferences: baseline=passed, patched=passed
+  - io.crate.lucene.LikeQueryBuilderTest#testNotILikeAnyOnArrayLiteral: baseline=passed, patched=passed
+  - io.crate.lucene.LikeQueryBuilderTest#testNotLikeAnyOnArrayLiteral: baseline=passed, patched=passed
+  - io.crate.lucene.LikeQueryBuilderTest#testSqlLikeToLuceneWildcard: baseline=passed, patched=passed
+  - io.crate.lucene.LikeQueryBuilderTest#test_ilike_any_on_index_off_column_falls_back_to_generic_query: baseline=passed, patched=passed
+  - io.crate.lucene.LikeQueryBuilderTest#test_ilike_on_index_off_column_falls_back_to_generic_query: baseline=passed, patched=passed
+  - io.crate.lucene.LikeQueryBuilderTest#test_like_empty_string_results_in_term_query: baseline=passed, patched=passed
+  - io.crate.lucene.LikeQueryBuilderTest#test_like_ilike_any_with_trailing_escape_char: baseline=failed, patched=passed
+  - io.crate.lucene.LikeQueryBuilderTest#test_like_ilike_with_trailing_escape_char: baseline=failed, patched=passed
+  - io.crate.lucene.LikeQueryBuilderTest#test_like_on_index_off_column_falls_back_to_generic_query: baseline=passed, patched=passed
+  - io.crate.lucene.LikeQueryBuilderTest#test_like_on_varchar_column_uses_wildcard_query: baseline=passed, patched=passed
+  - io.crate.lucene.LikeQueryBuilderTest#test_not_like_any_on_index_off_column_falls_back_to_generic_query: baseline=passed, patched=passed

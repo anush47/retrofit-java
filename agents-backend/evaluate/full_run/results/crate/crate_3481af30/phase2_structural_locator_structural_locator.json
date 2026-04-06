@@ -1,0 +1,88 @@
+{
+  "consistency_map": {},
+  "mapped_target_context": {
+    "server/src/main/java/io/crate/types/DoubleType.java": [
+      {
+        "hunk_index": 1,
+        "mainline_method": "hunk_1",
+        "target_file": "server/src/main/java/io/crate/types/DoubleType.java",
+        "target_method": null,
+        "start_line": 26,
+        "end_line": 26,
+        "code_snippet": " * you may not use this file except in compliance with the License.  You may\n * obtain a copy of the License at\n *\n *   http://www.apache.org/licenses/LICENSE-2.0\n *\n * Unless required by applicable law or agreed to in writing, software\n * distributed under the License is distributed on an \"AS IS\" BASIS, WITHOUT\n * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the\n * License for the specific language governing permissions and limitations\n * under the License.\n *\n * However, if you have executed another commercial license agreement\n * with Crate these terms will supersede the license and you may use the\n * software solely pursuant to the terms of the relevant commercial agreement.\n */\n\npackage io.crate.types;\n\nimport java.io.IOException;\nimport java.math.BigDecimal;\nimport java.math.BigInteger;\nimport java.util.List;\nimport java.util.function.Function;\n\nimport org.apache.lucene.document.DoublePoint;\nimport org.apache.lucene.document.SortedNumericDocValuesField;\nimport org.apache.lucene.search.Query;\nimport org.apache.lucene.util.NumericUtils;\nimport org.apache.lucene.util.RamUsageEstimator;\nimport org.elasticsearch.common.io.stream.StreamInput;\nimport org.elasticsearch.common.io.stream.StreamOutput;\n\nimport io.crate.Streamer;\nimport io.crate.execution.dml.DoubleIndexer;\nimport io.crate.execution.dml.ValueIndexer;\nimport io.crate.metadata.ColumnIdent;\nimport io.crate.metadata.Reference;\nimport io.crate.metadata.RelationName;\nimport io.crate.statistics.ColumnStatsSupport;\n\npublic class DoubleType extends DataType<Double> implements FixedWidthType, Streamer<Double> {",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 2,
+        "mainline_method": "<class_declaration>",
+        "target_file": "server/src/main/java/io/crate/types/DoubleType.java",
+        "target_method": "<class_declaration>",
+        "start_line": 122,
+        "end_line": 122,
+        "code_snippet": "            public Query termsQuery(String field, List<Double> nonNullValues, boolean hasDocValues, boolean isIndexed) {\n                if (isIndexed) {\n                    return DoublePoint.newSetQuery(field, nonNullValues);\n                }\n                if (hasDocValues) {\n                    return SortedNumericDocValuesField.newSlowSetQuery(field, nonNullValues.stream().mapToLong(NumericUtils::doubleToSortableLong).toArray());\n                }\n                return null;\n            }\n        }\n    ) {\n\n        @Override\n        public ValueIndexer<Number> valueIndexer(RelationName table,\n                                                 Reference ref,\n                                                 Function<ColumnIdent, Reference> getRef) {\n            return new DoubleIndexer(ref);\n        }\n    };\n\n    private static final BigInteger DOUBLE_MAX = BigDecimal.valueOf(Double.MAX_VALUE).toBigInteger();\n    private static final BigInteger DOUBLE_MIN = BigDecimal.valueOf(-Double.MAX_VALUE).toBigInteger();\n\n    private DoubleType() {\n    }\n\n    @Override\n    public int id() {\n        return ID;\n    }\n\n    @Override\n    public Precedence precedence() {\n        return Precedence.DOUBLE;\n    }\n\n    @Override\n    public String getName() {\n        return \"double precision\";\n    }\n",
+        "anchor_confidence": "high",
+        "anchor_reason": "line_and_method_resolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 3,
+        "mainline_method": "hunk_3",
+        "target_file": "server/src/main/java/io/crate/types/DoubleType.java",
+        "target_method": null,
+        "start_line": 162,
+        "end_line": 162,
+        "code_snippet": "\n    @Override\n    public Integer numericPrecision() {\n        return PRECISION;\n    }\n\n    @Override\n    public Streamer<Double> streamer() {\n        return this;\n    }\n\n    @Override\n    public Double implicitCast(Object value) throws IllegalArgumentException, ClassCastException {\n        if (value == null) {\n            return null;\n        } else if (value instanceof Double d) {\n            return d;\n        } else if (value instanceof String s) {\n            return Double.valueOf(s);\n        } else if (value instanceof BigDecimal bigDecimalValue) {\n            if (DOUBLE_MAX.compareTo(bigDecimalValue.toBigInteger()) <= 0\n                || DOUBLE_MIN.compareTo(bigDecimalValue.toBigInteger()) >= 0) {\n                throw new IllegalArgumentException(getName() + \" value out of range: \" + value);\n            }\n            return bigDecimalValue.doubleValue();\n        } else if (value instanceof Number n) {\n            return n.doubleValue();\n        } else {\n            throw new ClassCastException(\"Can't cast '\" + value + \"' to \" + getName());\n        }\n    }\n\n    @Override\n    public Double sanitizeValue(Object value) {\n        if (value == null) {\n            return null;\n        } else if (value instanceof Double d) {\n            return d;\n        } else {\n            return ((Number) value).doubleValue();\n        }",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      }
+    ],
+    "server/src/main/java/io/crate/types/FloatType.java": [
+      {
+        "hunk_index": 1,
+        "mainline_method": "hunk_1",
+        "target_file": "server/src/main/java/io/crate/types/FloatType.java",
+        "target_method": null,
+        "start_line": 26,
+        "end_line": 26,
+        "code_snippet": " * you may not use this file except in compliance with the License.  You may\n * obtain a copy of the License at\n *\n *   http://www.apache.org/licenses/LICENSE-2.0\n *\n * Unless required by applicable law or agreed to in writing, software\n * distributed under the License is distributed on an \"AS IS\" BASIS, WITHOUT\n * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the\n * License for the specific language governing permissions and limitations\n * under the License.\n *\n * However, if you have executed another commercial license agreement\n * with Crate these terms will supersede the license and you may use the\n * software solely pursuant to the terms of the relevant commercial agreement.\n */\n\npackage io.crate.types;\n\nimport java.io.IOException;\nimport java.math.BigDecimal;\nimport java.math.BigInteger;\nimport java.util.List;\nimport java.util.function.Function;\n\nimport org.apache.lucene.document.FloatPoint;\nimport org.apache.lucene.document.SortedNumericDocValuesField;\nimport org.apache.lucene.search.Query;\nimport org.apache.lucene.util.NumericUtils;\nimport org.apache.lucene.util.RamUsageEstimator;\nimport org.elasticsearch.common.io.stream.StreamInput;\nimport org.elasticsearch.common.io.stream.StreamOutput;\n\nimport io.crate.Streamer;\nimport io.crate.execution.dml.FloatIndexer;\nimport io.crate.execution.dml.ValueIndexer;\nimport io.crate.metadata.ColumnIdent;\nimport io.crate.metadata.Reference;\nimport io.crate.metadata.RelationName;\nimport io.crate.statistics.ColumnStatsSupport;\n\npublic class FloatType extends DataType<Float> implements Streamer<Float>, FixedWidthType {",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 2,
+        "mainline_method": "<class_declaration>",
+        "target_file": "server/src/main/java/io/crate/types/FloatType.java",
+        "target_method": "<class_declaration>",
+        "start_line": 122,
+        "end_line": 122,
+        "code_snippet": "            public Query termsQuery(String field, List<Float> nonNullValues, boolean hasDocValues, boolean isIndexed) {\n                if (isIndexed) {\n                    return FloatPoint.newSetQuery(field, nonNullValues);\n                }\n                if (hasDocValues) {\n                    return SortedNumericDocValuesField.newSlowSetQuery(field, nonNullValues.stream().mapToLong(NumericUtils::floatToSortableInt).toArray());\n                }\n                return null;\n            }\n        }\n    ) {\n\n        @Override\n        public ValueIndexer<Float> valueIndexer(RelationName table,\n                                                Reference ref,\n                                                Function<ColumnIdent, Reference> getRef) {\n            return new FloatIndexer(ref);\n        }\n    };\n\n    private static final BigInteger MAX = BigDecimal.valueOf(Float.MAX_VALUE).toBigInteger();\n    private static final BigInteger MIN = BigDecimal.valueOf(-Float.MAX_VALUE).toBigInteger();\n\n    private FloatType() {\n    }\n\n    @Override\n    public int id() {\n        return ID;\n    }\n\n    @Override\n    public Precedence precedence() {\n        return Precedence.FLOAT;\n    }\n\n    @Override\n    public String getName() {\n        return \"real\";\n    }\n",
+        "anchor_confidence": "high",
+        "anchor_reason": "line_and_method_resolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 3,
+        "mainline_method": "hunk_3",
+        "target_file": "server/src/main/java/io/crate/types/FloatType.java",
+        "target_method": null,
+        "start_line": 162,
+        "end_line": 162,
+        "code_snippet": "\n    @Override\n    public Integer numericPrecision() {\n        return PRECISION;\n    }\n\n    @Override\n    public Streamer<Float> streamer() {\n        return this;\n    }\n\n    @Override\n    public Float implicitCast(Object value) throws IllegalArgumentException, ClassCastException {\n        if (value == null) {\n            return null;\n        } else if (value instanceof Float f) {\n            return f;\n        } else if (value instanceof String s) {\n            return Float.parseFloat(s);\n        } else if (value instanceof BigDecimal bigDecimalValue) {\n            if (MAX.compareTo(bigDecimalValue.toBigInteger()) <= 0\n                || MIN.compareTo(bigDecimalValue.toBigInteger()) >= 0) {\n                throw new IllegalArgumentException(\"float value out of range: \" + value);\n            }\n            return bigDecimalValue.floatValue();\n        } else if (value instanceof Number number) {\n            float val = number.floatValue();\n            if (Float.isInfinite(val) && !Double.isInfinite(number.doubleValue())) {\n                throw new IllegalArgumentException(\"float value out of range: \" + value);\n            }\n            return val;\n        } else {\n            throw new ClassCastException(\"Can't cast '\" + value + \"' to \" + getName());\n        }\n    }\n\n    @Override\n    public Float sanitizeValue(Object value) {\n        if (value == null) {\n            return null;\n        } else if (value instanceof Float f) {",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      }
+    ]
+  },
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "reason": "llm_usage_not_collected_in_this_node"
+  }
+}

@@ -1,0 +1,27 @@
+patch_id=crate_bdca5020
+project=crate
+mainline_commit=bdca50204c894462732f364d0a180151ece2bc9a
+backport_commit=79334e3bfd1c049434c3b27d612c5505b8f2c33f
+mode=full
+started_at=2026-04-05T20:47:21.125744
+----------------------------------------
+Running full workflow graph
+Completed node=phase_0_optimistic
+Workflow completed successfully
+
+[crate/crate_bdca5020] Setting up repositories for mode=full...
+[crate/crate_bdca5020] Running full workflow graph...
+Router: Running Phase 0.
+Phase 0 (Optimistic): Checking direct patch applicability...
+Phase 0: Experiment mode — checking out parent of 79334e3bfd1c049434c3b27d612c5505b8f2c33f...
+Phase 0: Building baseline by applying developer backport test hunks only...
+  Validation: server/src/test/java/io/crate/types/FloatVectorTypeTest.java - applying 2 hunk(s) one by one in bottom-to-top order: [50, 28]
+    Agent 4: Executing crate helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_tests.sh
+Phase 0: git apply --check SUCCEEDED. Attempting actual patch application and test run.
+    Agent 4: Executing crate helper build script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_build.sh
+    Agent 4: Executing crate helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_tests.sh
+Phase 0: Transition summary -> reason=Valid: Observed fail-to-pass and/or newly passing relevant tests with no regressions.; fail->pass(1): ['io.crate.types.FloatVectorTypeTest#test_cannot_create_float_vector_type_exceeding_max_length']; newly_passing(0): []; pass->fail(0): []
+Phase 0: Transition-based test validation passed. Fast-path success.
+Router: Phase 0 succeeded - taking fast-path exit.
+  Completed: phase_0_optimistic
+[crate/crate_bdca5020] Full workflow completed!

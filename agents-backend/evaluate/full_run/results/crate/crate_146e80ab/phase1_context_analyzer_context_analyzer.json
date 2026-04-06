@@ -1,0 +1,36 @@
+{
+  "semantic_blueprint": {
+    "root_cause_hypothesis": "Deterministic inference: target branch diverges from mainline; adapt hunks with exact target context.",
+    "fix_logic": "Apply each source hunk with target-verified context and symbol consistency while preserving behavior.",
+    "dependent_apis": [
+      "best"
+    ],
+    "patch_intent_summary": "Backport patch behavior to target branch with minimal, context-correct edits.",
+    "hunk_chain": [
+      {
+        "hunk_index": 1,
+        "file": "server/src/main/java/io/crate/execution/engine/aggregation/impl/average/numeric/NumericAverageState.java",
+        "summary": "Adds logic (+1 lines).",
+        "role": "declaration",
+        "connects_to_next": "Prepares next hunk in same file with related context.",
+        "global_index": 1
+      },
+      {
+        "hunk_index": 2,
+        "file": "server/src/main/java/io/crate/execution/engine/aggregation/impl/average/numeric/NumericAverageState.java",
+        "summary": "Modifies logic (+4/-1 lines).",
+        "role": "guard",
+        "connects_to_next": "",
+        "global_index": 2
+      }
+    ]
+  },
+  "patch_diff": "From 146e80ab062cc5fe77f246dface16db51fc7f2ee Mon Sep 17 00:00:00 2001\nFrom: baur <baurzhansahariev@gmail.com>\nDate: Fri, 7 Feb 2025 19:13:52 +0100\nSubject: [PATCH] Use math context with maximal (finite) precision when\n computing average state\n\nHelps to void ArithmeticException on infinite fractions\n---\n docs/appendices/release-notes/5.10.1.rst                   | 4 ++++\n docs/appendices/release-notes/5.9.10.rst                   | 4 ++++\n .../impl/average/numeric/NumericAverageState.java          | 6 +++++-\n .../engine/aggregation/impl/AverageAggregationTest.java    | 7 +++++++\n 4 files changed, 20 insertions(+), 1 deletion(-)\n\ndiff --git a/docs/appendices/release-notes/5.10.1.rst b/docs/appendices/release-notes/5.10.1.rst\nindex 2c87d3db18..89fe39918d 100644\n--- a/docs/appendices/release-notes/5.10.1.rst\n+++ b/docs/appendices/release-notes/5.10.1.rst\n@@ -112,3 +112,7 @@ Fixes\n   :ref:`numeric <type-numeric>` values. Previously, the values where implicitly\n   casted to ``STRING`` and the aggregations where using alphanumeric ordering,\n   instead of numeric ordering.\n+\n+- Fixed an issue that led to ``ArithmeticException`` when using\n+  :ref:`AVG <aggregation-avg>` with ``NUMERIC`` type and result was an infinite\n+  fraction, like 1/3.\ndiff --git a/docs/appendices/release-notes/5.9.10.rst b/docs/appendices/release-notes/5.9.10.rst\nindex 7bd315bf32..ab2ddf863d 100644\n--- a/docs/appendices/release-notes/5.9.10.rst\n+++ b/docs/appendices/release-notes/5.9.10.rst\n@@ -83,3 +83,7 @@ Fixes\n   :ref:`numeric <type-numeric>` values. Previously, the values where implicitly\n   casted to ``STRING`` and the aggregations where using alphanumeric ordering,\n   instead of numeric ordering.\n+\n+- Fixed an issue that led to ``ArithmeticException`` when using\n+  :ref:`AVG <aggregation-avg>` with ``NUMERIC`` type and result was an infinite\n+  fraction, like 1/3.\ndiff --git a/server/src/main/java/io/crate/execution/engine/aggregation/impl/average/numeric/NumericAverageState.java b/server/src/main/java/io/crate/execution/engine/aggregation/impl/average/numeric/NumericAverageState.java\nindex 8fba81072e..468a19123b 100644\n--- a/server/src/main/java/io/crate/execution/engine/aggregation/impl/average/numeric/NumericAverageState.java\n+++ b/server/src/main/java/io/crate/execution/engine/aggregation/impl/average/numeric/NumericAverageState.java\n@@ -22,6 +22,7 @@\n package io.crate.execution.engine.aggregation.impl.average.numeric;\n \n import java.math.BigDecimal;\n+import java.math.MathContext;\n import java.util.Objects;\n \n import org.jetbrains.annotations.NotNull;\n@@ -44,7 +45,10 @@ public class NumericAverageState<T extends NumericValueHolder> implements Compar\n \n     public BigDecimal value() {\n         if (count > 0) {\n-            return sum.value().divide(BigDecimal.valueOf(count));\n+            // We need to use divide with a MathContext to avoid ArithmeticException on infinite fractions.\n+            // Using best (finite) precision as we want to compute final result with the best precision.\n+            // If users want to reduce the precision of the final result, they can use explicit cast.\n+            return sum.value().divide(BigDecimal.valueOf(count), MathContext.DECIMAL128);\n         } else {\n             return null;\n         }\ndiff --git a/server/src/test/java/io/crate/execution/engine/aggregation/impl/AverageAggregationTest.java b/server/src/test/java/io/crate/execution/engine/aggregation/impl/AverageAggregationTest.java\nindex f45a7f3960..0ec6601e7b 100644\n--- a/server/src/test/java/io/crate/execution/engine/aggregation/impl/AverageAggregationTest.java\n+++ b/server/src/test/java/io/crate/execution/engine/aggregation/impl/AverageAggregationTest.java\n@@ -241,4 +241,11 @@ public class AverageAggregationTest extends AggregationTestCase {\n         );\n         assertThat(((NumericAverageState<?>) result).value().toString()).isEqualTo(expected.toString());\n     }\n+\n+    @Test\n+    public void test_avg_numeric_can_handle_non_terminating_decimal_expansion() throws Exception {\n+        assertThat(executeAvgAgg(\n+            new NumericType(18, 3), new Object[][]{{BigDecimal.valueOf(6.00)}, {BigDecimal.valueOf(2.0)}, {BigDecimal.valueOf(2.0)}})\n+        ).isEqualTo(new BigDecimal(\"3.333333333333333333333333333333333\"));\n+    }\n }\n-- \n2.43.0\n\n",
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "reason": "deterministic_no_llm"
+  }
+}

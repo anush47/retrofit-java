@@ -1,0 +1,27 @@
+patch_id=crate_4001c922
+project=crate
+mainline_commit=4001c922fd8bb0dd54d2ea148333be6ec257ce84
+backport_commit=1361a701f87d1e17003fa5ba89b128806e2601ae
+mode=full
+started_at=2026-04-06T00:12:36.864488
+----------------------------------------
+Running full workflow graph
+Completed node=phase_0_optimistic
+Workflow completed successfully
+
+[crate/crate_4001c922] Setting up repositories for mode=full...
+[crate/crate_4001c922] Running full workflow graph...
+Router: Running Phase 0.
+Phase 0 (Optimistic): Checking direct patch applicability...
+Phase 0: Experiment mode — checking out parent of 1361a701f87d1e17003fa5ba89b128806e2601ae...
+Phase 0: Building baseline by applying developer backport test hunks only...
+  Validation: server/src/test/java/io/crate/lucene/CommonQueryBuilderTest.java - applying 1 hunk(s) one by one in bottom-to-top order: [697]
+    Agent 4: Executing crate helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_tests.sh
+Phase 0: git apply --check SUCCEEDED. Attempting actual patch application and test run.
+    Agent 4: Executing crate helper build script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_build.sh
+    Agent 4: Executing crate helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_tests.sh
+Phase 0: Transition summary -> reason=Valid: Observed fail-to-pass and/or newly passing relevant tests with no regressions.; fail->pass(2): ['io.crate.lucene.CommonQueryBuilderTest#test_any_operators_with_empty_array_literal', 'io.crate.lucene.CommonQueryBuilderTest#test_any_operators_with_null_array_literal']; newly_passing(0): []; pass->fail(0): []
+Phase 0: Transition-based test validation passed. Fast-path success.
+Router: Phase 0 succeeded - taking fast-path exit.
+  Completed: phase_0_optimistic
+[crate/crate_4001c922] Full workflow completed!

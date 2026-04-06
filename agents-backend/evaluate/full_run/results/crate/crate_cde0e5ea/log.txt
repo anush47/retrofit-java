@@ -1,0 +1,29 @@
+patch_id=crate_cde0e5ea
+project=crate
+mainline_commit=cde0e5ea5bd75874bd800b48d105df5e0e61bfbf
+backport_commit=536576454d4420db4284ccc76c89b7c8aa5bddf9
+mode=full
+started_at=2026-04-05T22:10:56.662934
+----------------------------------------
+Running full workflow graph
+Completed node=phase_0_optimistic
+Workflow completed successfully
+
+[crate/crate_cde0e5ea] Setting up repositories for mode=full...
+[crate/crate_cde0e5ea] Running full workflow graph...
+Router: Running Phase 0.
+Phase 0 (Optimistic): Checking direct patch applicability...
+Phase 0: Experiment mode — checking out parent of 536576454d4420db4284ccc76c89b7c8aa5bddf9...
+Phase 0: Building baseline by applying developer backport test hunks only...
+  Validation: server/src/test/java/io/crate/execution/engine/aggregation/impl/average/numeric/NumericAverageStateTest.java - applying 1 hunk(s) one by one in bottom-to-top order: [1]
+  Validation: server/src/test/java/io/crate/types/NumericTypeTest.java - applying 1 hunk(s) one by one in bottom-to-top order: [47]
+  Validation: ADDED operation for server/src/test/java/io/crate/execution/engine/aggregation/impl/average/numeric/NumericAverageStateTest.java
+    Agent 4: Executing crate helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_tests.sh
+Phase 0: git apply --check SUCCEEDED. Attempting actual patch application and test run.
+    Agent 4: Executing crate helper build script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_build.sh
+    Agent 4: Executing crate helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_tests.sh
+Phase 0: Transition summary -> reason=Valid: Observed fail-to-pass and/or newly passing relevant tests with no regressions.; fail->pass(2): ['io.crate.execution.engine.aggregation.impl.average.numeric.NumericAverageStateTest#test_can_stream_bigdecimal_with_precision_eq_scale', 'io.crate.types.NumericTypeTest#test_scale_must_be_lt_precision']; newly_passing(0): []; pass->fail(0): []
+Phase 0: Transition-based test validation passed. Fast-path success.
+Router: Phase 0 succeeded - taking fast-path exit.
+  Completed: phase_0_optimistic
+[crate/crate_cde0e5ea] Full workflow completed!

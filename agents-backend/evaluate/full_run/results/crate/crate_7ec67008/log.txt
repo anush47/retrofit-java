@@ -1,0 +1,27 @@
+patch_id=crate_7ec67008
+project=crate
+mainline_commit=7ec67008007e53ef9e05e7b0375fbb236585d35a
+backport_commit=b116a7ac985f00846219473ac5c26166445a83be
+mode=full
+started_at=2026-04-05T21:30:40.909671
+----------------------------------------
+Running full workflow graph
+Completed node=phase_0_optimistic
+Workflow completed successfully
+
+[crate/crate_7ec67008] Setting up repositories for mode=full...
+[crate/crate_7ec67008] Running full workflow graph...
+Router: Running Phase 0.
+Phase 0 (Optimistic): Checking direct patch applicability...
+Phase 0: Experiment mode — checking out parent of b116a7ac985f00846219473ac5c26166445a83be...
+Phase 0: Building baseline by applying developer backport test hunks only...
+  Validation: server/src/test/java/io/crate/analyze/where/WhereClauseAnalyzerTest.java - applying 11 hunk(s) one by one in bottom-to-top order: [431, 423, 394, 364, 308, 291, 236, 192, 138, 47, 34]
+    Agent 4: Executing crate helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_tests.sh
+Phase 0: git apply --check SUCCEEDED. Attempting actual patch application and test run.
+    Agent 4: Executing crate helper build script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_build.sh
+    Agent 4: Executing crate helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_tests.sh
+Phase 0: Transition summary -> reason=Valid: Observed fail-to-pass and/or newly passing relevant tests with no regressions.; fail->pass(1): ['io.crate.analyze.where.WhereClauseAnalyzerTest#test_delete_from_partition_by_column_involving_non_deterministic_function']; newly_passing(0): []; pass->fail(0): []
+Phase 0: Transition-based test validation passed. Fast-path success.
+Router: Phase 0 succeeded - taking fast-path exit.
+  Completed: phase_0_optimistic
+[crate/crate_7ec67008] Full workflow completed!

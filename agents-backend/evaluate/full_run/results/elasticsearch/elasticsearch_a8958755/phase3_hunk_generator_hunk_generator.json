@@ -1,0 +1,100 @@
+{
+  "adapted_file_edits": [
+    {
+      "target_file": "server/src/main/java/org/elasticsearch/cluster/metadata/IndexAbstractionResolver.java",
+      "mainline_file": "server/src/main/java/org/elasticsearch/cluster/metadata/IndexAbstractionResolver.java",
+      "old_string": "<developer patch fast path>",
+      "new_string": "diff --git a/server/src/main/java/org/elasticsearch/cluster/metadata/IndexAbstractionResolver.java b/server/src/main/java/org/elasticsearch/cluster/metadata/IndexAbstractionResolver.java\nindex fe7199f8332..562d2363905 100644\n--- a/server/src/main/java/org/elasticsearch/cluster/metadata/IndexAbstractionResolver.java\n+++ b/server/src/main/java/org/elasticsearch/cluster/metadata/IndexAbstractionResolver.java\n@@ -14,6 +14,7 @@ import org.elasticsearch.action.support.IndicesOptions;\n import org.elasticsearch.common.regex.Regex;\n import org.elasticsearch.core.Nullable;\n import org.elasticsearch.core.Tuple;\n+import org.elasticsearch.index.Index;\n import org.elasticsearch.index.IndexNotFoundException;\n import org.elasticsearch.indices.SystemIndices.SystemIndexAccessLevel;\n \n@@ -158,7 +159,26 @@ public class IndexAbstractionResolver {\n             if (indexAbstraction.isSystem()) {\n                 // check if it is net new\n                 if (resolver.getNetNewSystemIndexPredicate().test(indexAbstraction.getName())) {\n-                    return isSystemIndexVisible(resolver, indexAbstraction);\n+                    // don't give this code any particular credit for being *correct*. it's just trying to resolve a combination of\n+                    // issues in a way that happens to *work*. there's probably a better way of writing things such that this won't\n+                    // be necessary, but for the moment, it happens to be expedient to write things this way.\n+\n+                    // unwrap the alias and re-run the function on the write index of the alias -- that is, the alias is visible if\n+                    // the concrete index that it refers to is visible\n+                    Index writeIndex = indexAbstraction.getWriteIndex();\n+                    if (writeIndex == null) {\n+                        return false;\n+                    } else {\n+                        return isIndexVisible(\n+                            expression,\n+                            selectorString,\n+                            writeIndex.getName(),\n+                            indicesOptions,\n+                            metadata,\n+                            resolver,\n+                            includeDataStreams\n+                        );\n+                    }\n                 }\n             }",
+      "edit_type": "replace",
+      "verified": true,
+      "verification_result": "developer_fast_path_ok",
+      "applied": true,
+      "apply_result": "SUCCESS"
+    }
+  ],
+  "all_adapted_file_edits": [
+    [
+      {
+        "target_file": "server/src/main/java/org/elasticsearch/cluster/metadata/IndexAbstractionResolver.java",
+        "mainline_file": "server/src/main/java/org/elasticsearch/cluster/metadata/IndexAbstractionResolver.java",
+        "old_string": "<developer patch fast path>",
+        "new_string": "diff --git a/server/src/main/java/org/elasticsearch/cluster/metadata/IndexAbstractionResolver.java b/server/src/main/java/org/elasticsearch/cluster/metadata/IndexAbstractionResolver.java\nindex fe7199f8332..562d2363905 100644\n--- a/server/src/main/java/org/elasticsearch/cluster/metadata/IndexAbstractionResolver.java\n+++ b/server/src/main/java/org/elasticsearch/cluster/metadata/IndexAbstractionResolver.java\n@@ -14,6 +14,7 @@ import org.elasticsearch.action.support.IndicesOptions;\n import org.elasticsearch.common.regex.Regex;\n import org.elasticsearch.core.Nullable;\n import org.elasticsearch.core.Tuple;\n+import org.elasticsearch.index.Index;\n import org.elasticsearch.index.IndexNotFoundException;\n import org.elasticsearch.indices.SystemIndices.SystemIndexAccessLevel;\n \n@@ -158,7 +159,26 @@ public class IndexAbstractionResolver {\n             if (indexAbstraction.isSystem()) {\n                 // check if it is net new\n                 if (resolver.getNetNewSystemIndexPredicate().test(indexAbstraction.getName())) {\n-                    return isSystemIndexVisible(resolver, indexAbstraction);\n+                    // don't give this code any particular credit for being *correct*. it's just trying to resolve a combination of\n+                    // issues in a way that happens to *work*. there's probably a better way of writing things such that this won't\n+                    // be necessary, but for the moment, it happens to be expedient to write things this way.\n+\n+                    // unwrap the alias and re-run the function on the write index of the alias -- that is, the alias is visible if\n+                    // the concrete index that it refers to is visible\n+                    Index writeIndex = indexAbstraction.getWriteIndex();\n+                    if (writeIndex == null) {\n+                        return false;\n+                    } else {\n+                        return isIndexVisible(\n+                            expression,\n+                            selectorString,\n+                            writeIndex.getName(),\n+                            indicesOptions,\n+                            metadata,\n+                            resolver,\n+                            includeDataStreams\n+                        );\n+                    }\n                 }\n             }",
+        "edit_type": "replace",
+        "verified": true,
+        "verification_result": "developer_fast_path_ok",
+        "applied": true,
+        "apply_result": "SUCCESS"
+      }
+    ]
+  ],
+  "agent_trajectory_edits": [
+    []
+  ],
+  "adapted_code_hunks": [
+    {
+      "target_file": "server/src/main/java/org/elasticsearch/cluster/metadata/IndexAbstractionResolver.java",
+      "mainline_file": "server/src/main/java/org/elasticsearch/cluster/metadata/IndexAbstractionResolver.java",
+      "hunk_text": "diff --git a/server/src/main/java/org/elasticsearch/cluster/metadata/IndexAbstractionResolver.java b/server/src/main/java/org/elasticsearch/cluster/metadata/IndexAbstractionResolver.java\nindex fe7199f8332..562d2363905 100644\n--- a/server/src/main/java/org/elasticsearch/cluster/metadata/IndexAbstractionResolver.java\n+++ b/server/src/main/java/org/elasticsearch/cluster/metadata/IndexAbstractionResolver.java\n@@ -14,6 +14,7 @@ import org.elasticsearch.action.support.IndicesOptions;\n import org.elasticsearch.common.regex.Regex;\n import org.elasticsearch.core.Nullable;\n import org.elasticsearch.core.Tuple;\n+import org.elasticsearch.index.Index;\n import org.elasticsearch.index.IndexNotFoundException;\n import org.elasticsearch.indices.SystemIndices.SystemIndexAccessLevel;\n \n@@ -158,7 +159,26 @@ public class IndexAbstractionResolver {\n             if (indexAbstraction.isSystem()) {\n                 // check if it is net new\n                 if (resolver.getNetNewSystemIndexPredicate().test(indexAbstraction.getName())) {\n-                    return isSystemIndexVisible(resolver, indexAbstraction);\n+                    // don't give this code any particular credit for being *correct*. it's just trying to resolve a combination of\n+                    // issues in a way that happens to *work*. there's probably a better way of writing things such that this won't\n+                    // be necessary, but for the moment, it happens to be expedient to write things this way.\n+\n+                    // unwrap the alias and re-run the function on the write index of the alias -- that is, the alias is visible if\n+                    // the concrete index that it refers to is visible\n+                    Index writeIndex = indexAbstraction.getWriteIndex();\n+                    if (writeIndex == null) {\n+                        return false;\n+                    } else {\n+                        return isIndexVisible(\n+                            expression,\n+                            selectorString,\n+                            writeIndex.getName(),\n+                            indicesOptions,\n+                            metadata,\n+                            resolver,\n+                            includeDataStreams\n+                        );\n+                    }\n                 }\n             }\n \n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    }
+  ],
+  "validation_repeated_patch_detected": false,
+  "validation_repeated_plan_detected": false,
+  "best_effort_adapted_code_hunks": [
+    {
+      "target_file": "server/src/main/java/org/elasticsearch/cluster/metadata/IndexAbstractionResolver.java",
+      "mainline_file": "server/src/main/java/org/elasticsearch/cluster/metadata/IndexAbstractionResolver.java",
+      "hunk_text": "diff --git a/server/src/main/java/org/elasticsearch/cluster/metadata/IndexAbstractionResolver.java b/server/src/main/java/org/elasticsearch/cluster/metadata/IndexAbstractionResolver.java\nindex fe7199f8332..562d2363905 100644\n--- a/server/src/main/java/org/elasticsearch/cluster/metadata/IndexAbstractionResolver.java\n+++ b/server/src/main/java/org/elasticsearch/cluster/metadata/IndexAbstractionResolver.java\n@@ -14,6 +14,7 @@ import org.elasticsearch.action.support.IndicesOptions;\n import org.elasticsearch.common.regex.Regex;\n import org.elasticsearch.core.Nullable;\n import org.elasticsearch.core.Tuple;\n+import org.elasticsearch.index.Index;\n import org.elasticsearch.index.IndexNotFoundException;\n import org.elasticsearch.indices.SystemIndices.SystemIndexAccessLevel;\n \n@@ -158,7 +159,26 @@ public class IndexAbstractionResolver {\n             if (indexAbstraction.isSystem()) {\n                 // check if it is net new\n                 if (resolver.getNetNewSystemIndexPredicate().test(indexAbstraction.getName())) {\n-                    return isSystemIndexVisible(resolver, indexAbstraction);\n+                    // don't give this code any particular credit for being *correct*. it's just trying to resolve a combination of\n+                    // issues in a way that happens to *work*. there's probably a better way of writing things such that this won't\n+                    // be necessary, but for the moment, it happens to be expedient to write things this way.\n+\n+                    // unwrap the alias and re-run the function on the write index of the alias -- that is, the alias is visible if\n+                    // the concrete index that it refers to is visible\n+                    Index writeIndex = indexAbstraction.getWriteIndex();\n+                    if (writeIndex == null) {\n+                        return false;\n+                    } else {\n+                        return isIndexVisible(\n+                            expression,\n+                            selectorString,\n+                            writeIndex.getName(),\n+                            indicesOptions,\n+                            metadata,\n+                            resolver,\n+                            includeDataStreams\n+                        );\n+                    }\n                 }\n             }\n \n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    }
+  ],
+  "adapted_test_hunks": [],
+  "generation_checklist": [
+    {
+      "mainline_file": "server/src/main/java/org/elasticsearch/cluster/metadata/IndexAbstractionResolver.java",
+      "target_file": "server/src/main/java/org/elasticsearch/cluster/metadata/IndexAbstractionResolver.java",
+      "hunk_index": 0,
+      "adaptation_type": "TYPE_II",
+      "execution_types": [
+        "TYPE_II"
+      ],
+      "status": "success",
+      "reason": "developer_fast_path",
+      "todo_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ],
+      "completed_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ]
+    }
+  ],
+  "generated_patch_hash": "ab45aa0459482ef0bc986a050a63b761edba6d6c08f19429af0ee73c9ae1d33d",
+  "force_type_v_until_success": false,
+  "force_type_v_reason": "",
+  "force_type_v_retry_files": [],
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "sources": []
+  }
+}

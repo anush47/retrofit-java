@@ -1,0 +1,169 @@
+{
+  "adapted_file_edits": [
+    {
+      "target_file": "server/src/main/java/io/crate/metadata/doc/DocTableInfo.java",
+      "mainline_file": "server/src/main/java/io/crate/metadata/doc/DocTableInfo.java",
+      "old_string": "<developer patch fast path>",
+      "new_string": "diff --git a/server/src/main/java/io/crate/metadata/doc/DocTableInfo.java b/server/src/main/java/io/crate/metadata/doc/DocTableInfo.java\nindex 98ea4d3793..4241eefbbc 100644\n--- a/server/src/main/java/io/crate/metadata/doc/DocTableInfo.java\n+++ b/server/src/main/java/io/crate/metadata/doc/DocTableInfo.java\n@@ -422,17 +422,7 @@ public class DocTableInfo implements TableInfo, ShardedTable, StoredTable {\n         if (!isPartitioned) {\n             IndexMetadata index = metadata.index(ident.indexNameOrAlias());\n             if (index == null) {\n-                if (concreteIndices.length > 0) {\n-                    index = metadata.index(concreteIndices[0]);\n-                    LOGGER.info(\n-                        \"Found indices={} for relation={} without index template. Orphaned partition?\",\n-                        concreteIndices,\n-                        ident\n-                    );\n-                }\n-                if (index == null) {\n-                    throw new RelationUnknown(ident);\n-                }\n+                throw new RelationUnknown(ident);\n             }\n             if (concreteIndices.length == 0) {\n                 throw new RelationUnknown(ident);",
+      "edit_type": "replace",
+      "verified": true,
+      "verification_result": "developer_fast_path_ok",
+      "applied": true,
+      "apply_result": "SUCCESS"
+    },
+    {
+      "target_file": "server/src/main/java/io/crate/metadata/doc/DocTableInfoFactory.java",
+      "mainline_file": "server/src/main/java/io/crate/metadata/doc/DocTableInfoFactory.java",
+      "old_string": "<developer patch fast path>",
+      "new_string": "diff --git a/server/src/main/java/io/crate/metadata/doc/DocTableInfoFactory.java b/server/src/main/java/io/crate/metadata/doc/DocTableInfoFactory.java\nindex 7b2dbfc503..9303e4c5e1 100644\n--- a/server/src/main/java/io/crate/metadata/doc/DocTableInfoFactory.java\n+++ b/server/src/main/java/io/crate/metadata/doc/DocTableInfoFactory.java\n@@ -138,17 +138,7 @@ public class DocTableInfoFactory {\n         if (indexTemplateMetadata == null) {\n             IndexMetadata index = metadata.index(relation.indexNameOrAlias());\n             if (index == null) {\n-                if (concreteIndices.length > 0) {\n-                    index = metadata.index(concreteIndices[0]);\n-                    LOGGER.info(\n-                        \"Found indices={} for relation={} without index template. Orphaned partition?\",\n-                        concreteIndices,\n-                        relation\n-                    );\n-                }\n-                if (index == null) {\n-                    throw new RelationUnknown(relation);\n-                }\n+                throw new RelationUnknown(relation);\n             }\n             tableParameters = index.getSettings();\n             versionCreated = IndexMetadata.SETTING_INDEX_VERSION_CREATED.get(tableParameters);",
+      "edit_type": "replace",
+      "verified": true,
+      "verification_result": "developer_fast_path_ok",
+      "applied": true,
+      "apply_result": "SUCCESS"
+    }
+  ],
+  "all_adapted_file_edits": [
+    [
+      {
+        "target_file": "server/src/main/java/io/crate/metadata/doc/DocTableInfo.java",
+        "mainline_file": "server/src/main/java/io/crate/metadata/doc/DocTableInfo.java",
+        "old_string": "<developer patch fast path>",
+        "new_string": "diff --git a/server/src/main/java/io/crate/metadata/doc/DocTableInfo.java b/server/src/main/java/io/crate/metadata/doc/DocTableInfo.java\nindex 98ea4d3793..4241eefbbc 100644\n--- a/server/src/main/java/io/crate/metadata/doc/DocTableInfo.java\n+++ b/server/src/main/java/io/crate/metadata/doc/DocTableInfo.java\n@@ -422,17 +422,7 @@ public class DocTableInfo implements TableInfo, ShardedTable, StoredTable {\n         if (!isPartitioned) {\n             IndexMetadata index = metadata.index(ident.indexNameOrAlias());\n             if (index == null) {\n-                if (concreteIndices.length > 0) {\n-                    index = metadata.index(concreteIndices[0]);\n-                    LOGGER.info(\n-                        \"Found indices={} for relation={} without index template. Orphaned partition?\",\n-                        concreteIndices,\n-                        ident\n-                    );\n-                }\n-                if (index == null) {\n-                    throw new RelationUnknown(ident);\n-                }\n+                throw new RelationUnknown(ident);\n             }\n             if (concreteIndices.length == 0) {\n                 throw new RelationUnknown(ident);",
+        "edit_type": "replace",
+        "verified": true,
+        "verification_result": "developer_fast_path_ok",
+        "applied": true,
+        "apply_result": "SUCCESS"
+      },
+      {
+        "target_file": "server/src/main/java/io/crate/metadata/doc/DocTableInfoFactory.java",
+        "mainline_file": "server/src/main/java/io/crate/metadata/doc/DocTableInfoFactory.java",
+        "old_string": "<developer patch fast path>",
+        "new_string": "diff --git a/server/src/main/java/io/crate/metadata/doc/DocTableInfoFactory.java b/server/src/main/java/io/crate/metadata/doc/DocTableInfoFactory.java\nindex 7b2dbfc503..9303e4c5e1 100644\n--- a/server/src/main/java/io/crate/metadata/doc/DocTableInfoFactory.java\n+++ b/server/src/main/java/io/crate/metadata/doc/DocTableInfoFactory.java\n@@ -138,17 +138,7 @@ public class DocTableInfoFactory {\n         if (indexTemplateMetadata == null) {\n             IndexMetadata index = metadata.index(relation.indexNameOrAlias());\n             if (index == null) {\n-                if (concreteIndices.length > 0) {\n-                    index = metadata.index(concreteIndices[0]);\n-                    LOGGER.info(\n-                        \"Found indices={} for relation={} without index template. Orphaned partition?\",\n-                        concreteIndices,\n-                        relation\n-                    );\n-                }\n-                if (index == null) {\n-                    throw new RelationUnknown(relation);\n-                }\n+                throw new RelationUnknown(relation);\n             }\n             tableParameters = index.getSettings();\n             versionCreated = IndexMetadata.SETTING_INDEX_VERSION_CREATED.get(tableParameters);",
+        "edit_type": "replace",
+        "verified": true,
+        "verification_result": "developer_fast_path_ok",
+        "applied": true,
+        "apply_result": "SUCCESS"
+      }
+    ]
+  ],
+  "agent_trajectory_edits": [
+    []
+  ],
+  "adapted_code_hunks": [
+    {
+      "target_file": "server/src/main/java/io/crate/metadata/doc/DocTableInfo.java",
+      "mainline_file": "server/src/main/java/io/crate/metadata/doc/DocTableInfo.java",
+      "hunk_text": "diff --git a/server/src/main/java/io/crate/metadata/doc/DocTableInfo.java b/server/src/main/java/io/crate/metadata/doc/DocTableInfo.java\nindex 98ea4d3793..4241eefbbc 100644\n--- a/server/src/main/java/io/crate/metadata/doc/DocTableInfo.java\n+++ b/server/src/main/java/io/crate/metadata/doc/DocTableInfo.java\n@@ -422,17 +422,7 @@ public class DocTableInfo implements TableInfo, ShardedTable, StoredTable {\n         if (!isPartitioned) {\n             IndexMetadata index = metadata.index(ident.indexNameOrAlias());\n             if (index == null) {\n-                if (concreteIndices.length > 0) {\n-                    index = metadata.index(concreteIndices[0]);\n-                    LOGGER.info(\n-                        \"Found indices={} for relation={} without index template. Orphaned partition?\",\n-                        concreteIndices,\n-                        ident\n-                    );\n-                }\n-                if (index == null) {\n-                    throw new RelationUnknown(ident);\n-                }\n+                throw new RelationUnknown(ident);\n             }\n             if (concreteIndices.length == 0) {\n                 throw new RelationUnknown(ident);\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    },
+    {
+      "target_file": "server/src/main/java/io/crate/metadata/doc/DocTableInfoFactory.java",
+      "mainline_file": "server/src/main/java/io/crate/metadata/doc/DocTableInfoFactory.java",
+      "hunk_text": "diff --git a/server/src/main/java/io/crate/metadata/doc/DocTableInfoFactory.java b/server/src/main/java/io/crate/metadata/doc/DocTableInfoFactory.java\nindex 7b2dbfc503..9303e4c5e1 100644\n--- a/server/src/main/java/io/crate/metadata/doc/DocTableInfoFactory.java\n+++ b/server/src/main/java/io/crate/metadata/doc/DocTableInfoFactory.java\n@@ -138,17 +138,7 @@ public class DocTableInfoFactory {\n         if (indexTemplateMetadata == null) {\n             IndexMetadata index = metadata.index(relation.indexNameOrAlias());\n             if (index == null) {\n-                if (concreteIndices.length > 0) {\n-                    index = metadata.index(concreteIndices[0]);\n-                    LOGGER.info(\n-                        \"Found indices={} for relation={} without index template. Orphaned partition?\",\n-                        concreteIndices,\n-                        relation\n-                    );\n-                }\n-                if (index == null) {\n-                    throw new RelationUnknown(relation);\n-                }\n+                throw new RelationUnknown(relation);\n             }\n             tableParameters = index.getSettings();\n             versionCreated = IndexMetadata.SETTING_INDEX_VERSION_CREATED.get(tableParameters);\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    }
+  ],
+  "validation_repeated_patch_detected": false,
+  "validation_repeated_plan_detected": false,
+  "best_effort_adapted_code_hunks": [
+    {
+      "target_file": "server/src/main/java/io/crate/metadata/doc/DocTableInfo.java",
+      "mainline_file": "server/src/main/java/io/crate/metadata/doc/DocTableInfo.java",
+      "hunk_text": "diff --git a/server/src/main/java/io/crate/metadata/doc/DocTableInfo.java b/server/src/main/java/io/crate/metadata/doc/DocTableInfo.java\nindex 98ea4d3793..4241eefbbc 100644\n--- a/server/src/main/java/io/crate/metadata/doc/DocTableInfo.java\n+++ b/server/src/main/java/io/crate/metadata/doc/DocTableInfo.java\n@@ -422,17 +422,7 @@ public class DocTableInfo implements TableInfo, ShardedTable, StoredTable {\n         if (!isPartitioned) {\n             IndexMetadata index = metadata.index(ident.indexNameOrAlias());\n             if (index == null) {\n-                if (concreteIndices.length > 0) {\n-                    index = metadata.index(concreteIndices[0]);\n-                    LOGGER.info(\n-                        \"Found indices={} for relation={} without index template. Orphaned partition?\",\n-                        concreteIndices,\n-                        ident\n-                    );\n-                }\n-                if (index == null) {\n-                    throw new RelationUnknown(ident);\n-                }\n+                throw new RelationUnknown(ident);\n             }\n             if (concreteIndices.length == 0) {\n                 throw new RelationUnknown(ident);\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    },
+    {
+      "target_file": "server/src/main/java/io/crate/metadata/doc/DocTableInfoFactory.java",
+      "mainline_file": "server/src/main/java/io/crate/metadata/doc/DocTableInfoFactory.java",
+      "hunk_text": "diff --git a/server/src/main/java/io/crate/metadata/doc/DocTableInfoFactory.java b/server/src/main/java/io/crate/metadata/doc/DocTableInfoFactory.java\nindex 7b2dbfc503..9303e4c5e1 100644\n--- a/server/src/main/java/io/crate/metadata/doc/DocTableInfoFactory.java\n+++ b/server/src/main/java/io/crate/metadata/doc/DocTableInfoFactory.java\n@@ -138,17 +138,7 @@ public class DocTableInfoFactory {\n         if (indexTemplateMetadata == null) {\n             IndexMetadata index = metadata.index(relation.indexNameOrAlias());\n             if (index == null) {\n-                if (concreteIndices.length > 0) {\n-                    index = metadata.index(concreteIndices[0]);\n-                    LOGGER.info(\n-                        \"Found indices={} for relation={} without index template. Orphaned partition?\",\n-                        concreteIndices,\n-                        relation\n-                    );\n-                }\n-                if (index == null) {\n-                    throw new RelationUnknown(relation);\n-                }\n+                throw new RelationUnknown(relation);\n             }\n             tableParameters = index.getSettings();\n             versionCreated = IndexMetadata.SETTING_INDEX_VERSION_CREATED.get(tableParameters);\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    }
+  ],
+  "adapted_test_hunks": [],
+  "generation_checklist": [
+    {
+      "mainline_file": "server/src/main/java/io/crate/metadata/doc/DocTableInfo.java",
+      "target_file": "server/src/main/java/io/crate/metadata/doc/DocTableInfo.java",
+      "hunk_index": 0,
+      "adaptation_type": "TYPE_II",
+      "execution_types": [
+        "TYPE_II"
+      ],
+      "status": "success",
+      "reason": "developer_fast_path",
+      "todo_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ],
+      "completed_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ]
+    },
+    {
+      "mainline_file": "server/src/main/java/io/crate/metadata/doc/DocTableInfoFactory.java",
+      "target_file": "server/src/main/java/io/crate/metadata/doc/DocTableInfoFactory.java",
+      "hunk_index": 0,
+      "adaptation_type": "TYPE_II",
+      "execution_types": [
+        "TYPE_II"
+      ],
+      "status": "success",
+      "reason": "developer_fast_path",
+      "todo_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ],
+      "completed_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ]
+    }
+  ],
+  "generated_patch_hash": "f0b3f0d6e76b3d772111d63df5bd7161664cba44b1e18f71a25144e71dab79da",
+  "force_type_v_until_success": false,
+  "force_type_v_reason": "",
+  "force_type_v_retry_files": [],
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "sources": []
+  }
+}

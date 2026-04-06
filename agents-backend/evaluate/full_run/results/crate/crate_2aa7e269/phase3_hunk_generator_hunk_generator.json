@@ -1,0 +1,100 @@
+{
+  "adapted_file_edits": [
+    {
+      "target_file": "server/src/main/java/io/crate/execution/dml/Indexer.java",
+      "mainline_file": "server/src/main/java/io/crate/execution/dml/Indexer.java",
+      "old_string": "<developer patch fast path>",
+      "new_string": "diff --git a/server/src/main/java/io/crate/execution/dml/Indexer.java b/server/src/main/java/io/crate/execution/dml/Indexer.java\nindex 216fcf3062..6e9b21a35d 100644\n--- a/server/src/main/java/io/crate/execution/dml/Indexer.java\n+++ b/server/src/main/java/io/crate/execution/dml/Indexer.java\n@@ -31,6 +31,7 @@ import java.util.Collection;\n import java.util.Collections;\n import java.util.Comparator;\n import java.util.HashMap;\n+import java.util.LinkedHashSet;\n import java.util.List;\n import java.util.Locale;\n import java.util.Map;\n@@ -678,7 +679,7 @@ public class Indexer {\n      * Looks for new columns in the values of the given IndexItem and returns them.\n      */\n     public List<Reference> collectSchemaUpdates(IndexItem item) throws IOException {\n-        ArrayList<Reference> newColumns = new ArrayList<>();\n+        LinkedHashSet<Reference> newColumns = new LinkedHashSet<>();\n         Consumer<? super Reference> onDynamicColumn = ref -> {\n             ref.column().validForCreate();\n             newColumns.add(ref);\n@@ -717,7 +718,7 @@ public class Indexer {\n                 synthetics::get\n             );\n         }\n-        return newColumns;\n+        return newColumns.stream().toList();\n     }\n \n     /**",
+      "edit_type": "replace",
+      "verified": true,
+      "verification_result": "developer_fast_path_ok",
+      "applied": true,
+      "apply_result": "SUCCESS"
+    }
+  ],
+  "all_adapted_file_edits": [
+    [
+      {
+        "target_file": "server/src/main/java/io/crate/execution/dml/Indexer.java",
+        "mainline_file": "server/src/main/java/io/crate/execution/dml/Indexer.java",
+        "old_string": "<developer patch fast path>",
+        "new_string": "diff --git a/server/src/main/java/io/crate/execution/dml/Indexer.java b/server/src/main/java/io/crate/execution/dml/Indexer.java\nindex 216fcf3062..6e9b21a35d 100644\n--- a/server/src/main/java/io/crate/execution/dml/Indexer.java\n+++ b/server/src/main/java/io/crate/execution/dml/Indexer.java\n@@ -31,6 +31,7 @@ import java.util.Collection;\n import java.util.Collections;\n import java.util.Comparator;\n import java.util.HashMap;\n+import java.util.LinkedHashSet;\n import java.util.List;\n import java.util.Locale;\n import java.util.Map;\n@@ -678,7 +679,7 @@ public class Indexer {\n      * Looks for new columns in the values of the given IndexItem and returns them.\n      */\n     public List<Reference> collectSchemaUpdates(IndexItem item) throws IOException {\n-        ArrayList<Reference> newColumns = new ArrayList<>();\n+        LinkedHashSet<Reference> newColumns = new LinkedHashSet<>();\n         Consumer<? super Reference> onDynamicColumn = ref -> {\n             ref.column().validForCreate();\n             newColumns.add(ref);\n@@ -717,7 +718,7 @@ public class Indexer {\n                 synthetics::get\n             );\n         }\n-        return newColumns;\n+        return newColumns.stream().toList();\n     }\n \n     /**",
+        "edit_type": "replace",
+        "verified": true,
+        "verification_result": "developer_fast_path_ok",
+        "applied": true,
+        "apply_result": "SUCCESS"
+      }
+    ]
+  ],
+  "agent_trajectory_edits": [
+    []
+  ],
+  "adapted_code_hunks": [
+    {
+      "target_file": "server/src/main/java/io/crate/execution/dml/Indexer.java",
+      "mainline_file": "server/src/main/java/io/crate/execution/dml/Indexer.java",
+      "hunk_text": "diff --git a/server/src/main/java/io/crate/execution/dml/Indexer.java b/server/src/main/java/io/crate/execution/dml/Indexer.java\nindex 216fcf3062..6e9b21a35d 100644\n--- a/server/src/main/java/io/crate/execution/dml/Indexer.java\n+++ b/server/src/main/java/io/crate/execution/dml/Indexer.java\n@@ -31,6 +31,7 @@ import java.util.Collection;\n import java.util.Collections;\n import java.util.Comparator;\n import java.util.HashMap;\n+import java.util.LinkedHashSet;\n import java.util.List;\n import java.util.Locale;\n import java.util.Map;\n@@ -678,7 +679,7 @@ public class Indexer {\n      * Looks for new columns in the values of the given IndexItem and returns them.\n      */\n     public List<Reference> collectSchemaUpdates(IndexItem item) throws IOException {\n-        ArrayList<Reference> newColumns = new ArrayList<>();\n+        LinkedHashSet<Reference> newColumns = new LinkedHashSet<>();\n         Consumer<? super Reference> onDynamicColumn = ref -> {\n             ref.column().validForCreate();\n             newColumns.add(ref);\n@@ -717,7 +718,7 @@ public class Indexer {\n                 synthetics::get\n             );\n         }\n-        return newColumns;\n+        return newColumns.stream().toList();\n     }\n \n     /**\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    }
+  ],
+  "validation_repeated_patch_detected": false,
+  "validation_repeated_plan_detected": false,
+  "best_effort_adapted_code_hunks": [
+    {
+      "target_file": "server/src/main/java/io/crate/execution/dml/Indexer.java",
+      "mainline_file": "server/src/main/java/io/crate/execution/dml/Indexer.java",
+      "hunk_text": "diff --git a/server/src/main/java/io/crate/execution/dml/Indexer.java b/server/src/main/java/io/crate/execution/dml/Indexer.java\nindex 216fcf3062..6e9b21a35d 100644\n--- a/server/src/main/java/io/crate/execution/dml/Indexer.java\n+++ b/server/src/main/java/io/crate/execution/dml/Indexer.java\n@@ -31,6 +31,7 @@ import java.util.Collection;\n import java.util.Collections;\n import java.util.Comparator;\n import java.util.HashMap;\n+import java.util.LinkedHashSet;\n import java.util.List;\n import java.util.Locale;\n import java.util.Map;\n@@ -678,7 +679,7 @@ public class Indexer {\n      * Looks for new columns in the values of the given IndexItem and returns them.\n      */\n     public List<Reference> collectSchemaUpdates(IndexItem item) throws IOException {\n-        ArrayList<Reference> newColumns = new ArrayList<>();\n+        LinkedHashSet<Reference> newColumns = new LinkedHashSet<>();\n         Consumer<? super Reference> onDynamicColumn = ref -> {\n             ref.column().validForCreate();\n             newColumns.add(ref);\n@@ -717,7 +718,7 @@ public class Indexer {\n                 synthetics::get\n             );\n         }\n-        return newColumns;\n+        return newColumns.stream().toList();\n     }\n \n     /**\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    }
+  ],
+  "adapted_test_hunks": [],
+  "generation_checklist": [
+    {
+      "mainline_file": "server/src/main/java/io/crate/execution/dml/Indexer.java",
+      "target_file": "server/src/main/java/io/crate/execution/dml/Indexer.java",
+      "hunk_index": 0,
+      "adaptation_type": "TYPE_II",
+      "execution_types": [
+        "TYPE_II"
+      ],
+      "status": "success",
+      "reason": "developer_fast_path",
+      "todo_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ],
+      "completed_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ]
+    }
+  ],
+  "generated_patch_hash": "0e1349f113b79fcb116086d2883a7469625d261003f6c1dde4581d769f08a3ef",
+  "force_type_v_until_success": false,
+  "force_type_v_reason": "",
+  "force_type_v_retry_files": [],
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "sources": []
+  }
+}

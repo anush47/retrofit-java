@@ -1,0 +1,64 @@
+{
+  "consistency_map": {},
+  "mapped_target_context": {
+    "server/src/main/java/io/crate/expression/scalar/HasDatabasePrivilegeFunction.java": [
+      {
+        "hunk_index": 1,
+        "mainline_method": "<import>",
+        "target_file": "server/src/main/java/io/crate/expression/scalar/HasDatabasePrivilegeFunction.java",
+        "target_method": "<import>",
+        "start_line": 31,
+        "end_line": 31,
+        "code_snippet": " * Unless required by applicable law or agreed to in writing, software\n * distributed under the License is distributed on an \"AS IS\" BASIS, WITHOUT\n * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the\n * License for the specific language governing permissions and limitations\n * under the License.\n *\n * However, if you have executed another commercial license agreement\n * with Crate these terms will supersede the license and you may use the\n * software solely pursuant to the terms of the relevant commercial agreement.\n */\n\npackage io.crate.expression.scalar;\n\nimport java.util.Collection;\nimport java.util.HashSet;\nimport java.util.Locale;\nimport java.util.function.BiFunction;\n\nimport org.jetbrains.annotations.Nullable;\n\nimport io.crate.Constants;\nimport io.crate.common.FourFunction;\nimport io.crate.metadata.functions.BoundSignature;\nimport io.crate.metadata.functions.Signature;\nimport io.crate.role.Permission;\nimport io.crate.role.Privilege;\nimport io.crate.role.Role;\nimport io.crate.role.Roles;\nimport io.crate.role.Securable;\nimport io.crate.types.DataTypes;\n\npublic class HasDatabasePrivilegeFunction extends HasPrivilegeFunction {\n\n    public static final String NAME = \"has_database_privilege\";\n\n    private static final FourFunction<Roles, Role, Object, Collection<Permission>, Boolean> CHECK_BY_DB_NAME =\n        (roles, user, db, permissions) -> {\n            if (Constants.DB_NAME.equals(db) == false) {\n                throw new IllegalArgumentException(String.format(Locale.ENGLISH,\n                                                                 \"database \\\"%s\\\" does not exist\",\n                                                                 db));",
+        "anchor_confidence": "high",
+        "anchor_reason": "line_and_method_resolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 2,
+        "mainline_method": "hunk_2",
+        "target_file": "server/src/main/java/io/crate/expression/scalar/HasDatabasePrivilegeFunction.java",
+        "target_method": null,
+        "start_line": 44,
+        "end_line": 44,
+        "code_snippet": "import java.util.Collection;\nimport java.util.HashSet;\nimport java.util.Locale;\nimport java.util.function.BiFunction;\n\nimport org.jetbrains.annotations.Nullable;\n\nimport io.crate.Constants;\nimport io.crate.common.FourFunction;\nimport io.crate.metadata.functions.BoundSignature;\nimport io.crate.metadata.functions.Signature;\nimport io.crate.role.Permission;\nimport io.crate.role.Privilege;\nimport io.crate.role.Role;\nimport io.crate.role.Roles;\nimport io.crate.role.Securable;\nimport io.crate.types.DataTypes;\n\npublic class HasDatabasePrivilegeFunction extends HasPrivilegeFunction {\n\n    public static final String NAME = \"has_database_privilege\";\n\n    private static final FourFunction<Roles, Role, Object, Collection<Permission>, Boolean> CHECK_BY_DB_NAME =\n        (roles, user, db, permissions) -> {\n            if (Constants.DB_NAME.equals(db) == false) {\n                throw new IllegalArgumentException(String.format(Locale.ENGLISH,\n                                                                 \"database \\\"%s\\\" does not exist\",\n                                                                 db));\n            }\n            return checkPrivileges(user, permissions);\n        };\n\n    private static final FourFunction<Roles, Role, Object, Collection<Permission>, Boolean> CHECK_BY_DB_OID =\n        (roles, user, db, privileges) -> {\n            if (Constants.DB_OID != (Integer) db) {\n                throw new IllegalArgumentException(String.format(Locale.ENGLISH,\n                                                                 \"database with OID \\\"%s\\\" does not exist\",\n                                                                 db));\n            }\n            return checkPrivileges(user, privileges);\n        };",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      }
+    ],
+    "server/src/main/java/io/crate/expression/scalar/HasSchemaPrivilegeFunction.java": [
+      {
+        "hunk_index": 1,
+        "mainline_method": "<import>",
+        "target_file": "server/src/main/java/io/crate/expression/scalar/HasSchemaPrivilegeFunction.java",
+        "target_method": "<import>",
+        "start_line": 29,
+        "end_line": 29,
+        "code_snippet": " *   http://www.apache.org/licenses/LICENSE-2.0\n *\n * Unless required by applicable law or agreed to in writing, software\n * distributed under the License is distributed on an \"AS IS\" BASIS, WITHOUT\n * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the\n * License for the specific language governing permissions and limitations\n * under the License.\n *\n * However, if you have executed another commercial license agreement\n * with Crate these terms will supersede the license and you may use the\n * software solely pursuant to the terms of the relevant commercial agreement.\n */\n\npackage io.crate.expression.scalar;\n\nimport java.util.Collection;\nimport java.util.HashSet;\nimport java.util.Locale;\nimport java.util.function.BiFunction;\n\nimport org.jetbrains.annotations.Nullable;\n\nimport io.crate.common.FourFunction;\nimport io.crate.metadata.functions.BoundSignature;\nimport io.crate.metadata.functions.Signature;\nimport io.crate.metadata.pgcatalog.PgCatalogTableDefinitions;\nimport io.crate.role.Permission;\nimport io.crate.role.Role;\nimport io.crate.role.Roles;\nimport io.crate.role.Securable;\nimport io.crate.types.DataTypes;\n\npublic class HasSchemaPrivilegeFunction extends HasPrivilegeFunction {\n\n    public static final String NAME = \"has_schema_privilege\";\n\n    private static final FourFunction<Roles, Role, Object, Collection<Permission>, Boolean> CHECK_BY_SCHEMA_NAME =\n        (roles, user, schema, permissions) -> {\n            String schemaName = (String) schema;\n            boolean result = false;\n            for (Permission permission : permissions) {",
+        "anchor_confidence": "high",
+        "anchor_reason": "line_and_method_resolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 2,
+        "mainline_method": "hunk_2",
+        "target_file": "server/src/main/java/io/crate/expression/scalar/HasSchemaPrivilegeFunction.java",
+        "target_method": null,
+        "start_line": 43,
+        "end_line": 43,
+        "code_snippet": "\nimport java.util.Collection;\nimport java.util.HashSet;\nimport java.util.Locale;\nimport java.util.function.BiFunction;\n\nimport org.jetbrains.annotations.Nullable;\n\nimport io.crate.common.FourFunction;\nimport io.crate.metadata.functions.BoundSignature;\nimport io.crate.metadata.functions.Signature;\nimport io.crate.metadata.pgcatalog.PgCatalogTableDefinitions;\nimport io.crate.role.Permission;\nimport io.crate.role.Role;\nimport io.crate.role.Roles;\nimport io.crate.role.Securable;\nimport io.crate.types.DataTypes;\n\npublic class HasSchemaPrivilegeFunction extends HasPrivilegeFunction {\n\n    public static final String NAME = \"has_schema_privilege\";\n\n    private static final FourFunction<Roles, Role, Object, Collection<Permission>, Boolean> CHECK_BY_SCHEMA_NAME =\n        (roles, user, schema, permissions) -> {\n            String schemaName = (String) schema;\n            boolean result = false;\n            for (Permission permission : permissions) {\n                // USAGE is allowed for public schemas\n                if (permission == Permission.DQL && PgCatalogTableDefinitions.isPgCatalogOrInformationSchema(schemaName)) {\n                    return true;\n                }\n                // Last argument is null as it's not used for Privilege.Securable.SCHEMA\n                result |= roles.hasPrivilege(user, permission, Securable.SCHEMA, schemaName);\n            }\n            return result;\n        };\n\n    private static final FourFunction<Roles, Role, Object, Collection<Permission>, Boolean> CHECK_BY_SCHEMA_OID =\n        (roles, user, schema, permissions) -> {\n            Integer schemaOid = (Integer) schema;\n            boolean result = false;",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      }
+    ]
+  },
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "reason": "llm_usage_not_collected_in_this_node"
+  }
+}

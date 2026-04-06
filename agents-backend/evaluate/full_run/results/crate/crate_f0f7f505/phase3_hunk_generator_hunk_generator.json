@@ -1,0 +1,100 @@
+{
+  "adapted_file_edits": [
+    {
+      "target_file": "server/src/main/java/io/crate/expression/scalar/ArrayPositionFunction.java",
+      "mainline_file": "server/src/main/java/io/crate/expression/scalar/ArrayPositionFunction.java",
+      "old_string": "<developer patch fast path>",
+      "new_string": "diff --git a/server/src/main/java/io/crate/expression/scalar/ArrayPositionFunction.java b/server/src/main/java/io/crate/expression/scalar/ArrayPositionFunction.java\nindex 1e8dbafdfc..b978f5d419 100644\n--- a/server/src/main/java/io/crate/expression/scalar/ArrayPositionFunction.java\n+++ b/server/src/main/java/io/crate/expression/scalar/ArrayPositionFunction.java\n@@ -54,7 +54,7 @@ public class ArrayPositionFunction extends Scalar<Integer, List<Object>> {\n                                 TypeSignature.parse(\"T\"))\n                         .returnType(DataTypes.INTEGER.getTypeSignature())\n                         .typeVariableConstraints(typeVariable(\"T\"))\n-                        .features(Feature.DETERMINISTIC, Feature.STRICTNULL)\n+                        .features(Feature.DETERMINISTIC)\n                         .build(),\n                 ArrayPositionFunction::new);\n \n@@ -65,15 +65,15 @@ public class ArrayPositionFunction extends Scalar<Integer, List<Object>> {\n                                 DataTypes.INTEGER.getTypeSignature())\n                         .returnType(DataTypes.INTEGER.getTypeSignature())\n                         .typeVariableConstraints(typeVariable(\"T\"))\n-                        .features(Feature.DETERMINISTIC, Feature.STRICTNULL)\n+                        .features(Feature.DETERMINISTIC)\n                         .build(),\n                 ArrayPositionFunction::new);\n     }\n \n     @Override\n-    public Integer evaluate(TransactionContext txnCtx, NodeContext nodeContext, Input[] args) {\n+    public Integer evaluate(TransactionContext txnCtx, NodeContext nodeContext, Input<List<Object>>[] args) {\n \n-        List<Object> elements = (List<Object>) args[0].value();\n+        List<Object> elements = args[0].value();\n         if (elements == null || elements.isEmpty()) {\n             return null;\n         }\n@@ -90,7 +90,7 @@ public class ArrayPositionFunction extends Scalar<Integer, List<Object>> {\n             return null;\n         }\n \n-        Object element = null;\n+        Object element;\n         for (int i = beginIndex; i < elements.size(); i++) {\n             element = elements.get(i);\n             if (Objects.equals(targetValue, element)) {\n@@ -107,7 +107,7 @@ public class ArrayPositionFunction extends Scalar<Integer, List<Object>> {\n             return 0;\n         }\n \n-        Integer beginPosition = (Integer) position;\n+        int beginPosition = (Integer) position;\n         if (beginPosition < 1 || beginPosition > elementsSize) {\n             return null;\n         }",
+      "edit_type": "replace",
+      "verified": true,
+      "verification_result": "developer_fast_path_ok",
+      "applied": true,
+      "apply_result": "SUCCESS"
+    }
+  ],
+  "all_adapted_file_edits": [
+    [
+      {
+        "target_file": "server/src/main/java/io/crate/expression/scalar/ArrayPositionFunction.java",
+        "mainline_file": "server/src/main/java/io/crate/expression/scalar/ArrayPositionFunction.java",
+        "old_string": "<developer patch fast path>",
+        "new_string": "diff --git a/server/src/main/java/io/crate/expression/scalar/ArrayPositionFunction.java b/server/src/main/java/io/crate/expression/scalar/ArrayPositionFunction.java\nindex 1e8dbafdfc..b978f5d419 100644\n--- a/server/src/main/java/io/crate/expression/scalar/ArrayPositionFunction.java\n+++ b/server/src/main/java/io/crate/expression/scalar/ArrayPositionFunction.java\n@@ -54,7 +54,7 @@ public class ArrayPositionFunction extends Scalar<Integer, List<Object>> {\n                                 TypeSignature.parse(\"T\"))\n                         .returnType(DataTypes.INTEGER.getTypeSignature())\n                         .typeVariableConstraints(typeVariable(\"T\"))\n-                        .features(Feature.DETERMINISTIC, Feature.STRICTNULL)\n+                        .features(Feature.DETERMINISTIC)\n                         .build(),\n                 ArrayPositionFunction::new);\n \n@@ -65,15 +65,15 @@ public class ArrayPositionFunction extends Scalar<Integer, List<Object>> {\n                                 DataTypes.INTEGER.getTypeSignature())\n                         .returnType(DataTypes.INTEGER.getTypeSignature())\n                         .typeVariableConstraints(typeVariable(\"T\"))\n-                        .features(Feature.DETERMINISTIC, Feature.STRICTNULL)\n+                        .features(Feature.DETERMINISTIC)\n                         .build(),\n                 ArrayPositionFunction::new);\n     }\n \n     @Override\n-    public Integer evaluate(TransactionContext txnCtx, NodeContext nodeContext, Input[] args) {\n+    public Integer evaluate(TransactionContext txnCtx, NodeContext nodeContext, Input<List<Object>>[] args) {\n \n-        List<Object> elements = (List<Object>) args[0].value();\n+        List<Object> elements = args[0].value();\n         if (elements == null || elements.isEmpty()) {\n             return null;\n         }\n@@ -90,7 +90,7 @@ public class ArrayPositionFunction extends Scalar<Integer, List<Object>> {\n             return null;\n         }\n \n-        Object element = null;\n+        Object element;\n         for (int i = beginIndex; i < elements.size(); i++) {\n             element = elements.get(i);\n             if (Objects.equals(targetValue, element)) {\n@@ -107,7 +107,7 @@ public class ArrayPositionFunction extends Scalar<Integer, List<Object>> {\n             return 0;\n         }\n \n-        Integer beginPosition = (Integer) position;\n+        int beginPosition = (Integer) position;\n         if (beginPosition < 1 || beginPosition > elementsSize) {\n             return null;\n         }",
+        "edit_type": "replace",
+        "verified": true,
+        "verification_result": "developer_fast_path_ok",
+        "applied": true,
+        "apply_result": "SUCCESS"
+      }
+    ]
+  ],
+  "agent_trajectory_edits": [
+    []
+  ],
+  "adapted_code_hunks": [
+    {
+      "target_file": "server/src/main/java/io/crate/expression/scalar/ArrayPositionFunction.java",
+      "mainline_file": "server/src/main/java/io/crate/expression/scalar/ArrayPositionFunction.java",
+      "hunk_text": "diff --git a/server/src/main/java/io/crate/expression/scalar/ArrayPositionFunction.java b/server/src/main/java/io/crate/expression/scalar/ArrayPositionFunction.java\nindex 1e8dbafdfc..b978f5d419 100644\n--- a/server/src/main/java/io/crate/expression/scalar/ArrayPositionFunction.java\n+++ b/server/src/main/java/io/crate/expression/scalar/ArrayPositionFunction.java\n@@ -54,7 +54,7 @@ public class ArrayPositionFunction extends Scalar<Integer, List<Object>> {\n                                 TypeSignature.parse(\"T\"))\n                         .returnType(DataTypes.INTEGER.getTypeSignature())\n                         .typeVariableConstraints(typeVariable(\"T\"))\n-                        .features(Feature.DETERMINISTIC, Feature.STRICTNULL)\n+                        .features(Feature.DETERMINISTIC)\n                         .build(),\n                 ArrayPositionFunction::new);\n \n@@ -65,15 +65,15 @@ public class ArrayPositionFunction extends Scalar<Integer, List<Object>> {\n                                 DataTypes.INTEGER.getTypeSignature())\n                         .returnType(DataTypes.INTEGER.getTypeSignature())\n                         .typeVariableConstraints(typeVariable(\"T\"))\n-                        .features(Feature.DETERMINISTIC, Feature.STRICTNULL)\n+                        .features(Feature.DETERMINISTIC)\n                         .build(),\n                 ArrayPositionFunction::new);\n     }\n \n     @Override\n-    public Integer evaluate(TransactionContext txnCtx, NodeContext nodeContext, Input[] args) {\n+    public Integer evaluate(TransactionContext txnCtx, NodeContext nodeContext, Input<List<Object>>[] args) {\n \n-        List<Object> elements = (List<Object>) args[0].value();\n+        List<Object> elements = args[0].value();\n         if (elements == null || elements.isEmpty()) {\n             return null;\n         }\n@@ -90,7 +90,7 @@ public class ArrayPositionFunction extends Scalar<Integer, List<Object>> {\n             return null;\n         }\n \n-        Object element = null;\n+        Object element;\n         for (int i = beginIndex; i < elements.size(); i++) {\n             element = elements.get(i);\n             if (Objects.equals(targetValue, element)) {\n@@ -107,7 +107,7 @@ public class ArrayPositionFunction extends Scalar<Integer, List<Object>> {\n             return 0;\n         }\n \n-        Integer beginPosition = (Integer) position;\n+        int beginPosition = (Integer) position;\n         if (beginPosition < 1 || beginPosition > elementsSize) {\n             return null;\n         }\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    }
+  ],
+  "validation_repeated_patch_detected": false,
+  "validation_repeated_plan_detected": false,
+  "best_effort_adapted_code_hunks": [
+    {
+      "target_file": "server/src/main/java/io/crate/expression/scalar/ArrayPositionFunction.java",
+      "mainline_file": "server/src/main/java/io/crate/expression/scalar/ArrayPositionFunction.java",
+      "hunk_text": "diff --git a/server/src/main/java/io/crate/expression/scalar/ArrayPositionFunction.java b/server/src/main/java/io/crate/expression/scalar/ArrayPositionFunction.java\nindex 1e8dbafdfc..b978f5d419 100644\n--- a/server/src/main/java/io/crate/expression/scalar/ArrayPositionFunction.java\n+++ b/server/src/main/java/io/crate/expression/scalar/ArrayPositionFunction.java\n@@ -54,7 +54,7 @@ public class ArrayPositionFunction extends Scalar<Integer, List<Object>> {\n                                 TypeSignature.parse(\"T\"))\n                         .returnType(DataTypes.INTEGER.getTypeSignature())\n                         .typeVariableConstraints(typeVariable(\"T\"))\n-                        .features(Feature.DETERMINISTIC, Feature.STRICTNULL)\n+                        .features(Feature.DETERMINISTIC)\n                         .build(),\n                 ArrayPositionFunction::new);\n \n@@ -65,15 +65,15 @@ public class ArrayPositionFunction extends Scalar<Integer, List<Object>> {\n                                 DataTypes.INTEGER.getTypeSignature())\n                         .returnType(DataTypes.INTEGER.getTypeSignature())\n                         .typeVariableConstraints(typeVariable(\"T\"))\n-                        .features(Feature.DETERMINISTIC, Feature.STRICTNULL)\n+                        .features(Feature.DETERMINISTIC)\n                         .build(),\n                 ArrayPositionFunction::new);\n     }\n \n     @Override\n-    public Integer evaluate(TransactionContext txnCtx, NodeContext nodeContext, Input[] args) {\n+    public Integer evaluate(TransactionContext txnCtx, NodeContext nodeContext, Input<List<Object>>[] args) {\n \n-        List<Object> elements = (List<Object>) args[0].value();\n+        List<Object> elements = args[0].value();\n         if (elements == null || elements.isEmpty()) {\n             return null;\n         }\n@@ -90,7 +90,7 @@ public class ArrayPositionFunction extends Scalar<Integer, List<Object>> {\n             return null;\n         }\n \n-        Object element = null;\n+        Object element;\n         for (int i = beginIndex; i < elements.size(); i++) {\n             element = elements.get(i);\n             if (Objects.equals(targetValue, element)) {\n@@ -107,7 +107,7 @@ public class ArrayPositionFunction extends Scalar<Integer, List<Object>> {\n             return 0;\n         }\n \n-        Integer beginPosition = (Integer) position;\n+        int beginPosition = (Integer) position;\n         if (beginPosition < 1 || beginPosition > elementsSize) {\n             return null;\n         }\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    }
+  ],
+  "adapted_test_hunks": [],
+  "generation_checklist": [
+    {
+      "mainline_file": "server/src/main/java/io/crate/expression/scalar/ArrayPositionFunction.java",
+      "target_file": "server/src/main/java/io/crate/expression/scalar/ArrayPositionFunction.java",
+      "hunk_index": 0,
+      "adaptation_type": "TYPE_II",
+      "execution_types": [
+        "TYPE_II"
+      ],
+      "status": "success",
+      "reason": "developer_fast_path",
+      "todo_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ],
+      "completed_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ]
+    }
+  ],
+  "generated_patch_hash": "785c8880e03392d67cbe971773b7bc3251df638d75d110351dd7c43d5dddfe3d",
+  "force_type_v_until_success": false,
+  "force_type_v_reason": "",
+  "force_type_v_retry_files": [],
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "sources": []
+  }
+}

@@ -1,0 +1,104 @@
+{
+  "hunk_generation_plan": {
+    "x-pack/plugin/ml/src/main/java/org/elasticsearch/xpack/ml/inference/ltr/QueryFeatureExtractor.java": [
+      {
+        "hunk_index": 0,
+        "target_file": "x-pack/plugin/ml/src/main/java/org/elasticsearch/xpack/ml/inference/ltr/QueryFeatureExtractor.java",
+        "operation_index": 0,
+        "edit_type": "replace",
+        "old_string": "            scorers.add(scorer);\n        }\n        rankerIterator = new DisjunctionDISIApproximation(disiPriorityQueue);\n    }",
+        "new_string": "            scorers.add(scorer);\n        }\n\n        rankerIterator = disiPriorityQueue.size() > 0 ? new DisjunctionDISIApproximation(disiPriorityQueue) : null;\n    }",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_replace",
+        "surround_before_3": [
+          "            if (scorer != null) {",
+          "                disiPriorityQueue.add(new DisiWrapper(scorer));",
+          "            }"
+        ],
+        "surround_after_3": [
+          "",
+          "    @Override",
+          "    public void addFeatures(Map<String, Object> featureMap, int docId) throws IOException {"
+        ],
+        "adaptation_type": "TYPE_I",
+        "base_adaptation_type": "TYPE_I",
+        "execution_type": "TYPE_I",
+        "location_match": true,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "rankerIterator = disiPriorityQueue.size() > 0 ? new DisjunctionDISIApproximation(disiPriorityQueue) : null;",
+          "if (rankerIterator == null) {"
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 3,
+          "target_declared_methods_count": 3,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 0,
+        "target_file": "x-pack/plugin/ml/src/main/java/org/elasticsearch/xpack/ml/inference/ltr/QueryFeatureExtractor.java",
+        "operation_index": 1,
+        "edit_type": "insert_before",
+        "old_string": "        rankerIterator.advance(docId);",
+        "new_string": "        if (rankerIterator == null) {\n            return;\n        }\n\n        rankerIterator.advance(docId);",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_insert_before",
+        "surround_before_3": [
+          "",
+          "    @Override",
+          "    public void addFeatures(Map<String, Object> featureMap, int docId) throws IOException {"
+        ],
+        "surround_after_3": [
+          "        for (int i = 0; i < featureNames.size(); i++) {",
+          "            Scorer scorer = scorers.get(i);",
+          "            // Do we have a scorer, and does it match the provided document?"
+        ],
+        "adaptation_type": "TYPE_I",
+        "base_adaptation_type": "TYPE_I",
+        "execution_type": "TYPE_I",
+        "location_match": true,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "rankerIterator = disiPriorityQueue.size() > 0 ? new DisjunctionDISIApproximation(disiPriorityQueue) : null;",
+          "if (rankerIterator == null) {"
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 3,
+          "target_declared_methods_count": 3,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      }
+    ]
+  },
+  "last_plan_signature": "d85d9e62fb9e9c6b58a9773e010e21c65ceb0c39e0ed3b1d7ae9f998f09b04a9",
+  "validation_repeated_plan_detected": false,
+  "force_type_v_until_success": false,
+  "force_type_v_reason": "",
+  "force_type_v_retry_files": [],
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "sources": []
+  }
+}

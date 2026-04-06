@@ -1,0 +1,27 @@
+patch_id=crate_8a576607
+project=crate
+mainline_commit=8a576607bed8c1f6bb093fb60f82e710c32090c6
+backport_commit=ff85ddf12940122a217b6ae48b8e62523fac5d81
+mode=full
+started_at=2026-04-05T20:41:35.029715
+----------------------------------------
+Running full workflow graph
+Completed node=phase_0_optimistic
+Workflow completed successfully
+
+[crate/crate_8a576607] Setting up repositories for mode=full...
+[crate/crate_8a576607] Running full workflow graph...
+Router: Running Phase 0.
+Phase 0 (Optimistic): Checking direct patch applicability...
+Phase 0: Experiment mode — checking out parent of ff85ddf12940122a217b6ae48b8e62523fac5d81...
+Phase 0: Building baseline by applying developer backport test hunks only...
+  Validation: plugins/es-analysis-common/src/test/java/io/crate/analysis/common/CommonAnalyzerITest.java - applying 2 hunk(s) one by one in bottom-to-top order: [108, 29]
+    Agent 4: Executing crate helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_tests.sh
+Phase 0: git apply --check SUCCEEDED. Attempting actual patch application and test run.
+    Agent 4: Executing crate helper build script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_build.sh
+    Agent 4: Executing crate helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_tests.sh
+Phase 0: Transition summary -> reason=Valid: Observed fail-to-pass and/or newly passing relevant tests with no regressions.; fail->pass(0): []; newly_passing(3): ['io.crate.analysis.common.CommonAnalyzerITest#testSelectFromRoutines', 'io.crate.analysis.common.CommonAnalyzerITest#testShingleFilterWithGraphOutput', 'io.crate.analysis.common.CommonAnalyzerITest#test_select_from_information_schema_with_custom_analyzer']; pass->fail(0): []
+Phase 0: Transition-based test validation passed. Fast-path success.
+Router: Phase 0 succeeded - taking fast-path exit.
+  Completed: phase_0_optimistic
+[crate/crate_8a576607] Full workflow completed!

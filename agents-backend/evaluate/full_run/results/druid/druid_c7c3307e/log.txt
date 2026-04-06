@@ -1,0 +1,30 @@
+patch_id=druid_c7c3307e
+project=druid
+mainline_commit=c7c3307e6193db8ddc879f48bbf3b9e3d1b41a6c
+backport_commit=11727af2a6c464b57047b1a97ff5053daa6fb0dd
+mode=full
+started_at=2026-04-06T01:24:40.782054
+----------------------------------------
+Running full workflow graph
+Completed node=phase_0_optimistic
+Workflow completed successfully
+
+[druid/druid_c7c3307e] Setting up repositories for mode=full...
+[druid/druid_c7c3307e] Running full workflow graph...
+Router: Running Phase 0.
+Phase 0 (Optimistic): Checking direct patch applicability...
+Phase 0: Experiment mode — checking out parent of 11727af2a6c464b57047b1a97ff5053daa6fb0dd...
+Phase 0: Building baseline by applying developer backport test hunks only...
+  Validation: processing/src/test/java/org/apache/druid/query/operator/window/RowsAndColumnsHelper.java - applying 2 hunk(s) one by one in bottom-to-top order: [281, 29]
+  Validation: processing/src/test/java/org/apache/druid/query/rowsandcols/semantic/EvaluateRowsAndColumnsTest.java - applying 2 hunk(s) one by one in bottom-to-top order: [94, 38]
+  Validation: RENAMED operation for processing/src/test/java/org/apache/druid/query/rowsandcols/semantic/EvaluateRowsAndColumnsTest.java
+    Agent 4: Executing druid helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/druid/run_tests.sh
+ValidationToolkit: Warning - git clean had issues (exit code 1). Continuing anyway.
+Phase 0: git apply --check SUCCEEDED. Attempting actual patch application and test run.
+    Agent 4: Executing Druid helper build script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/druid/run_build.sh
+    Agent 4: Executing druid helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/druid/run_tests.sh
+Phase 0: Transition summary -> reason=Valid: Observed fail-to-pass and/or newly passing relevant tests with no regressions.; fail->pass(4): ['org.apache.druid.query.rowsandcols.semantic.EvaluateRowsAndColumnsTest#testMaterializeColumns[ArrayListRowsAndColumns]', 'org.apache.druid.query.rowsandcols.semantic.EvaluateRowsAndColumnsTest#testMaterializeColumns[ColumnBasedFrameRowsAndColumns]', 'org.apache.druid.query.rowsandcols.semantic.EvaluateRowsAndColumnsTest#testMaterializeColumns[CursorFactoryRowsAndColumns]', 'org.apache.druid.query.rowsandcols.semantic.EvaluateRowsAndColumnsTest#testMaterializeColumns[RowBasedFrameRowsAndColumns]']; newly_passing(0): []; pass->fail(0): []
+Phase 0: Transition-based test validation passed. Fast-path success.
+Router: Phase 0 succeeded - taking fast-path exit.
+  Completed: phase_0_optimistic
+[druid/druid_c7c3307e] Full workflow completed!

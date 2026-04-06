@@ -1,0 +1,376 @@
+{
+  "adapted_file_edits": [
+    {
+      "target_file": "server/src/main/java/io/crate/analyze/CopyAnalyzer.java",
+      "mainline_file": "server/src/main/java/io/crate/analyze/CopyAnalyzer.java",
+      "old_string": "<developer patch fast path>",
+      "new_string": "diff --git a/server/src/main/java/io/crate/analyze/CopyAnalyzer.java b/server/src/main/java/io/crate/analyze/CopyAnalyzer.java\nindex 44e8093b31..9dcf9e91d7 100644\n--- a/server/src/main/java/io/crate/analyze/CopyAnalyzer.java\n+++ b/server/src/main/java/io/crate/analyze/CopyAnalyzer.java\n@@ -73,7 +73,8 @@ class CopyAnalyzer {\n             nodeCtx,\n             RowGranularity.CLUSTER,\n             null,\n-            new TableRelation(tableInfo));\n+            new TableRelation(tableInfo),\n+            f -> f.signature().isDeterministic());\n \n         Table<Symbol> table = node.table().map(t -> exprAnalyzerWithFieldsAsString.convert(t, exprCtx));\n         GenericProperties<Symbol> properties = node.properties().map(t -> exprAnalyzerWithoutFields.convert(t,\n@@ -116,7 +117,8 @@ class CopyAnalyzer {\n             nodeCtx,\n             RowGranularity.CLUSTER,\n             null,\n-            tableRelation);\n+            tableRelation,\n+            f -> f.signature().isDeterministic());\n \n         var exprCtx = new ExpressionAnalysisContext(txnCtx.sessionSettings());\n         var expressionAnalyzer = new ExpressionAnalyzer(",
+      "edit_type": "replace",
+      "verified": true,
+      "verification_result": "developer_fast_path_ok",
+      "applied": true,
+      "apply_result": "SUCCESS"
+    },
+    {
+      "target_file": "server/src/main/java/io/crate/analyze/DeleteAnalyzer.java",
+      "mainline_file": "server/src/main/java/io/crate/analyze/DeleteAnalyzer.java",
+      "old_string": "<developer patch fast path>",
+      "new_string": "diff --git a/server/src/main/java/io/crate/analyze/DeleteAnalyzer.java b/server/src/main/java/io/crate/analyze/DeleteAnalyzer.java\nindex 24dbb8a508..d9a735d4b3 100644\n--- a/server/src/main/java/io/crate/analyze/DeleteAnalyzer.java\n+++ b/server/src/main/java/io/crate/analyze/DeleteAnalyzer.java\n@@ -60,11 +60,15 @@ final class DeleteAnalyzer {\n         MaybeAliasedStatement maybeAliasedStatement = MaybeAliasedStatement.analyze(relation);\n         relation = maybeAliasedStatement.nonAliasedRelation();\n \n-        if (!(relation instanceof DocTableRelation)) {\n+        if (!(relation instanceof DocTableRelation table)) {\n             throw new UnsupportedOperationException(\"Cannot delete from relations other than base tables\");\n         }\n-        DocTableRelation table = (DocTableRelation) relation;\n-        EvaluatingNormalizer normalizer = new EvaluatingNormalizer(nodeCtx, RowGranularity.CLUSTER, null, table);\n+        EvaluatingNormalizer normalizer = new EvaluatingNormalizer(\n+            nodeCtx,\n+            RowGranularity.CLUSTER,\n+            null,\n+            table,\n+            f -> f.signature().isDeterministic());\n         ExpressionAnalyzer expressionAnalyzer = new ExpressionAnalyzer(\n             txnContext,\n             nodeCtx,",
+      "edit_type": "replace",
+      "verified": true,
+      "verification_result": "developer_fast_path_ok",
+      "applied": true,
+      "apply_result": "SUCCESS"
+    },
+    {
+      "target_file": "server/src/main/java/io/crate/analyze/InsertAnalyzer.java",
+      "mainline_file": "server/src/main/java/io/crate/analyze/InsertAnalyzer.java",
+      "old_string": "<developer patch fast path>",
+      "new_string": "diff --git a/server/src/main/java/io/crate/analyze/InsertAnalyzer.java b/server/src/main/java/io/crate/analyze/InsertAnalyzer.java\nindex 652ec1b289..6df8ca414e 100644\n--- a/server/src/main/java/io/crate/analyze/InsertAnalyzer.java\n+++ b/server/src/main/java/io/crate/analyze/InsertAnalyzer.java\n@@ -313,7 +313,12 @@ class InsertAnalyzer {\n             fieldProvider = new NameFieldProvider(targetTable);\n         }\n         var expressionAnalyzer = new ExpressionAnalyzer(txnCtx, nodeCtx, paramTypeHints, fieldProvider, null);\n-        var normalizer = new EvaluatingNormalizer(nodeCtx, RowGranularity.CLUSTER, null, targetTable);\n+        var normalizer = new EvaluatingNormalizer(\n+            nodeCtx,\n+            RowGranularity.CLUSTER,\n+            null,\n+            targetTable,\n+            f -> f.signature().isDeterministic());\n         Map<Reference, Symbol> updateAssignments = new HashMap<>(duplicateKeyContext.getAssignments().size());\n         for (Assignment<Expression> assignment : duplicateKeyContext.getAssignments()) {\n             Reference targetCol = (Reference) exprAnalyzer.convert(assignment.columnName(), exprCtx);",
+      "edit_type": "replace",
+      "verified": true,
+      "verification_result": "developer_fast_path_ok",
+      "applied": true,
+      "apply_result": "SUCCESS"
+    },
+    {
+      "target_file": "server/src/main/java/io/crate/analyze/UpdateAnalyzer.java",
+      "mainline_file": "server/src/main/java/io/crate/analyze/UpdateAnalyzer.java",
+      "old_string": "<developer patch fast path>",
+      "new_string": "diff --git a/server/src/main/java/io/crate/analyze/UpdateAnalyzer.java b/server/src/main/java/io/crate/analyze/UpdateAnalyzer.java\nindex 10fb9e2fcf..da708dcfca 100644\n--- a/server/src/main/java/io/crate/analyze/UpdateAnalyzer.java\n+++ b/server/src/main/java/io/crate/analyze/UpdateAnalyzer.java\n@@ -107,7 +107,12 @@ public final class UpdateAnalyzer {\n             throw new UnsupportedOperationException(\"UPDATE is only supported on base-tables\");\n         }\n         AbstractTableRelation<?> table = (AbstractTableRelation<?>) relation;\n-        EvaluatingNormalizer normalizer = new EvaluatingNormalizer(nodeCtx, RowGranularity.CLUSTER, null, table);\n+        EvaluatingNormalizer normalizer = new EvaluatingNormalizer(\n+            nodeCtx,\n+            RowGranularity.CLUSTER,\n+            null,\n+            table,\n+            f -> f.signature().isDeterministic());\n         SubqueryAnalyzer subqueryAnalyzer =\n             new SubqueryAnalyzer(relationAnalyzer, new StatementAnalysisContext(typeHints, Operation.READ, txnCtx));",
+      "edit_type": "replace",
+      "verified": true,
+      "verification_result": "developer_fast_path_ok",
+      "applied": true,
+      "apply_result": "SUCCESS"
+    },
+    {
+      "target_file": "server/src/main/java/io/crate/analyze/where/WhereClauseAnalyzer.java",
+      "mainline_file": "server/src/main/java/io/crate/analyze/where/WhereClauseAnalyzer.java",
+      "old_string": "<developer patch fast path>",
+      "new_string": "diff --git a/server/src/main/java/io/crate/analyze/where/WhereClauseAnalyzer.java b/server/src/main/java/io/crate/analyze/where/WhereClauseAnalyzer.java\nindex 7b306d76d4..731eb7f9f3 100644\n--- a/server/src/main/java/io/crate/analyze/where/WhereClauseAnalyzer.java\n+++ b/server/src/main/java/io/crate/analyze/where/WhereClauseAnalyzer.java\n@@ -112,7 +112,11 @@ public class WhereClauseAnalyzer {\n         PartitionReferenceResolver partitionReferenceResolver = preparePartitionResolver(\n             tableInfo.partitionedByColumns());\n         EvaluatingNormalizer normalizer = new EvaluatingNormalizer(\n-            nodeCtx, RowGranularity.PARTITION, partitionReferenceResolver, null);\n+            nodeCtx,\n+            RowGranularity.PARTITION,\n+            partitionReferenceResolver,\n+            null,\n+            f -> f.signature().isDeterministic());\n \n         Symbol normalized;\n         Map<Symbol, List<Literal<?>>> queryPartitionMap = new HashMap<>();",
+      "edit_type": "replace",
+      "verified": true,
+      "verification_result": "developer_fast_path_ok",
+      "applied": true,
+      "apply_result": "SUCCESS"
+    }
+  ],
+  "all_adapted_file_edits": [
+    [
+      {
+        "target_file": "server/src/main/java/io/crate/analyze/CopyAnalyzer.java",
+        "mainline_file": "server/src/main/java/io/crate/analyze/CopyAnalyzer.java",
+        "old_string": "<developer patch fast path>",
+        "new_string": "diff --git a/server/src/main/java/io/crate/analyze/CopyAnalyzer.java b/server/src/main/java/io/crate/analyze/CopyAnalyzer.java\nindex 44e8093b31..9dcf9e91d7 100644\n--- a/server/src/main/java/io/crate/analyze/CopyAnalyzer.java\n+++ b/server/src/main/java/io/crate/analyze/CopyAnalyzer.java\n@@ -73,7 +73,8 @@ class CopyAnalyzer {\n             nodeCtx,\n             RowGranularity.CLUSTER,\n             null,\n-            new TableRelation(tableInfo));\n+            new TableRelation(tableInfo),\n+            f -> f.signature().isDeterministic());\n \n         Table<Symbol> table = node.table().map(t -> exprAnalyzerWithFieldsAsString.convert(t, exprCtx));\n         GenericProperties<Symbol> properties = node.properties().map(t -> exprAnalyzerWithoutFields.convert(t,\n@@ -116,7 +117,8 @@ class CopyAnalyzer {\n             nodeCtx,\n             RowGranularity.CLUSTER,\n             null,\n-            tableRelation);\n+            tableRelation,\n+            f -> f.signature().isDeterministic());\n \n         var exprCtx = new ExpressionAnalysisContext(txnCtx.sessionSettings());\n         var expressionAnalyzer = new ExpressionAnalyzer(",
+        "edit_type": "replace",
+        "verified": true,
+        "verification_result": "developer_fast_path_ok",
+        "applied": true,
+        "apply_result": "SUCCESS"
+      },
+      {
+        "target_file": "server/src/main/java/io/crate/analyze/DeleteAnalyzer.java",
+        "mainline_file": "server/src/main/java/io/crate/analyze/DeleteAnalyzer.java",
+        "old_string": "<developer patch fast path>",
+        "new_string": "diff --git a/server/src/main/java/io/crate/analyze/DeleteAnalyzer.java b/server/src/main/java/io/crate/analyze/DeleteAnalyzer.java\nindex 24dbb8a508..d9a735d4b3 100644\n--- a/server/src/main/java/io/crate/analyze/DeleteAnalyzer.java\n+++ b/server/src/main/java/io/crate/analyze/DeleteAnalyzer.java\n@@ -60,11 +60,15 @@ final class DeleteAnalyzer {\n         MaybeAliasedStatement maybeAliasedStatement = MaybeAliasedStatement.analyze(relation);\n         relation = maybeAliasedStatement.nonAliasedRelation();\n \n-        if (!(relation instanceof DocTableRelation)) {\n+        if (!(relation instanceof DocTableRelation table)) {\n             throw new UnsupportedOperationException(\"Cannot delete from relations other than base tables\");\n         }\n-        DocTableRelation table = (DocTableRelation) relation;\n-        EvaluatingNormalizer normalizer = new EvaluatingNormalizer(nodeCtx, RowGranularity.CLUSTER, null, table);\n+        EvaluatingNormalizer normalizer = new EvaluatingNormalizer(\n+            nodeCtx,\n+            RowGranularity.CLUSTER,\n+            null,\n+            table,\n+            f -> f.signature().isDeterministic());\n         ExpressionAnalyzer expressionAnalyzer = new ExpressionAnalyzer(\n             txnContext,\n             nodeCtx,",
+        "edit_type": "replace",
+        "verified": true,
+        "verification_result": "developer_fast_path_ok",
+        "applied": true,
+        "apply_result": "SUCCESS"
+      },
+      {
+        "target_file": "server/src/main/java/io/crate/analyze/InsertAnalyzer.java",
+        "mainline_file": "server/src/main/java/io/crate/analyze/InsertAnalyzer.java",
+        "old_string": "<developer patch fast path>",
+        "new_string": "diff --git a/server/src/main/java/io/crate/analyze/InsertAnalyzer.java b/server/src/main/java/io/crate/analyze/InsertAnalyzer.java\nindex 652ec1b289..6df8ca414e 100644\n--- a/server/src/main/java/io/crate/analyze/InsertAnalyzer.java\n+++ b/server/src/main/java/io/crate/analyze/InsertAnalyzer.java\n@@ -313,7 +313,12 @@ class InsertAnalyzer {\n             fieldProvider = new NameFieldProvider(targetTable);\n         }\n         var expressionAnalyzer = new ExpressionAnalyzer(txnCtx, nodeCtx, paramTypeHints, fieldProvider, null);\n-        var normalizer = new EvaluatingNormalizer(nodeCtx, RowGranularity.CLUSTER, null, targetTable);\n+        var normalizer = new EvaluatingNormalizer(\n+            nodeCtx,\n+            RowGranularity.CLUSTER,\n+            null,\n+            targetTable,\n+            f -> f.signature().isDeterministic());\n         Map<Reference, Symbol> updateAssignments = new HashMap<>(duplicateKeyContext.getAssignments().size());\n         for (Assignment<Expression> assignment : duplicateKeyContext.getAssignments()) {\n             Reference targetCol = (Reference) exprAnalyzer.convert(assignment.columnName(), exprCtx);",
+        "edit_type": "replace",
+        "verified": true,
+        "verification_result": "developer_fast_path_ok",
+        "applied": true,
+        "apply_result": "SUCCESS"
+      },
+      {
+        "target_file": "server/src/main/java/io/crate/analyze/UpdateAnalyzer.java",
+        "mainline_file": "server/src/main/java/io/crate/analyze/UpdateAnalyzer.java",
+        "old_string": "<developer patch fast path>",
+        "new_string": "diff --git a/server/src/main/java/io/crate/analyze/UpdateAnalyzer.java b/server/src/main/java/io/crate/analyze/UpdateAnalyzer.java\nindex 10fb9e2fcf..da708dcfca 100644\n--- a/server/src/main/java/io/crate/analyze/UpdateAnalyzer.java\n+++ b/server/src/main/java/io/crate/analyze/UpdateAnalyzer.java\n@@ -107,7 +107,12 @@ public final class UpdateAnalyzer {\n             throw new UnsupportedOperationException(\"UPDATE is only supported on base-tables\");\n         }\n         AbstractTableRelation<?> table = (AbstractTableRelation<?>) relation;\n-        EvaluatingNormalizer normalizer = new EvaluatingNormalizer(nodeCtx, RowGranularity.CLUSTER, null, table);\n+        EvaluatingNormalizer normalizer = new EvaluatingNormalizer(\n+            nodeCtx,\n+            RowGranularity.CLUSTER,\n+            null,\n+            table,\n+            f -> f.signature().isDeterministic());\n         SubqueryAnalyzer subqueryAnalyzer =\n             new SubqueryAnalyzer(relationAnalyzer, new StatementAnalysisContext(typeHints, Operation.READ, txnCtx));",
+        "edit_type": "replace",
+        "verified": true,
+        "verification_result": "developer_fast_path_ok",
+        "applied": true,
+        "apply_result": "SUCCESS"
+      },
+      {
+        "target_file": "server/src/main/java/io/crate/analyze/where/WhereClauseAnalyzer.java",
+        "mainline_file": "server/src/main/java/io/crate/analyze/where/WhereClauseAnalyzer.java",
+        "old_string": "<developer patch fast path>",
+        "new_string": "diff --git a/server/src/main/java/io/crate/analyze/where/WhereClauseAnalyzer.java b/server/src/main/java/io/crate/analyze/where/WhereClauseAnalyzer.java\nindex 7b306d76d4..731eb7f9f3 100644\n--- a/server/src/main/java/io/crate/analyze/where/WhereClauseAnalyzer.java\n+++ b/server/src/main/java/io/crate/analyze/where/WhereClauseAnalyzer.java\n@@ -112,7 +112,11 @@ public class WhereClauseAnalyzer {\n         PartitionReferenceResolver partitionReferenceResolver = preparePartitionResolver(\n             tableInfo.partitionedByColumns());\n         EvaluatingNormalizer normalizer = new EvaluatingNormalizer(\n-            nodeCtx, RowGranularity.PARTITION, partitionReferenceResolver, null);\n+            nodeCtx,\n+            RowGranularity.PARTITION,\n+            partitionReferenceResolver,\n+            null,\n+            f -> f.signature().isDeterministic());\n \n         Symbol normalized;\n         Map<Symbol, List<Literal<?>>> queryPartitionMap = new HashMap<>();",
+        "edit_type": "replace",
+        "verified": true,
+        "verification_result": "developer_fast_path_ok",
+        "applied": true,
+        "apply_result": "SUCCESS"
+      }
+    ]
+  ],
+  "agent_trajectory_edits": [
+    []
+  ],
+  "adapted_code_hunks": [
+    {
+      "target_file": "server/src/main/java/io/crate/analyze/CopyAnalyzer.java",
+      "mainline_file": "server/src/main/java/io/crate/analyze/CopyAnalyzer.java",
+      "hunk_text": "diff --git a/server/src/main/java/io/crate/analyze/CopyAnalyzer.java b/server/src/main/java/io/crate/analyze/CopyAnalyzer.java\nindex 44e8093b31..9dcf9e91d7 100644\n--- a/server/src/main/java/io/crate/analyze/CopyAnalyzer.java\n+++ b/server/src/main/java/io/crate/analyze/CopyAnalyzer.java\n@@ -73,7 +73,8 @@ class CopyAnalyzer {\n             nodeCtx,\n             RowGranularity.CLUSTER,\n             null,\n-            new TableRelation(tableInfo));\n+            new TableRelation(tableInfo),\n+            f -> f.signature().isDeterministic());\n \n         Table<Symbol> table = node.table().map(t -> exprAnalyzerWithFieldsAsString.convert(t, exprCtx));\n         GenericProperties<Symbol> properties = node.properties().map(t -> exprAnalyzerWithoutFields.convert(t,\n@@ -116,7 +117,8 @@ class CopyAnalyzer {\n             nodeCtx,\n             RowGranularity.CLUSTER,\n             null,\n-            tableRelation);\n+            tableRelation,\n+            f -> f.signature().isDeterministic());\n \n         var exprCtx = new ExpressionAnalysisContext(txnCtx.sessionSettings());\n         var expressionAnalyzer = new ExpressionAnalyzer(\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    },
+    {
+      "target_file": "server/src/main/java/io/crate/analyze/DeleteAnalyzer.java",
+      "mainline_file": "server/src/main/java/io/crate/analyze/DeleteAnalyzer.java",
+      "hunk_text": "diff --git a/server/src/main/java/io/crate/analyze/DeleteAnalyzer.java b/server/src/main/java/io/crate/analyze/DeleteAnalyzer.java\nindex 24dbb8a508..d9a735d4b3 100644\n--- a/server/src/main/java/io/crate/analyze/DeleteAnalyzer.java\n+++ b/server/src/main/java/io/crate/analyze/DeleteAnalyzer.java\n@@ -60,11 +60,15 @@ final class DeleteAnalyzer {\n         MaybeAliasedStatement maybeAliasedStatement = MaybeAliasedStatement.analyze(relation);\n         relation = maybeAliasedStatement.nonAliasedRelation();\n \n-        if (!(relation instanceof DocTableRelation)) {\n+        if (!(relation instanceof DocTableRelation table)) {\n             throw new UnsupportedOperationException(\"Cannot delete from relations other than base tables\");\n         }\n-        DocTableRelation table = (DocTableRelation) relation;\n-        EvaluatingNormalizer normalizer = new EvaluatingNormalizer(nodeCtx, RowGranularity.CLUSTER, null, table);\n+        EvaluatingNormalizer normalizer = new EvaluatingNormalizer(\n+            nodeCtx,\n+            RowGranularity.CLUSTER,\n+            null,\n+            table,\n+            f -> f.signature().isDeterministic());\n         ExpressionAnalyzer expressionAnalyzer = new ExpressionAnalyzer(\n             txnContext,\n             nodeCtx,\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    },
+    {
+      "target_file": "server/src/main/java/io/crate/analyze/InsertAnalyzer.java",
+      "mainline_file": "server/src/main/java/io/crate/analyze/InsertAnalyzer.java",
+      "hunk_text": "diff --git a/server/src/main/java/io/crate/analyze/InsertAnalyzer.java b/server/src/main/java/io/crate/analyze/InsertAnalyzer.java\nindex 652ec1b289..6df8ca414e 100644\n--- a/server/src/main/java/io/crate/analyze/InsertAnalyzer.java\n+++ b/server/src/main/java/io/crate/analyze/InsertAnalyzer.java\n@@ -313,7 +313,12 @@ class InsertAnalyzer {\n             fieldProvider = new NameFieldProvider(targetTable);\n         }\n         var expressionAnalyzer = new ExpressionAnalyzer(txnCtx, nodeCtx, paramTypeHints, fieldProvider, null);\n-        var normalizer = new EvaluatingNormalizer(nodeCtx, RowGranularity.CLUSTER, null, targetTable);\n+        var normalizer = new EvaluatingNormalizer(\n+            nodeCtx,\n+            RowGranularity.CLUSTER,\n+            null,\n+            targetTable,\n+            f -> f.signature().isDeterministic());\n         Map<Reference, Symbol> updateAssignments = new HashMap<>(duplicateKeyContext.getAssignments().size());\n         for (Assignment<Expression> assignment : duplicateKeyContext.getAssignments()) {\n             Reference targetCol = (Reference) exprAnalyzer.convert(assignment.columnName(), exprCtx);\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    },
+    {
+      "target_file": "server/src/main/java/io/crate/analyze/UpdateAnalyzer.java",
+      "mainline_file": "server/src/main/java/io/crate/analyze/UpdateAnalyzer.java",
+      "hunk_text": "diff --git a/server/src/main/java/io/crate/analyze/UpdateAnalyzer.java b/server/src/main/java/io/crate/analyze/UpdateAnalyzer.java\nindex 10fb9e2fcf..da708dcfca 100644\n--- a/server/src/main/java/io/crate/analyze/UpdateAnalyzer.java\n+++ b/server/src/main/java/io/crate/analyze/UpdateAnalyzer.java\n@@ -107,7 +107,12 @@ public final class UpdateAnalyzer {\n             throw new UnsupportedOperationException(\"UPDATE is only supported on base-tables\");\n         }\n         AbstractTableRelation<?> table = (AbstractTableRelation<?>) relation;\n-        EvaluatingNormalizer normalizer = new EvaluatingNormalizer(nodeCtx, RowGranularity.CLUSTER, null, table);\n+        EvaluatingNormalizer normalizer = new EvaluatingNormalizer(\n+            nodeCtx,\n+            RowGranularity.CLUSTER,\n+            null,\n+            table,\n+            f -> f.signature().isDeterministic());\n         SubqueryAnalyzer subqueryAnalyzer =\n             new SubqueryAnalyzer(relationAnalyzer, new StatementAnalysisContext(typeHints, Operation.READ, txnCtx));\n \n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    },
+    {
+      "target_file": "server/src/main/java/io/crate/analyze/where/WhereClauseAnalyzer.java",
+      "mainline_file": "server/src/main/java/io/crate/analyze/where/WhereClauseAnalyzer.java",
+      "hunk_text": "diff --git a/server/src/main/java/io/crate/analyze/where/WhereClauseAnalyzer.java b/server/src/main/java/io/crate/analyze/where/WhereClauseAnalyzer.java\nindex 7b306d76d4..731eb7f9f3 100644\n--- a/server/src/main/java/io/crate/analyze/where/WhereClauseAnalyzer.java\n+++ b/server/src/main/java/io/crate/analyze/where/WhereClauseAnalyzer.java\n@@ -112,7 +112,11 @@ public class WhereClauseAnalyzer {\n         PartitionReferenceResolver partitionReferenceResolver = preparePartitionResolver(\n             tableInfo.partitionedByColumns());\n         EvaluatingNormalizer normalizer = new EvaluatingNormalizer(\n-            nodeCtx, RowGranularity.PARTITION, partitionReferenceResolver, null);\n+            nodeCtx,\n+            RowGranularity.PARTITION,\n+            partitionReferenceResolver,\n+            null,\n+            f -> f.signature().isDeterministic());\n \n         Symbol normalized;\n         Map<Symbol, List<Literal<?>>> queryPartitionMap = new HashMap<>();\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    }
+  ],
+  "validation_repeated_patch_detected": false,
+  "validation_repeated_plan_detected": false,
+  "best_effort_adapted_code_hunks": [
+    {
+      "target_file": "server/src/main/java/io/crate/analyze/CopyAnalyzer.java",
+      "mainline_file": "server/src/main/java/io/crate/analyze/CopyAnalyzer.java",
+      "hunk_text": "diff --git a/server/src/main/java/io/crate/analyze/CopyAnalyzer.java b/server/src/main/java/io/crate/analyze/CopyAnalyzer.java\nindex 44e8093b31..9dcf9e91d7 100644\n--- a/server/src/main/java/io/crate/analyze/CopyAnalyzer.java\n+++ b/server/src/main/java/io/crate/analyze/CopyAnalyzer.java\n@@ -73,7 +73,8 @@ class CopyAnalyzer {\n             nodeCtx,\n             RowGranularity.CLUSTER,\n             null,\n-            new TableRelation(tableInfo));\n+            new TableRelation(tableInfo),\n+            f -> f.signature().isDeterministic());\n \n         Table<Symbol> table = node.table().map(t -> exprAnalyzerWithFieldsAsString.convert(t, exprCtx));\n         GenericProperties<Symbol> properties = node.properties().map(t -> exprAnalyzerWithoutFields.convert(t,\n@@ -116,7 +117,8 @@ class CopyAnalyzer {\n             nodeCtx,\n             RowGranularity.CLUSTER,\n             null,\n-            tableRelation);\n+            tableRelation,\n+            f -> f.signature().isDeterministic());\n \n         var exprCtx = new ExpressionAnalysisContext(txnCtx.sessionSettings());\n         var expressionAnalyzer = new ExpressionAnalyzer(\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    },
+    {
+      "target_file": "server/src/main/java/io/crate/analyze/DeleteAnalyzer.java",
+      "mainline_file": "server/src/main/java/io/crate/analyze/DeleteAnalyzer.java",
+      "hunk_text": "diff --git a/server/src/main/java/io/crate/analyze/DeleteAnalyzer.java b/server/src/main/java/io/crate/analyze/DeleteAnalyzer.java\nindex 24dbb8a508..d9a735d4b3 100644\n--- a/server/src/main/java/io/crate/analyze/DeleteAnalyzer.java\n+++ b/server/src/main/java/io/crate/analyze/DeleteAnalyzer.java\n@@ -60,11 +60,15 @@ final class DeleteAnalyzer {\n         MaybeAliasedStatement maybeAliasedStatement = MaybeAliasedStatement.analyze(relation);\n         relation = maybeAliasedStatement.nonAliasedRelation();\n \n-        if (!(relation instanceof DocTableRelation)) {\n+        if (!(relation instanceof DocTableRelation table)) {\n             throw new UnsupportedOperationException(\"Cannot delete from relations other than base tables\");\n         }\n-        DocTableRelation table = (DocTableRelation) relation;\n-        EvaluatingNormalizer normalizer = new EvaluatingNormalizer(nodeCtx, RowGranularity.CLUSTER, null, table);\n+        EvaluatingNormalizer normalizer = new EvaluatingNormalizer(\n+            nodeCtx,\n+            RowGranularity.CLUSTER,\n+            null,\n+            table,\n+            f -> f.signature().isDeterministic());\n         ExpressionAnalyzer expressionAnalyzer = new ExpressionAnalyzer(\n             txnContext,\n             nodeCtx,\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    },
+    {
+      "target_file": "server/src/main/java/io/crate/analyze/InsertAnalyzer.java",
+      "mainline_file": "server/src/main/java/io/crate/analyze/InsertAnalyzer.java",
+      "hunk_text": "diff --git a/server/src/main/java/io/crate/analyze/InsertAnalyzer.java b/server/src/main/java/io/crate/analyze/InsertAnalyzer.java\nindex 652ec1b289..6df8ca414e 100644\n--- a/server/src/main/java/io/crate/analyze/InsertAnalyzer.java\n+++ b/server/src/main/java/io/crate/analyze/InsertAnalyzer.java\n@@ -313,7 +313,12 @@ class InsertAnalyzer {\n             fieldProvider = new NameFieldProvider(targetTable);\n         }\n         var expressionAnalyzer = new ExpressionAnalyzer(txnCtx, nodeCtx, paramTypeHints, fieldProvider, null);\n-        var normalizer = new EvaluatingNormalizer(nodeCtx, RowGranularity.CLUSTER, null, targetTable);\n+        var normalizer = new EvaluatingNormalizer(\n+            nodeCtx,\n+            RowGranularity.CLUSTER,\n+            null,\n+            targetTable,\n+            f -> f.signature().isDeterministic());\n         Map<Reference, Symbol> updateAssignments = new HashMap<>(duplicateKeyContext.getAssignments().size());\n         for (Assignment<Expression> assignment : duplicateKeyContext.getAssignments()) {\n             Reference targetCol = (Reference) exprAnalyzer.convert(assignment.columnName(), exprCtx);\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    },
+    {
+      "target_file": "server/src/main/java/io/crate/analyze/UpdateAnalyzer.java",
+      "mainline_file": "server/src/main/java/io/crate/analyze/UpdateAnalyzer.java",
+      "hunk_text": "diff --git a/server/src/main/java/io/crate/analyze/UpdateAnalyzer.java b/server/src/main/java/io/crate/analyze/UpdateAnalyzer.java\nindex 10fb9e2fcf..da708dcfca 100644\n--- a/server/src/main/java/io/crate/analyze/UpdateAnalyzer.java\n+++ b/server/src/main/java/io/crate/analyze/UpdateAnalyzer.java\n@@ -107,7 +107,12 @@ public final class UpdateAnalyzer {\n             throw new UnsupportedOperationException(\"UPDATE is only supported on base-tables\");\n         }\n         AbstractTableRelation<?> table = (AbstractTableRelation<?>) relation;\n-        EvaluatingNormalizer normalizer = new EvaluatingNormalizer(nodeCtx, RowGranularity.CLUSTER, null, table);\n+        EvaluatingNormalizer normalizer = new EvaluatingNormalizer(\n+            nodeCtx,\n+            RowGranularity.CLUSTER,\n+            null,\n+            table,\n+            f -> f.signature().isDeterministic());\n         SubqueryAnalyzer subqueryAnalyzer =\n             new SubqueryAnalyzer(relationAnalyzer, new StatementAnalysisContext(typeHints, Operation.READ, txnCtx));\n \n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    },
+    {
+      "target_file": "server/src/main/java/io/crate/analyze/where/WhereClauseAnalyzer.java",
+      "mainline_file": "server/src/main/java/io/crate/analyze/where/WhereClauseAnalyzer.java",
+      "hunk_text": "diff --git a/server/src/main/java/io/crate/analyze/where/WhereClauseAnalyzer.java b/server/src/main/java/io/crate/analyze/where/WhereClauseAnalyzer.java\nindex 7b306d76d4..731eb7f9f3 100644\n--- a/server/src/main/java/io/crate/analyze/where/WhereClauseAnalyzer.java\n+++ b/server/src/main/java/io/crate/analyze/where/WhereClauseAnalyzer.java\n@@ -112,7 +112,11 @@ public class WhereClauseAnalyzer {\n         PartitionReferenceResolver partitionReferenceResolver = preparePartitionResolver(\n             tableInfo.partitionedByColumns());\n         EvaluatingNormalizer normalizer = new EvaluatingNormalizer(\n-            nodeCtx, RowGranularity.PARTITION, partitionReferenceResolver, null);\n+            nodeCtx,\n+            RowGranularity.PARTITION,\n+            partitionReferenceResolver,\n+            null,\n+            f -> f.signature().isDeterministic());\n \n         Symbol normalized;\n         Map<Symbol, List<Literal<?>>> queryPartitionMap = new HashMap<>();\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    }
+  ],
+  "adapted_test_hunks": [],
+  "generation_checklist": [
+    {
+      "mainline_file": "server/src/main/java/io/crate/analyze/CopyAnalyzer.java",
+      "target_file": "server/src/main/java/io/crate/analyze/CopyAnalyzer.java",
+      "hunk_index": 0,
+      "adaptation_type": "TYPE_II",
+      "execution_types": [
+        "TYPE_II"
+      ],
+      "status": "success",
+      "reason": "developer_fast_path",
+      "todo_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ],
+      "completed_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ]
+    },
+    {
+      "mainline_file": "server/src/main/java/io/crate/analyze/DeleteAnalyzer.java",
+      "target_file": "server/src/main/java/io/crate/analyze/DeleteAnalyzer.java",
+      "hunk_index": 0,
+      "adaptation_type": "TYPE_II",
+      "execution_types": [
+        "TYPE_II"
+      ],
+      "status": "success",
+      "reason": "developer_fast_path",
+      "todo_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ],
+      "completed_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ]
+    },
+    {
+      "mainline_file": "server/src/main/java/io/crate/analyze/InsertAnalyzer.java",
+      "target_file": "server/src/main/java/io/crate/analyze/InsertAnalyzer.java",
+      "hunk_index": 0,
+      "adaptation_type": "TYPE_II",
+      "execution_types": [
+        "TYPE_II"
+      ],
+      "status": "success",
+      "reason": "developer_fast_path",
+      "todo_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ],
+      "completed_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ]
+    },
+    {
+      "mainline_file": "server/src/main/java/io/crate/analyze/UpdateAnalyzer.java",
+      "target_file": "server/src/main/java/io/crate/analyze/UpdateAnalyzer.java",
+      "hunk_index": 0,
+      "adaptation_type": "TYPE_II",
+      "execution_types": [
+        "TYPE_II"
+      ],
+      "status": "success",
+      "reason": "developer_fast_path",
+      "todo_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ],
+      "completed_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ]
+    },
+    {
+      "mainline_file": "server/src/main/java/io/crate/analyze/where/WhereClauseAnalyzer.java",
+      "target_file": "server/src/main/java/io/crate/analyze/where/WhereClauseAnalyzer.java",
+      "hunk_index": 0,
+      "adaptation_type": "TYPE_II",
+      "execution_types": [
+        "TYPE_II"
+      ],
+      "status": "success",
+      "reason": "developer_fast_path",
+      "todo_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ],
+      "completed_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ]
+    }
+  ],
+  "generated_patch_hash": "4e3ef934a80cf05db2dc5d397b2ef3bf12bcc232c31a97966b31e41aa230f21b",
+  "force_type_v_until_success": false,
+  "force_type_v_reason": "",
+  "force_type_v_retry_files": [],
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "sources": []
+  }
+}

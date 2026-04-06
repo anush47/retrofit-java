@@ -1,0 +1,60 @@
+{
+  "hunk_generation_plan": {
+    "server/src/main/java/io/crate/execution/dml/Indexer.java": [
+      {
+        "hunk_index": 0,
+        "target_file": "server/src/main/java/io/crate/execution/dml/Indexer.java",
+        "operation_index": 0,
+        "edit_type": "replace",
+        "old_string": "                Reference newRef = getRef.apply(oldRef.column());\n                if (newRef == null) {\n                    // column was dropped or new column is invalid\n                    it.remove();\n                    valueIndexers.remove(idx);\n                    // don't increase idx, since we removed the current element\n                    continue;",
+        "new_string": "                Reference newRef = getRef.apply(oldRef.column());\n                if (newRef == null) {\n                    // column can be of an undetermined type, e.g. `[]` (array with undefined inner type)\n                    valueIndexers.get(idx).updateTargets(getRef);\n                    idx++;\n                    continue;",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_replace",
+        "surround_before_3": [
+          "            if (oldRef.oid() == COLUMN_OID_UNASSIGNED) {",
+          "                // try to resolve the column again, new reference may have been added to or dropped of the table or",
+          "                // the reference may be invalid"
+        ],
+        "surround_after_3": [
+          "                }",
+          "                if (oldRef.equals(newRef) == false) {",
+          "                    columns.set(idx, newRef);"
+        ],
+        "adaptation_type": "TYPE_II",
+        "base_adaptation_type": "TYPE_II",
+        "execution_type": "TYPE_II",
+        "location_match": false,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "valueIndexers.get(idx).updateTargets(getRef);"
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 20,
+          "target_declared_methods_count": 20,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      }
+    ]
+  },
+  "last_plan_signature": "2a9c643d36538294fb75fb5dc3c2241769d6218b2658ffce91df24f9e43d7f68",
+  "validation_repeated_plan_detected": false,
+  "force_type_v_until_success": false,
+  "force_type_v_reason": "",
+  "force_type_v_retry_files": [],
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "sources": []
+  }
+}

@@ -1,0 +1,28 @@
+patch_id=crate_1b137943
+project=crate
+mainline_commit=1b1379434e80e26e88c30008c65d4007c5c692e3
+backport_commit=f58c27e8325ad895207c66407d5c0bef76a7b681
+mode=full
+started_at=2026-04-05T22:16:31.160794
+----------------------------------------
+Running full workflow graph
+Completed node=phase_0_optimistic
+Workflow completed successfully
+
+[crate/crate_1b137943] Setting up repositories for mode=full...
+[crate/crate_1b137943] Running full workflow graph...
+Router: Running Phase 0.
+Phase 0 (Optimistic): Checking direct patch applicability...
+Phase 0: Experiment mode — checking out parent of f58c27e8325ad895207c66407d5c0bef76a7b681...
+Phase 0: Building baseline by applying developer backport test hunks only...
+  Validation: server/src/test/java/io/crate/analyze/AlterTableRenameColumnAnalyzerTest.java - applying 1 hunk(s) one by one in bottom-to-top order: [138]
+  Validation: server/src/test/java/io/crate/metadata/doc/DocTableInfoFactoryTest.java - applying 2 hunk(s) one by one in bottom-to-top order: [92, 23]
+    Agent 4: Executing crate helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_tests.sh
+Phase 0: git apply --check SUCCEEDED. Attempting actual patch application and test run.
+    Agent 4: Executing crate helper build script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_build.sh
+    Agent 4: Executing crate helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_tests.sh
+Phase 0: Transition summary -> reason=Valid: Observed fail-to-pass and/or newly passing relevant tests with no regressions.; fail->pass(0): []; newly_passing(14): ['io.crate.analyze.AlterTableRenameColumnAnalyzerTest#test_cannot_rename_column_from_single_partition', 'io.crate.analyze.AlterTableRenameColumnAnalyzerTest#test_cannot_rename_nested_column_to_target_name_with_different_depths', 'io.crate.analyze.AlterTableRenameColumnAnalyzerTest#test_cannot_rename_nested_column_to_target_name_with_different_parent', 'io.crate.analyze.AlterTableRenameColumnAnalyzerTest#test_cannot_rename_to_name_in_use', 'io.crate.analyze.AlterTableRenameColumnAnalyzerTest#test_cannot_rename_unknown_column', 'io.crate.analyze.AlterTableRenameColumnAnalyzerTest#test_rename_nested_column', 'io.crate.analyze.AlterTableRenameColumnAnalyzerTest#test_rename_nested_column_record_subscripts', 'io.crate.analyze.AlterTableRenameColumnAnalyzerTest#test_rename_top_level_column', 'io.crate.analyze.AlterTableRenameColumnAnalyzerTest#test_renaming_column_from_old_table_is_not_allowed', 'io.crate.analyze.AlterTableRenameColumnAnalyzerTest#test_renaming_index_columns_to_subscript_expressions_is_not_allowed', 'io.crate.analyze.AlterTableRenameColumnAnalyzerTest#test_renaming_to_or_from_system_columns_is_not_allowed', 'io.crate.metadata.doc.DocTableInfoFactoryTest#testNoTableInfoFromOrphanedPartition', 'io.crate.metadata.doc.DocTableInfoFactoryTest#test_sets_created_version_based_on_oldest_partition', 'io.crate.metadata.doc.DocTableInfoFactoryTest#test_uses_5_4_0_as_version_if_mapping_has_no_oid']; pass->fail(0): []
+Phase 0: Transition-based test validation passed. Fast-path success.
+Router: Phase 0 succeeded - taking fast-path exit.
+  Completed: phase_0_optimistic
+[crate/crate_1b137943] Full workflow completed!

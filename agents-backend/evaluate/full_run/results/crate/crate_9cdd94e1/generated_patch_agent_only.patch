@@ -1,0 +1,25 @@
+diff --git a/server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java b/server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java
+index 4c40be2f5a..6dab15d258 100644
+--- a/server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java
++++ b/server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java
+@@ -603,6 +603,8 @@ public class PostgresWireProtocol {
+         String portalName = readCString(buffer);
+         String statementName = readCString(buffer);
+ 
++        assert portalName != null : "portalName cannot be null";
++        assert statementName != null : "statementName cannot be null";
+         FormatCodes.FormatCode[] formatCodes = FormatCodes.fromBuffer(buffer);
+ 
+         short numParams = buffer.readShort();
+diff --git a/server/src/main/java/io/crate/session/Session.java b/server/src/main/java/io/crate/session/Session.java
+index fd5640333b..74844d5e60 100644
+--- a/server/src/main/java/io/crate/session/Session.java
++++ b/server/src/main/java/io/crate/session/Session.java
+@@ -393,7 +393,7 @@ public class Session implements AutoCloseable {
+         try {
+             preparedStmt = getSafeStmt(statementName);
+         } catch (Throwable t) {
+-            jobsLogs.logPreExecutionFailure(UUIDs.dirtyUUID(), null, SQLExceptions.messageOf(t), sessionSettings.sessionUser());
++            jobsLogs.logPreExecutionFailure(UUIDs.dirtyUUID(), statementName, SQLExceptions.messageOf(t), sessionSettings.sessionUser());
+             throw t;
+         }

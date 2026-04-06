@@ -1,0 +1,26 @@
+{
+  "consistency_map": {},
+  "mapped_target_context": {
+    "x-pack/plugin/redact/src/main/java/org/elasticsearch/xpack/redact/RedactProcessor.java": [
+      {
+        "hunk_index": 1,
+        "mainline_method": "hunk_1",
+        "target_file": "x-pack/plugin/redact/src/main/java/org/elasticsearch/xpack/redact/RedactProcessor.java",
+        "target_method": null,
+        "start_line": 297,
+        "end_line": 297,
+        "code_snippet": "            int matchEnd = offset + region.end[number];\n            replacementPositions.add(new Replacement(matchOffset, matchEnd, patternName));\n        }\n\n        /**\n         * Replaces the matched regions in the original input text (passed as UTF8 bytes)\n         * with the Grok matches. Each match is replaced by {@code redactStartToken}\n         * followed by the Grok pattern name then suffixed by {@code redactEndToken}.\n         *\n         * Special care is taken to detect and manage regions that overlap, i.e. where\n         * more than 1 Grok pattern has matched a piece of text. Where regions overlap\n         * the pattern name of the longest matching regions is used for the replacement.\n         *\n         * @param utf8Bytes The original text as UTF8\n         * @param redactStartToken The token to prefix the matched and redacted pattern name with\n         * @param redactEndToken The token to suffix the matched and redacted pattern name with\n         * @return A String with the matched regions redacted\n         */\n        String redactMatches(byte[] utf8Bytes, String redactStartToken, String redactEndToken) {\n            var merged = mergeOverlappingReplacements(replacementPositions);\n            int longestPatternName = merged.stream().mapToInt(r -> r.patternName.getBytes(StandardCharsets.UTF_8).length).max().getAsInt();\n\n            int maxPossibleLength = longestPatternName * merged.size() + utf8Bytes.length;\n            byte[] redact = new byte[maxPossibleLength];\n\n            int readOffset = 0;\n            int writeOffset = 0;\n            for (var rep : merged) {\n                int numBytesToWrite = rep.start - readOffset;\n                System.arraycopy(utf8Bytes, readOffset, redact, writeOffset, numBytesToWrite);\n                readOffset = rep.end;\n\n                writeOffset = writeOffset + numBytesToWrite;\n\n                byte[] replacementText = (redactStartToken + rep.patternName + redactEndToken).getBytes(StandardCharsets.UTF_8);\n                System.arraycopy(replacementText, 0, redact, writeOffset, replacementText.length);\n\n                writeOffset = writeOffset + replacementText.length;\n            }\n\n            int numBytesToWrite = utf8Bytes.length - readOffset;",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      }
+    ]
+  },
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "reason": "llm_usage_not_collected_in_this_node"
+  }
+}

@@ -1,0 +1,27 @@
+patch_id=crate_93ee46e5
+project=crate
+mainline_commit=93ee46e52dfbc5e6010e6e97c58d8ad68b40f6f5
+backport_commit=a6d3134151c3ba99c7d335b031f4a957c7b06fbb
+mode=full
+started_at=2026-04-06T01:10:44.720686
+----------------------------------------
+Running full workflow graph
+Completed node=phase_0_optimistic
+Workflow completed successfully
+
+[crate/crate_93ee46e5] Setting up repositories for mode=full...
+[crate/crate_93ee46e5] Running full workflow graph...
+Router: Running Phase 0.
+Phase 0 (Optimistic): Checking direct patch applicability...
+Phase 0: Experiment mode — checking out parent of a6d3134151c3ba99c7d335b031f4a957c7b06fbb...
+Phase 0: Building baseline by applying developer backport test hunks only...
+  Validation: server/src/test/java/io/crate/integrationtests/CorrelatedSubqueryITest.java - applying 1 hunk(s) one by one in bottom-to-top order: [447]
+    Agent 4: Executing crate helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_tests.sh
+Phase 0: git apply --check SUCCEEDED. Attempting actual patch application and test run.
+    Agent 4: Executing crate helper build script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_build.sh
+    Agent 4: Executing crate helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/crate/run_tests.sh
+Phase 0: Transition summary -> reason=Valid: Observed fail-to-pass and/or newly passing relevant tests with no regressions.; fail->pass(1): ['io.crate.integrationtests.CorrelatedSubqueryITest#test_can_mix_correlated_qubquery_and_sub_select']; newly_passing(0): []; pass->fail(0): []
+Phase 0: Transition-based test validation passed. Fast-path success.
+Router: Phase 0 succeeded - taking fast-path exit.
+  Completed: phase_0_optimistic
+[crate/crate_93ee46e5] Full workflow completed!

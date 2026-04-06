@@ -1,0 +1,29 @@
+patch_id=druid_f8015eb0
+project=druid
+mainline_commit=f8015eb02a95925036b4ce5ad0c1384ff634b30a
+backport_commit=d6858771d1acb63c5fb39a3a6bcd62b03461dc15
+mode=full
+started_at=2026-04-06T01:30:48.051496
+----------------------------------------
+Running full workflow graph
+Completed node=phase_0_optimistic
+Workflow completed successfully
+
+[druid/druid_f8015eb0] Setting up repositories for mode=full...
+[druid/druid_f8015eb0] Running full workflow graph...
+Router: Running Phase 0.
+Phase 0 (Optimistic): Checking direct patch applicability...
+Phase 0: Experiment mode — checking out parent of d6858771d1acb63c5fb39a3a6bcd62b03461dc15...
+Phase 0: Building baseline by applying developer backport test hunks only...
+  Validation: server/src/test/java/org/apache/druid/indexing/overlord/supervisor/LagStatsTest.java - applying 1 hunk(s) one by one in bottom-to-top order: [19]
+  Validation: RENAMED operation for server/src/test/java/org/apache/druid/indexing/overlord/supervisor/LagStatsTest.java
+    Agent 4: Executing druid helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/druid/run_tests.sh
+ValidationToolkit: Warning - git clean had issues (exit code 1). Continuing anyway.
+Phase 0: git apply --check SUCCEEDED. Attempting actual patch application and test run.
+    Agent 4: Executing Druid helper build script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/druid/run_build.sh
+    Agent 4: Executing druid helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/druid/run_tests.sh
+Phase 0: Transition summary -> reason=Valid: Observed fail-to-pass and/or newly passing relevant tests with no regressions.; fail->pass(0): []; newly_passing(1): ['org.apache.druid.indexing.overlord.supervisor.LagStatsTest#testAutoScalerLagComputation']; pass->fail(0): []
+Phase 0: Transition-based test validation passed. Fast-path success.
+Router: Phase 0 succeeded - taking fast-path exit.
+  Completed: phase_0_optimistic
+[druid/druid_f8015eb0] Full workflow completed!

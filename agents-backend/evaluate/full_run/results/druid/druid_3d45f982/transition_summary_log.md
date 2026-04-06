@@ -1,0 +1,62 @@
+# Transition Summary
+
+- Source: phase_outputs
+- Valid backport signal: True
+- Reason: Valid: Observed fail-to-pass and/or newly passing relevant tests with no regressions.
+- fail->pass (6): ['org.apache.druid.frame.allocation.ArenaMemoryAllocatorTest#testAllocationInMultiplePasses', 'org.apache.druid.frame.allocation.ArenaMemoryAllocatorTest#testAllocationInSinglePass', 'org.apache.druid.frame.allocation.ArenaMemoryAllocatorTest#testReleaseAllocationTwice', 'org.apache.druid.frame.allocation.ArenaMemoryAllocatorTest#testReleaseLastAllocationFirst', 'org.apache.druid.frame.allocation.HeapMemoryAllocatorTest#testReleaseAllocationTwice', 'org.apache.druid.frame.write.RowBasedFrameWriterTest#test_addSelection_singleLargeRow']
+- newly passing (0): []
+- pass->fail (0): []
+
+## Touched Test States
+- Touched tests (from patch): ['org.apache.druid.frame.allocation.ArenaMemoryAllocatorTest', 'org.apache.druid.frame.allocation.BaseMemoryAllocatorTest', 'org.apache.druid.frame.allocation.HeapMemoryAllocatorTest', 'org.apache.druid.frame.write.RowBasedFrameWriterTest', 'org.apache.druid.msq.exec.MSQWindowTest']
+  - org.apache.druid.frame.allocation.ArenaMemoryAllocatorTest#testAllocationInMultiplePasses: baseline=failed, patched=passed
+  - org.apache.druid.frame.allocation.ArenaMemoryAllocatorTest#testAllocationInSinglePass: baseline=failed, patched=passed
+  - org.apache.druid.frame.allocation.ArenaMemoryAllocatorTest#testOverallocationInMultiplePasses: baseline=passed, patched=passed
+  - org.apache.druid.frame.allocation.ArenaMemoryAllocatorTest#testOverallocationInSinglePass: baseline=passed, patched=passed
+  - org.apache.druid.frame.allocation.ArenaMemoryAllocatorTest#testReleaseAllocationTwice: baseline=failed, patched=passed
+  - org.apache.druid.frame.allocation.ArenaMemoryAllocatorTest#testReleaseLastAllocationFirst: baseline=failed, patched=passed
+  - org.apache.druid.frame.allocation.ArenaMemoryAllocatorTest#testReleaseLastAllocationLast: baseline=passed, patched=passed
+  - org.apache.druid.frame.allocation.BaseMemoryAllocatorTest: baseline=absent, patched=absent
+  - org.apache.druid.frame.allocation.HeapMemoryAllocatorTest#testAllocationInMultiplePasses: baseline=passed, patched=passed
+  - org.apache.druid.frame.allocation.HeapMemoryAllocatorTest#testAllocationInSinglePass: baseline=passed, patched=passed
+  - org.apache.druid.frame.allocation.HeapMemoryAllocatorTest#testOverallocationInMultiplePasses: baseline=passed, patched=passed
+  - org.apache.druid.frame.allocation.HeapMemoryAllocatorTest#testOverallocationInSinglePass: baseline=passed, patched=passed
+  - org.apache.druid.frame.allocation.HeapMemoryAllocatorTest#testReleaseAllocationTwice: baseline=failed, patched=passed
+  - org.apache.druid.frame.allocation.HeapMemoryAllocatorTest#testReleaseLastAllocationFirst: baseline=passed, patched=passed
+  - org.apache.druid.frame.allocation.HeapMemoryAllocatorTest#testReleaseLastAllocationLast: baseline=passed, patched=passed
+  - org.apache.druid.frame.write.RowBasedFrameWriterTest#test_addSelection_singleLargeRow: baseline=failed, patched=passed
+  - org.apache.druid.frame.write.RowBasedFrameWriterTest#test_addSelection_withException: baseline=passed, patched=passed
+  - org.apache.druid.msq.exec.MSQWindowTest#testFailurePartitionByMVD_1: baseline=passed, patched=passed
+  - org.apache.druid.msq.exec.MSQWindowTest#testFailurePartitionByMVD_2: baseline=passed, patched=passed
+  - org.apache.druid.msq.exec.MSQWindowTest#testGroupByWithWikipedia: baseline=passed, patched=passed
+  - org.apache.druid.msq.exec.MSQWindowTest#testInsertWithWindow: baseline=passed, patched=passed
+  - org.apache.druid.msq.exec.MSQWindowTest#testInsertWithWindowEmptyOver: baseline=passed, patched=passed
+  - org.apache.druid.msq.exec.MSQWindowTest#testInsertWithWindowPartitionByOrderBy: baseline=passed, patched=passed
+  - org.apache.druid.msq.exec.MSQWindowTest#testReplaceGroupByOnWikipedia: baseline=passed, patched=passed
+  - org.apache.druid.msq.exec.MSQWindowTest#testReplaceWithPartitionedByDayOnWikipedia: baseline=passed, patched=passed
+  - org.apache.druid.msq.exec.MSQWindowTest#testReplaceWithWindowsAndUnnest: baseline=passed, patched=passed
+  - org.apache.druid.msq.exec.MSQWindowTest#testSelectWithWikipedia: baseline=passed, patched=passed
+  - org.apache.druid.msq.exec.MSQWindowTest#testSelectWithWikipediaEmptyOverWithCustomContext: baseline=passed, patched=passed
+  - org.apache.druid.msq.exec.MSQWindowTest#testSelectWithWikipediaWithPartitionKeyNotInSelect: baseline=passed, patched=passed
+  - org.apache.druid.msq.exec.MSQWindowTest#testSimpleWindowWithDuplicateSelectNode: baseline=passed, patched=passed
+  - org.apache.druid.msq.exec.MSQWindowTest#testSimpleWindowWithEmptyOver: baseline=passed, patched=passed
+  - org.apache.druid.msq.exec.MSQWindowTest#testSimpleWindowWithEmptyOverNoGroupBy: baseline=passed, patched=passed
+  - org.apache.druid.msq.exec.MSQWindowTest#testSimpleWindowWithJoins: baseline=passed, patched=passed
+  - org.apache.druid.msq.exec.MSQWindowTest#testSimpleWindowWithPartitionBy: baseline=passed, patched=passed
+  - org.apache.druid.msq.exec.MSQWindowTest#testWindowOnFooWith2WindowsBothPartitionByWithOrderReversed: baseline=passed, patched=passed
+  - org.apache.druid.msq.exec.MSQWindowTest#testWindowOnFooWith2WindowsBothWindowsHavingPartitionByInnerGroupBy: baseline=passed, patched=passed
+  - org.apache.druid.msq.exec.MSQWindowTest#testWindowOnFooWithDim2: baseline=passed, patched=passed
+  - org.apache.druid.msq.exec.MSQWindowTest#testWindowOnFooWithEmptyOverWithGroupBy: baseline=passed, patched=passed
+  - org.apache.druid.msq.exec.MSQWindowTest#testWindowOnFooWithEmptyOverWithJoin: baseline=passed, patched=passed
+  - org.apache.druid.msq.exec.MSQWindowTest#testWindowOnFooWithEmptyOverWithUnnest: baseline=passed, patched=passed
+  - org.apache.druid.msq.exec.MSQWindowTest#testWindowOnFooWithFirstWindowPartitionNextWindowEmpty: baseline=passed, patched=passed
+  - org.apache.druid.msq.exec.MSQWindowTest#testWindowOnFooWithGroupByAndInnerLimit: baseline=passed, patched=passed
+  - org.apache.druid.msq.exec.MSQWindowTest#testWindowOnFooWithNoGroupByAndEmptyOver: baseline=passed, patched=passed
+  - org.apache.druid.msq.exec.MSQWindowTest#testWindowOnFooWithNoGroupByAndPartition: baseline=passed, patched=passed
+  - org.apache.druid.msq.exec.MSQWindowTest#testWindowOnFooWithNoGroupByAndPartitionAndVirtualColumns: baseline=passed, patched=passed
+  - org.apache.druid.msq.exec.MSQWindowTest#testWindowOnFooWithNoGroupByAndPartitionByAnother: baseline=passed, patched=passed
+  - org.apache.druid.msq.exec.MSQWindowTest#testWindowOnFooWithNoGroupByAndPartitionOnTwoElements: baseline=passed, patched=passed
+  - org.apache.druid.msq.exec.MSQWindowTest#testWindowOnFooWithPartitionByAndInnerGroupBy: baseline=passed, patched=passed
+  - org.apache.druid.msq.exec.MSQWindowTest#testWindowOnFooWithPartitionByAndWithUnnest: baseline=passed, patched=passed
+  - org.apache.druid.msq.exec.MSQWindowTest#testWindowOnFooWithPartitionByOrderBYWithJoin: baseline=passed, patched=passed
+  - org.apache.druid.msq.exec.MSQWindowTest#testWindowOnMixOfEmptyAndNonEmptyOverWithMultipleWorkers: baseline=passed, patched=passed

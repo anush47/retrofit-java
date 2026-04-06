@@ -1,0 +1,185 @@
+# Phase 0 Inputs
+
+- Mainline commit: 79c45993c391dfe36590a431804a49cbc1d32d9e
+- Backport commit: ec82e73b8cc0d79a24aebca894483a2619a96bf6
+- Java-only files for agentic phases: 3
+- Developer auxiliary hunks (test + non-Java): 5
+
+## Commit Pair Consistency
+- Pair mismatch: False
+- Reason: scope_overlap_ok
+- Mainline Java files: ['server/src/main/java/io/crate/analyze/DropAnalyzerStatementAnalyzer.java', 'server/src/main/java/io/crate/auth/AccessControlImpl.java', 'server/src/main/java/io/crate/planner/node/ddl/DropAnalyzerPlan.java']
+- Developer Java files: ['server/src/main/java/io/crate/analyze/DropAnalyzerStatementAnalyzer.java', 'server/src/main/java/io/crate/auth/AccessControlImpl.java', 'server/src/main/java/io/crate/planner/node/ddl/DropAnalyzerPlan.java']
+- Overlap Java files: ['server/src/main/java/io/crate/analyze/DropAnalyzerStatementAnalyzer.java', 'server/src/main/java/io/crate/auth/AccessControlImpl.java', 'server/src/main/java/io/crate/planner/node/ddl/DropAnalyzerPlan.java']
+- Overlap ratio (mainline): 1.0
+
+## Mainline Patch
+```diff
+From 79c45993c391dfe36590a431804a49cbc1d32d9e Mon Sep 17 00:00:00 2001
+From: Marios Trivyzas <matriv@gmail.com>
+Date: Thu, 6 Mar 2025 14:01:04 +0200
+Subject: [PATCH] Fix privileges check for DROP ANALYZER
+
+`visitDropAnalyzerStatement()` was not correctly overriden in
+`AccessControlImpl`, so previsouly, only the `crate` superuser was able
+to drop an analyzer.
+
+Implement the method so users with `DDL` on `CLUSTER` can drop
+analyzers., and also move the check for not existing analyzer to the
+planner because:
+1. it helps testing the privs fix without additional test setup
+2. the check should anyway be in the planner as it narrows concurrency
+   issues (attempting to drop an already dropped analyzer)
+
+Fixes: #17556
+---
+ docs/appendices/release-notes/5.10.3.rst            |  4 +++-
+ .../analyze/DropAnalyzerStatementAnalyzer.java      |  4 ----
+ .../main/java/io/crate/auth/AccessControlImpl.java  | 13 +++++++++++++
+ .../io/crate/planner/node/ddl/DropAnalyzerPlan.java |  5 +++++
+ .../java/io/crate/analyze/DropAnalyzerTest.java     |  9 +++++++++
+ .../io/crate/auth/AccessControlMayExecuteTest.java  |  6 ++++++
+ 6 files changed, 36 insertions(+), 5 deletions(-)
+
+diff --git a/docs/appendices/release-notes/5.10.3.rst b/docs/appendices/release-notes/5.10.3.rst
+index 776e9f209d..3ef1aa9435 100644
+--- a/docs/appendices/release-notes/5.10.3.rst
++++ b/docs/appendices/release-notes/5.10.3.rst
+@@ -44,4 +44,6 @@ See the :ref:`version_5.10.0` release notes for a full list of changes in the
+ Fixes
+ =====
+ 
+-None
++- Fixed an issue that would prevent users with ``DDL`` privilege on ``CLUSTER``
++  level, to execute :ref:`DROP ANALYZER<drop-analyzer>`, thus before the fix,
++  only allowing the ``crate`` superuser to execute ``DROP ANALYZER`` statements.
+diff --git a/server/src/main/java/io/crate/analyze/DropAnalyzerStatementAnalyzer.java b/server/src/main/java/io/crate/analyze/DropAnalyzerStatementAnalyzer.java
+index 5a2ff5fe29..43ad2df24c 100644
+--- a/server/src/main/java/io/crate/analyze/DropAnalyzerStatementAnalyzer.java
++++ b/server/src/main/java/io/crate/analyze/DropAnalyzerStatementAnalyzer.java
+@@ -21,7 +21,6 @@
+ 
+ package io.crate.analyze;
+ 
+-import io.crate.exceptions.AnalyzerUnknownException;
+ import io.crate.metadata.FulltextAnalyzerResolver;
+ 
+ public class DropAnalyzerStatementAnalyzer {
+@@ -36,9 +35,6 @@ public class DropAnalyzerStatementAnalyzer {
+         if (ftResolver.hasBuiltInAnalyzer(analyzerName)) {
+             throw new IllegalArgumentException("Cannot drop a built-in analyzer");
+         }
+-        if (ftResolver.hasCustomAnalyzer(analyzerName) == false) {
+-            throw new AnalyzerUnknownException(analyzerName);
+-        }
+         return new AnalyzedDropAnalyzer(analyzerName);
+     }
+ }
+diff --git a/server/src/main/java/io/crate/auth/AccessControlImpl.java b/server/src/main/java/io/crate/auth/AccessControlImpl.java
+index faa3322f96..acded5bca4 100644
+--- a/server/src/main/java/io/crate/auth/AccessControlImpl.java
++++ b/server/src/main/java/io/crate/auth/AccessControlImpl.java
+@@ -55,6 +55,7 @@ import io.crate.analyze.AnalyzedDeallocate;
+ import io.crate.analyze.AnalyzedDeclare;
+ import io.crate.analyze.AnalyzedDeleteStatement;
+ import io.crate.analyze.AnalyzedDiscard;
++import io.crate.analyze.AnalyzedDropAnalyzer;
+ import io.crate.analyze.AnalyzedDropForeignTable;
+ import io.crate.analyze.AnalyzedDropFunction;
+ import io.crate.analyze.AnalyzedDropRepository;
+@@ -495,6 +496,18 @@ public final class AccessControlImpl implements AccessControl {
+             return null;
+         }
+ 
++        @Override
++        protected Void visitDropAnalyzerStatement(AnalyzedDropAnalyzer analysis, Role user) {
++            Privileges.ensureUserHasPrivilege(
++                relationVisitor.roles,
++                user,
++                Permission.DDL,
++                Securable.CLUSTER,
++                null
++            );
++            return null;
++        }
++
+         @Override
+         public Void visitAnalyzedCreateBlobTable(AnalyzedCreateBlobTable analysis, Role user) {
+             Privileges.ensureUserHasPrivilege(
+diff --git a/server/src/main/java/io/crate/planner/node/ddl/DropAnalyzerPlan.java b/server/src/main/java/io/crate/planner/node/ddl/DropAnalyzerPlan.java
+index da712f5975..bdafe11078 100644
+--- a/server/src/main/java/io/crate/planner/node/ddl/DropAnalyzerPlan.java
++++ b/server/src/main/java/io/crate/planner/node/ddl/DropAnalyzerPlan.java
+@@ -35,6 +35,7 @@ import io.crate.analyze.AnalyzedDropAnalyzer;
+ import io.crate.data.Row;
+ import io.crate.data.Row1;
+ import io.crate.data.RowConsumer;
++import io.crate.exceptions.AnalyzerUnknownException;
+ import io.crate.execution.support.OneRowActionListener;
+ import io.crate.metadata.FulltextAnalyzerResolver;
+ import io.crate.planner.DependencyCarrier;
+@@ -72,6 +73,10 @@ public class DropAnalyzerPlan implements Plan {
+     @VisibleForTesting
+     public static ClusterUpdateSettingsRequest createRequest(String analyzerName,
+                                                              FulltextAnalyzerResolver ftResolver) {
++        if (ftResolver.hasCustomAnalyzer(analyzerName) == false) {
++            throw new AnalyzerUnknownException(analyzerName);
++        }
++
+         Settings.Builder builder = Settings.builder();
+         builder.putNull(ANALYZER.buildSettingName(analyzerName));
+ 
+diff --git a/server/src/test/java/io/crate/analyze/DropAnalyzerTest.java b/server/src/test/java/io/crate/analyze/DropAnalyzerTest.java
+index 3fcecf076f..79e838f2fc 100644
+--- a/server/src/test/java/io/crate/analyze/DropAnalyzerTest.java
++++ b/server/src/test/java/io/crate/analyze/DropAnalyzerTest.java
+@@ -26,6 +26,7 @@ import static io.crate.metadata.FulltextAnalyzerResolver.CustomType.CHAR_FILTER;
+ import static io.crate.metadata.FulltextAnalyzerResolver.CustomType.TOKENIZER;
+ import static io.crate.metadata.FulltextAnalyzerResolver.CustomType.TOKEN_FILTER;
+ import static org.assertj.core.api.Assertions.assertThat;
++import static org.assertj.core.api.Assertions.assertThatThrownBy;
+ 
+ import org.elasticsearch.action.admin.cluster.settings.ClusterUpdateSettingsRequest;
+ import org.elasticsearch.cluster.ClusterState;
+@@ -35,6 +36,7 @@ import org.elasticsearch.test.ClusterServiceUtils;
+ import org.junit.Before;
+ import org.junit.Test;
+ 
++import io.crate.exceptions.AnalyzerUnknownException;
+ import io.crate.planner.node.ddl.DropAnalyzerPlan;
+ import io.crate.test.integration.CrateDummyClusterServiceUnitTest;
+ import io.crate.testing.SQLExecutor;
+@@ -133,4 +135,11 @@ public class DropAnalyzerTest extends CrateDummyClusterServiceUnitTest {
+         assertIsMarkedToBeRemove(request.persistentSettings(), ANALYZER.buildSettingName("a4"));
+         assertIsMarkedToBeRemove(request.persistentSettings(), CHAR_FILTER.buildSettingName("a4_mymapping"));
+     }
++
++    @Test
++    public void test_non_existing_custom_analyzer() {
++        assertThatThrownBy(() -> analyze("DROP ANALYZER invalid"))
++            .isExactlyInstanceOf(AnalyzerUnknownException.class)
++            .hasMessage("Analyzer 'invalid' unknown");
++    }
+ }
+diff --git a/server/src/test/java/io/crate/auth/AccessControlMayExecuteTest.java b/server/src/test/java/io/crate/auth/AccessControlMayExecuteTest.java
+index 67a1b7e80e..edaddf7a8d 100644
+--- a/server/src/test/java/io/crate/auth/AccessControlMayExecuteTest.java
++++ b/server/src/test/java/io/crate/auth/AccessControlMayExecuteTest.java
+@@ -421,6 +421,12 @@ public class AccessControlMayExecuteTest extends CrateDummyClusterServiceUnitTes
+         assertAskedForCluster(Permission.DDL);
+     }
+ 
++    @Test
++    public void testDropAnalyzer() {
++        analyze("drop analyzer a1");
++        assertAskedForCluster(Permission.DDL);
++    }
++
+     @Test
+     public void testRefresh() throws Exception {
+         analyze("refresh table users, parted partition (date = 1395874800000)");
+-- 
+2.43.0
+
+
+```

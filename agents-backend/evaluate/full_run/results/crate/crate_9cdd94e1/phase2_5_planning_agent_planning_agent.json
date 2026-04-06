@@ -1,0 +1,105 @@
+{
+  "hunk_generation_plan": {
+    "server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java": [
+      {
+        "hunk_index": 0,
+        "target_file": "server/src/main/java/io/crate/protocols/postgres/PostgresWireProtocol.java",
+        "operation_index": 0,
+        "edit_type": "insert_before",
+        "old_string": "        FormatCodes.FormatCode[] formatCodes = FormatCodes.fromBuffer(buffer);",
+        "new_string": "        assert portalName != null : \"portalName cannot be null\";\n        assert statementName != null : \"statementName cannot be null\";\n        FormatCodes.FormatCode[] formatCodes = FormatCodes.fromBuffer(buffer);",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_insert_before",
+        "surround_before_3": [
+          "        String portalName = readCString(buffer);",
+          "        String statementName = readCString(buffer);",
+          ""
+        ],
+        "surround_after_3": [
+          "",
+          "        short numParams = buffer.readShort();",
+          "        List<Object> params = createList(numParams);"
+        ],
+        "adaptation_type": "TYPE_I",
+        "base_adaptation_type": "TYPE_I",
+        "execution_type": "TYPE_I",
+        "location_match": true,
+        "surrounding_match": true,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "assert portalName != null : \"portalName cannot be null\";",
+          "assert statementName != null : \"statementName cannot be null\";"
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 28,
+          "target_declared_methods_count": 28,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      }
+    ],
+    "server/src/main/java/io/crate/session/Session.java": [
+      {
+        "hunk_index": 0,
+        "target_file": "server/src/main/java/io/crate/session/Session.java",
+        "operation_index": 0,
+        "edit_type": "replace",
+        "old_string": "            preparedStmt = getSafeStmt(statementName);\n        } catch (Throwable t) {\n            jobsLogs.logPreExecutionFailure(UUIDs.dirtyUUID(), null, SQLExceptions.messageOf(t), sessionSettings.sessionUser());\n            throw t;",
+        "new_string": "            preparedStmt = getSafeStmt(statementName);\n        } catch (Throwable t) {\n            jobsLogs.logPreExecutionFailure(UUIDs.dirtyUUID(), statementName, SQLExceptions.messageOf(t), sessionSettings.sessionUser());\n            throw t;",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_replace",
+        "surround_before_3": [
+          "        }",
+          "        PreparedStmt preparedStmt;",
+          "        try {"
+        ],
+        "surround_after_3": [
+          "        }",
+          "",
+          "        Portal portal = new Portal("
+        ],
+        "adaptation_type": "TYPE_I",
+        "base_adaptation_type": "TYPE_I",
+        "execution_type": "TYPE_I",
+        "location_match": true,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "jobsLogs.logPreExecutionFailure(UUIDs.dirtyUUID(), statementName, SQLExceptions.messageOf(t), sessionSettings.sessionUser());"
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 40,
+          "target_declared_methods_count": 40,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      }
+    ]
+  },
+  "last_plan_signature": "a84d61ba4482a051e234d4b361703fca441d7e4d256d18344190edcdf2b81c48",
+  "validation_repeated_plan_detected": false,
+  "force_type_v_until_success": false,
+  "force_type_v_reason": "",
+  "force_type_v_retry_files": [],
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "sources": []
+  }
+}

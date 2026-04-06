@@ -1,0 +1,44 @@
+{
+  "semantic_blueprint": {
+    "root_cause_hypothesis": "Deterministic inference: target branch diverges from mainline; adapt hunks with exact target context.",
+    "fix_logic": "Apply each source hunk with target-verified context and symbol consistency while preserving behavior.",
+    "dependent_apis": [
+      "if"
+    ],
+    "patch_intent_summary": "Backport patch behavior to target branch with minimal, context-correct edits.",
+    "hunk_chain": [
+      {
+        "hunk_index": 1,
+        "file": "x-pack/plugin/security/src/main/java/org/elasticsearch/xpack/security/authc/ApiKeyService.java",
+        "summary": "Modifies logic (+3/-1 lines).",
+        "role": "guard",
+        "connects_to_next": "Prepares next hunk in same file with related context.",
+        "global_index": 1
+      },
+      {
+        "hunk_index": 2,
+        "file": "x-pack/plugin/security/src/main/java/org/elasticsearch/xpack/security/authc/ApiKeyService.java",
+        "summary": "Modifies logic (+3/-1 lines).",
+        "role": "guard",
+        "connects_to_next": "Prepares next hunk in same file with related context.",
+        "global_index": 2
+      },
+      {
+        "hunk_index": 3,
+        "file": "x-pack/plugin/security/src/main/java/org/elasticsearch/xpack/security/authc/ApiKeyService.java",
+        "summary": "Modifies logic (+5/-3 lines).",
+        "role": "guard",
+        "connects_to_next": "",
+        "global_index": 3
+      }
+    ]
+  },
+  "patch_diff": "From 5e953dc7c3881690c61ef39bbef0ae88af35647b Mon Sep 17 00:00:00 2001\nFrom: Nikolaj Volgushev <n1v0lg@users.noreply.github.com>\nDate: Tue, 28 Jan 2025 12:00:30 +0100\nSubject: [PATCH] Fix NPE on disabled API key auth cache (#120483)\n\nCurrently, when `xpack.security.authc.api_key.cache.ttl` is set to `0d`\nAPI key creation (and invalidation) fail with NPEs. This PR adds null\nchecks to fix this.\n---\n docs/changelog/120483.yaml                    |  5 +++\n .../xpack/security/authc/ApiKeyService.java   | 16 ++++---\n .../security/authc/ApiKeyServiceTests.java    | 44 +++++++++++++++++++\n 3 files changed, 60 insertions(+), 5 deletions(-)\n create mode 100644 docs/changelog/120483.yaml\n\ndiff --git a/docs/changelog/120483.yaml b/docs/changelog/120483.yaml\nnew file mode 100644\nindex 00000000000..20da3b9ab4e\n--- /dev/null\n+++ b/docs/changelog/120483.yaml\n@@ -0,0 +1,5 @@\n+pr: 120483\n+summary: Fix NPE on disabled API auth key cache\n+area: Authentication\n+type: bug\n+issues: []\ndiff --git a/x-pack/plugin/security/src/main/java/org/elasticsearch/xpack/security/authc/ApiKeyService.java b/x-pack/plugin/security/src/main/java/org/elasticsearch/xpack/security/authc/ApiKeyService.java\nindex c1be25b27c5..c2d1370c2cb 100644\n--- a/x-pack/plugin/security/src/main/java/org/elasticsearch/xpack/security/authc/ApiKeyService.java\n+++ b/x-pack/plugin/security/src/main/java/org/elasticsearch/xpack/security/authc/ApiKeyService.java\n@@ -266,7 +266,9 @@ public class ApiKeyService implements Closeable {\n                     if (apiKeyDocCache != null) {\n                         apiKeyDocCache.invalidate(keys);\n                     }\n-                    keys.forEach(apiKeyAuthCache::invalidate);\n+                    if (apiKeyAuthCache != null) {\n+                        keys.forEach(apiKeyAuthCache::invalidate);\n+                    }\n                 }\n \n                 @Override\n@@ -274,7 +276,9 @@ public class ApiKeyService implements Closeable {\n                     if (apiKeyDocCache != null) {\n                         apiKeyDocCache.invalidateAll();\n                     }\n-                    apiKeyAuthCache.invalidateAll();\n+                    if (apiKeyAuthCache != null) {\n+                        apiKeyAuthCache.invalidateAll();\n+                    }\n                 }\n             });\n             cacheInvalidatorRegistry.registerCacheInvalidator(\"api_key_doc\", new CacheInvalidatorRegistry.CacheInvalidator() {\n@@ -589,9 +593,11 @@ public class ApiKeyService implements Closeable {\n                                     + \"])\";\n                             assert indexResponse.getResult() == DocWriteResponse.Result.CREATED\n                                 : \"Index response was [\" + indexResponse.getResult() + \"]\";\n-                            final ListenableFuture<CachedApiKeyHashResult> listenableFuture = new ListenableFuture<>();\n-                            listenableFuture.onResponse(new CachedApiKeyHashResult(true, apiKey));\n-                            apiKeyAuthCache.put(request.getId(), listenableFuture);\n+                            if (apiKeyAuthCache != null) {\n+                                final ListenableFuture<CachedApiKeyHashResult> listenableFuture = new ListenableFuture<>();\n+                                listenableFuture.onResponse(new CachedApiKeyHashResult(true, apiKey));\n+                                apiKeyAuthCache.put(request.getId(), listenableFuture);\n+                            }\n                             listener.onResponse(new CreateApiKeyResponse(request.getName(), request.getId(), apiKey, expiration));\n                         }, listener::onFailure))\n                     )\ndiff --git a/x-pack/plugin/security/src/test/java/org/elasticsearch/xpack/security/authc/ApiKeyServiceTests.java b/x-pack/plugin/security/src/test/java/org/elasticsearch/xpack/security/authc/ApiKeyServiceTests.java\nindex 996291c52c7..185669a6a20 100644\n--- a/x-pack/plugin/security/src/test/java/org/elasticsearch/xpack/security/authc/ApiKeyServiceTests.java\n+++ b/x-pack/plugin/security/src/test/java/org/elasticsearch/xpack/security/authc/ApiKeyServiceTests.java\n@@ -2367,6 +2367,50 @@ public class ApiKeyServiceTests extends ESTestCase {\n         assertNull(service.getApiKeyAuthCache().get(docId));\n     }\n \n+    public void testCanCreateApiKeyWithAuthCacheDisabled() {\n+        final ApiKeyService service = createApiKeyService(\n+            Settings.builder()\n+                .put(XPackSettings.API_KEY_SERVICE_ENABLED_SETTING.getKey(), true)\n+                .put(\"xpack.security.authc.api_key.cache.ttl\", \"0s\")\n+                .build()\n+        );\n+        final Authentication authentication = AuthenticationTestHelper.builder()\n+            .user(new User(randomAlphaOfLengthBetween(8, 16), \"superuser\"))\n+            .realmRef(new RealmRef(randomAlphaOfLengthBetween(3, 8), randomAlphaOfLengthBetween(3, 8), randomAlphaOfLengthBetween(3, 8)))\n+            .build(false);\n+        final CreateApiKeyRequest createApiKeyRequest = new CreateApiKeyRequest(randomAlphaOfLengthBetween(3, 8), null, null);\n+        when(client.prepareIndex(anyString())).thenReturn(new IndexRequestBuilder(client));\n+        when(client.prepareBulk()).thenReturn(new BulkRequestBuilder(client));\n+        when(client.threadPool()).thenReturn(threadPool);\n+        doAnswer(inv -> {\n+            final Object[] args = inv.getArguments();\n+            @SuppressWarnings(\"unchecked\")\n+            final ActionListener<BulkResponse> listener = (ActionListener<BulkResponse>) args[2];\n+            final IndexResponse indexResponse = new IndexResponse(\n+                new ShardId(INTERNAL_SECURITY_MAIN_INDEX_7, randomAlphaOfLength(22), randomIntBetween(0, 1)),\n+                createApiKeyRequest.getId(),\n+                randomLongBetween(1, 99),\n+                randomLongBetween(1, 99),\n+                randomIntBetween(1, 99),\n+                true\n+            );\n+            listener.onResponse(\n+                new BulkResponse(\n+                    new BulkItemResponse[] { BulkItemResponse.success(randomInt(), DocWriteRequest.OpType.INDEX, indexResponse) },\n+                    randomLongBetween(0, 100)\n+                )\n+            );\n+            return null;\n+        }).when(client).execute(eq(TransportBulkAction.TYPE), any(BulkRequest.class), any());\n+\n+        assertThat(service.getFromCache(createApiKeyRequest.getId()), is(nullValue()));\n+        final PlainActionFuture<CreateApiKeyResponse> listener = new PlainActionFuture<>();\n+        service.createApiKey(authentication, createApiKeyRequest, Set.of(), listener);\n+        final CreateApiKeyResponse createApiKeyResponse = listener.actionGet();\n+        assertThat(createApiKeyResponse.getId(), equalTo(createApiKeyRequest.getId()));\n+        assertThat(service.getFromCache(createApiKeyResponse.getId()), is(nullValue()));\n+    }\n+\n     public void testGetCreatorRealm() {\n         final User user = AuthenticationTests.randomUser();\n \n-- \n2.43.0\n\n",
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "reason": "deterministic_no_llm"
+  }
+}

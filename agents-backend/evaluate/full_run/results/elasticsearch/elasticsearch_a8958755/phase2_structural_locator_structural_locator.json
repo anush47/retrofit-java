@@ -1,0 +1,38 @@
+{
+  "consistency_map": {},
+  "mapped_target_context": {
+    "server/src/main/java/org/elasticsearch/cluster/metadata/IndexAbstractionResolver.java": [
+      {
+        "hunk_index": 1,
+        "mainline_method": "<import>",
+        "target_file": "server/src/main/java/org/elasticsearch/cluster/metadata/IndexAbstractionResolver.java",
+        "target_method": "<import>",
+        "start_line": 14,
+        "end_line": 14,
+        "code_snippet": "/*\n * Copyright Elasticsearch B.V. and/or licensed to Elasticsearch B.V. under one\n * or more contributor license agreements. Licensed under the \"Elastic License\n * 2.0\", the \"GNU Affero General Public License v3.0 only\", and the \"Server Side\n * Public License v 1\"; you may not use this file except in compliance with, at\n * your election, the \"Elastic License 2.0\", the \"GNU Affero General Public\n * License v3.0 only\", or the \"Server Side Public License, v 1\".\n */\n\npackage org.elasticsearch.cluster.metadata;\n\nimport org.elasticsearch.action.support.IndexComponentSelector;\nimport org.elasticsearch.action.support.IndicesOptions;\nimport org.elasticsearch.common.regex.Regex;\nimport org.elasticsearch.core.Nullable;\nimport org.elasticsearch.core.Tuple;\nimport org.elasticsearch.index.IndexNotFoundException;\nimport org.elasticsearch.indices.SystemIndices.SystemIndexAccessLevel;\n\nimport java.util.ArrayList;\nimport java.util.HashSet;\nimport java.util.List;\nimport java.util.Set;\nimport java.util.function.Predicate;\nimport java.util.function.Supplier;\n\npublic class IndexAbstractionResolver {\n\n    private final IndexNameExpressionResolver indexNameExpressionResolver;\n\n    public IndexAbstractionResolver(IndexNameExpressionResolver indexNameExpressionResolver) {\n        this.indexNameExpressionResolver = indexNameExpressionResolver;\n    }\n",
+        "anchor_confidence": "high",
+        "anchor_reason": "line_and_method_resolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 2,
+        "mainline_method": "hunk_2",
+        "target_file": "server/src/main/java/org/elasticsearch/cluster/metadata/IndexAbstractionResolver.java",
+        "target_method": null,
+        "start_line": 161,
+        "end_line": 161,
+        "code_snippet": "\n    public static boolean isIndexVisible(\n        String expression,\n        @Nullable String selectorString,\n        String index,\n        IndicesOptions indicesOptions,\n        Metadata metadata,\n        IndexNameExpressionResolver resolver,\n        boolean includeDataStreams\n    ) {\n        IndexAbstraction indexAbstraction = metadata.getIndicesLookup().get(index);\n        if (indexAbstraction == null) {\n            throw new IllegalStateException(\"could not resolve index abstraction [\" + index + \"]\");\n        }\n        final boolean isHidden = indexAbstraction.isHidden();\n        boolean isVisible = isHidden == false || indicesOptions.expandWildcardsHidden() || isVisibleDueToImplicitHidden(expression, index);\n        if (indexAbstraction.getType() == IndexAbstraction.Type.ALIAS) {\n            if (indexAbstraction.isSystem()) {\n                // check if it is net new\n                if (resolver.getNetNewSystemIndexPredicate().test(indexAbstraction.getName())) {\n                    return isSystemIndexVisible(resolver, indexAbstraction);\n                }\n            }\n\n            // it's an alias, ignore expandWildcardsOpen and expandWildcardsClosed.\n            // complicated to support those options with aliases pointing to multiple indices...\n            isVisible = isVisible && indicesOptions.ignoreAliases() == false;\n            if (isVisible && selectorString != null) {\n                // Check if a selector was present, and if it is, check if this alias is applicable to it\n                IndexComponentSelector selector = IndexComponentSelector.getByKey(selectorString);\n                if (IndexComponentSelector.FAILURES.equals(selector)) {\n                    isVisible = indexAbstraction.isDataStreamRelated();\n                }\n            }\n            return isVisible;\n        }\n        if (indexAbstraction.getType() == IndexAbstraction.Type.DATA_STREAM) {\n            if (includeDataStreams == false) {\n                return false;\n            }\n            if (indexAbstraction.isSystem()) {",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      }
+    ]
+  },
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "reason": "llm_usage_not_collected_in_this_node"
+  }
+}

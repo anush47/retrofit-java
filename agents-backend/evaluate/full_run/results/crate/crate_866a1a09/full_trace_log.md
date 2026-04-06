@@ -1,0 +1,42 @@
+# Full Trace of Agentic File Edits
+
+## Attempt #1
+
+### Final Output Diff
+**server/src/main/java/io/crate/metadata/doc/DocTableInfo.java** [replace]
+```java
+// --- OLD ---
+<developer patch fast path>
+// --- NEW ---
+diff --git a/server/src/main/java/io/crate/metadata/doc/DocTableInfo.java b/server/src/main/java/io/crate/metadata/doc/DocTableInfo.java
+index 215590d568..9227c50d5c 100644
+--- a/server/src/main/java/io/crate/metadata/doc/DocTableInfo.java
++++ b/server/src/main/java/io/crate/metadata/doc/DocTableInfo.java
+@@ -83,6 +83,7 @@ import io.crate.expression.symbol.format.Style;
+ import io.crate.metadata.ColumnIdent;
+ import io.crate.metadata.CoordinatorTxnCtx;
+ import io.crate.metadata.GeneratedReference;
++import io.crate.metadata.IndexParts;
+ import io.crate.metadata.IndexReference;
+ import io.crate.metadata.NodeContext;
+ import io.crate.metadata.PartitionName;
+@@ -1008,10 +1009,17 @@ public class DocTableInfo implements TableInfo, ShardedTable, StoredTable {
+             if (allColumns.size() > allowedTotalColumns) {
+                 throw new IllegalArgumentException("Limit of total columns [" + allowedTotalColumns + "] in table [" + ident + "] exceeded");
+             }
++            var indexNumberOfShards = numberOfShards;
++            if (isPartitioned && IndexParts.isPartitioned(indexName)) {
++                // if the index is a part of a partitioned table,
++                // the actual value of the index must be used as the value for the whole partitioned table may have changed
++                indexNumberOfShards = indexMetadata.getNumberOfShards();
++            }
++
+             metadataBuilder.put(
+                 IndexMetadata.builder(indexMetadata)
+                     .putMapping(new MappingMetadata(mapping))
+-                    .numberOfShards(numberOfShards)
++                    .numberOfShards(indexNumberOfShards)
+                     .mappingVersion(indexMetadata.getMappingVersion() + 1)
+             );
+         }
+```

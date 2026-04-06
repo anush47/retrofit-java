@@ -1,0 +1,100 @@
+{
+  "adapted_file_edits": [
+    {
+      "target_file": "modules/data-streams/src/main/java/org/elasticsearch/datastreams/action/DataStreamsStatsTransportAction.java",
+      "mainline_file": "modules/data-streams/src/main/java/org/elasticsearch/datastreams/action/DataStreamsStatsTransportAction.java",
+      "old_string": "<developer patch fast path>",
+      "new_string": "diff --git a/modules/data-streams/src/main/java/org/elasticsearch/datastreams/action/DataStreamsStatsTransportAction.java b/modules/data-streams/src/main/java/org/elasticsearch/datastreams/action/DataStreamsStatsTransportAction.java\nindex 4d6eead07b9..3e207ab30ed 100644\n--- a/modules/data-streams/src/main/java/org/elasticsearch/datastreams/action/DataStreamsStatsTransportAction.java\n+++ b/modules/data-streams/src/main/java/org/elasticsearch/datastreams/action/DataStreamsStatsTransportAction.java\n@@ -132,6 +132,16 @@ public class DataStreamsStatsTransportAction extends TransportBroadcastByNodeAct\n         });\n     }\n \n+    @Override\n+    protected String[] resolveConcreteIndexNames(ClusterState clusterState, DataStreamsStatsAction.Request request) {\n+        return DataStreamsActionUtil.resolveConcreteIndexNames(\n+            indexNameExpressionResolver,\n+            clusterState,\n+            request.indices(),\n+            request.indicesOptions()\n+        ).toArray(String[]::new);\n+    }\n+\n     @Override\n     protected DataStreamsStatsAction.DataStreamShardStats readShardResult(StreamInput in) throws IOException {\n         return new DataStreamsStatsAction.DataStreamShardStats(in);",
+      "edit_type": "replace",
+      "verified": true,
+      "verification_result": "developer_fast_path_ok",
+      "applied": true,
+      "apply_result": "SUCCESS"
+    }
+  ],
+  "all_adapted_file_edits": [
+    [
+      {
+        "target_file": "modules/data-streams/src/main/java/org/elasticsearch/datastreams/action/DataStreamsStatsTransportAction.java",
+        "mainline_file": "modules/data-streams/src/main/java/org/elasticsearch/datastreams/action/DataStreamsStatsTransportAction.java",
+        "old_string": "<developer patch fast path>",
+        "new_string": "diff --git a/modules/data-streams/src/main/java/org/elasticsearch/datastreams/action/DataStreamsStatsTransportAction.java b/modules/data-streams/src/main/java/org/elasticsearch/datastreams/action/DataStreamsStatsTransportAction.java\nindex 4d6eead07b9..3e207ab30ed 100644\n--- a/modules/data-streams/src/main/java/org/elasticsearch/datastreams/action/DataStreamsStatsTransportAction.java\n+++ b/modules/data-streams/src/main/java/org/elasticsearch/datastreams/action/DataStreamsStatsTransportAction.java\n@@ -132,6 +132,16 @@ public class DataStreamsStatsTransportAction extends TransportBroadcastByNodeAct\n         });\n     }\n \n+    @Override\n+    protected String[] resolveConcreteIndexNames(ClusterState clusterState, DataStreamsStatsAction.Request request) {\n+        return DataStreamsActionUtil.resolveConcreteIndexNames(\n+            indexNameExpressionResolver,\n+            clusterState,\n+            request.indices(),\n+            request.indicesOptions()\n+        ).toArray(String[]::new);\n+    }\n+\n     @Override\n     protected DataStreamsStatsAction.DataStreamShardStats readShardResult(StreamInput in) throws IOException {\n         return new DataStreamsStatsAction.DataStreamShardStats(in);",
+        "edit_type": "replace",
+        "verified": true,
+        "verification_result": "developer_fast_path_ok",
+        "applied": true,
+        "apply_result": "SUCCESS"
+      }
+    ]
+  ],
+  "agent_trajectory_edits": [
+    []
+  ],
+  "adapted_code_hunks": [
+    {
+      "target_file": "modules/data-streams/src/main/java/org/elasticsearch/datastreams/action/DataStreamsStatsTransportAction.java",
+      "mainline_file": "modules/data-streams/src/main/java/org/elasticsearch/datastreams/action/DataStreamsStatsTransportAction.java",
+      "hunk_text": "diff --git a/modules/data-streams/src/main/java/org/elasticsearch/datastreams/action/DataStreamsStatsTransportAction.java b/modules/data-streams/src/main/java/org/elasticsearch/datastreams/action/DataStreamsStatsTransportAction.java\nindex 4d6eead07b9..3e207ab30ed 100644\n--- a/modules/data-streams/src/main/java/org/elasticsearch/datastreams/action/DataStreamsStatsTransportAction.java\n+++ b/modules/data-streams/src/main/java/org/elasticsearch/datastreams/action/DataStreamsStatsTransportAction.java\n@@ -132,6 +132,16 @@ public class DataStreamsStatsTransportAction extends TransportBroadcastByNodeAct\n         });\n     }\n \n+    @Override\n+    protected String[] resolveConcreteIndexNames(ClusterState clusterState, DataStreamsStatsAction.Request request) {\n+        return DataStreamsActionUtil.resolveConcreteIndexNames(\n+            indexNameExpressionResolver,\n+            clusterState,\n+            request.indices(),\n+            request.indicesOptions()\n+        ).toArray(String[]::new);\n+    }\n+\n     @Override\n     protected DataStreamsStatsAction.DataStreamShardStats readShardResult(StreamInput in) throws IOException {\n         return new DataStreamsStatsAction.DataStreamShardStats(in);\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    }
+  ],
+  "validation_repeated_patch_detected": false,
+  "validation_repeated_plan_detected": false,
+  "best_effort_adapted_code_hunks": [
+    {
+      "target_file": "modules/data-streams/src/main/java/org/elasticsearch/datastreams/action/DataStreamsStatsTransportAction.java",
+      "mainline_file": "modules/data-streams/src/main/java/org/elasticsearch/datastreams/action/DataStreamsStatsTransportAction.java",
+      "hunk_text": "diff --git a/modules/data-streams/src/main/java/org/elasticsearch/datastreams/action/DataStreamsStatsTransportAction.java b/modules/data-streams/src/main/java/org/elasticsearch/datastreams/action/DataStreamsStatsTransportAction.java\nindex 4d6eead07b9..3e207ab30ed 100644\n--- a/modules/data-streams/src/main/java/org/elasticsearch/datastreams/action/DataStreamsStatsTransportAction.java\n+++ b/modules/data-streams/src/main/java/org/elasticsearch/datastreams/action/DataStreamsStatsTransportAction.java\n@@ -132,6 +132,16 @@ public class DataStreamsStatsTransportAction extends TransportBroadcastByNodeAct\n         });\n     }\n \n+    @Override\n+    protected String[] resolveConcreteIndexNames(ClusterState clusterState, DataStreamsStatsAction.Request request) {\n+        return DataStreamsActionUtil.resolveConcreteIndexNames(\n+            indexNameExpressionResolver,\n+            clusterState,\n+            request.indices(),\n+            request.indicesOptions()\n+        ).toArray(String[]::new);\n+    }\n+\n     @Override\n     protected DataStreamsStatsAction.DataStreamShardStats readShardResult(StreamInput in) throws IOException {\n         return new DataStreamsStatsAction.DataStreamShardStats(in);\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    }
+  ],
+  "adapted_test_hunks": [],
+  "generation_checklist": [
+    {
+      "mainline_file": "modules/data-streams/src/main/java/org/elasticsearch/datastreams/action/DataStreamsStatsTransportAction.java",
+      "target_file": "modules/data-streams/src/main/java/org/elasticsearch/datastreams/action/DataStreamsStatsTransportAction.java",
+      "hunk_index": 0,
+      "adaptation_type": "TYPE_I",
+      "execution_types": [
+        "TYPE_I"
+      ],
+      "status": "success",
+      "reason": "developer_fast_path",
+      "todo_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ],
+      "completed_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ]
+    }
+  ],
+  "generated_patch_hash": "fd8d9b1994c80a74c35cc9692225dfeea0650ed1496833ebc3788bdd2b5635c2",
+  "force_type_v_until_success": false,
+  "force_type_v_reason": "",
+  "force_type_v_retry_files": [],
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "sources": []
+  }
+}

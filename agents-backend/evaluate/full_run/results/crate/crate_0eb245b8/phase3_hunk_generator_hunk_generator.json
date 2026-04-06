@@ -1,0 +1,169 @@
+{
+  "adapted_file_edits": [
+    {
+      "target_file": "server/src/main/java/io/crate/expression/scalar/HasDatabasePrivilegeFunction.java",
+      "mainline_file": "server/src/main/java/io/crate/expression/scalar/HasDatabasePrivilegeFunction.java",
+      "old_string": "<developer patch fast path>",
+      "new_string": "diff --git a/server/src/main/java/io/crate/expression/scalar/HasDatabasePrivilegeFunction.java b/server/src/main/java/io/crate/expression/scalar/HasDatabasePrivilegeFunction.java\nindex 8d426a99b3..401f0b5910 100644\n--- a/server/src/main/java/io/crate/expression/scalar/HasDatabasePrivilegeFunction.java\n+++ b/server/src/main/java/io/crate/expression/scalar/HasDatabasePrivilegeFunction.java\n@@ -30,8 +30,10 @@ import org.jetbrains.annotations.Nullable;\n \n import io.crate.Constants;\n import io.crate.common.FourFunction;\n+import io.crate.metadata.FunctionName;\n import io.crate.metadata.functions.BoundSignature;\n import io.crate.metadata.functions.Signature;\n+import io.crate.metadata.pgcatalog.PgCatalogSchemaInfo;\n import io.crate.role.Permission;\n import io.crate.role.Privilege;\n import io.crate.role.Role;\n@@ -41,7 +43,7 @@ import io.crate.types.DataTypes;\n \n public class HasDatabasePrivilegeFunction extends HasPrivilegeFunction {\n \n-    public static final String NAME = \"has_database_privilege\";\n+    public static final FunctionName NAME = new FunctionName(PgCatalogSchemaInfo.NAME, \"has_database_privilege\");\n \n     private static final FourFunction<Roles, Role, Object, Collection<Permission>, Boolean> CHECK_BY_DB_NAME =\n         (roles, user, db, permissions) -> {",
+      "edit_type": "replace",
+      "verified": true,
+      "verification_result": "developer_fast_path_ok",
+      "applied": true,
+      "apply_result": "SUCCESS"
+    },
+    {
+      "target_file": "server/src/main/java/io/crate/expression/scalar/HasSchemaPrivilegeFunction.java",
+      "mainline_file": "server/src/main/java/io/crate/expression/scalar/HasSchemaPrivilegeFunction.java",
+      "old_string": "<developer patch fast path>",
+      "new_string": "diff --git a/server/src/main/java/io/crate/expression/scalar/HasSchemaPrivilegeFunction.java b/server/src/main/java/io/crate/expression/scalar/HasSchemaPrivilegeFunction.java\nindex 61b8839fe9..ce765567bd 100644\n--- a/server/src/main/java/io/crate/expression/scalar/HasSchemaPrivilegeFunction.java\n+++ b/server/src/main/java/io/crate/expression/scalar/HasSchemaPrivilegeFunction.java\n@@ -29,8 +29,10 @@ import java.util.function.BiFunction;\n import org.jetbrains.annotations.Nullable;\n \n import io.crate.common.FourFunction;\n+import io.crate.metadata.FunctionName;\n import io.crate.metadata.functions.BoundSignature;\n import io.crate.metadata.functions.Signature;\n+import io.crate.metadata.pgcatalog.PgCatalogSchemaInfo;\n import io.crate.metadata.pgcatalog.PgCatalogTableDefinitions;\n import io.crate.role.Permission;\n import io.crate.role.Role;\n@@ -40,7 +42,7 @@ import io.crate.types.DataTypes;\n \n public class HasSchemaPrivilegeFunction extends HasPrivilegeFunction {\n \n-    public static final String NAME = \"has_schema_privilege\";\n+    public static final FunctionName NAME = new FunctionName(PgCatalogSchemaInfo.NAME, \"has_schema_privilege\");\n \n     private static final FourFunction<Roles, Role, Object, Collection<Permission>, Boolean> CHECK_BY_SCHEMA_NAME =\n         (roles, user, schema, permissions) -> {",
+      "edit_type": "replace",
+      "verified": true,
+      "verification_result": "developer_fast_path_ok",
+      "applied": true,
+      "apply_result": "SUCCESS"
+    }
+  ],
+  "all_adapted_file_edits": [
+    [
+      {
+        "target_file": "server/src/main/java/io/crate/expression/scalar/HasDatabasePrivilegeFunction.java",
+        "mainline_file": "server/src/main/java/io/crate/expression/scalar/HasDatabasePrivilegeFunction.java",
+        "old_string": "<developer patch fast path>",
+        "new_string": "diff --git a/server/src/main/java/io/crate/expression/scalar/HasDatabasePrivilegeFunction.java b/server/src/main/java/io/crate/expression/scalar/HasDatabasePrivilegeFunction.java\nindex 8d426a99b3..401f0b5910 100644\n--- a/server/src/main/java/io/crate/expression/scalar/HasDatabasePrivilegeFunction.java\n+++ b/server/src/main/java/io/crate/expression/scalar/HasDatabasePrivilegeFunction.java\n@@ -30,8 +30,10 @@ import org.jetbrains.annotations.Nullable;\n \n import io.crate.Constants;\n import io.crate.common.FourFunction;\n+import io.crate.metadata.FunctionName;\n import io.crate.metadata.functions.BoundSignature;\n import io.crate.metadata.functions.Signature;\n+import io.crate.metadata.pgcatalog.PgCatalogSchemaInfo;\n import io.crate.role.Permission;\n import io.crate.role.Privilege;\n import io.crate.role.Role;\n@@ -41,7 +43,7 @@ import io.crate.types.DataTypes;\n \n public class HasDatabasePrivilegeFunction extends HasPrivilegeFunction {\n \n-    public static final String NAME = \"has_database_privilege\";\n+    public static final FunctionName NAME = new FunctionName(PgCatalogSchemaInfo.NAME, \"has_database_privilege\");\n \n     private static final FourFunction<Roles, Role, Object, Collection<Permission>, Boolean> CHECK_BY_DB_NAME =\n         (roles, user, db, permissions) -> {",
+        "edit_type": "replace",
+        "verified": true,
+        "verification_result": "developer_fast_path_ok",
+        "applied": true,
+        "apply_result": "SUCCESS"
+      },
+      {
+        "target_file": "server/src/main/java/io/crate/expression/scalar/HasSchemaPrivilegeFunction.java",
+        "mainline_file": "server/src/main/java/io/crate/expression/scalar/HasSchemaPrivilegeFunction.java",
+        "old_string": "<developer patch fast path>",
+        "new_string": "diff --git a/server/src/main/java/io/crate/expression/scalar/HasSchemaPrivilegeFunction.java b/server/src/main/java/io/crate/expression/scalar/HasSchemaPrivilegeFunction.java\nindex 61b8839fe9..ce765567bd 100644\n--- a/server/src/main/java/io/crate/expression/scalar/HasSchemaPrivilegeFunction.java\n+++ b/server/src/main/java/io/crate/expression/scalar/HasSchemaPrivilegeFunction.java\n@@ -29,8 +29,10 @@ import java.util.function.BiFunction;\n import org.jetbrains.annotations.Nullable;\n \n import io.crate.common.FourFunction;\n+import io.crate.metadata.FunctionName;\n import io.crate.metadata.functions.BoundSignature;\n import io.crate.metadata.functions.Signature;\n+import io.crate.metadata.pgcatalog.PgCatalogSchemaInfo;\n import io.crate.metadata.pgcatalog.PgCatalogTableDefinitions;\n import io.crate.role.Permission;\n import io.crate.role.Role;\n@@ -40,7 +42,7 @@ import io.crate.types.DataTypes;\n \n public class HasSchemaPrivilegeFunction extends HasPrivilegeFunction {\n \n-    public static final String NAME = \"has_schema_privilege\";\n+    public static final FunctionName NAME = new FunctionName(PgCatalogSchemaInfo.NAME, \"has_schema_privilege\");\n \n     private static final FourFunction<Roles, Role, Object, Collection<Permission>, Boolean> CHECK_BY_SCHEMA_NAME =\n         (roles, user, schema, permissions) -> {",
+        "edit_type": "replace",
+        "verified": true,
+        "verification_result": "developer_fast_path_ok",
+        "applied": true,
+        "apply_result": "SUCCESS"
+      }
+    ]
+  ],
+  "agent_trajectory_edits": [
+    []
+  ],
+  "adapted_code_hunks": [
+    {
+      "target_file": "server/src/main/java/io/crate/expression/scalar/HasDatabasePrivilegeFunction.java",
+      "mainline_file": "server/src/main/java/io/crate/expression/scalar/HasDatabasePrivilegeFunction.java",
+      "hunk_text": "diff --git a/server/src/main/java/io/crate/expression/scalar/HasDatabasePrivilegeFunction.java b/server/src/main/java/io/crate/expression/scalar/HasDatabasePrivilegeFunction.java\nindex 8d426a99b3..401f0b5910 100644\n--- a/server/src/main/java/io/crate/expression/scalar/HasDatabasePrivilegeFunction.java\n+++ b/server/src/main/java/io/crate/expression/scalar/HasDatabasePrivilegeFunction.java\n@@ -30,8 +30,10 @@ import org.jetbrains.annotations.Nullable;\n \n import io.crate.Constants;\n import io.crate.common.FourFunction;\n+import io.crate.metadata.FunctionName;\n import io.crate.metadata.functions.BoundSignature;\n import io.crate.metadata.functions.Signature;\n+import io.crate.metadata.pgcatalog.PgCatalogSchemaInfo;\n import io.crate.role.Permission;\n import io.crate.role.Privilege;\n import io.crate.role.Role;\n@@ -41,7 +43,7 @@ import io.crate.types.DataTypes;\n \n public class HasDatabasePrivilegeFunction extends HasPrivilegeFunction {\n \n-    public static final String NAME = \"has_database_privilege\";\n+    public static final FunctionName NAME = new FunctionName(PgCatalogSchemaInfo.NAME, \"has_database_privilege\");\n \n     private static final FourFunction<Roles, Role, Object, Collection<Permission>, Boolean> CHECK_BY_DB_NAME =\n         (roles, user, db, permissions) -> {\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    },
+    {
+      "target_file": "server/src/main/java/io/crate/expression/scalar/HasSchemaPrivilegeFunction.java",
+      "mainline_file": "server/src/main/java/io/crate/expression/scalar/HasSchemaPrivilegeFunction.java",
+      "hunk_text": "diff --git a/server/src/main/java/io/crate/expression/scalar/HasSchemaPrivilegeFunction.java b/server/src/main/java/io/crate/expression/scalar/HasSchemaPrivilegeFunction.java\nindex 61b8839fe9..ce765567bd 100644\n--- a/server/src/main/java/io/crate/expression/scalar/HasSchemaPrivilegeFunction.java\n+++ b/server/src/main/java/io/crate/expression/scalar/HasSchemaPrivilegeFunction.java\n@@ -29,8 +29,10 @@ import java.util.function.BiFunction;\n import org.jetbrains.annotations.Nullable;\n \n import io.crate.common.FourFunction;\n+import io.crate.metadata.FunctionName;\n import io.crate.metadata.functions.BoundSignature;\n import io.crate.metadata.functions.Signature;\n+import io.crate.metadata.pgcatalog.PgCatalogSchemaInfo;\n import io.crate.metadata.pgcatalog.PgCatalogTableDefinitions;\n import io.crate.role.Permission;\n import io.crate.role.Role;\n@@ -40,7 +42,7 @@ import io.crate.types.DataTypes;\n \n public class HasSchemaPrivilegeFunction extends HasPrivilegeFunction {\n \n-    public static final String NAME = \"has_schema_privilege\";\n+    public static final FunctionName NAME = new FunctionName(PgCatalogSchemaInfo.NAME, \"has_schema_privilege\");\n \n     private static final FourFunction<Roles, Role, Object, Collection<Permission>, Boolean> CHECK_BY_SCHEMA_NAME =\n         (roles, user, schema, permissions) -> {\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    }
+  ],
+  "validation_repeated_patch_detected": false,
+  "validation_repeated_plan_detected": false,
+  "best_effort_adapted_code_hunks": [
+    {
+      "target_file": "server/src/main/java/io/crate/expression/scalar/HasDatabasePrivilegeFunction.java",
+      "mainline_file": "server/src/main/java/io/crate/expression/scalar/HasDatabasePrivilegeFunction.java",
+      "hunk_text": "diff --git a/server/src/main/java/io/crate/expression/scalar/HasDatabasePrivilegeFunction.java b/server/src/main/java/io/crate/expression/scalar/HasDatabasePrivilegeFunction.java\nindex 8d426a99b3..401f0b5910 100644\n--- a/server/src/main/java/io/crate/expression/scalar/HasDatabasePrivilegeFunction.java\n+++ b/server/src/main/java/io/crate/expression/scalar/HasDatabasePrivilegeFunction.java\n@@ -30,8 +30,10 @@ import org.jetbrains.annotations.Nullable;\n \n import io.crate.Constants;\n import io.crate.common.FourFunction;\n+import io.crate.metadata.FunctionName;\n import io.crate.metadata.functions.BoundSignature;\n import io.crate.metadata.functions.Signature;\n+import io.crate.metadata.pgcatalog.PgCatalogSchemaInfo;\n import io.crate.role.Permission;\n import io.crate.role.Privilege;\n import io.crate.role.Role;\n@@ -41,7 +43,7 @@ import io.crate.types.DataTypes;\n \n public class HasDatabasePrivilegeFunction extends HasPrivilegeFunction {\n \n-    public static final String NAME = \"has_database_privilege\";\n+    public static final FunctionName NAME = new FunctionName(PgCatalogSchemaInfo.NAME, \"has_database_privilege\");\n \n     private static final FourFunction<Roles, Role, Object, Collection<Permission>, Boolean> CHECK_BY_DB_NAME =\n         (roles, user, db, permissions) -> {\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    },
+    {
+      "target_file": "server/src/main/java/io/crate/expression/scalar/HasSchemaPrivilegeFunction.java",
+      "mainline_file": "server/src/main/java/io/crate/expression/scalar/HasSchemaPrivilegeFunction.java",
+      "hunk_text": "diff --git a/server/src/main/java/io/crate/expression/scalar/HasSchemaPrivilegeFunction.java b/server/src/main/java/io/crate/expression/scalar/HasSchemaPrivilegeFunction.java\nindex 61b8839fe9..ce765567bd 100644\n--- a/server/src/main/java/io/crate/expression/scalar/HasSchemaPrivilegeFunction.java\n+++ b/server/src/main/java/io/crate/expression/scalar/HasSchemaPrivilegeFunction.java\n@@ -29,8 +29,10 @@ import java.util.function.BiFunction;\n import org.jetbrains.annotations.Nullable;\n \n import io.crate.common.FourFunction;\n+import io.crate.metadata.FunctionName;\n import io.crate.metadata.functions.BoundSignature;\n import io.crate.metadata.functions.Signature;\n+import io.crate.metadata.pgcatalog.PgCatalogSchemaInfo;\n import io.crate.metadata.pgcatalog.PgCatalogTableDefinitions;\n import io.crate.role.Permission;\n import io.crate.role.Role;\n@@ -40,7 +42,7 @@ import io.crate.types.DataTypes;\n \n public class HasSchemaPrivilegeFunction extends HasPrivilegeFunction {\n \n-    public static final String NAME = \"has_schema_privilege\";\n+    public static final FunctionName NAME = new FunctionName(PgCatalogSchemaInfo.NAME, \"has_schema_privilege\");\n \n     private static final FourFunction<Roles, Role, Object, Collection<Permission>, Boolean> CHECK_BY_SCHEMA_NAME =\n         (roles, user, schema, permissions) -> {\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    }
+  ],
+  "adapted_test_hunks": [],
+  "generation_checklist": [
+    {
+      "mainline_file": "server/src/main/java/io/crate/expression/scalar/HasDatabasePrivilegeFunction.java",
+      "target_file": "server/src/main/java/io/crate/expression/scalar/HasDatabasePrivilegeFunction.java",
+      "hunk_index": 0,
+      "adaptation_type": "TYPE_II",
+      "execution_types": [
+        "TYPE_II"
+      ],
+      "status": "success",
+      "reason": "developer_fast_path",
+      "todo_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ],
+      "completed_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ]
+    },
+    {
+      "mainline_file": "server/src/main/java/io/crate/expression/scalar/HasSchemaPrivilegeFunction.java",
+      "target_file": "server/src/main/java/io/crate/expression/scalar/HasSchemaPrivilegeFunction.java",
+      "hunk_index": 0,
+      "adaptation_type": "TYPE_II",
+      "execution_types": [
+        "TYPE_II"
+      ],
+      "status": "success",
+      "reason": "developer_fast_path",
+      "todo_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ],
+      "completed_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ]
+    }
+  ],
+  "generated_patch_hash": "e6aff0c2528c3b0c5fa3df1938ba71821c22f0370399b80b6d5385c04df7046a",
+  "force_type_v_until_success": false,
+  "force_type_v_reason": "",
+  "force_type_v_retry_files": [],
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "sources": []
+  }
+}

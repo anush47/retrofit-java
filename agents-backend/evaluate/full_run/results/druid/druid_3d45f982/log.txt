@@ -1,0 +1,34 @@
+patch_id=druid_3d45f982
+project=druid
+mainline_commit=3d45f9829c7b80e3b5289aaf5710b3932639349e
+backport_commit=4a8008aebb7b3f324325feabd1b5a11a07e76022
+mode=full
+started_at=2026-04-06T01:16:24.377420
+----------------------------------------
+Running full workflow graph
+Completed node=phase_0_optimistic
+Workflow completed successfully
+
+[druid/druid_3d45f982] Setting up repositories for mode=full...
+[druid/druid_3d45f982] Running full workflow graph...
+Router: Running Phase 0.
+Phase 0 (Optimistic): Checking direct patch applicability...
+Phase 0: Experiment mode — checking out parent of 4a8008aebb7b3f324325feabd1b5a11a07e76022...
+Phase 0: Building baseline by applying developer backport test hunks only...
+  Validation: extensions-core/multi-stage-query/src/test/java/org/apache/druid/msq/exec/MSQWindowTest.java - applying 1 hunk(s) one by one in bottom-to-top order: [1805]
+  Validation: processing/src/test/java/org/apache/druid/frame/allocation/ArenaMemoryAllocatorTest.java - applying 1 hunk(s) one by one in bottom-to-top order: [1]
+  Validation: processing/src/test/java/org/apache/druid/frame/allocation/BaseMemoryAllocatorTest.java - applying 1 hunk(s) one by one in bottom-to-top order: [1]
+  Validation: processing/src/test/java/org/apache/druid/frame/allocation/HeapMemoryAllocatorTest.java - applying 1 hunk(s) one by one in bottom-to-top order: [19]
+  Validation: processing/src/test/java/org/apache/druid/frame/write/RowBasedFrameWriterTest.java - applying 1 hunk(s) one by one in bottom-to-top order: [20]
+  Validation: ADDED operation for processing/src/test/java/org/apache/druid/frame/allocation/ArenaMemoryAllocatorTest.java
+  Validation: ADDED operation for processing/src/test/java/org/apache/druid/frame/allocation/BaseMemoryAllocatorTest.java
+    Agent 4: Executing druid helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/druid/run_tests.sh
+ValidationToolkit: Warning - git clean had issues (exit code 1). Continuing anyway.
+Phase 0: git apply --check SUCCEEDED. Attempting actual patch application and test run.
+    Agent 4: Executing Druid helper build script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/druid/run_build.sh
+    Agent 4: Executing druid helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/druid/run_tests.sh
+Phase 0: Transition summary -> reason=Valid: Observed fail-to-pass and/or newly passing relevant tests with no regressions.; fail->pass(6): ['org.apache.druid.frame.allocation.ArenaMemoryAllocatorTest#testAllocationInMultiplePasses', 'org.apache.druid.frame.allocation.ArenaMemoryAllocatorTest#testAllocationInSinglePass', 'org.apache.druid.frame.allocation.ArenaMemoryAllocatorTest#testReleaseAllocationTwice', 'org.apache.druid.frame.allocation.ArenaMemoryAllocatorTest#testReleaseLastAllocationFirst', 'org.apache.druid.frame.allocation.HeapMemoryAllocatorTest#testReleaseAllocationTwice', 'org.apache.druid.frame.write.RowBasedFrameWriterTest#test_addSelection_singleLargeRow']; newly_passing(0): []; pass->fail(0): []
+Phase 0: Transition-based test validation passed. Fast-path success.
+Router: Phase 0 succeeded - taking fast-path exit.
+  Completed: phase_0_optimistic
+[druid/druid_3d45f982] Full workflow completed!

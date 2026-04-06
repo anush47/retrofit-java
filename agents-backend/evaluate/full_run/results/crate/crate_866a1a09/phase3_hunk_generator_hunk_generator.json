@@ -1,0 +1,100 @@
+{
+  "adapted_file_edits": [
+    {
+      "target_file": "server/src/main/java/io/crate/metadata/doc/DocTableInfo.java",
+      "mainline_file": "server/src/main/java/io/crate/metadata/doc/DocTableInfo.java",
+      "old_string": "<developer patch fast path>",
+      "new_string": "diff --git a/server/src/main/java/io/crate/metadata/doc/DocTableInfo.java b/server/src/main/java/io/crate/metadata/doc/DocTableInfo.java\nindex 215590d568..9227c50d5c 100644\n--- a/server/src/main/java/io/crate/metadata/doc/DocTableInfo.java\n+++ b/server/src/main/java/io/crate/metadata/doc/DocTableInfo.java\n@@ -83,6 +83,7 @@ import io.crate.expression.symbol.format.Style;\n import io.crate.metadata.ColumnIdent;\n import io.crate.metadata.CoordinatorTxnCtx;\n import io.crate.metadata.GeneratedReference;\n+import io.crate.metadata.IndexParts;\n import io.crate.metadata.IndexReference;\n import io.crate.metadata.NodeContext;\n import io.crate.metadata.PartitionName;\n@@ -1008,10 +1009,17 @@ public class DocTableInfo implements TableInfo, ShardedTable, StoredTable {\n             if (allColumns.size() > allowedTotalColumns) {\n                 throw new IllegalArgumentException(\"Limit of total columns [\" + allowedTotalColumns + \"] in table [\" + ident + \"] exceeded\");\n             }\n+            var indexNumberOfShards = numberOfShards;\n+            if (isPartitioned && IndexParts.isPartitioned(indexName)) {\n+                // if the index is a part of a partitioned table,\n+                // the actual value of the index must be used as the value for the whole partitioned table may have changed\n+                indexNumberOfShards = indexMetadata.getNumberOfShards();\n+            }\n+\n             metadataBuilder.put(\n                 IndexMetadata.builder(indexMetadata)\n                     .putMapping(new MappingMetadata(mapping))\n-                    .numberOfShards(numberOfShards)\n+                    .numberOfShards(indexNumberOfShards)\n                     .mappingVersion(indexMetadata.getMappingVersion() + 1)\n             );\n         }",
+      "edit_type": "replace",
+      "verified": true,
+      "verification_result": "developer_fast_path_ok",
+      "applied": true,
+      "apply_result": "SUCCESS"
+    }
+  ],
+  "all_adapted_file_edits": [
+    [
+      {
+        "target_file": "server/src/main/java/io/crate/metadata/doc/DocTableInfo.java",
+        "mainline_file": "server/src/main/java/io/crate/metadata/doc/DocTableInfo.java",
+        "old_string": "<developer patch fast path>",
+        "new_string": "diff --git a/server/src/main/java/io/crate/metadata/doc/DocTableInfo.java b/server/src/main/java/io/crate/metadata/doc/DocTableInfo.java\nindex 215590d568..9227c50d5c 100644\n--- a/server/src/main/java/io/crate/metadata/doc/DocTableInfo.java\n+++ b/server/src/main/java/io/crate/metadata/doc/DocTableInfo.java\n@@ -83,6 +83,7 @@ import io.crate.expression.symbol.format.Style;\n import io.crate.metadata.ColumnIdent;\n import io.crate.metadata.CoordinatorTxnCtx;\n import io.crate.metadata.GeneratedReference;\n+import io.crate.metadata.IndexParts;\n import io.crate.metadata.IndexReference;\n import io.crate.metadata.NodeContext;\n import io.crate.metadata.PartitionName;\n@@ -1008,10 +1009,17 @@ public class DocTableInfo implements TableInfo, ShardedTable, StoredTable {\n             if (allColumns.size() > allowedTotalColumns) {\n                 throw new IllegalArgumentException(\"Limit of total columns [\" + allowedTotalColumns + \"] in table [\" + ident + \"] exceeded\");\n             }\n+            var indexNumberOfShards = numberOfShards;\n+            if (isPartitioned && IndexParts.isPartitioned(indexName)) {\n+                // if the index is a part of a partitioned table,\n+                // the actual value of the index must be used as the value for the whole partitioned table may have changed\n+                indexNumberOfShards = indexMetadata.getNumberOfShards();\n+            }\n+\n             metadataBuilder.put(\n                 IndexMetadata.builder(indexMetadata)\n                     .putMapping(new MappingMetadata(mapping))\n-                    .numberOfShards(numberOfShards)\n+                    .numberOfShards(indexNumberOfShards)\n                     .mappingVersion(indexMetadata.getMappingVersion() + 1)\n             );\n         }",
+        "edit_type": "replace",
+        "verified": true,
+        "verification_result": "developer_fast_path_ok",
+        "applied": true,
+        "apply_result": "SUCCESS"
+      }
+    ]
+  ],
+  "agent_trajectory_edits": [
+    []
+  ],
+  "adapted_code_hunks": [
+    {
+      "target_file": "server/src/main/java/io/crate/metadata/doc/DocTableInfo.java",
+      "mainline_file": "server/src/main/java/io/crate/metadata/doc/DocTableInfo.java",
+      "hunk_text": "diff --git a/server/src/main/java/io/crate/metadata/doc/DocTableInfo.java b/server/src/main/java/io/crate/metadata/doc/DocTableInfo.java\nindex 215590d568..9227c50d5c 100644\n--- a/server/src/main/java/io/crate/metadata/doc/DocTableInfo.java\n+++ b/server/src/main/java/io/crate/metadata/doc/DocTableInfo.java\n@@ -83,6 +83,7 @@ import io.crate.expression.symbol.format.Style;\n import io.crate.metadata.ColumnIdent;\n import io.crate.metadata.CoordinatorTxnCtx;\n import io.crate.metadata.GeneratedReference;\n+import io.crate.metadata.IndexParts;\n import io.crate.metadata.IndexReference;\n import io.crate.metadata.NodeContext;\n import io.crate.metadata.PartitionName;\n@@ -1008,10 +1009,17 @@ public class DocTableInfo implements TableInfo, ShardedTable, StoredTable {\n             if (allColumns.size() > allowedTotalColumns) {\n                 throw new IllegalArgumentException(\"Limit of total columns [\" + allowedTotalColumns + \"] in table [\" + ident + \"] exceeded\");\n             }\n+            var indexNumberOfShards = numberOfShards;\n+            if (isPartitioned && IndexParts.isPartitioned(indexName)) {\n+                // if the index is a part of a partitioned table,\n+                // the actual value of the index must be used as the value for the whole partitioned table may have changed\n+                indexNumberOfShards = indexMetadata.getNumberOfShards();\n+            }\n+\n             metadataBuilder.put(\n                 IndexMetadata.builder(indexMetadata)\n                     .putMapping(new MappingMetadata(mapping))\n-                    .numberOfShards(numberOfShards)\n+                    .numberOfShards(indexNumberOfShards)\n                     .mappingVersion(indexMetadata.getMappingVersion() + 1)\n             );\n         }\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    }
+  ],
+  "validation_repeated_patch_detected": false,
+  "validation_repeated_plan_detected": false,
+  "best_effort_adapted_code_hunks": [
+    {
+      "target_file": "server/src/main/java/io/crate/metadata/doc/DocTableInfo.java",
+      "mainline_file": "server/src/main/java/io/crate/metadata/doc/DocTableInfo.java",
+      "hunk_text": "diff --git a/server/src/main/java/io/crate/metadata/doc/DocTableInfo.java b/server/src/main/java/io/crate/metadata/doc/DocTableInfo.java\nindex 215590d568..9227c50d5c 100644\n--- a/server/src/main/java/io/crate/metadata/doc/DocTableInfo.java\n+++ b/server/src/main/java/io/crate/metadata/doc/DocTableInfo.java\n@@ -83,6 +83,7 @@ import io.crate.expression.symbol.format.Style;\n import io.crate.metadata.ColumnIdent;\n import io.crate.metadata.CoordinatorTxnCtx;\n import io.crate.metadata.GeneratedReference;\n+import io.crate.metadata.IndexParts;\n import io.crate.metadata.IndexReference;\n import io.crate.metadata.NodeContext;\n import io.crate.metadata.PartitionName;\n@@ -1008,10 +1009,17 @@ public class DocTableInfo implements TableInfo, ShardedTable, StoredTable {\n             if (allColumns.size() > allowedTotalColumns) {\n                 throw new IllegalArgumentException(\"Limit of total columns [\" + allowedTotalColumns + \"] in table [\" + ident + \"] exceeded\");\n             }\n+            var indexNumberOfShards = numberOfShards;\n+            if (isPartitioned && IndexParts.isPartitioned(indexName)) {\n+                // if the index is a part of a partitioned table,\n+                // the actual value of the index must be used as the value for the whole partitioned table may have changed\n+                indexNumberOfShards = indexMetadata.getNumberOfShards();\n+            }\n+\n             metadataBuilder.put(\n                 IndexMetadata.builder(indexMetadata)\n                     .putMapping(new MappingMetadata(mapping))\n-                    .numberOfShards(numberOfShards)\n+                    .numberOfShards(indexNumberOfShards)\n                     .mappingVersion(indexMetadata.getMappingVersion() + 1)\n             );\n         }\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    }
+  ],
+  "adapted_test_hunks": [],
+  "generation_checklist": [
+    {
+      "mainline_file": "server/src/main/java/io/crate/metadata/doc/DocTableInfo.java",
+      "target_file": "server/src/main/java/io/crate/metadata/doc/DocTableInfo.java",
+      "hunk_index": 0,
+      "adaptation_type": "TYPE_II",
+      "execution_types": [
+        "TYPE_II"
+      ],
+      "status": "success",
+      "reason": "developer_fast_path",
+      "todo_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ],
+      "completed_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ]
+    }
+  ],
+  "generated_patch_hash": "25f3474924feca6e2f9023b3507a8e24d2a9eca64faf7f577f4536fcf3cd1548",
+  "force_type_v_until_success": false,
+  "force_type_v_reason": "",
+  "force_type_v_retry_files": [],
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "sources": []
+  }
+}

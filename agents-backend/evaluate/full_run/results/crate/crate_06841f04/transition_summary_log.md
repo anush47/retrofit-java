@@ -1,0 +1,54 @@
+# Transition Summary
+
+- Source: phase_outputs
+- Valid backport signal: False
+- Reason: Invalid: No fail-to-pass or newly passing relevant tests were observed.
+- fail->pass (0): []
+- newly passing (0): []
+- pass->fail (0): []
+
+## Touched Test States
+- Touched tests (from patch): ['io.crate.execution.dml.IndexerTest']
+  - io.crate.execution.dml.IndexerTest#test_adds_default_values: baseline=passed, patched=passed
+  - io.crate.execution.dml.IndexerTest#test_adds_generated_column: baseline=passed, patched=passed
+  - io.crate.execution.dml.IndexerTest#test_adds_non_deterministic_defaults_and_generated_columns: baseline=passed, patched=passed
+  - io.crate.execution.dml.IndexerTest#test_adds_non_deterministic_sub_columns_when_root_is_not_in_targets: baseline=passed, patched=passed
+  - io.crate.execution.dml.IndexerTest#test_can_add_dynamic_ref_as_new_top_level_column: baseline=passed, patched=passed
+  - io.crate.execution.dml.IndexerTest#test_can_generate_return_values: baseline=passed, patched=passed
+  - io.crate.execution.dml.IndexerTest#test_can_have_ft_index_for_array: baseline=passed, patched=passed
+  - io.crate.execution.dml.IndexerTest#test_can_index_all_storable_types: baseline=passed, patched=passed
+  - io.crate.execution.dml.IndexerTest#test_can_index_fulltext_column: baseline=passed, patched=passed
+  - io.crate.execution.dml.IndexerTest#test_can_index_generated_geo_shape: baseline=passed, patched=passed
+  - io.crate.execution.dml.IndexerTest#test_cannot_add_dynamic_column_on_strict_table: baseline=passed, patched=passed
+  - io.crate.execution.dml.IndexerTest#test_check_constraint_on_object_sub_column_is_verified: baseline=passed, patched=passed
+  - io.crate.execution.dml.IndexerTest#test_create_dynamic_array: baseline=passed, patched=passed
+  - io.crate.execution.dml.IndexerTest#test_create_dynamic_object_with_nested_columns: baseline=passed, patched=passed
+  - io.crate.execution.dml.IndexerTest#test_default_and_generated_column_within_object: baseline=passed, patched=passed
+  - io.crate.execution.dml.IndexerTest#test_default_for_full_object: baseline=skipped, patched=skipped
+  - io.crate.execution.dml.IndexerTest#test_does_not_allow_new_columns_in_strict_object: baseline=passed, patched=passed
+  - io.crate.execution.dml.IndexerTest#test_dynamic_int_value_results_in_long_column: baseline=passed, patched=passed
+  - io.crate.execution.dml.IndexerTest#test_empty_array_and_array_with_nulls_does_not_result_in_new_column: baseline=passed, patched=passed
+  - io.crate.execution.dml.IndexerTest#test_empty_arrays_are_not_prefixed_as_unknown_on_tables_created_less_5_5: baseline=passed, patched=passed
+  - io.crate.execution.dml.IndexerTest#test_empty_arrays_are_prefixed_as_unknown: baseline=passed, patched=passed
+  - io.crate.execution.dml.IndexerTest#test_empty_arrays_together_with_another_field_added_as_new_cols_with_dynamic_policy: baseline=error, patched=passed
+  - io.crate.execution.dml.IndexerTest#test_fields_are_omitted_in_source_for_null_values: baseline=passed, patched=passed
+  - io.crate.execution.dml.IndexerTest#test_fields_order_in_source_is_deterministic: baseline=passed, patched=passed
+  - io.crate.execution.dml.IndexerTest#test_generated_column_can_refer_to_a_non_string_partitioned_by_column: baseline=passed, patched=passed
+  - io.crate.execution.dml.IndexerTest#test_generated_partitioned_column_is_not_indexed_or_included_in_source: baseline=passed, patched=passed
+  - io.crate.execution.dml.IndexerTest#test_ignored_object_child_columns_are_not_prefixed_on_tables_created_less_5_5: baseline=passed, patched=passed
+  - io.crate.execution.dml.IndexerTest#test_ignored_object_child_columns_are_prefixed: baseline=passed, patched=passed
+  - io.crate.execution.dml.IndexerTest#test_ignored_object_values_are_ignored_and_added_to_source: baseline=passed, patched=passed
+  - io.crate.execution.dml.IndexerTest#test_index_fails_if_check_constraint_returns_false: baseline=passed, patched=passed
+  - io.crate.execution.dml.IndexerTest#test_index_fails_if_not_null_column_has_null_value: baseline=passed, patched=passed
+  - io.crate.execution.dml.IndexerTest#test_index_nested_array: baseline=skipped, patched=skipped
+  - io.crate.execution.dml.IndexerTest#test_index_object_with_dynamic_column_creation: baseline=passed, patched=passed
+  - io.crate.execution.dml.IndexerTest#test_indexing_bitstring_results_in_same_fields_as_document_mapper_if_not_indexed: baseline=passed, patched=passed
+  - io.crate.execution.dml.IndexerTest#test_indexing_boolean_results_in_same_fields_as_document_mapper_if_not_indexed: baseline=passed, patched=passed
+  - io.crate.execution.dml.IndexerTest#test_indexing_float_results_in_float_field: baseline=passed, patched=passed
+  - io.crate.execution.dml.IndexerTest#test_indexing_geo_shape_results_in_same_fields_as_document_mapper: baseline=passed, patched=passed
+  - io.crate.execution.dml.IndexerTest#test_indexing_ip_results_in_same_fields_as_document_mapper_if_not_indexed: baseline=passed, patched=passed
+  - io.crate.execution.dml.IndexerTest#test_indexing_number_results_in_same_fields_as_document_mapper_if_not_indexed: baseline=passed, patched=passed
+  - io.crate.execution.dml.IndexerTest#test_leaves_out_generated_column_if_dependency_is_null: baseline=passed, patched=passed
+  - io.crate.execution.dml.IndexerTest#test_source_includes_null_values_in_arrays: baseline=passed, patched=passed
+  - io.crate.execution.dml.IndexerTest#test_translog_indexer_can_read_source_with_oids: baseline=passed, patched=passed
+  - io.crate.execution.dml.IndexerTest#test_validates_user_provided_value_for_generated_columns: baseline=passed, patched=passed

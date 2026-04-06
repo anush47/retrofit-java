@@ -1,0 +1,69 @@
+{
+  "semantic_blueprint": {
+    "root_cause_hypothesis": "Deterministic inference: target branch diverges from mainline; adapt hunks with exact target context.",
+    "fix_logic": "Apply each source hunk with target-verified context and symbol consistency while preserving behavior.",
+    "dependent_apis": [
+      "TableRelation",
+      "if"
+    ],
+    "patch_intent_summary": "Backport patch behavior to target branch with minimal, context-correct edits.",
+    "hunk_chain": [
+      {
+        "hunk_index": 1,
+        "file": "server/src/main/java/io/crate/analyze/CopyAnalyzer.java",
+        "summary": "Modifies logic (+2/-1 lines).",
+        "role": "core_fix",
+        "connects_to_next": "Prepares next hunk in same file with related context.",
+        "global_index": 1
+      },
+      {
+        "hunk_index": 2,
+        "file": "server/src/main/java/io/crate/analyze/CopyAnalyzer.java",
+        "summary": "Modifies logic (+2/-1 lines).",
+        "role": "core_fix",
+        "connects_to_next": "",
+        "global_index": 2
+      },
+      {
+        "hunk_index": 1,
+        "file": "server/src/main/java/io/crate/analyze/DeleteAnalyzer.java",
+        "summary": "Modifies logic (+7/-3 lines).",
+        "role": "guard",
+        "connects_to_next": "",
+        "global_index": 3
+      },
+      {
+        "hunk_index": 1,
+        "file": "server/src/main/java/io/crate/analyze/InsertAnalyzer.java",
+        "summary": "Modifies logic (+6/-1 lines).",
+        "role": "core_fix",
+        "connects_to_next": "",
+        "global_index": 4
+      },
+      {
+        "hunk_index": 1,
+        "file": "server/src/main/java/io/crate/analyze/UpdateAnalyzer.java",
+        "summary": "Modifies logic (+6/-1 lines).",
+        "role": "core_fix",
+        "connects_to_next": "",
+        "global_index": 5
+      },
+      {
+        "hunk_index": 1,
+        "file": "server/src/main/java/io/crate/analyze/where/WhereClauseAnalyzer.java",
+        "summary": "Modifies logic (+5/-1 lines).",
+        "role": "core_fix",
+        "connects_to_next": "",
+        "global_index": 6
+      }
+    ]
+  },
+  "patch_diff": "From c77d091150e74221bf13b8df3d8735649e544fdc Mon Sep 17 00:00:00 2001\nFrom: jeeminso <jeeminso@gmail.com>\nDate: Wed, 1 May 2024 20:08:08 +0900\nSubject: [PATCH] Do not normalize nondeterministic functions during analysis\n\n---\n docs/appendices/release-notes/5.6.5.rst       |  3 ++\n docs/appendices/release-notes/5.7.1.rst       |  3 ++\n .../java/io/crate/analyze/CopyAnalyzer.java   |  6 ++--\n .../java/io/crate/analyze/DeleteAnalyzer.java | 10 +++++--\n .../java/io/crate/analyze/InsertAnalyzer.java |  7 ++++-\n .../java/io/crate/analyze/UpdateAnalyzer.java |  7 ++++-\n .../analyze/where/WhereClauseAnalyzer.java    |  6 +++-\n .../DeleteIntegrationTest.java                | 30 +++++++++++++++++++\n 8 files changed, 64 insertions(+), 8 deletions(-)\n\ndiff --git a/docs/appendices/release-notes/5.6.5.rst b/docs/appendices/release-notes/5.6.5.rst\nindex 71054967d1..d359b0deca 100644\n--- a/docs/appendices/release-notes/5.6.5.rst\n+++ b/docs/appendices/release-notes/5.6.5.rst\n@@ -77,6 +77,9 @@ Fixes\n   statements to return invalid results if the partitions of the table changed\n   after preparing the statements.\n \n+- Fixed an issue that caused prepared statements to cache values of\n+  non-deterministic functions and use the same value for each execution.\n+\n - Improved ingestion performance for partitioned tables where no primary keys\n   are defined by using an append only optimized ingestion strategy. The\n   performance improvement increases with the size of each shard.\ndiff --git a/docs/appendices/release-notes/5.7.1.rst b/docs/appendices/release-notes/5.7.1.rst\nindex 674d41033e..91e43316ee 100644\n--- a/docs/appendices/release-notes/5.7.1.rst\n+++ b/docs/appendices/release-notes/5.7.1.rst\n@@ -76,6 +76,9 @@ Fixes\n   statements to return invalid results if the partitions of the table changed\n   after preparing the statements.\n \n+- Fixed an issue that caused prepared statements to cache values of\n+  non-deterministic functions and use the same value for each execution.\n+\n - Improved ingestion performance for partitioned tables where no primary keys\n   are defined by using an append only optimized ingestion strategy. The\n   performance improvement increases with the size of each shard.\ndiff --git a/server/src/main/java/io/crate/analyze/CopyAnalyzer.java b/server/src/main/java/io/crate/analyze/CopyAnalyzer.java\nindex 6d90b30b3c..23956ff65b 100644\n--- a/server/src/main/java/io/crate/analyze/CopyAnalyzer.java\n+++ b/server/src/main/java/io/crate/analyze/CopyAnalyzer.java\n@@ -74,7 +74,8 @@ class CopyAnalyzer {\n             nodeCtx,\n             RowGranularity.CLUSTER,\n             null,\n-            new TableRelation(tableInfo));\n+            new TableRelation(tableInfo),\n+            f -> f.signature().isDeterministic());\n \n         Table<Symbol> table = node.table().map(t -> exprAnalyzerWithFieldsAsString.convert(t, exprCtx));\n         GenericProperties<Symbol> properties = node.properties().map(t -> exprAnalyzerWithoutFields.convert(t,\n@@ -118,7 +119,8 @@ class CopyAnalyzer {\n             nodeCtx,\n             RowGranularity.CLUSTER,\n             null,\n-            tableRelation);\n+            tableRelation,\n+            f -> f.signature().isDeterministic());\n \n         var exprCtx = new ExpressionAnalysisContext(txnCtx.sessionSettings());\n         var expressionAnalyzer = new ExpressionAnalyzer(\ndiff --git a/server/src/main/java/io/crate/analyze/DeleteAnalyzer.java b/server/src/main/java/io/crate/analyze/DeleteAnalyzer.java\nindex 24dbb8a508..d9a735d4b3 100644\n--- a/server/src/main/java/io/crate/analyze/DeleteAnalyzer.java\n+++ b/server/src/main/java/io/crate/analyze/DeleteAnalyzer.java\n@@ -60,11 +60,15 @@ final class DeleteAnalyzer {\n         MaybeAliasedStatement maybeAliasedStatement = MaybeAliasedStatement.analyze(relation);\n         relation = maybeAliasedStatement.nonAliasedRelation();\n \n-        if (!(relation instanceof DocTableRelation)) {\n+        if (!(relation instanceof DocTableRelation table)) {\n             throw new UnsupportedOperationException(\"Cannot delete from relations other than base tables\");\n         }\n-        DocTableRelation table = (DocTableRelation) relation;\n-        EvaluatingNormalizer normalizer = new EvaluatingNormalizer(nodeCtx, RowGranularity.CLUSTER, null, table);\n+        EvaluatingNormalizer normalizer = new EvaluatingNormalizer(\n+            nodeCtx,\n+            RowGranularity.CLUSTER,\n+            null,\n+            table,\n+            f -> f.signature().isDeterministic());\n         ExpressionAnalyzer expressionAnalyzer = new ExpressionAnalyzer(\n             txnContext,\n             nodeCtx,\ndiff --git a/server/src/main/java/io/crate/analyze/InsertAnalyzer.java b/server/src/main/java/io/crate/analyze/InsertAnalyzer.java\nindex 76dc3e5de5..2e11cd6e5e 100644\n--- a/server/src/main/java/io/crate/analyze/InsertAnalyzer.java\n+++ b/server/src/main/java/io/crate/analyze/InsertAnalyzer.java\n@@ -311,7 +311,12 @@ class InsertAnalyzer {\n             fieldProvider = new NameFieldProvider(targetTable);\n         }\n         var expressionAnalyzer = new ExpressionAnalyzer(txnCtx, nodeCtx, paramTypeHints, fieldProvider, null);\n-        var normalizer = new EvaluatingNormalizer(nodeCtx, RowGranularity.CLUSTER, null, targetTable);\n+        var normalizer = new EvaluatingNormalizer(\n+            nodeCtx,\n+            RowGranularity.CLUSTER,\n+            null,\n+            targetTable,\n+            f -> f.signature().isDeterministic());\n         Map<Reference, Symbol> updateAssignments = new HashMap<>(duplicateKeyContext.getAssignments().size());\n         for (Assignment<Expression> assignment : duplicateKeyContext.getAssignments()) {\n             Reference targetCol = (Reference) exprAnalyzer.convert(assignment.columnName(), exprCtx);\ndiff --git a/server/src/main/java/io/crate/analyze/UpdateAnalyzer.java b/server/src/main/java/io/crate/analyze/UpdateAnalyzer.java\nindex 10fb9e2fcf..da708dcfca 100644\n--- a/server/src/main/java/io/crate/analyze/UpdateAnalyzer.java\n+++ b/server/src/main/java/io/crate/analyze/UpdateAnalyzer.java\n@@ -107,7 +107,12 @@ public final class UpdateAnalyzer {\n             throw new UnsupportedOperationException(\"UPDATE is only supported on base-tables\");\n         }\n         AbstractTableRelation<?> table = (AbstractTableRelation<?>) relation;\n-        EvaluatingNormalizer normalizer = new EvaluatingNormalizer(nodeCtx, RowGranularity.CLUSTER, null, table);\n+        EvaluatingNormalizer normalizer = new EvaluatingNormalizer(\n+            nodeCtx,\n+            RowGranularity.CLUSTER,\n+            null,\n+            table,\n+            f -> f.signature().isDeterministic());\n         SubqueryAnalyzer subqueryAnalyzer =\n             new SubqueryAnalyzer(relationAnalyzer, new StatementAnalysisContext(typeHints, Operation.READ, txnCtx));\n \ndiff --git a/server/src/main/java/io/crate/analyze/where/WhereClauseAnalyzer.java b/server/src/main/java/io/crate/analyze/where/WhereClauseAnalyzer.java\nindex 7b306d76d4..731eb7f9f3 100644\n--- a/server/src/main/java/io/crate/analyze/where/WhereClauseAnalyzer.java\n+++ b/server/src/main/java/io/crate/analyze/where/WhereClauseAnalyzer.java\n@@ -112,7 +112,11 @@ public class WhereClauseAnalyzer {\n         PartitionReferenceResolver partitionReferenceResolver = preparePartitionResolver(\n             tableInfo.partitionedByColumns());\n         EvaluatingNormalizer normalizer = new EvaluatingNormalizer(\n-            nodeCtx, RowGranularity.PARTITION, partitionReferenceResolver, null);\n+            nodeCtx,\n+            RowGranularity.PARTITION,\n+            partitionReferenceResolver,\n+            null,\n+            f -> f.signature().isDeterministic());\n \n         Symbol normalized;\n         Map<Symbol, List<Literal<?>>> queryPartitionMap = new HashMap<>();\ndiff --git a/server/src/test/java/io/crate/integrationtests/DeleteIntegrationTest.java b/server/src/test/java/io/crate/integrationtests/DeleteIntegrationTest.java\nindex 86db88e0bd..ed395563a5 100644\n--- a/server/src/test/java/io/crate/integrationtests/DeleteIntegrationTest.java\n+++ b/server/src/test/java/io/crate/integrationtests/DeleteIntegrationTest.java\n@@ -24,9 +24,12 @@ package io.crate.integrationtests;\n \n import static io.crate.testing.Asserts.assertThat;\n \n+import java.util.List;\n+\n import org.elasticsearch.test.IntegTestCase;\n import org.junit.Test;\n \n+import io.crate.action.sql.BaseResultReceiver;\n import io.crate.common.unit.TimeValue;\n import io.crate.execution.dsl.projection.AbstractIndexWriterProjection;\n import io.crate.testing.UseJdbc;\n@@ -303,4 +306,31 @@ public class DeleteIntegrationTest extends IntegTestCase {\n             \"1\"\n         );\n     }\n+\n+    @Test\n+    public void test_can_reuse_prepared_statement_for_delete_containing_non_deterministic_function() throws Exception {\n+        execute(\"CREATE TABLE doc.t (a timestamp with time zone)\");\n+\n+        try (var session = sqlExecutor.newSession()) {\n+            session.parse(\n+                \"preparedStatement\",\n+                \"DELETE FROM doc.t WHERE a < now() - '3 minute'::INTERVAL\",\n+                List.of()\n+            );\n+\n+            // insert a value that the prepared statement will delete\n+            execute(\"INSERT INTO doc.t SELECT now() - '3 minute'::INTERVAL\");\n+            refresh();\n+\n+            // execute the prepared statement to delete the inserted value\n+            session.bind(\"portalName\", \"preparedStatement\", List.of(), null);\n+            session.execute(\"portalName\", 0, new BaseResultReceiver());\n+            session.sync().get();\n+        }\n+        refresh();\n+\n+        // empty rows implies that the now() in the prepared statement is evaluated during execution\n+        execute(\"SELECT * FROM doc.t\");\n+        assertThat(response).isEmpty();\n+    }\n }\n-- \n2.43.0\n\n",
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "reason": "deterministic_no_llm"
+  }
+}

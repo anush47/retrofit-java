@@ -1,0 +1,455 @@
+# Post-Pipeline Developer Patch Comparison
+
+**Exact Developer Patch (code-only)**: False
+
+**Comparison Method**: file_state
+
+## Commit Pair Consistency
+- Pair mismatch: False
+- Reason: scope_overlap_ok
+- Mainline Java files: ['libs/entitlement/src/main/java/org/elasticsearch/entitlement/runtime/policy/FileAccessTree.java']
+- Developer Java files: ['libs/entitlement/src/main/java/org/elasticsearch/entitlement/runtime/policy/FileAccessTree.java']
+- Overlap Java files: ['libs/entitlement/src/main/java/org/elasticsearch/entitlement/runtime/policy/FileAccessTree.java']
+- Overlap ratio (mainline): 1.0
+- Compare files scope used: ['libs/entitlement/src/main/java/org/elasticsearch/entitlement/runtime/policy/FileAccessTree.java']
+
+## File State Comparison
+- Compared files: ['libs/entitlement/src/main/java/org/elasticsearch/entitlement/runtime/policy/FileAccessTree.java']
+- Mismatched files: ['libs/entitlement/src/main/java/org/elasticsearch/entitlement/runtime/policy/FileAccessTree.java']
+- Error: None
+
+## Comparison Scope
+- Agent-only patch: code hunks produced by Agent 3
+- Final effective patch: agent code hunks + developer auxiliary hunks (still code-only for this report)
+
+## Agent-Only Hunk Comparison (code files)
+
+### libs/entitlement/src/main/java/org/elasticsearch/entitlement/runtime/policy/FileAccessTree.java
+
+- Developer hunks: 5
+- Generated hunks: 0
+
+#### Hunk 1
+
+Developer
+```diff
+@@ -14,6 +14,7 @@
+ import java.nio.file.Path;
+ import java.util.ArrayList;
+ import java.util.Arrays;
++import java.util.Comparator;
+ import java.util.List;
+ import java.util.Objects;
+ 
+
+```
+
+Generated
+```diff
+*No hunk*
+```
+
+Developer -> Generated (Unified Diff)
+```diff
+--- developer+++ generated@@ -1,8 +1 @@-@@ -14,6 +14,7 @@
+- import java.nio.file.Path;
+- import java.util.ArrayList;
+- import java.util.Arrays;
+-+import java.util.Comparator;
+- import java.util.List;
+- import java.util.Objects;
+- 
++*No hunk*
+```
+
+#### Hunk 2
+
+Developer
+```diff
+@@ -46,8 +47,8 @@
+         readPaths.add(tempDir);
+         writePaths.add(tempDir);
+ 
+-        readPaths.sort(String::compareTo);
+-        writePaths.sort(String::compareTo);
++        readPaths.sort(PATH_ORDER);
++        writePaths.sort(PATH_ORDER);
+ 
+         this.readPaths = pruneSortedPaths(readPaths).toArray(new String[0]);
+         this.writePaths = pruneSortedPaths(writePaths).toArray(new String[0]);
+
+```
+
+Generated
+```diff
+*No hunk*
+```
+
+Developer -> Generated (Unified Diff)
+```diff
+--- developer+++ generated@@ -1,11 +1 @@-@@ -46,8 +47,8 @@
+-         readPaths.add(tempDir);
+-         writePaths.add(tempDir);
+- 
+--        readPaths.sort(String::compareTo);
+--        writePaths.sort(String::compareTo);
+-+        readPaths.sort(PATH_ORDER);
+-+        writePaths.sort(PATH_ORDER);
+- 
+-         this.readPaths = pruneSortedPaths(readPaths).toArray(new String[0]);
+-         this.writePaths = pruneSortedPaths(writePaths).toArray(new String[0]);
++*No hunk*
+```
+
+#### Hunk 3
+
+Developer
+```diff
+@@ -60,7 +61,7 @@
+             prunedReadPaths.add(currentPath);
+             for (int i = 1; i < paths.size(); ++i) {
+                 String nextPath = paths.get(i);
+-                if (nextPath.startsWith(currentPath) == false) {
++                if (isParent(currentPath, nextPath) == false) {
+                     prunedReadPaths.add(nextPath);
+                     currentPath = nextPath;
+                 }
+
+```
+
+Generated
+```diff
+*No hunk*
+```
+
+Developer -> Generated (Unified Diff)
+```diff
+--- developer+++ generated@@ -1,9 +1 @@-@@ -60,7 +61,7 @@
+-             prunedReadPaths.add(currentPath);
+-             for (int i = 1; i < paths.size(); ++i) {
+-                 String nextPath = paths.get(i);
+--                if (nextPath.startsWith(currentPath) == false) {
+-+                if (isParent(currentPath, nextPath) == false) {
+-                     prunedReadPaths.add(nextPath);
+-                     currentPath = nextPath;
+-                 }
++*No hunk*
+```
+
+#### Hunk 4
+
+Developer
+```diff
+@@ -88,21 +89,28 @@
+         // Note that toAbsolutePath produces paths separated by the default file separator,
+         // so on Windows, if the given path uses forward slashes, this consistently
+         // converts it to backslashes.
+-        return path.toAbsolutePath().normalize().toString();
++        String result = path.toAbsolutePath().normalize().toString();
++        while (result.endsWith(FILE_SEPARATOR)) {
++            result = result.substring(0, result.length() - FILE_SEPARATOR.length());
++        }
++        return result;
+     }
+ 
+     private static boolean checkPath(String path, String[] paths) {
+         if (paths.length == 0) {
+             return false;
+         }
+-        int ndx = Arrays.binarySearch(paths, path);
++        int ndx = Arrays.binarySearch(paths, path, PATH_ORDER);
+         if (ndx < -1) {
+-            String maybeParent = paths[-ndx - 2];
+-            return path.startsWith(maybeParent) && path.startsWith(FILE_SEPARATOR, maybeParent.length());
++            return isParent(paths[-ndx - 2], path);
+         }
+         return ndx >= 0;
+     }
+ 
++    private static boolean isParent(String maybeParent, String path) {
++        return path.startsWith(maybeParent) && path.startsWith(FILE_SEPARATOR, maybeParent.length());
++    }
++
+     @Override
+     public boolean equals(Object o) {
+         if (o == null || getClass() != o.getClass()) return false;
+
+```
+
+Generated
+```diff
+*No hunk*
+```
+
+Developer -> Generated (Unified Diff)
+```diff
+--- developer+++ generated@@ -1,33 +1 @@-@@ -88,21 +89,28 @@
+-         // Note that toAbsolutePath produces paths separated by the default file separator,
+-         // so on Windows, if the given path uses forward slashes, this consistently
+-         // converts it to backslashes.
+--        return path.toAbsolutePath().normalize().toString();
+-+        String result = path.toAbsolutePath().normalize().toString();
+-+        while (result.endsWith(FILE_SEPARATOR)) {
+-+            result = result.substring(0, result.length() - FILE_SEPARATOR.length());
+-+        }
+-+        return result;
+-     }
+- 
+-     private static boolean checkPath(String path, String[] paths) {
+-         if (paths.length == 0) {
+-             return false;
+-         }
+--        int ndx = Arrays.binarySearch(paths, path);
+-+        int ndx = Arrays.binarySearch(paths, path, PATH_ORDER);
+-         if (ndx < -1) {
+--            String maybeParent = paths[-ndx - 2];
+--            return path.startsWith(maybeParent) && path.startsWith(FILE_SEPARATOR, maybeParent.length());
+-+            return isParent(paths[-ndx - 2], path);
+-         }
+-         return ndx >= 0;
+-     }
+- 
+-+    private static boolean isParent(String maybeParent, String path) {
+-+        return path.startsWith(maybeParent) && path.startsWith(FILE_SEPARATOR, maybeParent.length());
+-+    }
+-+
+-     @Override
+-     public boolean equals(Object o) {
+-         if (o == null || getClass() != o.getClass()) return false;
++*No hunk*
+```
+
+#### Hunk 5
+
+Developer
+```diff
+@@ -114,4 +122,30 @@
+     public int hashCode() {
+         return Objects.hash(Arrays.hashCode(readPaths), Arrays.hashCode(writePaths));
+     }
++
++    /**
++     * For our lexicographic sort trick to work correctly, we must have path separators sort before
++     * any other character so that files in a directory appear immediately after that directory.
++     * For example, we require [/a, /a/b, /a.xml] rather than the natural order [/a, /a.xml, /a/b].
++     */
++    private static final Comparator<String> PATH_ORDER = (s1, s2) -> {
++        Path p1 = Path.of(s1);
++        Path p2 = Path.of(s2);
++        var i1 = p1.iterator();
++        var i2 = p2.iterator();
++        while (i1.hasNext() && i2.hasNext()) {
++            int cmp = i1.next().compareTo(i2.next());
++            if (cmp != 0) {
++                return cmp;
++            }
++        }
++        if (i1.hasNext()) {
++            return 1;
++        } else if (i2.hasNext()) {
++            return -1;
++        } else {
++            assert p1.equals(p2);
++            return 0;
++        }
++    };
+ }
+
+```
+
+Generated
+```diff
+*No hunk*
+```
+
+Developer -> Generated (Unified Diff)
+```diff
+--- developer+++ generated@@ -1,31 +1 @@-@@ -114,4 +122,30 @@
+-     public int hashCode() {
+-         return Objects.hash(Arrays.hashCode(readPaths), Arrays.hashCode(writePaths));
+-     }
+-+
+-+    /**
+-+     * For our lexicographic sort trick to work correctly, we must have path separators sort before
+-+     * any other character so that files in a directory appear immediately after that directory.
+-+     * For example, we require [/a, /a/b, /a.xml] rather than the natural order [/a, /a.xml, /a/b].
+-+     */
+-+    private static final Comparator<String> PATH_ORDER = (s1, s2) -> {
+-+        Path p1 = Path.of(s1);
+-+        Path p2 = Path.of(s2);
+-+        var i1 = p1.iterator();
+-+        var i2 = p2.iterator();
+-+        while (i1.hasNext() && i2.hasNext()) {
+-+            int cmp = i1.next().compareTo(i2.next());
+-+            if (cmp != 0) {
+-+                return cmp;
+-+            }
+-+        }
+-+        if (i1.hasNext()) {
+-+            return 1;
+-+        } else if (i2.hasNext()) {
+-+            return -1;
+-+        } else {
+-+            assert p1.equals(p2);
+-+            return 0;
+-+        }
+-+    };
+- }
++*No hunk*
+```
+
+
+
+## Full Generated Patch (Agent-Only, code-only)
+```diff
+
+```
+
+## Full Generated Patch (Final Effective, code-only)
+```diff
+
+```
+## Full Developer Backport Patch (full commit diff)
+```diff
+diff --git a/libs/entitlement/src/main/java/org/elasticsearch/entitlement/runtime/policy/FileAccessTree.java b/libs/entitlement/src/main/java/org/elasticsearch/entitlement/runtime/policy/FileAccessTree.java
+index 660459f06d5..b1773e9a076 100644
+--- a/libs/entitlement/src/main/java/org/elasticsearch/entitlement/runtime/policy/FileAccessTree.java
++++ b/libs/entitlement/src/main/java/org/elasticsearch/entitlement/runtime/policy/FileAccessTree.java
+@@ -14,6 +14,7 @@ import org.elasticsearch.entitlement.runtime.policy.entitlements.FilesEntitlemen
+ import java.nio.file.Path;
+ import java.util.ArrayList;
+ import java.util.Arrays;
++import java.util.Comparator;
+ import java.util.List;
+ import java.util.Objects;
+ 
+@@ -46,8 +47,8 @@ public final class FileAccessTree {
+         readPaths.add(tempDir);
+         writePaths.add(tempDir);
+ 
+-        readPaths.sort(String::compareTo);
+-        writePaths.sort(String::compareTo);
++        readPaths.sort(PATH_ORDER);
++        writePaths.sort(PATH_ORDER);
+ 
+         this.readPaths = pruneSortedPaths(readPaths).toArray(new String[0]);
+         this.writePaths = pruneSortedPaths(writePaths).toArray(new String[0]);
+@@ -60,7 +61,7 @@ public final class FileAccessTree {
+             prunedReadPaths.add(currentPath);
+             for (int i = 1; i < paths.size(); ++i) {
+                 String nextPath = paths.get(i);
+-                if (nextPath.startsWith(currentPath) == false) {
++                if (isParent(currentPath, nextPath) == false) {
+                     prunedReadPaths.add(nextPath);
+                     currentPath = nextPath;
+                 }
+@@ -88,21 +89,28 @@ public final class FileAccessTree {
+         // Note that toAbsolutePath produces paths separated by the default file separator,
+         // so on Windows, if the given path uses forward slashes, this consistently
+         // converts it to backslashes.
+-        return path.toAbsolutePath().normalize().toString();
++        String result = path.toAbsolutePath().normalize().toString();
++        while (result.endsWith(FILE_SEPARATOR)) {
++            result = result.substring(0, result.length() - FILE_SEPARATOR.length());
++        }
++        return result;
+     }
+ 
+     private static boolean checkPath(String path, String[] paths) {
+         if (paths.length == 0) {
+             return false;
+         }
+-        int ndx = Arrays.binarySearch(paths, path);
++        int ndx = Arrays.binarySearch(paths, path, PATH_ORDER);
+         if (ndx < -1) {
+-            String maybeParent = paths[-ndx - 2];
+-            return path.startsWith(maybeParent) && path.startsWith(FILE_SEPARATOR, maybeParent.length());
++            return isParent(paths[-ndx - 2], path);
+         }
+         return ndx >= 0;
+     }
+ 
++    private static boolean isParent(String maybeParent, String path) {
++        return path.startsWith(maybeParent) && path.startsWith(FILE_SEPARATOR, maybeParent.length());
++    }
++
+     @Override
+     public boolean equals(Object o) {
+         if (o == null || getClass() != o.getClass()) return false;
+@@ -114,4 +122,30 @@ public final class FileAccessTree {
+     public int hashCode() {
+         return Objects.hash(Arrays.hashCode(readPaths), Arrays.hashCode(writePaths));
+     }
++
++    /**
++     * For our lexicographic sort trick to work correctly, we must have path separators sort before
++     * any other character so that files in a directory appear immediately after that directory.
++     * For example, we require [/a, /a/b, /a.xml] rather than the natural order [/a, /a.xml, /a/b].
++     */
++    private static final Comparator<String> PATH_ORDER = (s1, s2) -> {
++        Path p1 = Path.of(s1);
++        Path p2 = Path.of(s2);
++        var i1 = p1.iterator();
++        var i2 = p2.iterator();
++        while (i1.hasNext() && i2.hasNext()) {
++            int cmp = i1.next().compareTo(i2.next());
++            if (cmp != 0) {
++                return cmp;
++            }
++        }
++        if (i1.hasNext()) {
++            return 1;
++        } else if (i2.hasNext()) {
++            return -1;
++        } else {
++            assert p1.equals(p2);
++            return 0;
++        }
++    };
+ }
+diff --git a/libs/entitlement/src/test/java/org/elasticsearch/entitlement/runtime/policy/FileAccessTreeTests.java b/libs/entitlement/src/test/java/org/elasticsearch/entitlement/runtime/policy/FileAccessTreeTests.java
+index 4eb3620c276..5100dde6b2f 100644
+--- a/libs/entitlement/src/test/java/org/elasticsearch/entitlement/runtime/policy/FileAccessTreeTests.java
++++ b/libs/entitlement/src/test/java/org/elasticsearch/entitlement/runtime/policy/FileAccessTreeTests.java
+@@ -117,6 +117,15 @@ public class FileAccessTreeTests extends ESTestCase {
+         assertThat(tree.canWrite(path("foo/baz")), is(false));
+     }
+ 
++    public void testPathAndFileWithSamePrefix() {
++        var tree = accessTree(entitlement("foo/bar/", "read", "foo/bar.xml", "read"));
++        assertThat(tree.canRead(path("foo")), is(false));
++        assertThat(tree.canRead(path("foo/bar")), is(true));
++        assertThat(tree.canRead(path("foo/bar/baz")), is(true));
++        assertThat(tree.canRead(path("foo/bar.xml")), is(true));
++        assertThat(tree.canRead(path("foo/bar.txt")), is(false));
++    }
++
+     public void testReadWithRelativePath() {
+         for (var dir : List.of("config", "home")) {
+             var tree = accessTree(entitlement(Map.of("relative_path", "foo", "mode", "read", "relative_to", dir)));
+@@ -171,10 +180,23 @@ public class FileAccessTreeTests extends ESTestCase {
+     public void testNormalizePath() {
+         var tree = accessTree(entitlement("foo/../bar", "read"));
+         assertThat(tree.canRead(path("foo/../bar")), is(true));
++        assertThat(tree.canRead(path("foo/../bar/")), is(true));
+         assertThat(tree.canRead(path("foo")), is(false));
+         assertThat(tree.canRead(path("")), is(false));
+     }
+ 
++    public void testNormalizeTrailingSlashes() {
++        var tree = accessTree(entitlement("/trailing/slash/", "read", "/no/trailing/slash", "read"));
++        assertThat(tree.canRead(path("/trailing/slash")), is(true));
++        assertThat(tree.canRead(path("/trailing/slash/")), is(true));
++        assertThat(tree.canRead(path("/trailing/slash.xml")), is(false));
++        assertThat(tree.canRead(path("/trailing/slash/file.xml")), is(true));
++        assertThat(tree.canRead(path("/no/trailing/slash")), is(true));
++        assertThat(tree.canRead(path("/no/trailing/slash/")), is(true));
++        assertThat(tree.canRead(path("/no/trailing/slash.xml")), is(false));
++        assertThat(tree.canRead(path("/no/trailing/slash/file.xml")), is(true));
++    }
++
+     public void testForwardSlashes() {
+         String sep = getDefaultFileSystem().getSeparator();
+         var tree = accessTree(entitlement("a/b", "read", "m" + sep + "n", "read"));
+
+```

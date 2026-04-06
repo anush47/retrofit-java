@@ -1,0 +1,23 @@
+# Full Trace of Agentic File Edits
+
+## Attempt #1
+
+### Final Output Diff
+**server/src/main/java/org/elasticsearch/common/settings/IndexScopedSettings.java** [replace]
+```java
+// --- OLD ---
+<developer patch fast path>
+// --- NEW ---
+diff --git a/server/src/main/java/org/elasticsearch/common/settings/IndexScopedSettings.java b/server/src/main/java/org/elasticsearch/common/settings/IndexScopedSettings.java
+index 1836c782e0..bc1348651d 100644
+--- a/server/src/main/java/org/elasticsearch/common/settings/IndexScopedSettings.java
++++ b/server/src/main/java/org/elasticsearch/common/settings/IndexScopedSettings.java
+@@ -150,7 +150,6 @@ public final class IndexScopedSettings extends AbstractScopedSettings {
+         switch (key) {
+             case IndexMetadata.SETTING_CREATION_DATE:
+             case IndexMetadata.SETTING_INDEX_UUID:
+-            case IndexMetadata.SETTING_VERSION_CREATED:
+             case IndexMetadata.SETTING_HISTORY_UUID:
+             case IndexMetadata.SETTING_VERSION_UPGRADED:
+             case IndexMetadata.SETTING_INDEX_PROVIDED_NAME:
+```

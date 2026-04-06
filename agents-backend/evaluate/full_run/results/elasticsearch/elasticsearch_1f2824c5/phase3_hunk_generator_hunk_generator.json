@@ -1,0 +1,100 @@
+{
+  "adapted_file_edits": [
+    {
+      "target_file": "x-pack/plugin/inference/src/main/java/org/elasticsearch/xpack/inference/services/elasticsearch/ElasticsearchInternalService.java",
+      "mainline_file": "x-pack/plugin/inference/src/main/java/org/elasticsearch/xpack/inference/services/elasticsearch/ElasticsearchInternalService.java",
+      "old_string": "<developer patch fast path>",
+      "new_string": "diff --git a/x-pack/plugin/inference/src/main/java/org/elasticsearch/xpack/inference/services/elasticsearch/ElasticsearchInternalService.java b/x-pack/plugin/inference/src/main/java/org/elasticsearch/xpack/inference/services/elasticsearch/ElasticsearchInternalService.java\nindex 3d65984226a..40ed97e57e2 100644\n--- a/x-pack/plugin/inference/src/main/java/org/elasticsearch/xpack/inference/services/elasticsearch/ElasticsearchInternalService.java\n+++ b/x-pack/plugin/inference/src/main/java/org/elasticsearch/xpack/inference/services/elasticsearch/ElasticsearchInternalService.java\n@@ -1146,8 +1146,9 @@ public class ElasticsearchInternalService extends BaseElasticsearchInternalServi\n \n                 configurationMap.put(\n                     MODEL_ID,\n-                    new SettingsConfiguration.Builder(supportedTaskTypes).setDefaultValue(MULTILINGUAL_E5_SMALL_MODEL_ID)\n-                        .setDescription(\"The name of the model to use for the inference task.\")\n+                    new SettingsConfiguration.Builder(supportedTaskTypes).setDescription(\n+                        \"The name of the model to use for the inference task.\"\n+                    )\n                         .setLabel(\"Model ID\")\n                         .setRequired(true)\n                         .setSensitive(false)",
+      "edit_type": "replace",
+      "verified": true,
+      "verification_result": "developer_fast_path_ok",
+      "applied": true,
+      "apply_result": "SUCCESS"
+    }
+  ],
+  "all_adapted_file_edits": [
+    [
+      {
+        "target_file": "x-pack/plugin/inference/src/main/java/org/elasticsearch/xpack/inference/services/elasticsearch/ElasticsearchInternalService.java",
+        "mainline_file": "x-pack/plugin/inference/src/main/java/org/elasticsearch/xpack/inference/services/elasticsearch/ElasticsearchInternalService.java",
+        "old_string": "<developer patch fast path>",
+        "new_string": "diff --git a/x-pack/plugin/inference/src/main/java/org/elasticsearch/xpack/inference/services/elasticsearch/ElasticsearchInternalService.java b/x-pack/plugin/inference/src/main/java/org/elasticsearch/xpack/inference/services/elasticsearch/ElasticsearchInternalService.java\nindex 3d65984226a..40ed97e57e2 100644\n--- a/x-pack/plugin/inference/src/main/java/org/elasticsearch/xpack/inference/services/elasticsearch/ElasticsearchInternalService.java\n+++ b/x-pack/plugin/inference/src/main/java/org/elasticsearch/xpack/inference/services/elasticsearch/ElasticsearchInternalService.java\n@@ -1146,8 +1146,9 @@ public class ElasticsearchInternalService extends BaseElasticsearchInternalServi\n \n                 configurationMap.put(\n                     MODEL_ID,\n-                    new SettingsConfiguration.Builder(supportedTaskTypes).setDefaultValue(MULTILINGUAL_E5_SMALL_MODEL_ID)\n-                        .setDescription(\"The name of the model to use for the inference task.\")\n+                    new SettingsConfiguration.Builder(supportedTaskTypes).setDescription(\n+                        \"The name of the model to use for the inference task.\"\n+                    )\n                         .setLabel(\"Model ID\")\n                         .setRequired(true)\n                         .setSensitive(false)",
+        "edit_type": "replace",
+        "verified": true,
+        "verification_result": "developer_fast_path_ok",
+        "applied": true,
+        "apply_result": "SUCCESS"
+      }
+    ]
+  ],
+  "agent_trajectory_edits": [
+    []
+  ],
+  "adapted_code_hunks": [
+    {
+      "target_file": "x-pack/plugin/inference/src/main/java/org/elasticsearch/xpack/inference/services/elasticsearch/ElasticsearchInternalService.java",
+      "mainline_file": "x-pack/plugin/inference/src/main/java/org/elasticsearch/xpack/inference/services/elasticsearch/ElasticsearchInternalService.java",
+      "hunk_text": "diff --git a/x-pack/plugin/inference/src/main/java/org/elasticsearch/xpack/inference/services/elasticsearch/ElasticsearchInternalService.java b/x-pack/plugin/inference/src/main/java/org/elasticsearch/xpack/inference/services/elasticsearch/ElasticsearchInternalService.java\nindex 3d65984226a..40ed97e57e2 100644\n--- a/x-pack/plugin/inference/src/main/java/org/elasticsearch/xpack/inference/services/elasticsearch/ElasticsearchInternalService.java\n+++ b/x-pack/plugin/inference/src/main/java/org/elasticsearch/xpack/inference/services/elasticsearch/ElasticsearchInternalService.java\n@@ -1146,8 +1146,9 @@ public class ElasticsearchInternalService extends BaseElasticsearchInternalServi\n \n                 configurationMap.put(\n                     MODEL_ID,\n-                    new SettingsConfiguration.Builder(supportedTaskTypes).setDefaultValue(MULTILINGUAL_E5_SMALL_MODEL_ID)\n-                        .setDescription(\"The name of the model to use for the inference task.\")\n+                    new SettingsConfiguration.Builder(supportedTaskTypes).setDescription(\n+                        \"The name of the model to use for the inference task.\"\n+                    )\n                         .setLabel(\"Model ID\")\n                         .setRequired(true)\n                         .setSensitive(false)\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    }
+  ],
+  "validation_repeated_patch_detected": false,
+  "validation_repeated_plan_detected": false,
+  "best_effort_adapted_code_hunks": [
+    {
+      "target_file": "x-pack/plugin/inference/src/main/java/org/elasticsearch/xpack/inference/services/elasticsearch/ElasticsearchInternalService.java",
+      "mainline_file": "x-pack/plugin/inference/src/main/java/org/elasticsearch/xpack/inference/services/elasticsearch/ElasticsearchInternalService.java",
+      "hunk_text": "diff --git a/x-pack/plugin/inference/src/main/java/org/elasticsearch/xpack/inference/services/elasticsearch/ElasticsearchInternalService.java b/x-pack/plugin/inference/src/main/java/org/elasticsearch/xpack/inference/services/elasticsearch/ElasticsearchInternalService.java\nindex 3d65984226a..40ed97e57e2 100644\n--- a/x-pack/plugin/inference/src/main/java/org/elasticsearch/xpack/inference/services/elasticsearch/ElasticsearchInternalService.java\n+++ b/x-pack/plugin/inference/src/main/java/org/elasticsearch/xpack/inference/services/elasticsearch/ElasticsearchInternalService.java\n@@ -1146,8 +1146,9 @@ public class ElasticsearchInternalService extends BaseElasticsearchInternalServi\n \n                 configurationMap.put(\n                     MODEL_ID,\n-                    new SettingsConfiguration.Builder(supportedTaskTypes).setDefaultValue(MULTILINGUAL_E5_SMALL_MODEL_ID)\n-                        .setDescription(\"The name of the model to use for the inference task.\")\n+                    new SettingsConfiguration.Builder(supportedTaskTypes).setDescription(\n+                        \"The name of the model to use for the inference task.\"\n+                    )\n                         .setLabel(\"Model ID\")\n                         .setRequired(true)\n                         .setSensitive(false)\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    }
+  ],
+  "adapted_test_hunks": [],
+  "generation_checklist": [
+    {
+      "mainline_file": "x-pack/plugin/inference/src/main/java/org/elasticsearch/xpack/inference/services/elasticsearch/ElasticsearchInternalService.java",
+      "target_file": "x-pack/plugin/inference/src/main/java/org/elasticsearch/xpack/inference/services/elasticsearch/ElasticsearchInternalService.java",
+      "hunk_index": 0,
+      "adaptation_type": "TYPE_I",
+      "execution_types": [
+        "TYPE_I"
+      ],
+      "status": "success",
+      "reason": "developer_fast_path",
+      "todo_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ],
+      "completed_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ]
+    }
+  ],
+  "generated_patch_hash": "8ca330fd6a5fb96d0931a8ca269d4670fff98919f41f6587f81f3fb54c8a2ed9",
+  "force_type_v_until_success": false,
+  "force_type_v_reason": "",
+  "force_type_v_retry_files": [],
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "sources": []
+  }
+}

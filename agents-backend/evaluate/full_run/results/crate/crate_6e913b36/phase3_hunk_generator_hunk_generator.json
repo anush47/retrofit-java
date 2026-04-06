@@ -1,0 +1,169 @@
+{
+  "adapted_file_edits": [
+    {
+      "target_file": "server/src/main/java/org/elasticsearch/index/search/MatchQuery.java",
+      "mainline_file": "server/src/main/java/org/elasticsearch/index/search/MatchQuery.java",
+      "old_string": "<developer patch fast path>",
+      "new_string": "diff --git a/server/src/main/java/org/elasticsearch/index/search/MatchQuery.java b/server/src/main/java/org/elasticsearch/index/search/MatchQuery.java\nindex 78a9bf367d..d1656decbd 100644\n--- a/server/src/main/java/org/elasticsearch/index/search/MatchQuery.java\n+++ b/server/src/main/java/org/elasticsearch/index/search/MatchQuery.java\n@@ -25,6 +25,7 @@ import static org.elasticsearch.common.lucene.search.Queries.newUnmappedFieldQue\n import java.io.IOException;\n import java.util.ArrayList;\n import java.util.List;\n+import java.util.Locale;\n \n import org.apache.logging.log4j.LogManager;\n import org.apache.lucene.analysis.Analyzer;\n@@ -56,7 +57,6 @@ import org.elasticsearch.common.logging.DeprecationLogger;\n import org.elasticsearch.common.lucene.Lucene;\n import org.elasticsearch.common.lucene.search.MultiPhrasePrefixQuery;\n import org.elasticsearch.common.unit.Fuzziness;\n-import org.jetbrains.annotations.Nullable;\n \n import io.crate.lucene.DisableGraphAttribute;\n import io.crate.lucene.ExtendedCommonTermsQuery;\n@@ -109,20 +109,45 @@ public class MatchQuery {\n \n     protected final LuceneQueryBuilder.Context context;\n     protected final ParsedOptions parsedOptions;\n-    protected final Analyzer analyzer;\n \n \n     public MatchQuery(LuceneQueryBuilder.Context context, ParsedOptions parsedOptions) {\n         this.context = context;\n         this.parsedOptions = parsedOptions;\n-        this.analyzer = getAnalyzer(parsedOptions.analyzer());\n     }\n \n-    private Analyzer getAnalyzer(@Nullable String analyzerName) {\n-        if (analyzerName == null) {\n-            return Lucene.KEYWORD_ANALYZER;\n+    /**\n+     * Returns the analyzer that was used to index the given column, but throws an exception when the search-analyzer\n+     * specified in parse-options is different(from the index-analyzer).\n+     */\n+    protected Analyzer getSafeAnalyzer(Reference ref) {\n+        String searchAnalyzer = parsedOptions.analyzer();\n+        if (ref instanceof IndexReference indexRef) {\n+            if (searchAnalyzer == null || searchAnalyzer.equals(indexRef.analyzer())) {\n+                return context.getAnalyzer(indexRef.analyzer());\n+            }\n+            throw new IllegalArgumentException(\n+                String.format(\n+                    Locale.ENGLISH,\n+                    \"Column '%s' was indexed with the '%s' analyzer, searching with a different analyzer, '%s' is not supported\",\n+                    indexRef.column(),\n+                    indexRef.analyzer(),\n+                    searchAnalyzer\n+                )\n+            );\n+        } else {\n+            if (searchAnalyzer == null || searchAnalyzer.equals(\"keyword\")) {\n+                return Lucene.KEYWORD_ANALYZER;\n+            }\n+            throw new IllegalArgumentException(\n+                String.format(\n+                    Locale.ENGLISH,\n+                    \"Column '%s' was indexed with the 'keyword' analyzer, searching with a different analyzer, '%s' is not supported\",\n+                    ref.column(),\n+                    searchAnalyzer\n+                )\n+            );\n         }\n-        return context.getAnalyzer(analyzerName);\n     }\n \n     public Query parse(Type type, String fieldName, Object value) {\n@@ -131,9 +156,7 @@ public class MatchQuery {\n             return newUnmappedFieldQuery(fieldName);\n         }\n         final String field = ref.storageIdent();\n-        Analyzer analyzer = ref instanceof IndexReference indexRef\n-            ? getAnalyzer(indexRef.analyzer())\n-            : this.analyzer;\n+        Analyzer analyzer = getSafeAnalyzer(ref);\n \n         /*\n          * If a keyword analyzer is used, we know that further analysis isn't",
+      "edit_type": "replace",
+      "verified": true,
+      "verification_result": "developer_fast_path_ok",
+      "applied": true,
+      "apply_result": "SUCCESS"
+    },
+    {
+      "target_file": "server/src/main/java/org/elasticsearch/index/search/MultiMatchQuery.java",
+      "mainline_file": "server/src/main/java/org/elasticsearch/index/search/MultiMatchQuery.java",
+      "old_string": "<developer patch fast path>",
+      "new_string": "diff --git a/server/src/main/java/org/elasticsearch/index/search/MultiMatchQuery.java b/server/src/main/java/org/elasticsearch/index/search/MultiMatchQuery.java\nindex 14a65597b3..1eff40671c 100644\n--- a/server/src/main/java/org/elasticsearch/index/search/MultiMatchQuery.java\n+++ b/server/src/main/java/org/elasticsearch/index/search/MultiMatchQuery.java\n@@ -35,14 +35,12 @@ import org.apache.lucene.search.Query;\n import org.apache.lucene.search.TermQuery;\n import org.apache.lucene.util.BytesRef;\n import org.elasticsearch.ElasticsearchParseException;\n-import org.elasticsearch.common.lucene.Lucene;\n import org.elasticsearch.common.lucene.search.Queries;\n import org.elasticsearch.index.query.MultiMatchQueryType;\n \n import io.crate.lucene.BlendedTermQuery;\n import io.crate.lucene.LuceneQueryBuilder;\n import io.crate.lucene.match.ParsedOptions;\n-import io.crate.metadata.IndexReference;\n import io.crate.metadata.Reference;\n \n public class MultiMatchQuery extends MatchQuery {\n@@ -152,18 +150,13 @@ public class MultiMatchQuery extends MatchQuery {\n                 String name = entry.getKey();\n                 Reference reference = context.getRef(name);\n                 if (reference != null) {\n-                    Analyzer actualAnalyzer;\n-                    if (reference instanceof IndexReference indexRef) {\n-                        actualAnalyzer = context.getAnalyzer(indexRef.analyzer());\n-                    } else {\n-                        actualAnalyzer = Lucene.KEYWORD_ANALYZER;\n-                    }\n-                    if (!groups.containsKey(actualAnalyzer)) {\n-                        groups.put(actualAnalyzer, new ArrayList<>());\n+                    Analyzer analyzer = getSafeAnalyzer(reference);\n+                    if (!groups.containsKey(analyzer)) {\n+                        groups.put(analyzer, new ArrayList<>());\n                     }\n                     Float boost = entry.getValue();\n                     boost = boost == null ? Float.valueOf(1.0f) : boost;\n-                    groups.get(actualAnalyzer).add(new RefAndBoost(reference, boost));\n+                    groups.get(analyzer).add(new RefAndBoost(reference, boost));\n                 } else {\n                     queries.add(new MatchNoDocsQuery(\"unknown field \" + name));\n                 }",
+      "edit_type": "replace",
+      "verified": true,
+      "verification_result": "developer_fast_path_ok",
+      "applied": true,
+      "apply_result": "SUCCESS"
+    }
+  ],
+  "all_adapted_file_edits": [
+    [
+      {
+        "target_file": "server/src/main/java/org/elasticsearch/index/search/MatchQuery.java",
+        "mainline_file": "server/src/main/java/org/elasticsearch/index/search/MatchQuery.java",
+        "old_string": "<developer patch fast path>",
+        "new_string": "diff --git a/server/src/main/java/org/elasticsearch/index/search/MatchQuery.java b/server/src/main/java/org/elasticsearch/index/search/MatchQuery.java\nindex 78a9bf367d..d1656decbd 100644\n--- a/server/src/main/java/org/elasticsearch/index/search/MatchQuery.java\n+++ b/server/src/main/java/org/elasticsearch/index/search/MatchQuery.java\n@@ -25,6 +25,7 @@ import static org.elasticsearch.common.lucene.search.Queries.newUnmappedFieldQue\n import java.io.IOException;\n import java.util.ArrayList;\n import java.util.List;\n+import java.util.Locale;\n \n import org.apache.logging.log4j.LogManager;\n import org.apache.lucene.analysis.Analyzer;\n@@ -56,7 +57,6 @@ import org.elasticsearch.common.logging.DeprecationLogger;\n import org.elasticsearch.common.lucene.Lucene;\n import org.elasticsearch.common.lucene.search.MultiPhrasePrefixQuery;\n import org.elasticsearch.common.unit.Fuzziness;\n-import org.jetbrains.annotations.Nullable;\n \n import io.crate.lucene.DisableGraphAttribute;\n import io.crate.lucene.ExtendedCommonTermsQuery;\n@@ -109,20 +109,45 @@ public class MatchQuery {\n \n     protected final LuceneQueryBuilder.Context context;\n     protected final ParsedOptions parsedOptions;\n-    protected final Analyzer analyzer;\n \n \n     public MatchQuery(LuceneQueryBuilder.Context context, ParsedOptions parsedOptions) {\n         this.context = context;\n         this.parsedOptions = parsedOptions;\n-        this.analyzer = getAnalyzer(parsedOptions.analyzer());\n     }\n \n-    private Analyzer getAnalyzer(@Nullable String analyzerName) {\n-        if (analyzerName == null) {\n-            return Lucene.KEYWORD_ANALYZER;\n+    /**\n+     * Returns the analyzer that was used to index the given column, but throws an exception when the search-analyzer\n+     * specified in parse-options is different(from the index-analyzer).\n+     */\n+    protected Analyzer getSafeAnalyzer(Reference ref) {\n+        String searchAnalyzer = parsedOptions.analyzer();\n+        if (ref instanceof IndexReference indexRef) {\n+            if (searchAnalyzer == null || searchAnalyzer.equals(indexRef.analyzer())) {\n+                return context.getAnalyzer(indexRef.analyzer());\n+            }\n+            throw new IllegalArgumentException(\n+                String.format(\n+                    Locale.ENGLISH,\n+                    \"Column '%s' was indexed with the '%s' analyzer, searching with a different analyzer, '%s' is not supported\",\n+                    indexRef.column(),\n+                    indexRef.analyzer(),\n+                    searchAnalyzer\n+                )\n+            );\n+        } else {\n+            if (searchAnalyzer == null || searchAnalyzer.equals(\"keyword\")) {\n+                return Lucene.KEYWORD_ANALYZER;\n+            }\n+            throw new IllegalArgumentException(\n+                String.format(\n+                    Locale.ENGLISH,\n+                    \"Column '%s' was indexed with the 'keyword' analyzer, searching with a different analyzer, '%s' is not supported\",\n+                    ref.column(),\n+                    searchAnalyzer\n+                )\n+            );\n         }\n-        return context.getAnalyzer(analyzerName);\n     }\n \n     public Query parse(Type type, String fieldName, Object value) {\n@@ -131,9 +156,7 @@ public class MatchQuery {\n             return newUnmappedFieldQuery(fieldName);\n         }\n         final String field = ref.storageIdent();\n-        Analyzer analyzer = ref instanceof IndexReference indexRef\n-            ? getAnalyzer(indexRef.analyzer())\n-            : this.analyzer;\n+        Analyzer analyzer = getSafeAnalyzer(ref);\n \n         /*\n          * If a keyword analyzer is used, we know that further analysis isn't",
+        "edit_type": "replace",
+        "verified": true,
+        "verification_result": "developer_fast_path_ok",
+        "applied": true,
+        "apply_result": "SUCCESS"
+      },
+      {
+        "target_file": "server/src/main/java/org/elasticsearch/index/search/MultiMatchQuery.java",
+        "mainline_file": "server/src/main/java/org/elasticsearch/index/search/MultiMatchQuery.java",
+        "old_string": "<developer patch fast path>",
+        "new_string": "diff --git a/server/src/main/java/org/elasticsearch/index/search/MultiMatchQuery.java b/server/src/main/java/org/elasticsearch/index/search/MultiMatchQuery.java\nindex 14a65597b3..1eff40671c 100644\n--- a/server/src/main/java/org/elasticsearch/index/search/MultiMatchQuery.java\n+++ b/server/src/main/java/org/elasticsearch/index/search/MultiMatchQuery.java\n@@ -35,14 +35,12 @@ import org.apache.lucene.search.Query;\n import org.apache.lucene.search.TermQuery;\n import org.apache.lucene.util.BytesRef;\n import org.elasticsearch.ElasticsearchParseException;\n-import org.elasticsearch.common.lucene.Lucene;\n import org.elasticsearch.common.lucene.search.Queries;\n import org.elasticsearch.index.query.MultiMatchQueryType;\n \n import io.crate.lucene.BlendedTermQuery;\n import io.crate.lucene.LuceneQueryBuilder;\n import io.crate.lucene.match.ParsedOptions;\n-import io.crate.metadata.IndexReference;\n import io.crate.metadata.Reference;\n \n public class MultiMatchQuery extends MatchQuery {\n@@ -152,18 +150,13 @@ public class MultiMatchQuery extends MatchQuery {\n                 String name = entry.getKey();\n                 Reference reference = context.getRef(name);\n                 if (reference != null) {\n-                    Analyzer actualAnalyzer;\n-                    if (reference instanceof IndexReference indexRef) {\n-                        actualAnalyzer = context.getAnalyzer(indexRef.analyzer());\n-                    } else {\n-                        actualAnalyzer = Lucene.KEYWORD_ANALYZER;\n-                    }\n-                    if (!groups.containsKey(actualAnalyzer)) {\n-                        groups.put(actualAnalyzer, new ArrayList<>());\n+                    Analyzer analyzer = getSafeAnalyzer(reference);\n+                    if (!groups.containsKey(analyzer)) {\n+                        groups.put(analyzer, new ArrayList<>());\n                     }\n                     Float boost = entry.getValue();\n                     boost = boost == null ? Float.valueOf(1.0f) : boost;\n-                    groups.get(actualAnalyzer).add(new RefAndBoost(reference, boost));\n+                    groups.get(analyzer).add(new RefAndBoost(reference, boost));\n                 } else {\n                     queries.add(new MatchNoDocsQuery(\"unknown field \" + name));\n                 }",
+        "edit_type": "replace",
+        "verified": true,
+        "verification_result": "developer_fast_path_ok",
+        "applied": true,
+        "apply_result": "SUCCESS"
+      }
+    ]
+  ],
+  "agent_trajectory_edits": [
+    []
+  ],
+  "adapted_code_hunks": [
+    {
+      "target_file": "server/src/main/java/org/elasticsearch/index/search/MatchQuery.java",
+      "mainline_file": "server/src/main/java/org/elasticsearch/index/search/MatchQuery.java",
+      "hunk_text": "diff --git a/server/src/main/java/org/elasticsearch/index/search/MatchQuery.java b/server/src/main/java/org/elasticsearch/index/search/MatchQuery.java\nindex 78a9bf367d..d1656decbd 100644\n--- a/server/src/main/java/org/elasticsearch/index/search/MatchQuery.java\n+++ b/server/src/main/java/org/elasticsearch/index/search/MatchQuery.java\n@@ -25,6 +25,7 @@ import static org.elasticsearch.common.lucene.search.Queries.newUnmappedFieldQue\n import java.io.IOException;\n import java.util.ArrayList;\n import java.util.List;\n+import java.util.Locale;\n \n import org.apache.logging.log4j.LogManager;\n import org.apache.lucene.analysis.Analyzer;\n@@ -56,7 +57,6 @@ import org.elasticsearch.common.logging.DeprecationLogger;\n import org.elasticsearch.common.lucene.Lucene;\n import org.elasticsearch.common.lucene.search.MultiPhrasePrefixQuery;\n import org.elasticsearch.common.unit.Fuzziness;\n-import org.jetbrains.annotations.Nullable;\n \n import io.crate.lucene.DisableGraphAttribute;\n import io.crate.lucene.ExtendedCommonTermsQuery;\n@@ -109,20 +109,45 @@ public class MatchQuery {\n \n     protected final LuceneQueryBuilder.Context context;\n     protected final ParsedOptions parsedOptions;\n-    protected final Analyzer analyzer;\n \n \n     public MatchQuery(LuceneQueryBuilder.Context context, ParsedOptions parsedOptions) {\n         this.context = context;\n         this.parsedOptions = parsedOptions;\n-        this.analyzer = getAnalyzer(parsedOptions.analyzer());\n     }\n \n-    private Analyzer getAnalyzer(@Nullable String analyzerName) {\n-        if (analyzerName == null) {\n-            return Lucene.KEYWORD_ANALYZER;\n+    /**\n+     * Returns the analyzer that was used to index the given column, but throws an exception when the search-analyzer\n+     * specified in parse-options is different(from the index-analyzer).\n+     */\n+    protected Analyzer getSafeAnalyzer(Reference ref) {\n+        String searchAnalyzer = parsedOptions.analyzer();\n+        if (ref instanceof IndexReference indexRef) {\n+            if (searchAnalyzer == null || searchAnalyzer.equals(indexRef.analyzer())) {\n+                return context.getAnalyzer(indexRef.analyzer());\n+            }\n+            throw new IllegalArgumentException(\n+                String.format(\n+                    Locale.ENGLISH,\n+                    \"Column '%s' was indexed with the '%s' analyzer, searching with a different analyzer, '%s' is not supported\",\n+                    indexRef.column(),\n+                    indexRef.analyzer(),\n+                    searchAnalyzer\n+                )\n+            );\n+        } else {\n+            if (searchAnalyzer == null || searchAnalyzer.equals(\"keyword\")) {\n+                return Lucene.KEYWORD_ANALYZER;\n+            }\n+            throw new IllegalArgumentException(\n+                String.format(\n+                    Locale.ENGLISH,\n+                    \"Column '%s' was indexed with the 'keyword' analyzer, searching with a different analyzer, '%s' is not supported\",\n+                    ref.column(),\n+                    searchAnalyzer\n+                )\n+            );\n         }\n-        return context.getAnalyzer(analyzerName);\n     }\n \n     public Query parse(Type type, String fieldName, Object value) {\n@@ -131,9 +156,7 @@ public class MatchQuery {\n             return newUnmappedFieldQuery(fieldName);\n         }\n         final String field = ref.storageIdent();\n-        Analyzer analyzer = ref instanceof IndexReference indexRef\n-            ? getAnalyzer(indexRef.analyzer())\n-            : this.analyzer;\n+        Analyzer analyzer = getSafeAnalyzer(ref);\n \n         /*\n          * If a keyword analyzer is used, we know that further analysis isn't\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    },
+    {
+      "target_file": "server/src/main/java/org/elasticsearch/index/search/MultiMatchQuery.java",
+      "mainline_file": "server/src/main/java/org/elasticsearch/index/search/MultiMatchQuery.java",
+      "hunk_text": "diff --git a/server/src/main/java/org/elasticsearch/index/search/MultiMatchQuery.java b/server/src/main/java/org/elasticsearch/index/search/MultiMatchQuery.java\nindex 14a65597b3..1eff40671c 100644\n--- a/server/src/main/java/org/elasticsearch/index/search/MultiMatchQuery.java\n+++ b/server/src/main/java/org/elasticsearch/index/search/MultiMatchQuery.java\n@@ -35,14 +35,12 @@ import org.apache.lucene.search.Query;\n import org.apache.lucene.search.TermQuery;\n import org.apache.lucene.util.BytesRef;\n import org.elasticsearch.ElasticsearchParseException;\n-import org.elasticsearch.common.lucene.Lucene;\n import org.elasticsearch.common.lucene.search.Queries;\n import org.elasticsearch.index.query.MultiMatchQueryType;\n \n import io.crate.lucene.BlendedTermQuery;\n import io.crate.lucene.LuceneQueryBuilder;\n import io.crate.lucene.match.ParsedOptions;\n-import io.crate.metadata.IndexReference;\n import io.crate.metadata.Reference;\n \n public class MultiMatchQuery extends MatchQuery {\n@@ -152,18 +150,13 @@ public class MultiMatchQuery extends MatchQuery {\n                 String name = entry.getKey();\n                 Reference reference = context.getRef(name);\n                 if (reference != null) {\n-                    Analyzer actualAnalyzer;\n-                    if (reference instanceof IndexReference indexRef) {\n-                        actualAnalyzer = context.getAnalyzer(indexRef.analyzer());\n-                    } else {\n-                        actualAnalyzer = Lucene.KEYWORD_ANALYZER;\n-                    }\n-                    if (!groups.containsKey(actualAnalyzer)) {\n-                        groups.put(actualAnalyzer, new ArrayList<>());\n+                    Analyzer analyzer = getSafeAnalyzer(reference);\n+                    if (!groups.containsKey(analyzer)) {\n+                        groups.put(analyzer, new ArrayList<>());\n                     }\n                     Float boost = entry.getValue();\n                     boost = boost == null ? Float.valueOf(1.0f) : boost;\n-                    groups.get(actualAnalyzer).add(new RefAndBoost(reference, boost));\n+                    groups.get(analyzer).add(new RefAndBoost(reference, boost));\n                 } else {\n                     queries.add(new MatchNoDocsQuery(\"unknown field \" + name));\n                 }\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    }
+  ],
+  "validation_repeated_patch_detected": false,
+  "validation_repeated_plan_detected": false,
+  "best_effort_adapted_code_hunks": [
+    {
+      "target_file": "server/src/main/java/org/elasticsearch/index/search/MatchQuery.java",
+      "mainline_file": "server/src/main/java/org/elasticsearch/index/search/MatchQuery.java",
+      "hunk_text": "diff --git a/server/src/main/java/org/elasticsearch/index/search/MatchQuery.java b/server/src/main/java/org/elasticsearch/index/search/MatchQuery.java\nindex 78a9bf367d..d1656decbd 100644\n--- a/server/src/main/java/org/elasticsearch/index/search/MatchQuery.java\n+++ b/server/src/main/java/org/elasticsearch/index/search/MatchQuery.java\n@@ -25,6 +25,7 @@ import static org.elasticsearch.common.lucene.search.Queries.newUnmappedFieldQue\n import java.io.IOException;\n import java.util.ArrayList;\n import java.util.List;\n+import java.util.Locale;\n \n import org.apache.logging.log4j.LogManager;\n import org.apache.lucene.analysis.Analyzer;\n@@ -56,7 +57,6 @@ import org.elasticsearch.common.logging.DeprecationLogger;\n import org.elasticsearch.common.lucene.Lucene;\n import org.elasticsearch.common.lucene.search.MultiPhrasePrefixQuery;\n import org.elasticsearch.common.unit.Fuzziness;\n-import org.jetbrains.annotations.Nullable;\n \n import io.crate.lucene.DisableGraphAttribute;\n import io.crate.lucene.ExtendedCommonTermsQuery;\n@@ -109,20 +109,45 @@ public class MatchQuery {\n \n     protected final LuceneQueryBuilder.Context context;\n     protected final ParsedOptions parsedOptions;\n-    protected final Analyzer analyzer;\n \n \n     public MatchQuery(LuceneQueryBuilder.Context context, ParsedOptions parsedOptions) {\n         this.context = context;\n         this.parsedOptions = parsedOptions;\n-        this.analyzer = getAnalyzer(parsedOptions.analyzer());\n     }\n \n-    private Analyzer getAnalyzer(@Nullable String analyzerName) {\n-        if (analyzerName == null) {\n-            return Lucene.KEYWORD_ANALYZER;\n+    /**\n+     * Returns the analyzer that was used to index the given column, but throws an exception when the search-analyzer\n+     * specified in parse-options is different(from the index-analyzer).\n+     */\n+    protected Analyzer getSafeAnalyzer(Reference ref) {\n+        String searchAnalyzer = parsedOptions.analyzer();\n+        if (ref instanceof IndexReference indexRef) {\n+            if (searchAnalyzer == null || searchAnalyzer.equals(indexRef.analyzer())) {\n+                return context.getAnalyzer(indexRef.analyzer());\n+            }\n+            throw new IllegalArgumentException(\n+                String.format(\n+                    Locale.ENGLISH,\n+                    \"Column '%s' was indexed with the '%s' analyzer, searching with a different analyzer, '%s' is not supported\",\n+                    indexRef.column(),\n+                    indexRef.analyzer(),\n+                    searchAnalyzer\n+                )\n+            );\n+        } else {\n+            if (searchAnalyzer == null || searchAnalyzer.equals(\"keyword\")) {\n+                return Lucene.KEYWORD_ANALYZER;\n+            }\n+            throw new IllegalArgumentException(\n+                String.format(\n+                    Locale.ENGLISH,\n+                    \"Column '%s' was indexed with the 'keyword' analyzer, searching with a different analyzer, '%s' is not supported\",\n+                    ref.column(),\n+                    searchAnalyzer\n+                )\n+            );\n         }\n-        return context.getAnalyzer(analyzerName);\n     }\n \n     public Query parse(Type type, String fieldName, Object value) {\n@@ -131,9 +156,7 @@ public class MatchQuery {\n             return newUnmappedFieldQuery(fieldName);\n         }\n         final String field = ref.storageIdent();\n-        Analyzer analyzer = ref instanceof IndexReference indexRef\n-            ? getAnalyzer(indexRef.analyzer())\n-            : this.analyzer;\n+        Analyzer analyzer = getSafeAnalyzer(ref);\n \n         /*\n          * If a keyword analyzer is used, we know that further analysis isn't\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    },
+    {
+      "target_file": "server/src/main/java/org/elasticsearch/index/search/MultiMatchQuery.java",
+      "mainline_file": "server/src/main/java/org/elasticsearch/index/search/MultiMatchQuery.java",
+      "hunk_text": "diff --git a/server/src/main/java/org/elasticsearch/index/search/MultiMatchQuery.java b/server/src/main/java/org/elasticsearch/index/search/MultiMatchQuery.java\nindex 14a65597b3..1eff40671c 100644\n--- a/server/src/main/java/org/elasticsearch/index/search/MultiMatchQuery.java\n+++ b/server/src/main/java/org/elasticsearch/index/search/MultiMatchQuery.java\n@@ -35,14 +35,12 @@ import org.apache.lucene.search.Query;\n import org.apache.lucene.search.TermQuery;\n import org.apache.lucene.util.BytesRef;\n import org.elasticsearch.ElasticsearchParseException;\n-import org.elasticsearch.common.lucene.Lucene;\n import org.elasticsearch.common.lucene.search.Queries;\n import org.elasticsearch.index.query.MultiMatchQueryType;\n \n import io.crate.lucene.BlendedTermQuery;\n import io.crate.lucene.LuceneQueryBuilder;\n import io.crate.lucene.match.ParsedOptions;\n-import io.crate.metadata.IndexReference;\n import io.crate.metadata.Reference;\n \n public class MultiMatchQuery extends MatchQuery {\n@@ -152,18 +150,13 @@ public class MultiMatchQuery extends MatchQuery {\n                 String name = entry.getKey();\n                 Reference reference = context.getRef(name);\n                 if (reference != null) {\n-                    Analyzer actualAnalyzer;\n-                    if (reference instanceof IndexReference indexRef) {\n-                        actualAnalyzer = context.getAnalyzer(indexRef.analyzer());\n-                    } else {\n-                        actualAnalyzer = Lucene.KEYWORD_ANALYZER;\n-                    }\n-                    if (!groups.containsKey(actualAnalyzer)) {\n-                        groups.put(actualAnalyzer, new ArrayList<>());\n+                    Analyzer analyzer = getSafeAnalyzer(reference);\n+                    if (!groups.containsKey(analyzer)) {\n+                        groups.put(analyzer, new ArrayList<>());\n                     }\n                     Float boost = entry.getValue();\n                     boost = boost == null ? Float.valueOf(1.0f) : boost;\n-                    groups.get(actualAnalyzer).add(new RefAndBoost(reference, boost));\n+                    groups.get(analyzer).add(new RefAndBoost(reference, boost));\n                 } else {\n                     queries.add(new MatchNoDocsQuery(\"unknown field \" + name));\n                 }\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    }
+  ],
+  "adapted_test_hunks": [],
+  "generation_checklist": [
+    {
+      "mainline_file": "server/src/main/java/org/elasticsearch/index/search/MatchQuery.java",
+      "target_file": "server/src/main/java/org/elasticsearch/index/search/MatchQuery.java",
+      "hunk_index": 0,
+      "adaptation_type": "TYPE_II",
+      "execution_types": [
+        "TYPE_II"
+      ],
+      "status": "success",
+      "reason": "developer_fast_path",
+      "todo_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ],
+      "completed_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ]
+    },
+    {
+      "mainline_file": "server/src/main/java/org/elasticsearch/index/search/MultiMatchQuery.java",
+      "target_file": "server/src/main/java/org/elasticsearch/index/search/MultiMatchQuery.java",
+      "hunk_index": 0,
+      "adaptation_type": "TYPE_II",
+      "execution_types": [
+        "TYPE_II"
+      ],
+      "status": "success",
+      "reason": "developer_fast_path",
+      "todo_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ],
+      "completed_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ]
+    }
+  ],
+  "generated_patch_hash": "74210a406053a0cff8f7d6b544ca29774f9c0786f0d50a616ac4abb8f1766224",
+  "force_type_v_until_success": false,
+  "force_type_v_reason": "",
+  "force_type_v_retry_files": [],
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "sources": []
+  }
+}

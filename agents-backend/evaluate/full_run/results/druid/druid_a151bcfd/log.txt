@@ -1,0 +1,30 @@
+patch_id=druid_a151bcfd
+project=druid
+mainline_commit=a151bcfd12e86b3ace7a9776cb7bc1e87ea2a017
+backport_commit=e1dc60f21d7d9ec502c1f256ac27b5e6abd92792
+mode=full
+started_at=2026-04-06T01:37:04.422262
+----------------------------------------
+Running full workflow graph
+Completed node=phase_0_optimistic
+Workflow completed successfully
+
+[druid/druid_a151bcfd] Setting up repositories for mode=full...
+[druid/druid_a151bcfd] Running full workflow graph...
+Router: Running Phase 0.
+Phase 0 (Optimistic): Checking direct patch applicability...
+Phase 0: Experiment mode — checking out parent of e1dc60f21d7d9ec502c1f256ac27b5e6abd92792...
+Phase 0: Building baseline by applying developer backport test hunks only...
+  Validation: extensions-core/multi-stage-query/src/test/java/org/apache/druid/msq/exec/MSQExportTest.java - applying 4 hunk(s) one by one in bottom-to-top order: [129, 61, 45, 26]
+  Validation: extensions-core/multi-stage-query/src/test/java/org/apache/druid/msq/querykit/results/ExportResultsFrameProcessorFactoryTest.java - applying 1 hunk(s) one by one in bottom-to-top order: [1]
+  Validation: ADDED operation for extensions-core/multi-stage-query/src/test/java/org/apache/druid/msq/querykit/results/ExportResultsFrameProcessorFactoryTest.java
+    Agent 4: Executing druid helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/druid/run_tests.sh
+ValidationToolkit: Warning - git clean had issues (exit code 1). Continuing anyway.
+Phase 0: git apply --check SUCCEEDED. Attempting actual patch application and test run.
+    Agent 4: Executing Druid helper build script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/druid/run_build.sh
+    Agent 4: Executing druid helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/druid/run_tests.sh
+Phase 0: Transition summary -> reason=Valid: Observed fail-to-pass and/or newly passing relevant tests with no regressions.; fail->pass(0): []; newly_passing(4): ['org.apache.druid.msq.exec.MSQExportTest#testExport', 'org.apache.druid.msq.exec.MSQExportTest#testExport2', 'org.apache.druid.msq.exec.MSQExportTest#testNumberOfRowsPerFile', 'org.apache.druid.msq.querykit.results.ExportResultsFrameProcessorFactoryTest#testSerde']; pass->fail(0): []
+Phase 0: Transition-based test validation passed. Fast-path success.
+Router: Phase 0 succeeded - taking fast-path exit.
+  Completed: phase_0_optimistic
+[druid/druid_a151bcfd] Full workflow completed!

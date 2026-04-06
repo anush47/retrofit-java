@@ -1,0 +1,26 @@
+{
+  "consistency_map": {},
+  "mapped_target_context": {
+    "server/src/main/java/io/crate/execution/dml/Indexer.java": [
+      {
+        "hunk_index": 1,
+        "mainline_method": "hunk_1",
+        "target_file": "server/src/main/java/io/crate/execution/dml/Indexer.java",
+        "target_method": null,
+        "start_line": 598,
+        "end_line": 598,
+        "code_snippet": "        }\n    }\n\n    /**\n     * Trigger resolving of columns and update indexers if needed.\n     * Should be only triggered when new columns were detected by {@link #collectSchemaUpdates(IndexItem)\n     * and added to the cluster state\n     *\n     * @param getRef A function that returns a reference for a given column ident based on the current cluster state\n     */\n    public void updateTargets(Function<ColumnIdent, Reference> getRef) {\n        var it = columns.iterator();\n        var idx = 0;\n        while (it.hasNext()) {\n            var oldRef = it.next();\n            if (oldRef.oid() == COLUMN_OID_UNASSIGNED) {\n                // try to resolve the column again, new reference may have been added to or dropped of the table or\n                // the reference may be invalid\n                Reference newRef = getRef.apply(oldRef.column());\n                if (newRef == null) {\n                    // column was dropped or new column is invalid\n                    it.remove();\n                    valueIndexers.remove(idx);\n                    // don't increase idx, since we removed the current element\n                    continue;\n                }\n                if (oldRef.equals(newRef) == false) {\n                    columns.set(idx, newRef);\n                    valueIndexers.set(idx, newRef.valueType().valueIndexer(\n                            newRef.ident().tableIdent(),\n                            newRef,\n                            getRef\n                    ));\n                }\n            } else {\n                valueIndexers.get(idx).updateTargets(getRef);\n            }\n            idx++;\n        }\n\n        for (var entry : synthetics.entrySet()) {",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      }
+    ]
+  },
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "reason": "llm_usage_not_collected_in_this_node"
+  }
+}

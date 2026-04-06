@@ -1,0 +1,48 @@
+# Transition Summary
+
+- Source: phase_outputs
+- Valid backport signal: True
+- Reason: Valid: Observed fail-to-pass and/or newly passing relevant tests with no regressions.
+- fail->pass (0): []
+- newly passing (34): ['io.crate.geo.GeoJSONUtilsTest#testInvalidDepthNestedCoordinates', 'io.crate.geo.GeoJSONUtilsTest#testInvalidGeometryCollection', 'io.crate.geo.GeoJSONUtilsTest#testInvalidMap', 'io.crate.geo.GeoJSONUtilsTest#testInvalidNestedCoordinates', 'io.crate.geo.GeoJSONUtilsTest#testInvalidWKT', 'io.crate.geo.GeoJSONUtilsTest#testMap2Shape', 'io.crate.geo.GeoJSONUtilsTest#testMapFromWktRoundTrip', 'io.crate.geo.GeoJSONUtilsTest#testPoint2Map', 'io.crate.geo.GeoJSONUtilsTest#testShape2Map', 'io.crate.geo.GeoJSONUtilsTest#testValidateGeometriesMissing', 'io.crate.geo.GeoJSONUtilsTest#testValidateInvalidCoordinates', 'io.crate.geo.GeoJSONUtilsTest#testValidateMissingCoordinates', 'io.crate.geo.GeoJSONUtilsTest#testValidateMissingType', 'io.crate.geo.GeoJSONUtilsTest#testValidateWrongType', 'io.crate.geo.GeoJSONUtilsTest#test_geometry_collection_of_a_single_part_transformed_to_multi_part', 'io.crate.geo.GeoJSONUtilsTest#test_geometry_collection_with_nested_collection_single_part_transformed_to_multi_part', 'io.crate.types.GeoShapeTypeTest#testConvertFromValidGeoJSON', 'io.crate.types.GeoShapeTypeTest#testConvertFromValidWKT', 'io.crate.types.GeoShapeTypeTest#testInvalidCoordinates', 'io.crate.types.GeoShapeTypeTest#testInvalidStringValueCausesIllegalArgumentException', 'io.crate.types.GeoShapeTypeTest#testInvalidTypeCausesIllegalArgumentException', 'io.crate.types.GeoShapeTypeTest#test_bytes_estimate', 'io.crate.types.GeoShapeTypeTest#test_cast_with_null_value', 'io.crate.types.GeoShapeTypeTest#test_check_equality_of_collections_of_different_sizes', 'io.crate.types.GeoShapeTypeTest#test_check_equality_of_shapes_of_same_type_with_different_coordinates_sizes', 'io.crate.types.GeoShapeTypeTest#test_check_equality_with_itself', 'io.crate.types.GeoShapeTypeTest#test_check_topological_equality', 'io.crate.types.GeoShapeTypeTest#test_geometry_collection_equal_to_corresponding_multi_part', 'io.crate.types.GeoShapeTypeTest#test_geometry_collections_with_same_shapes_in_different_order_are_not_equal', 'io.crate.types.GeoShapeTypeTest#test_reference_resolver', 'io.crate.types.GeoShapeTypeTest#test_sanitize_value_geo_shape_objects', 'io.crate.types.GeoShapeTypeTest#test_translog_streaming_roundtrip', 'io.crate.types.GeoShapeTypeTest#test_type_streaming_roundtrip', 'io.crate.types.GeoShapeTypeTest#test_value_streaming_roundtrip']
+- pass->fail (0): []
+
+## Touched Test States
+- Touched tests (from patch): ['io.crate.geo.GeoJSONUtilsTest', 'io.crate.types.GeoShapeTypeTest']
+  - io.crate.geo.GeoJSONUtilsTest#testInvalidDepthNestedCoordinates: baseline=absent, patched=passed
+  - io.crate.geo.GeoJSONUtilsTest#testInvalidGeometryCollection: baseline=absent, patched=passed
+  - io.crate.geo.GeoJSONUtilsTest#testInvalidMap: baseline=absent, patched=passed
+  - io.crate.geo.GeoJSONUtilsTest#testInvalidNestedCoordinates: baseline=absent, patched=passed
+  - io.crate.geo.GeoJSONUtilsTest#testInvalidWKT: baseline=absent, patched=passed
+  - io.crate.geo.GeoJSONUtilsTest#testMap2Shape: baseline=absent, patched=passed
+  - io.crate.geo.GeoJSONUtilsTest#testMapFromWktRoundTrip: baseline=absent, patched=passed
+  - io.crate.geo.GeoJSONUtilsTest#testPoint2Map: baseline=absent, patched=passed
+  - io.crate.geo.GeoJSONUtilsTest#testShape2Map: baseline=absent, patched=passed
+  - io.crate.geo.GeoJSONUtilsTest#testValidateGeometriesMissing: baseline=absent, patched=passed
+  - io.crate.geo.GeoJSONUtilsTest#testValidateInvalidCoordinates: baseline=absent, patched=passed
+  - io.crate.geo.GeoJSONUtilsTest#testValidateMissingCoordinates: baseline=absent, patched=passed
+  - io.crate.geo.GeoJSONUtilsTest#testValidateMissingType: baseline=absent, patched=passed
+  - io.crate.geo.GeoJSONUtilsTest#testValidateWrongType: baseline=absent, patched=passed
+  - io.crate.geo.GeoJSONUtilsTest#test_geometry_collection_of_a_single_part_transformed_to_multi_part: baseline=absent, patched=passed
+  - io.crate.geo.GeoJSONUtilsTest#test_geometry_collection_with_nested_collection_single_part_transformed_to_multi_part: baseline=absent, patched=passed
+  - io.crate.types.GeoShapeTypeTest#testConvertFromValidGeoJSON: baseline=absent, patched=passed
+  - io.crate.types.GeoShapeTypeTest#testConvertFromValidWKT: baseline=absent, patched=passed
+  - io.crate.types.GeoShapeTypeTest#testInvalidCoordinates: baseline=absent, patched=passed
+  - io.crate.types.GeoShapeTypeTest#testInvalidStringValueCausesIllegalArgumentException: baseline=absent, patched=passed
+  - io.crate.types.GeoShapeTypeTest#testInvalidTypeCausesIllegalArgumentException: baseline=absent, patched=passed
+  - io.crate.types.GeoShapeTypeTest#test_bytes_estimate: baseline=absent, patched=passed
+  - io.crate.types.GeoShapeTypeTest#test_cast_with_null_value: baseline=absent, patched=passed
+  - io.crate.types.GeoShapeTypeTest#test_check_equality_of_collections_of_different_sizes: baseline=absent, patched=passed
+  - io.crate.types.GeoShapeTypeTest#test_check_equality_of_shapes_of_same_type_with_different_coordinates_sizes: baseline=absent, patched=passed
+  - io.crate.types.GeoShapeTypeTest#test_check_equality_with_itself: baseline=absent, patched=passed
+  - io.crate.types.GeoShapeTypeTest#test_check_topological_equality: baseline=absent, patched=passed
+  - io.crate.types.GeoShapeTypeTest#test_geometry_collection_equal_to_corresponding_multi_part: baseline=absent, patched=passed
+  - io.crate.types.GeoShapeTypeTest#test_geometry_collections_with_same_shapes_in_different_order_are_not_equal: baseline=absent, patched=passed
+  - io.crate.types.GeoShapeTypeTest#test_reference_resolver: baseline=absent, patched=passed
+  - io.crate.types.GeoShapeTypeTest#test_reference_resolver_docvalues_off: baseline=absent, patched=skipped
+  - io.crate.types.GeoShapeTypeTest#test_reference_resolver_index_and_docvalues_off: baseline=absent, patched=skipped
+  - io.crate.types.GeoShapeTypeTest#test_reference_resolver_index_off: baseline=absent, patched=skipped
+  - io.crate.types.GeoShapeTypeTest#test_sanitize_value_geo_shape_objects: baseline=absent, patched=passed
+  - io.crate.types.GeoShapeTypeTest#test_translog_streaming_roundtrip: baseline=absent, patched=passed
+  - io.crate.types.GeoShapeTypeTest#test_type_streaming_roundtrip: baseline=absent, patched=passed
+  - io.crate.types.GeoShapeTypeTest#test_value_streaming_roundtrip: baseline=absent, patched=passed

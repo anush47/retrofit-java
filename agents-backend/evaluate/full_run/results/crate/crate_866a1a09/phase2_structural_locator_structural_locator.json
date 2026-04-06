@@ -1,0 +1,38 @@
+{
+  "consistency_map": {},
+  "mapped_target_context": {
+    "server/src/main/java/io/crate/metadata/doc/DocTableInfo.java": [
+      {
+        "hunk_index": 1,
+        "mainline_method": "<import>",
+        "target_file": "server/src/main/java/io/crate/metadata/doc/DocTableInfo.java",
+        "target_method": "<import>",
+        "start_line": 83,
+        "end_line": 83,
+        "code_snippet": "\nimport io.crate.analyze.BoundCreateTable;\nimport io.crate.analyze.DropColumn;\nimport io.crate.analyze.ParamTypeHints;\nimport io.crate.analyze.WhereClause;\nimport io.crate.analyze.expressions.ExpressionAnalysisContext;\nimport io.crate.analyze.expressions.ExpressionAnalyzer;\nimport io.crate.analyze.expressions.TableReferenceResolver;\nimport io.crate.common.collections.Lists;\nimport io.crate.exceptions.ColumnUnknownException;\nimport io.crate.exceptions.RelationUnknown;\nimport io.crate.execution.ddl.tables.MappingUtil;\nimport io.crate.execution.ddl.tables.MappingUtil.AllocPosition;\nimport io.crate.execution.dml.TranslogIndexer;\nimport io.crate.expression.symbol.DynamicReference;\nimport io.crate.expression.symbol.RefReplacer;\nimport io.crate.expression.symbol.Symbol;\nimport io.crate.expression.symbol.Symbols;\nimport io.crate.expression.symbol.VoidReference;\nimport io.crate.expression.symbol.format.Style;\nimport io.crate.metadata.ColumnIdent;\nimport io.crate.metadata.CoordinatorTxnCtx;\nimport io.crate.metadata.GeneratedReference;\nimport io.crate.metadata.IndexReference;\nimport io.crate.metadata.NodeContext;\nimport io.crate.metadata.PartitionName;\nimport io.crate.metadata.Reference;\nimport io.crate.metadata.ReferenceIdent;\nimport io.crate.metadata.RelationName;\nimport io.crate.metadata.Routing;\nimport io.crate.metadata.RoutingProvider;\nimport io.crate.metadata.RowGranularity;\nimport io.crate.metadata.settings.CoordinatorSessionSettings;\nimport io.crate.metadata.settings.NumberOfReplicas;\nimport io.crate.metadata.sys.TableColumn;\nimport io.crate.metadata.table.Operation;\nimport io.crate.metadata.table.ShardedTable;\nimport io.crate.metadata.table.StoredTable;\nimport io.crate.metadata.table.TableInfo;\nimport io.crate.sql.ExpressionFormatter;\nimport io.crate.sql.parser.SqlParser;",
+        "anchor_confidence": "high",
+        "anchor_reason": "line_and_method_resolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 2,
+        "mainline_method": "hunk_2",
+        "target_file": "server/src/main/java/io/crate/metadata/doc/DocTableInfo.java",
+        "target_method": null,
+        "start_line": 1014,
+        "end_line": 1014,
+        "code_snippet": "            allColumns,\n            pKeyIndices,\n            checkConstraintMap,\n            Lists.map(partitionedByColumns, BoundCreateTable::toPartitionMapping),\n            columnPolicy,\n            clusteredBy == DocSysColumns.ID.COLUMN ? null : clusteredBy.fqn()\n        ));\n        for (String indexName : concreteIndices(metadata)) {\n            IndexMetadata indexMetadata = metadata.index(indexName);\n            if (indexMetadata == null) {\n                throw new UnsupportedOperationException(\"Cannot create index via DocTableInfo.writeTo\");\n            }\n\n            long allowedTotalColumns = TOTAL_COLUMNS_LIMIT.get(indexMetadata.getSettings());\n            if (allColumns.size() > allowedTotalColumns) {\n                throw new IllegalArgumentException(\"Limit of total columns [\" + allowedTotalColumns + \"] in table [\" + ident + \"] exceeded\");\n            }\n            metadataBuilder.put(\n                IndexMetadata.builder(indexMetadata)\n                    .putMapping(new MappingMetadata(mapping))\n                    .numberOfShards(numberOfShards)\n                    .mappingVersion(indexMetadata.getMappingVersion() + 1)\n            );\n        }\n        if (isPartitioned) {\n            String templateName = PartitionName.templateName(ident.schema(), ident.name());\n            IndexTemplateMetadata indexTemplateMetadata = metadata.templates().get(templateName);\n            if (indexTemplateMetadata == null) {\n                throw new UnsupportedOperationException(\"Cannot create template via DocTableInfo.writeTo\");\n            }\n            Integer version = indexTemplateMetadata.version();\n            var template = new IndexTemplateMetadata.Builder(indexTemplateMetadata)\n                .putMapping(Strings.toString(JsonXContent.builder().map(mapping)))\n                .version(version == null ? 1 : version + 1)\n                .build();\n            metadataBuilder.put(template);\n        }\n        return metadataBuilder;\n    }\n\n    private boolean addNewReferences(LongSupplier acquireOid,",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      }
+    ]
+  },
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "reason": "llm_usage_not_collected_in_this_node"
+  }
+}

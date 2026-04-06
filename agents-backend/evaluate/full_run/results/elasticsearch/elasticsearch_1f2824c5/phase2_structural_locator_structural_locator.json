@@ -1,0 +1,26 @@
+{
+  "consistency_map": {},
+  "mapped_target_context": {
+    "x-pack/plugin/inference/src/main/java/org/elasticsearch/xpack/inference/services/elasticsearch/ElasticsearchInternalService.java": [
+      {
+        "hunk_index": 1,
+        "mainline_method": "hunk_1",
+        "target_file": "x-pack/plugin/inference/src/main/java/org/elasticsearch/xpack/inference/services/elasticsearch/ElasticsearchInternalService.java",
+        "target_method": null,
+        "start_line": 1149,
+        "end_line": 1149,
+        "code_snippet": "                listener = ActionListener.runAfter(listener, runAfter);\n            }\n            if (maybeDeploy) {\n                listener = listener.delegateResponse((l, exception) -> maybeStartDeployment(esModel, exception, inferenceRequest, l));\n            }\n            client.execute(InferModelAction.INSTANCE, inferenceRequest, listener);\n        }\n    }\n\n    public static class Configuration {\n        public static InferenceServiceConfiguration get() {\n            return configuration.getOrCompute();\n        }\n\n        private static final LazyInitializable<InferenceServiceConfiguration, RuntimeException> configuration = new LazyInitializable<>(\n            () -> {\n                var configurationMap = new HashMap<String, SettingsConfiguration>();\n\n                configurationMap.put(\n                    MODEL_ID,\n                    new SettingsConfiguration.Builder(supportedTaskTypes).setDefaultValue(MULTILINGUAL_E5_SMALL_MODEL_ID)\n                        .setDescription(\"The name of the model to use for the inference task.\")\n                        .setLabel(\"Model ID\")\n                        .setRequired(true)\n                        .setSensitive(false)\n                        .setUpdatable(false)\n                        .setType(SettingsConfigurationFieldType.STRING)\n                        .build()\n                );\n\n                configurationMap.put(\n                    NUM_ALLOCATIONS,\n                    new SettingsConfiguration.Builder(supportedTaskTypes).setDefaultValue(1)\n                        .setDescription(\"The total number of allocations this model is assigned across machine learning nodes.\")\n                        .setLabel(\"Number Allocations\")\n                        .setRequired(true)\n                        .setSensitive(false)\n                        .setUpdatable(true)\n                        .setType(SettingsConfigurationFieldType.INTEGER)\n                        .build()\n                );",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      }
+    ]
+  },
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "reason": "llm_usage_not_collected_in_this_node"
+  }
+}

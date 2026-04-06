@@ -1,0 +1,143 @@
+{
+  "semantic_blueprint": {
+    "root_cause_hypothesis": "Deterministic inference: target branch diverges from mainline; adapt hunks with exact target context.",
+    "fix_logic": "Apply each source hunk with target-verified context and symbol consistency while preserving behavior.",
+    "dependent_apis": [
+      "TableColumn",
+      "for",
+      "if",
+      "IllegalArgumentException"
+    ],
+    "patch_intent_summary": "Backport patch behavior to target branch with minimal, context-correct edits.",
+    "hunk_chain": [
+      {
+        "hunk_index": 1,
+        "file": "server/src/main/java/io/crate/metadata/doc/DocTableInfo.java",
+        "summary": "Modifies logic (+5/-2 lines).",
+        "role": "declaration",
+        "connects_to_next": "Prepares next hunk in same file with related context.",
+        "global_index": 1
+      },
+      {
+        "hunk_index": 2,
+        "file": "server/src/main/java/io/crate/metadata/doc/DocTableInfo.java",
+        "summary": "Modifies logic (+6/-6 lines).",
+        "role": "core_fix",
+        "connects_to_next": "Prepares next hunk in same file with related context.",
+        "global_index": 2
+      },
+      {
+        "hunk_index": 3,
+        "file": "server/src/main/java/io/crate/metadata/doc/DocTableInfo.java",
+        "summary": "Modifies logic (+2/-2 lines).",
+        "role": "core_fix",
+        "connects_to_next": "Prepares next hunk in same file with related context.",
+        "global_index": 3
+      },
+      {
+        "hunk_index": 4,
+        "file": "server/src/main/java/io/crate/metadata/doc/DocTableInfo.java",
+        "summary": "Modifies logic (+1/-1 lines).",
+        "role": "core_fix",
+        "connects_to_next": "Prepares next hunk in same file with related context.",
+        "global_index": 4
+      },
+      {
+        "hunk_index": 5,
+        "file": "server/src/main/java/io/crate/metadata/doc/DocTableInfo.java",
+        "summary": "Modifies logic (+1/-1 lines).",
+        "role": "core_fix",
+        "connects_to_next": "Prepares next hunk in same file with related context.",
+        "global_index": 5
+      },
+      {
+        "hunk_index": 6,
+        "file": "server/src/main/java/io/crate/metadata/doc/DocTableInfo.java",
+        "summary": "Modifies logic (+2/-2 lines).",
+        "role": "guard",
+        "connects_to_next": "Prepares next hunk in same file with related context.",
+        "global_index": 6
+      },
+      {
+        "hunk_index": 7,
+        "file": "server/src/main/java/io/crate/metadata/doc/DocTableInfo.java",
+        "summary": "Modifies logic (+1/-1 lines).",
+        "role": "core_fix",
+        "connects_to_next": "Prepares next hunk in same file with related context.",
+        "global_index": 7
+      },
+      {
+        "hunk_index": 8,
+        "file": "server/src/main/java/io/crate/metadata/doc/DocTableInfo.java",
+        "summary": "Modifies logic (+1/-1 lines).",
+        "role": "guard",
+        "connects_to_next": "Prepares next hunk in same file with related context.",
+        "global_index": 8
+      },
+      {
+        "hunk_index": 9,
+        "file": "server/src/main/java/io/crate/metadata/doc/DocTableInfo.java",
+        "summary": "Modifies logic (+1/-1 lines).",
+        "role": "core_fix",
+        "connects_to_next": "Prepares next hunk in same file with related context.",
+        "global_index": 9
+      },
+      {
+        "hunk_index": 10,
+        "file": "server/src/main/java/io/crate/metadata/doc/DocTableInfo.java",
+        "summary": "Modifies logic (+1/-1 lines).",
+        "role": "propagation",
+        "connects_to_next": "Prepares next hunk in same file with related context.",
+        "global_index": 10
+      },
+      {
+        "hunk_index": 11,
+        "file": "server/src/main/java/io/crate/metadata/doc/DocTableInfo.java",
+        "summary": "Modifies logic (+2/-2 lines).",
+        "role": "core_fix",
+        "connects_to_next": "Prepares next hunk in same file with related context.",
+        "global_index": 11
+      },
+      {
+        "hunk_index": 12,
+        "file": "server/src/main/java/io/crate/metadata/doc/DocTableInfo.java",
+        "summary": "Modifies logic (+1/-1 lines).",
+        "role": "core_fix",
+        "connects_to_next": "Prepares next hunk in same file with related context.",
+        "global_index": 12
+      },
+      {
+        "hunk_index": 13,
+        "file": "server/src/main/java/io/crate/metadata/doc/DocTableInfo.java",
+        "summary": "Modifies logic (+1/-1 lines).",
+        "role": "core_fix",
+        "connects_to_next": "Prepares next hunk in same file with related context.",
+        "global_index": 13
+      },
+      {
+        "hunk_index": 14,
+        "file": "server/src/main/java/io/crate/metadata/doc/DocTableInfo.java",
+        "summary": "Modifies logic (+1/-1 lines).",
+        "role": "core_fix",
+        "connects_to_next": "Prepares next hunk in same file with related context.",
+        "global_index": 14
+      },
+      {
+        "hunk_index": 15,
+        "file": "server/src/main/java/io/crate/metadata/doc/DocTableInfo.java",
+        "summary": "Modifies logic (+6/-1 lines).",
+        "role": "guard",
+        "connects_to_next": "",
+        "global_index": 15
+      }
+    ]
+  },
+  "patch_diff": "From ea6fa68af2ba5631f29c2605dbc1c7b106951aeb Mon Sep 17 00:00:00 2001\nFrom: Mathias Fussenegger <f.mathias@zignar.net>\nDate: Mon, 24 Mar 2025 12:25:03 +0100\nSubject: [PATCH] Eagerly check for column limit on add column\n\nThe column limit is checked in `DocTableInfo.writeTo`, which for dynamic\nmapping updates happens after `DocTableInfo.addColumns`.\n\n`.addColumns` could take a long time if trying to add a couple hundred\nthousand columns - blocking other cluster state updates for a long time\nbefore eventually running into the limit.\n---\n docs/appendices/release-notes/5.10.4.rst      |  5 ++\n .../io/crate/metadata/doc/DocTableInfo.java   | 56 +++++++++++--------\n .../crate/metadata/doc/DocTableInfoTest.java  | 27 +++++++++\n 3 files changed, 64 insertions(+), 24 deletions(-)\n\ndiff --git a/docs/appendices/release-notes/5.10.4.rst b/docs/appendices/release-notes/5.10.4.rst\nindex 3d2cc461d9..1734f1ff6b 100644\n--- a/docs/appendices/release-notes/5.10.4.rst\n+++ b/docs/appendices/release-notes/5.10.4.rst\n@@ -44,6 +44,11 @@ See the :ref:`version_5.10.0` release notes for a full list of changes in the\n Fixes\n =====\n \n+- Fixed an issue that could cause ``INSERT INTO`` statements which dynamically\n+  create thousands of columns to overload the cluster state update process\n+  before running into the ``mapping.total_fields.limit`` limit, causing other\n+  statements trying to update the cluster state to timeout.\n+\n - Fixed NPE when querying the :ref:`sys.allocations <sys-allocations>` table\n   while no master node has been discovered. A proper exception is now thrown\n   instead of an NPE.\ndiff --git a/server/src/main/java/io/crate/metadata/doc/DocTableInfo.java b/server/src/main/java/io/crate/metadata/doc/DocTableInfo.java\nindex 29a6aae028..e911ab976b 100644\n--- a/server/src/main/java/io/crate/metadata/doc/DocTableInfo.java\n+++ b/server/src/main/java/io/crate/metadata/doc/DocTableInfo.java\n@@ -175,14 +175,17 @@ public class DocTableInfo implements TableInfo, ShardedTable, StoredTable {\n     public static final Setting<Long> DEPTH_LIMIT_SETTING =\n         Setting.longSetting(\"index.mapping.depth.limit\", 20L, 1, Property.Dynamic, Property.IndexScope);\n \n-    private final List<Reference> columns;\n+    private final List<Reference> topLevelColumns;\n     private final Set<Reference> droppedColumns;\n     private final List<GeneratedReference> generatedColumns;\n     private final List<Reference> partitionedByColumns;\n     private final List<Reference> defaultExpressionColumns;\n     private final Collection<ColumnIdent> notNullColumns;\n     private final Map<ColumnIdent, IndexReference> indexColumns;\n-    private final Map<ColumnIdent, Reference> references;\n+    /**\n+     * Top level and nested columns, including system columns. Excludes dropped columns\n+     **/\n+    private final Map<ColumnIdent, Reference> allColumns;\n     private final Map<String, Reference> leafByOid;\n     private final RelationName ident;\n     @Nullable\n@@ -229,27 +232,27 @@ public class DocTableInfo implements TableInfo, ShardedTable, StoredTable {\n             .map(Reference::column)\n             .toList();\n         this.droppedColumns = droppedColumns;\n-        this.references = references.entrySet().stream()\n+        this.allColumns = references.entrySet().stream()\n             .filter(entry -> !entry.getValue().isDropped())\n             .collect(Collectors.toMap(Entry::getKey, Entry::getValue));\n-        SysColumns.forTable(ident, this.references::put);\n-        this.columns = this.references.values().stream()\n+        this.topLevelColumns = this.allColumns.values().stream()\n             .filter(r -> !r.column().isSystemColumn())\n             .filter(r -> r.column().isRoot())\n             .sorted(Reference.CMP_BY_POSITION_THEN_NAME)\n             .toList();\n+        SysColumns.forTable(ident, this.allColumns::put);\n         this.partitionedByColumns = Lists.map(partitionedBy, x -> {\n-            Reference ref = this.references.get(x);\n+            Reference ref = this.allColumns.get(x);\n             assert ref != null : \"Column in `partitionedBy` must be present in `references`\";\n             return ref;\n         });\n-        this.generatedColumns = this.references.values().stream()\n+        this.generatedColumns = this.allColumns.values().stream()\n             .filter(r -> r instanceof GeneratedReference && !r.isDropped())\n             .map(r -> (GeneratedReference) r)\n             .toList();\n         this.indexColumns = indexColumns;\n         leafByOid = new HashMap<>();\n-        Stream.concat(Stream.concat(this.references.values().stream(), indexColumns.values().stream()), droppedColumns.stream())\n+        Stream.concat(Stream.concat(this.allColumns.values().stream(), indexColumns.values().stream()), droppedColumns.stream())\n             .filter(r -> r.oid() != COLUMN_OID_UNASSIGNED)\n             .forEach(r -> leafByOid.put(Long.toString(r.oid()), r));\n         this.ident = ident;\n@@ -285,8 +288,8 @@ public class DocTableInfo implements TableInfo, ShardedTable, StoredTable {\n         this.versionUpgraded = versionUpgraded;\n         this.closed = closed;\n         this.supportedOperations = supportedOperations;\n-        this.docColumn = new TableColumn(SysColumns.DOC, this.references);\n-        this.defaultExpressionColumns = this.references.values()\n+        this.docColumn = new TableColumn(SysColumns.DOC, this.allColumns);\n+        this.defaultExpressionColumns = this.allColumns.values()\n             .stream()\n             .filter(r -> r.defaultExpression() != null)\n             .toList();\n@@ -302,7 +305,7 @@ public class DocTableInfo implements TableInfo, ShardedTable, StoredTable {\n \n     @Nullable\n     public Reference getReference(ColumnIdent columnIdent) {\n-        Reference reference = references.get(columnIdent);\n+        Reference reference = allColumns.get(columnIdent);\n         if (reference == null) {\n             return docColumn.getReference(ident(), columnIdent);\n         }\n@@ -313,7 +316,7 @@ public class DocTableInfo implements TableInfo, ShardedTable, StoredTable {\n     public Reference getReference(String storageIdent) {\n         try {\n             long oid = Long.parseLong(storageIdent);\n-            for (var ref : references.values()) {\n+            for (var ref : allColumns.values()) {\n                 if (ref.oid() == oid) {\n                     return ref;\n                 }\n@@ -363,14 +366,14 @@ public class DocTableInfo implements TableInfo, ShardedTable, StoredTable {\n \n     private ReferenceTree referenceTree() {\n         if (refTree == null) {\n-            refTree = ReferenceTree.of(references.values());\n+            refTree = ReferenceTree.of(allColumns.values());\n         }\n         return refTree;\n     }\n \n     @Override\n     public List<Reference> columns() {\n-        return columns;\n+        return topLevelColumns;\n     }\n \n     @Override\n@@ -380,7 +383,7 @@ public class DocTableInfo implements TableInfo, ShardedTable, StoredTable {\n \n     public int maxPosition() {\n         return Math.max(\n-            references.values().stream()\n+            allColumns.values().stream()\n                 .filter(ref -> !ref.column().isSystemColumn())\n                 .mapToInt(Reference::position)\n                 .max()\n@@ -575,7 +578,7 @@ public class DocTableInfo implements TableInfo, ShardedTable, StoredTable {\n \n     @Override\n     public Iterator<Reference> iterator() {\n-        return references.values().stream()\n+        return allColumns.values().stream()\n             .sorted(Reference.CMP_BY_POSITION_THEN_NAME)\n             .iterator();\n     }\n@@ -627,7 +630,7 @@ public class DocTableInfo implements TableInfo, ShardedTable, StoredTable {\n \n     @Nullable\n     public String getAnalyzerForColumnIdent(ColumnIdent ident) {\n-        Reference reference = references.get(ident);\n+        Reference reference = allColumns.get(ident);\n         if (reference instanceof GeneratedReference gen) {\n             reference = gen.reference();\n         }\n@@ -820,7 +823,7 @@ public class DocTableInfo implements TableInfo, ShardedTable, StoredTable {\n         }\n         return new DocTableInfo(\n             ident,\n-            references,\n+            allColumns,\n             indexColumns,\n             droppedColumns,\n             pkConstraintName,\n@@ -840,11 +843,11 @@ public class DocTableInfo implements TableInfo, ShardedTable, StoredTable {\n \n     public DocTableInfo dropColumns(List<DropColumn> columns) {\n         validateDropColumns(columns);\n-        HashMap<ColumnIdent, Reference> newReferences = new HashMap<>(references);\n+        HashMap<ColumnIdent, Reference> newReferences = new HashMap<>(allColumns);\n         Set<Reference> newDroppedColumns = new HashSet<>();\n         for (var column : columns) {\n             ColumnIdent columnIdent = column.ref().column();\n-            Reference reference = references.get(columnIdent);\n+            Reference reference = allColumns.get(columnIdent);\n             if (newDroppedColumns.contains(reference)) {\n                 continue;\n             }\n@@ -862,7 +865,7 @@ public class DocTableInfo implements TableInfo, ShardedTable, StoredTable {\n             Reference droppedRef = reference.withDropped(true);\n             newDroppedColumns.add(droppedRef);\n             newReferences.replace(columnIdent, droppedRef);\n-            for (var ref : references.values()) {\n+            for (var ref : allColumns.values()) {\n                 if (ref.column().isChildOf(columnIdent)) {\n                     newDroppedColumns.add(ref.withDropped(true));\n                     newReferences.remove(ref.column());\n@@ -936,7 +939,7 @@ public class DocTableInfo implements TableInfo, ShardedTable, StoredTable {\n         // where 1) is used to perform 2).\n \n         Map<ColumnIdent, Reference> oldNameToRenamedRefs = new HashMap<>();\n-        for (var ref : references.values()) {\n+        for (var ref : allColumns.values()) {\n             ColumnIdent column = ref.column();\n             if (toBeRenamed.test(column)) {\n                 var renamedRef = ref.withReferenceIdent(\n@@ -1021,7 +1024,7 @@ public class DocTableInfo implements TableInfo, ShardedTable, StoredTable {\n                     droppedColumns.stream(),\n                     indexColumns.values().stream()\n                 ),\n-                references.values().stream()\n+                this.allColumns.values().stream()\n             )\n             .filter(ref -> !ref.column().isSystemColumn())\n             .sorted(Reference.CMP_BY_POSITION_THEN_NAME)\n@@ -1190,7 +1193,12 @@ public class DocTableInfo implements TableInfo, ShardedTable, StoredTable {\n                                    IntArrayList pKeyIndices,\n                                    Map<String, String> newCheckConstraints) {\n         newColumns.forEach(ref -> ref.column().validForCreate());\n-        HashMap<ColumnIdent, Reference> newReferences = new HashMap<>(references);\n+        long allowedTotalColumns = TOTAL_COLUMNS_LIMIT.get(tableParameters);\n+        int numSysColumns = SysColumns.COLUMN_IDENTS.size();\n+        if (newColumns.size() + allColumns.size() - numSysColumns > allowedTotalColumns) {\n+            throw new IllegalArgumentException(\"Limit of total columns [\" + allowedTotalColumns + \"] in table [\" + ident + \"] exceeded\");\n+        }\n+        HashMap<ColumnIdent, Reference> newReferences = new HashMap<>(allColumns);\n         int maxPosition = maxPosition();\n         AtomicInteger positions = new AtomicInteger(maxPosition);\n         List<Reference> newColumnsWithParents = addMissingParents(newColumns);\ndiff --git a/server/src/test/java/io/crate/metadata/doc/DocTableInfoTest.java b/server/src/test/java/io/crate/metadata/doc/DocTableInfoTest.java\nindex 1a88075d7a..dfc02394df 100644\n--- a/server/src/test/java/io/crate/metadata/doc/DocTableInfoTest.java\n+++ b/server/src/test/java/io/crate/metadata/doc/DocTableInfoTest.java\n@@ -23,6 +23,7 @@ package io.crate.metadata.doc;\n \n import static io.crate.testing.Asserts.assertThat;\n import static java.util.Collections.singletonList;\n+import static org.assertj.core.api.Assertions.assertThat;\n import static org.assertj.core.api.Assertions.assertThatThrownBy;\n import static org.elasticsearch.cluster.metadata.Metadata.COLUMN_OID_UNASSIGNED;\n \n@@ -33,6 +34,7 @@ import java.util.List;\n import java.util.Map;\n import java.util.Set;\n import java.util.concurrent.atomic.AtomicLong;\n+import java.util.function.Function;\n \n import org.assertj.core.api.Assertions;\n import org.elasticsearch.Version;\n@@ -571,6 +573,31 @@ public class DocTableInfoTest extends CrateDummyClusterServiceUnitTest {\n             .hasType(oType);\n     }\n \n+    @Test\n+    public void test_add_columns_fails_eagerly_on_too_many_columns() throws Exception {\n+        SQLExecutor e = SQLExecutor.of(clusterService)\n+            .addTable(\"create table tbl (x int) with (\\\"mapping.total_fields.limit\\\" = 3)\");\n+        DocTableInfo table = e.resolveTableInfo(\"tbl\");\n+        Function<String, Reference> newRef = name -> new SimpleReference(\n+            new ReferenceIdent(table.ident(), ColumnIdent.of(name)),\n+            RowGranularity.DOC,\n+            DataTypes.INTEGER,\n+            -1,\n+            null\n+        );\n+        Reference a = newRef.apply(\"a\");\n+        Reference b = newRef.apply(\"b\");\n+        Reference c = newRef.apply(\"c\");\n+        assertThatThrownBy(() -> table.addColumns(\n+            e.nodeCtx,\n+            e.fulltextAnalyzerResolver(),\n+            () -> 1,\n+            List.of(a, b, c),\n+            new IntArrayList(),\n+            Map.of()\n+        )).hasMessage(\"Limit of total columns [3] in table [doc.tbl] exceeded\");\n+    }\n+\n     @Test\n     public void test_drop_column_fixes_inner_types_of_all_its_parents() throws Exception {\n         SQLExecutor e = SQLExecutor.of(clusterService)\n-- \n2.43.0\n\n",
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "reason": "deterministic_no_llm"
+  }
+}

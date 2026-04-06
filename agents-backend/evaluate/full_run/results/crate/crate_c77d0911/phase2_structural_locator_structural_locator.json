@@ -1,0 +1,94 @@
+{
+  "consistency_map": {},
+  "mapped_target_context": {
+    "server/src/main/java/io/crate/analyze/CopyAnalyzer.java": [
+      {
+        "hunk_index": 1,
+        "mainline_method": "hunk_1",
+        "target_file": "server/src/main/java/io/crate/analyze/CopyAnalyzer.java",
+        "target_method": null,
+        "start_line": 76,
+        "end_line": 76,
+        "code_snippet": "    AnalyzedCopyFrom analyzeCopyFrom(CopyFrom<Expression> node,\n                                     ParamTypeHints paramTypeHints,\n                                     CoordinatorTxnCtx txnCtx) {\n        DocTableInfo tableInfo = (DocTableInfo) schemas.resolveTableInfo(\n            node.table().getName(),\n            Operation.INSERT,\n            txnCtx.sessionSettings().sessionUser(),\n            txnCtx.sessionSettings().searchPath());\n\n        var exprCtx = new ExpressionAnalysisContext(txnCtx.sessionSettings());\n\n        var exprAnalyzerWithoutFields = new ExpressionAnalyzer(\n            txnCtx, nodeCtx, paramTypeHints, FieldProvider.UNSUPPORTED, null);\n        var exprAnalyzerWithFieldsAsString = new ExpressionAnalyzer(\n            txnCtx, nodeCtx, paramTypeHints, FieldProvider.TO_LITERAL_VALIDATE_NAME, null);\n\n        var normalizer = new EvaluatingNormalizer(\n            nodeCtx,\n            RowGranularity.CLUSTER,\n            null,\n            new TableRelation(tableInfo));\n\n        Table<Symbol> table = node.table().map(t -> exprAnalyzerWithFieldsAsString.convert(t, exprCtx));\n        GenericProperties<Symbol> properties = node.properties().map(t -> exprAnalyzerWithoutFields.convert(t,\n                                                                                                            exprCtx));\n        Symbol uri = exprAnalyzerWithoutFields.convert(node.path(), exprCtx);\n\n        if (node.isReturnSummary()) {\n            return new AnalyzedCopyFromReturnSummary(\n                tableInfo,\n                node.columns(),\n                table,\n                properties,\n                normalizer.normalize(uri, txnCtx));\n        } else {\n            return new AnalyzedCopyFrom(\n                tableInfo,\n                node.columns(),\n                table,\n                properties,\n                normalizer.normalize(uri, txnCtx));",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 2,
+        "mainline_method": "hunk_2",
+        "target_file": "server/src/main/java/io/crate/analyze/CopyAnalyzer.java",
+        "target_method": null,
+        "start_line": 119,
+        "end_line": 119,
+        "code_snippet": "\n    AnalyzedCopyTo analyzeCopyTo(CopyTo<Expression> node,\n                                 ParamTypeHints paramTypeHints,\n                                 CoordinatorTxnCtx txnCtx) {\n        if (!node.directoryUri()) {\n            throw new UnsupportedOperationException(\"Using COPY TO without specifying a DIRECTORY is not supported\");\n        }\n\n        TableInfo tableInfo = schemas.resolveTableInfo(\n            node.table().getName(),\n            Operation.COPY_TO,\n            txnCtx.sessionSettings().sessionUser(),\n            txnCtx.sessionSettings().searchPath());\n        Operation.blockedRaiseException(tableInfo, Operation.READ);\n        DocTableRelation tableRelation = new DocTableRelation((DocTableInfo) tableInfo);\n\n        EvaluatingNormalizer normalizer = new EvaluatingNormalizer(\n            nodeCtx,\n            RowGranularity.CLUSTER,\n            null,\n            tableRelation);\n\n        var exprCtx = new ExpressionAnalysisContext(txnCtx.sessionSettings());\n        var expressionAnalyzer = new ExpressionAnalyzer(\n            txnCtx,\n            nodeCtx,\n            paramTypeHints,\n            new NameFieldProvider(tableRelation),\n            null);\n        var exprAnalyzerWithFieldsAsString = new ExpressionAnalyzer(\n            txnCtx,\n            nodeCtx,\n            paramTypeHints,\n            FieldProvider.TO_LITERAL_VALIDATE_NAME,\n            null);\n\n        var uri = expressionAnalyzer.convert(node.targetUri(), exprCtx);\n        var table = node.table().map(x -> exprAnalyzerWithFieldsAsString.convert(x, exprCtx));\n        var properties = node.properties().map(x -> expressionAnalyzer.convert(x, exprCtx));\n        var columns = Lists.map(\n            node.columns(),",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      }
+    ],
+    "server/src/main/java/io/crate/analyze/DeleteAnalyzer.java": [
+      {
+        "hunk_index": 1,
+        "mainline_method": "hunk_1",
+        "target_file": "server/src/main/java/io/crate/analyze/DeleteAnalyzer.java",
+        "target_method": null,
+        "start_line": 63,
+        "end_line": 63,
+        "code_snippet": "\nfinal class DeleteAnalyzer {\n\n    private final NodeContext nodeCtx;\n    private final RelationAnalyzer relationAnalyzer;\n\n    DeleteAnalyzer(NodeContext nodeCtx, RelationAnalyzer relationAnalyzer) {\n        this.nodeCtx = nodeCtx;\n        this.relationAnalyzer = relationAnalyzer;\n    }\n\n    public AnalyzedDeleteStatement analyze(Delete delete, ParamTypeHints typeHints, CoordinatorTxnCtx txnContext) {\n        StatementAnalysisContext stmtCtx = new StatementAnalysisContext(typeHints, Operation.DELETE, txnContext);\n        final RelationAnalysisContext relationCtx = stmtCtx.startRelation();\n        AnalyzedRelation relation = relationAnalyzer.analyze(delete.getRelation(), stmtCtx);\n        stmtCtx.endRelation();\n\n        MaybeAliasedStatement maybeAliasedStatement = MaybeAliasedStatement.analyze(relation);\n        relation = maybeAliasedStatement.nonAliasedRelation();\n\n        if (!(relation instanceof DocTableRelation)) {\n            throw new UnsupportedOperationException(\"Cannot delete from relations other than base tables\");\n        }\n        DocTableRelation table = (DocTableRelation) relation;\n        EvaluatingNormalizer normalizer = new EvaluatingNormalizer(nodeCtx, RowGranularity.CLUSTER, null, table);\n        ExpressionAnalyzer expressionAnalyzer = new ExpressionAnalyzer(\n            txnContext,\n            nodeCtx,\n            typeHints,\n            new FullQualifiedNameFieldProvider(\n                relationCtx.sources(),\n                relationCtx.parentSources(),\n                txnContext.sessionSettings().searchPath().currentSchema()),\n            new SubqueryAnalyzer(relationAnalyzer, new StatementAnalysisContext(typeHints, Operation.READ, txnContext))\n        );\n        Symbol query = Objects.requireNonNullElse(\n            expressionAnalyzer.generateQuerySymbol(delete.getWhere(), new ExpressionAnalysisContext(txnContext.sessionSettings())),\n            Literal.BOOLEAN_TRUE\n        );\n        query = maybeAliasedStatement.maybeMapFields(query);\n",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      }
+    ],
+    "server/src/main/java/io/crate/analyze/InsertAnalyzer.java": [
+      {
+        "hunk_index": 1,
+        "mainline_method": "hunk_1",
+        "target_file": "server/src/main/java/io/crate/analyze/InsertAnalyzer.java",
+        "target_method": null,
+        "start_line": 316,
+        "end_line": 316,
+        "code_snippet": "    private static Map<Reference, Symbol> getUpdateAssignments(DocTableRelation targetTable,\n                                                               List<Reference> targetCols,\n                                                               ExpressionAnalyzer exprAnalyzer,\n                                                               CoordinatorTxnCtx txnCtx,\n                                                               NodeContext nodeCtx,\n                                                               ParamTypeHints paramTypeHints,\n                                                               Insert.DuplicateKeyContext<Expression> duplicateKeyContext) {\n        if (duplicateKeyContext.getAssignments().isEmpty()) {\n            return Collections.emptyMap();\n        }\n\n        ExpressionAnalysisContext exprCtx = new ExpressionAnalysisContext(txnCtx.sessionSettings());\n        ValuesResolver valuesResolver = new ValuesResolver(targetCols);\n        final FieldProvider<?> fieldProvider;\n        if (duplicateKeyContext.getType() == Insert.DuplicateKeyContext.Type.ON_CONFLICT_DO_UPDATE_SET) {\n            fieldProvider = new ExcludedFieldProvider(new NameFieldProvider(targetTable), valuesResolver);\n        } else {\n            fieldProvider = new NameFieldProvider(targetTable);\n        }\n        var expressionAnalyzer = new ExpressionAnalyzer(txnCtx, nodeCtx, paramTypeHints, fieldProvider, null);\n        var normalizer = new EvaluatingNormalizer(nodeCtx, RowGranularity.CLUSTER, null, targetTable);\n        Map<Reference, Symbol> updateAssignments = new HashMap<>(duplicateKeyContext.getAssignments().size());\n        for (Assignment<Expression> assignment : duplicateKeyContext.getAssignments()) {\n            Reference targetCol = (Reference) exprAnalyzer.convert(assignment.columnName(), exprCtx);\n            Symbol valueSymbol = ValueNormalizer.normalizeInputForReference(\n                normalizer.normalize(expressionAnalyzer.convert(assignment.expression(), exprCtx), txnCtx),\n                targetCol,\n                targetTable.tableInfo(),\n                s -> normalizer.normalize(s, txnCtx)\n            );\n            updateAssignments.put(targetCol, valueSymbol);\n        }\n        return updateAssignments;\n    }\n\n    private Map<Reference, Symbol> processUpdateAssignments(DocTableRelation tableRelation,\n                                                            List<Reference> targetColumns,\n                                                            ParamTypeHints paramTypeHints,\n                                                            CoordinatorTxnCtx coordinatorTxnCtx,\n                                                            NodeContext nodeCtx,\n                                                            FieldProvider<?> fieldProvider,",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      }
+    ],
+    "server/src/main/java/io/crate/analyze/UpdateAnalyzer.java": [
+      {
+        "hunk_index": 1,
+        "mainline_method": "hunk_1",
+        "target_file": "server/src/main/java/io/crate/analyze/UpdateAnalyzer.java",
+        "target_method": null,
+        "start_line": 110,
+        "end_line": 110,
+        "code_snippet": "         *               ^^^^^^^^^^^^^^^^^^       ^^^^^^\n         *               assignments               whereClause\n         *\n         *               col1 = ?\n         *               |      |\n         *               |     source\n         *             columnName/target\n         */\n        StatementAnalysisContext stmtCtx = new StatementAnalysisContext(typeHints, Operation.UPDATE, txnCtx);\n        final RelationAnalysisContext relCtx = stmtCtx.startRelation();\n        AnalyzedRelation relation = relationAnalyzer.analyze(update.relation(), stmtCtx);\n        stmtCtx.endRelation();\n\n        MaybeAliasedStatement maybeAliasedStatement = MaybeAliasedStatement.analyze(relation);\n        relation = maybeAliasedStatement.nonAliasedRelation();\n\n        if (!(relation instanceof AbstractTableRelation)) {\n            throw new UnsupportedOperationException(\"UPDATE is only supported on base-tables\");\n        }\n        AbstractTableRelation<?> table = (AbstractTableRelation<?>) relation;\n        EvaluatingNormalizer normalizer = new EvaluatingNormalizer(nodeCtx, RowGranularity.CLUSTER, null, table);\n        SubqueryAnalyzer subqueryAnalyzer =\n            new SubqueryAnalyzer(relationAnalyzer, new StatementAnalysisContext(typeHints, Operation.READ, txnCtx));\n\n        ExpressionAnalyzer sourceExprAnalyzer = new ExpressionAnalyzer(\n            txnCtx,\n            nodeCtx,\n            typeHints,\n            new FullQualifiedNameFieldProvider(\n                relCtx.sources(),\n                relCtx.parentSources(),\n                txnCtx.sessionSettings().searchPath().currentSchema()\n            ),\n            subqueryAnalyzer\n        );\n        ExpressionAnalysisContext exprCtx = new ExpressionAnalysisContext(txnCtx.sessionSettings());\n\n        LinkedHashMap<Reference, Symbol> assignmentByTargetCol = getAssignments(\n            update.assignments(), typeHints, txnCtx, table, normalizer, subqueryAnalyzer, sourceExprAnalyzer, exprCtx);\n\n        Symbol query = Objects.requireNonNullElse(",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      }
+    ],
+    "server/src/main/java/io/crate/analyze/where/WhereClauseAnalyzer.java": [
+      {
+        "hunk_index": 1,
+        "mainline_method": "hunk_1",
+        "target_file": "server/src/main/java/io/crate/analyze/where/WhereClauseAnalyzer.java",
+        "target_method": null,
+        "start_line": 115,
+        "end_line": 115,
+        "code_snippet": "        public final Symbol query;\n        public final List<String> partitions;\n\n        PartitionResult(Symbol query, List<String> partitions) {\n            this.query = query;\n            this.partitions = partitions;\n        }\n    }\n\n    public static PartitionResult resolvePartitions(Symbol query,\n                                                    DocTableInfo tableInfo,\n                                                    CoordinatorTxnCtx coordinatorTxnCtx,\n                                                    NodeContext nodeCtx,\n                                                    Metadata metadata) {\n        assert tableInfo.isPartitioned() : \"table must be partitioned in order to resolve partitions\";\n        assert !tableInfo.getPartitions(metadata).isEmpty() : \"table must have at least one partition\";\n\n        PartitionReferenceResolver partitionReferenceResolver = preparePartitionResolver(\n            tableInfo.partitionedByColumns());\n        EvaluatingNormalizer normalizer = new EvaluatingNormalizer(\n            nodeCtx, RowGranularity.PARTITION, partitionReferenceResolver, null);\n\n        Symbol normalized;\n        Map<Symbol, List<Literal<?>>> queryPartitionMap = new HashMap<>();\n\n        for (PartitionName partitionName : tableInfo.getPartitions(metadata)) {\n            for (PartitionExpression partitionExpression : partitionReferenceResolver.expressions()) {\n                partitionExpression.setNextRow(partitionName);\n            }\n            normalized = normalizer.normalize(query, coordinatorTxnCtx);\n            assert normalized != null : \"normalizing a query must not return null\";\n\n            if (normalized.equals(query)) {\n                return new PartitionResult(query, Collections.emptyList()); // no partition columns inside the where clause\n            }\n\n            boolean canMatch = WhereClause.canMatch(normalized);\n            if (canMatch) {\n                List<Literal<?>> partitions = queryPartitionMap.get(normalized);\n                if (partitions == null) {\n                    partitions = new ArrayList<>();",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      }
+    ]
+  },
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "reason": "llm_usage_not_collected_in_this_node"
+  }
+}

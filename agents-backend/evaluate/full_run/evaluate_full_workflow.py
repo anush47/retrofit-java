@@ -63,7 +63,7 @@ REPOS_DIR = os.path.join(BASE_DIR, "temp_repo_storage")
 RESULTS_DIR = os.path.join(os.path.dirname(__file__), "results")
 PHASE0_CACHE_DIR = os.path.join(os.path.dirname(__file__), "phase0_cache")
 
-TARGET_PROJECTS = ["elasticsearch", "crate", "graylog2-server", "druid", "hbase"]
+TARGET_PROJECTS = ["elasticsearch", "crate", "graylog2-server", "druid"]
 MAX_PATCHES_PER_PROJECT = None
 
 RUN_MODE_FULL = "full"
