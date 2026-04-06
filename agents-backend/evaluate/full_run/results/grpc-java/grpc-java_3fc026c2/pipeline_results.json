@@ -1,0 +1,307 @@
+{
+  "project": "grpc-java",
+  "patch_id": "grpc-java_3fc026c2",
+  "mainline_commit": "3fc026c29bd09c6ca87b72fd69eff843b88456a3",
+  "backport_commit": "53cd1a225628530defa407590223efdab0fca060",
+  "run_mode": "full",
+  "timestamp": "2026-04-06T16:47:21.019812",
+  "phases": {
+    "phase0": {
+      "phase_0_optimistic": {
+        "node": "phase_0_optimistic",
+        "outputs": {
+          "patch_analysis": [
+            "FileChange(file_path='xds/src/main/java/io/grpc/xds/XdsClusterResource.java', change_type='MODIFIED', added_lines=['// Fall back to deprecated field (field 11) for backward compatibility with Istio', '@SuppressWarnings(\"deprecation\")', 'String instanceName = commonTlsContext.hasTlsCertificateCertificateProviderInstance()', '? commonTlsContext.getTlsCertificateCertificateProviderInstance().getInstanceName()', ': null;', 'return instanceName;', '// Fall back to deprecated field (field 4) in CombinedValidationContext', '@SuppressWarnings(\"deprecation\")', 'String instanceName = combinedCertificateValidationContext', '.hasValidationContextCertificateProviderInstance()', '? combinedCertificateValidationContext.getValidationContextCertificateProviderInstance()', '.getInstanceName()', ': null;', 'if (instanceName != null) {', 'return instanceName;', '}'], removed_lines=['return null;'], is_test_file=False, previous_file_path=None)",
+            "FileChange(file_path='xds/src/main/java/io/grpc/xds/internal/security/CommonTlsContextUtil.java', change_type='MODIFIED', added_lines=['@SuppressWarnings(\"deprecation\")', 'boolean hasDeprecatedField = commonTlsContext.hasTlsCertificateCertificateProviderInstance();', '|| hasDeprecatedField', 'if (commonTlsContext.hasCombinedValidationContext()) {', 'CommonTlsContext.CombinedCertificateValidationContext combined =', 'commonTlsContext.getCombinedValidationContext();', 'if (combined.hasDefaultValidationContext()', '&& combined.getDefaultValidationContext().hasCaCertificateProviderInstance()) {', 'return true;', '}', '// Check deprecated field (field 4) in CombinedValidationContext', '@SuppressWarnings(\"deprecation\")', 'boolean hasDeprecatedField = combined.hasValidationContextCertificateProviderInstance();', 'return hasDeprecatedField;', '}', 'return false;'], removed_lines=['return commonTlsContext.hasCombinedValidationContext()', '&& commonTlsContext.getCombinedValidationContext().getDefaultValidationContext()', '.hasCaCertificateProviderInstance();'], is_test_file=False, previous_file_path=None)",
+            "FileChange(file_path='xds/src/main/java/io/grpc/xds/internal/security/certprovider/CertProviderSslContextProvider.java', change_type='MODIFIED', added_lines=['// Fall back to deprecated field for backward compatibility with Istio', '@SuppressWarnings(\"deprecation\")', 'CertificateProviderInstance deprecatedInstance =', 'commonTlsContext.hasTlsCertificateCertificateProviderInstance()', '? commonTlsContext.getTlsCertificateCertificateProviderInstance()', ': null;', 'return deprecatedInstance;'], removed_lines=['return null;'], is_test_file=False, previous_file_path=None)"
+          ],
+          "patch_diff": "From 3fc026c29bd09c6ca87b72fd69eff843b88456a3 Mon Sep 17 00:00:00 2001\nFrom: adam lazur <laz@canva.com>\nDate: Thu, 13 Nov 2025 07:15:10 +0900\nSubject: [PATCH] xds: Support deprecated xDS TLS fields for Istio compat\n (#12435)\n\n## Problem\n\nWhen using xDS with Istio's grpc-agent in proxyless mode, Java gRPC\nfails with:\n\n```\nLDS response Listener validation error:\ntls_certificate_provider_instance is required in downstream-tls-context\n```\n\n**Root Cause:**\n\nIstio sends deprecated certificate provider fields for backward\ncompatibility with older Envoy versions. Java gRPC currently only reads\nthe current fields, causing validation failures.\n\nSpecifically, Istio uses these deprecated fields:\n1. **Field 11**: `tls_certificate_certificate_provider_instance`\n(deprecated) instead of field 14 (`tls_certificate_provider_instance`)\n2. **Field 4**: `validation_context_certificate_provider_instance` in\n`CombinedValidationContext` (deprecated) instead of\n`ca_certificate_provider_instance` in `default_validation_context`\n\n## Fix\n\nIstio is adding support for the new fields in\nhttps://github.com/istio/istio/pull/58257. Add fallback logic to support\ndeprecated certificate provider fields before that is rolled out:\n\n**For identity certificates:**\n1. Try current field 14 (`tls_certificate_provider_instance`) first\n2. Fall back to deprecated field 11\n(`tls_certificate_certificate_provider_instance`)\n\n**For validation context in CombinedValidationContext:**\n1. Try `ca_certificate_provider_instance` in\n`default_validation_context` first\n2. Fall back to deprecated field 4\n(`validation_context_certificate_provider_instance`)\n\nThis matches the behavior of\n[grpc-cpp](https://github.com/grpc/grpc/blob/master/src/core/xds/grpc/xds_common_types_parser.cc#L435-L474)\nand\n[grpc-go](https://github.com/grpc/grpc-go/blob/master/internal/xds/xdsclient/xdsresource/unmarshal_cds.go#L310-L344)\nimplementations.\n\n## Testing\n\n* Added new tests for both deprecated field paths (field 11 and field 4)\n* All existing tests pass\n* Manual local testing with Istio in proxyless mode verified the\ncompatibility fix works\n\n---------\n\nCo-authored-by: Amp <amp@ampcode.com>\n---\n .../java/io/grpc/xds/XdsClusterResource.java  | 17 +++++-\n .../security/CommonTlsContextUtil.java        | 19 +++++--\n .../CertProviderSslContextProvider.java       |  8 ++-\n .../grpc/xds/GrpcXdsClientImplDataTest.java   | 30 +++++++++++\n .../security/CommonTlsContextTestsUtil.java   | 27 ++++++++++\n ...tProviderClientSslContextProviderTest.java | 52 +++++++++++++++++++\n 6 files changed, 148 insertions(+), 5 deletions(-)\n\ndiff --git a/xds/src/main/java/io/grpc/xds/XdsClusterResource.java b/xds/src/main/java/io/grpc/xds/XdsClusterResource.java\nindex 593aed4ef..d9848d970 100644\n--- a/xds/src/main/java/io/grpc/xds/XdsClusterResource.java\n+++ b/xds/src/main/java/io/grpc/xds/XdsClusterResource.java\n@@ -541,7 +541,12 @@ class XdsClusterResource extends XdsResourceType<CdsUpdate> {\n     if (commonTlsContext.hasTlsCertificateProviderInstance()) {\n       return commonTlsContext.getTlsCertificateProviderInstance().getInstanceName();\n     }\n-    return null;\n+    // Fall back to deprecated field (field 11) for backward compatibility with Istio\n+    @SuppressWarnings(\"deprecation\")\n+    String instanceName = commonTlsContext.hasTlsCertificateCertificateProviderInstance()\n+        ? commonTlsContext.getTlsCertificateCertificateProviderInstance().getInstanceName()\n+        : null;\n+    return instanceName;\n   }\n \n   private static String getRootCertInstanceName(CommonTlsContext commonTlsContext) {\n@@ -559,6 +564,16 @@ class XdsClusterResource extends XdsResourceType<CdsUpdate> {\n         return combinedCertificateValidationContext.getDefaultValidationContext()\n             .getCaCertificateProviderInstance().getInstanceName();\n       }\n+      // Fall back to deprecated field (field 4) in CombinedValidationContext\n+      @SuppressWarnings(\"deprecation\")\n+      String instanceName = combinedCertificateValidationContext\n+          .hasValidationContextCertificateProviderInstance()\n+          ? combinedCertificateValidationContext.getValidationContextCertificateProviderInstance()\n+              .getInstanceName()\n+          : null;\n+      if (instanceName != null) {\n+        return instanceName;\n+      }\n     }\n     return null;\n   }\ndiff --git a/xds/src/main/java/io/grpc/xds/internal/security/CommonTlsContextUtil.java b/xds/src/main/java/io/grpc/xds/internal/security/CommonTlsContextUtil.java\nindex 50fa18b64..bd8a423e6 100644\n--- a/xds/src/main/java/io/grpc/xds/internal/security/CommonTlsContextUtil.java\n+++ b/xds/src/main/java/io/grpc/xds/internal/security/CommonTlsContextUtil.java\n@@ -28,7 +28,10 @@ public final class CommonTlsContextUtil {\n     if (commonTlsContext == null) {\n       return false;\n     }\n+    @SuppressWarnings(\"deprecation\")\n+    boolean hasDeprecatedField = commonTlsContext.hasTlsCertificateCertificateProviderInstance();\n     return commonTlsContext.hasTlsCertificateProviderInstance()\n+        || hasDeprecatedField\n         || hasValidationProviderInstance(commonTlsContext);\n   }\n \n@@ -37,9 +40,19 @@ public final class CommonTlsContextUtil {\n         .hasCaCertificateProviderInstance()) {\n       return true;\n     }\n-    return commonTlsContext.hasCombinedValidationContext()\n-        && commonTlsContext.getCombinedValidationContext().getDefaultValidationContext()\n-          .hasCaCertificateProviderInstance();\n+    if (commonTlsContext.hasCombinedValidationContext()) {\n+      CommonTlsContext.CombinedCertificateValidationContext combined =\n+          commonTlsContext.getCombinedValidationContext();\n+      if (combined.hasDefaultValidationContext()\n+          && combined.getDefaultValidationContext().hasCaCertificateProviderInstance()) {\n+        return true;\n+      }\n+      // Check deprecated field (field 4) in CombinedValidationContext\n+      @SuppressWarnings(\"deprecation\")\n+      boolean hasDeprecatedField = combined.hasValidationContextCertificateProviderInstance();\n+      return hasDeprecatedField;\n+    }\n+    return false;\n   }\n \n   /**\ndiff --git a/xds/src/main/java/io/grpc/xds/internal/security/certprovider/CertProviderSslContextProvider.java b/xds/src/main/java/io/grpc/xds/internal/security/certprovider/CertProviderSslContextProvider.java\nindex 2570dcb73..cb99ca6ad 100644\n--- a/xds/src/main/java/io/grpc/xds/internal/security/certprovider/CertProviderSslContextProvider.java\n+++ b/xds/src/main/java/io/grpc/xds/internal/security/certprovider/CertProviderSslContextProvider.java\n@@ -113,7 +113,13 @@ abstract class CertProviderSslContextProvider extends DynamicSslContextProvider\n     if (commonTlsContext.hasTlsCertificateProviderInstance()) {\n       return CommonTlsContextUtil.convert(commonTlsContext.getTlsCertificateProviderInstance());\n     }\n-    return null;\n+    // Fall back to deprecated field for backward compatibility with Istio\n+    @SuppressWarnings(\"deprecation\")\n+    CertificateProviderInstance deprecatedInstance =\n+        commonTlsContext.hasTlsCertificateCertificateProviderInstance()\n+            ? commonTlsContext.getTlsCertificateCertificateProviderInstance()\n+            : null;\n+    return deprecatedInstance;\n   }\n \n   @Nullable\ndiff --git a/xds/src/test/java/io/grpc/xds/GrpcXdsClientImplDataTest.java b/xds/src/test/java/io/grpc/xds/GrpcXdsClientImplDataTest.java\nindex 0af647559..975570d82 100644\n--- a/xds/src/test/java/io/grpc/xds/GrpcXdsClientImplDataTest.java\n+++ b/xds/src/test/java/io/grpc/xds/GrpcXdsClientImplDataTest.java\n@@ -3134,6 +3134,18 @@ public class GrpcXdsClientImplDataTest {\n         .validateCommonTlsContext(commonTlsContext, ImmutableSet.of(\"name1\", \"name2\"), true);\n   }\n \n+  @Test\n+  @SuppressWarnings(\"deprecation\")\n+  public void validateCommonTlsContext_tlsDeprecatedCertificateProviderInstance()\n+      throws ResourceInvalidException {\n+    CommonTlsContext commonTlsContext = CommonTlsContext.newBuilder()\n+        .setTlsCertificateCertificateProviderInstance(\n+            CommonTlsContext.CertificateProviderInstance.newBuilder().setInstanceName(\"name1\"))\n+        .build();\n+    XdsClusterResource\n+        .validateCommonTlsContext(commonTlsContext, ImmutableSet.of(\"name1\", \"name2\"), true);\n+  }\n+\n   @Test\n   public void validateCommonTlsContext_tlsCertificateProviderInstance()\n       throws ResourceInvalidException {\n@@ -3218,6 +3230,24 @@ public class GrpcXdsClientImplDataTest {\n         .validateCommonTlsContext(commonTlsContext, ImmutableSet.of(), false);\n   }\n \n+  @Test\n+  @SuppressWarnings(\"deprecation\")\n+  public void validateCommonTlsContext_combinedValidationContextDeprecatedCertProvider()\n+      throws ResourceInvalidException {\n+    CommonTlsContext commonTlsContext = CommonTlsContext.newBuilder()\n+        .setTlsCertificateProviderInstance(\n+            CertificateProviderPluginInstance.newBuilder().setInstanceName(\"cert1\"))\n+        .setCombinedValidationContext(\n+            CommonTlsContext.CombinedCertificateValidationContext.newBuilder()\n+                .setValidationContextCertificateProviderInstance(\n+                    CommonTlsContext.CertificateProviderInstance.newBuilder()\n+                        .setInstanceName(\"root1\"))\n+                .build())\n+        .build();\n+    XdsClusterResource\n+        .validateCommonTlsContext(commonTlsContext, ImmutableSet.of(\"cert1\", \"root1\"), true);\n+  }\n+\n   @Test\n   public void validateCommonTlsContext_validationContextSystemRootCerts_envVarNotSet_throws() {\n     XdsClusterResource.enableSystemRootCerts = false;\ndiff --git a/xds/src/test/java/io/grpc/xds/internal/security/CommonTlsContextTestsUtil.java b/xds/src/test/java/io/grpc/xds/internal/security/CommonTlsContextTestsUtil.java\nindex 80a8083fb..abacd2038 100644\n--- a/xds/src/test/java/io/grpc/xds/internal/security/CommonTlsContextTestsUtil.java\n+++ b/xds/src/test/java/io/grpc/xds/internal/security/CommonTlsContextTestsUtil.java\n@@ -232,6 +232,33 @@ public class CommonTlsContextTestsUtil {\n     return builder.build();\n   }\n \n+  /** Helper method to build CommonTlsContext using deprecated certificate provider field. */\n+  @SuppressWarnings(\"deprecation\")\n+  public static CommonTlsContext buildCommonTlsContextWithDeprecatedCertProviderInstance(\n+      String certInstanceName,\n+      String certName,\n+      String rootInstanceName,\n+      String rootCertName,\n+      Iterable<String> alpnProtocols,\n+      CertificateValidationContext staticCertValidationContext) {\n+    CommonTlsContext.Builder builder = CommonTlsContext.newBuilder();\n+    if (certInstanceName != null) {\n+      // Use deprecated field (field 11) instead of current field (field 14)\n+      builder =\n+              builder.setTlsCertificateCertificateProviderInstance(\n+                      CommonTlsContext.CertificateProviderInstance.newBuilder()\n+                              .setInstanceName(certInstanceName)\n+                              .setCertificateName(certName));\n+    }\n+    builder =\n+        addCertificateValidationContext(\n+            builder, rootInstanceName, rootCertName, staticCertValidationContext);\n+    if (alpnProtocols != null) {\n+      builder.addAllAlpnProtocols(alpnProtocols);\n+    }\n+    return builder.build();\n+  }\n+\n   private static CommonTlsContext buildNewCommonTlsContextForCertProviderInstance(\n           String certInstanceName,\n           String certName,\ndiff --git a/xds/src/test/java/io/grpc/xds/internal/security/certprovider/CertProviderClientSslContextProviderTest.java b/xds/src/test/java/io/grpc/xds/internal/security/certprovider/CertProviderClientSslContextProviderTest.java\nindex 875a57b8f..91f02863c 100644\n--- a/xds/src/test/java/io/grpc/xds/internal/security/certprovider/CertProviderClientSslContextProviderTest.java\n+++ b/xds/src/test/java/io/grpc/xds/internal/security/certprovider/CertProviderClientSslContextProviderTest.java\n@@ -470,6 +470,58 @@ public class CertProviderClientSslContextProviderTest {\n             .build(), false);\n   }\n \n+  @Test\n+  public void testProviderForClient_deprecatedCertProviderField() throws Exception {\n+    final CertificateProvider.DistributorWatcher[] watcherCaptor =\n+        new CertificateProvider.DistributorWatcher[1];\n+    TestCertificateProvider.createAndRegisterProviderProvider(\n+        certificateProviderRegistry, watcherCaptor, \"testca\", 0);\n+    \n+    // Build UpstreamTlsContext using deprecated field\n+    EnvoyServerProtoData.UpstreamTlsContext upstreamTlsContext =\n+        new EnvoyServerProtoData.UpstreamTlsContext(\n+            CommonTlsContextTestsUtil.buildCommonTlsContextWithDeprecatedCertProviderInstance(\n+                \"gcp_id\",\n+                \"cert-default\",\n+                \"gcp_id\",\n+                \"root-default\",\n+                /* alpnProtocols= */ null,\n+                /* staticCertValidationContext= */ null));\n+    \n+    Bootstrapper.BootstrapInfo bootstrapInfo = CommonBootstrapperTestUtils.getTestBootstrapInfo();\n+    CertProviderClientSslContextProvider provider =\n+        (CertProviderClientSslContextProvider)\n+            certProviderClientSslContextProviderFactory.getProvider(\n+                upstreamTlsContext,\n+                bootstrapInfo.node().toEnvoyProtoNode(),\n+                bootstrapInfo.certProviders());\n+\n+    assertThat(provider.savedKey).isNull();\n+    assertThat(provider.savedCertChain).isNull();\n+    assertThat(provider.savedTrustedRoots).isNull();\n+    assertThat(provider.getSslContextAndTrustManager()).isNull();\n+\n+    // Generate cert update\n+    watcherCaptor[0].updateCertificate(\n+        CommonCertProviderTestUtils.getPrivateKey(CLIENT_KEY_FILE),\n+        ImmutableList.of(getCertFromResourceName(CLIENT_PEM_FILE)));\n+    assertThat(provider.savedKey).isNotNull();\n+    assertThat(provider.savedCertChain).isNotNull();\n+    assertThat(provider.getSslContextAndTrustManager()).isNull();\n+\n+    // Generate root cert update\n+    watcherCaptor[0].updateTrustedRoots(ImmutableList.of(getCertFromResourceName(CA_PEM_FILE)));\n+    assertThat(provider.getSslContextAndTrustManager()).isNotNull();\n+    assertThat(provider.savedKey).isNull();\n+    assertThat(provider.savedCertChain).isNull();\n+    assertThat(provider.savedTrustedRoots).isNull();\n+\n+    TestCallback testCallback =\n+        CommonTlsContextTestsUtil.getValueThruCallback(provider);\n+\n+    doChecksOnSslContext(false, testCallback.updatedSslContext, /* expectedApnProtos= */ null);\n+  }\n+\n   static class QueuedExecutor implements Executor {\n     /** A list of Runnables to be run in order. */\n     @VisibleForTesting final Queue<Runnable> runQueue = new ConcurrentLinkedQueue<>();\n-- \n2.43.0\n\n",
+          "fast_path_success": true,
+          "implementation_plan": {
+            "patch_intent": "Direct Backport (Phase 0 Fast-Path)",
+            "compatibility_analysis": {
+              "java_version_differences": "Unknown (Optimistic)",
+              "refactoring_notes": "None",
+              "missing_dependencies": []
+            },
+            "file_mappings": [
+              {
+                "source_file": "xds/src/main/java/io/grpc/xds/XdsClusterResource.java",
+                "target_file": "xds/src/main/java/io/grpc/xds/XdsClusterResource.java",
+                "confidence": 1.0,
+                "reasoning": "Phase 0 Optimistic Patch \u2014 git apply and tests passed."
+              },
+              {
+                "source_file": "xds/src/main/java/io/grpc/xds/internal/security/CommonTlsContextUtil.java",
+                "target_file": "xds/src/main/java/io/grpc/xds/internal/security/CommonTlsContextUtil.java",
+                "confidence": 1.0,
+                "reasoning": "Phase 0 Optimistic Patch \u2014 git apply and tests passed."
+              },
+              {
+                "source_file": "xds/src/main/java/io/grpc/xds/internal/security/certprovider/CertProviderSslContextProvider.java",
+                "target_file": "xds/src/main/java/io/grpc/xds/internal/security/certprovider/CertProviderSslContextProvider.java",
+                "confidence": 1.0,
+                "reasoning": "Phase 0 Optimistic Patch \u2014 git apply and tests passed."
+              }
+            ],
+            "steps": [
+              {
+                "step_id": 1,
+                "description": "Apply patch directly \u2014 clean git apply.",
+                "file_path": "xds/src/main/java/io/grpc/xds/XdsClusterResource.java",
+                "action": "apply_patch_hunk",
+                "start_line": null,
+                "end_line": null,
+                "target_context": null
+              },
+              {
+                "step_id": 2,
+                "description": "Apply patch directly \u2014 clean git apply.",
+                "file_path": "xds/src/main/java/io/grpc/xds/internal/security/CommonTlsContextUtil.java",
+                "action": "apply_patch_hunk",
+                "start_line": null,
+                "end_line": null,
+                "target_context": null
+              },
+              {
+                "step_id": 3,
+                "description": "Apply patch directly \u2014 clean git apply.",
+                "file_path": "xds/src/main/java/io/grpc/xds/internal/security/certprovider/CertProviderSslContextProvider.java",
+                "action": "apply_patch_hunk",
+                "start_line": null,
+                "end_line": null,
+                "target_context": null
+              }
+            ]
+          },
+          "phase_0_test_targets": {
+            "test_targets": [
+              "xds:io.grpc.xds.GrpcXdsClientImplDataTest",
+              "xds:io.grpc.xds.internal.security.certprovider.CertProviderClientSslContextProviderTest"
+            ],
+            "source_modules": [
+              "xds"
+            ],
+            "all_modules": [
+              "xds"
+            ],
+            "raw": {
+              "source": "changed_files",
+              "changed_files": [
+                "xds/src/main/java/io/grpc/xds/XdsClusterResource.java",
+                "xds/src/main/java/io/grpc/xds/internal/security/CommonTlsContextUtil.java",
+                "xds/src/main/java/io/grpc/xds/internal/security/certprovider/CertProviderSslContextProvider.java",
+                "xds/src/test/java/io/grpc/xds/GrpcXdsClientImplDataTest.java",
+                "xds/src/test/java/io/grpc/xds/internal/security/CommonTlsContextTestsUtil.java",
+                "xds/src/test/java/io/grpc/xds/internal/security/certprovider/CertProviderClientSslContextProviderTest.java"
+              ]
+            }
+          },
+          "phase_0_baseline_test_result": {
+            "success": false,
+            "compile_error": false,
+            "output": "=== Running grpc-java Tests for 6fc3fd0 ===\nTarget: xds:io.grpc.xds.GrpcXdsClientImplDataTest xds:io.grpc.xds.internal.security.certprovider.CertProviderClientSslContextProviderTest\n--- Container user: 1000:1000 ---\nCPU detected: 16\n--- Setting cache permissions ---\n--- Executing: ./gradlew  :grpc-xds:test --tests \"io.grpc.xds.GrpcXdsClientImplDataTest\" :grpc-xds:test --tests \"io.grpc.xds.internal.security.certprovider.CertProviderClientSslContextProviderTest\" -PskipAndroid=true --max-workers=16 --no-daemon ---\n\nWelcome to Gradle 8.14.3!\n\nHere are the highlights of this release:\n - Java 24 support\n - GraalVM Native Image toolchain selection\n - Enhancements to test reporting\n - Build Authoring improvements\n\nFor more details see https://docs.gradle.org/8.14.3/release-notes.html\n\nTo honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.14.3/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.\nDaemon will be stopped at the end of the build \n  * Skipping the build of Android projects because skipAndroid=true\n> Task :buildSrc:compileJava UP-TO-DATE\n> Task :buildSrc:compileGroovy NO-SOURCE\n> Task :buildSrc:processResources NO-SOURCE\n> Task :buildSrc:classes UP-TO-DATE\n> Task :buildSrc:jar UP-TO-DATE\n\n> Configure project :grpc-compiler\n*** Building codegen requires Protobuf\n*** Please refer to https://github.com/grpc/grpc-java/blob/master/COMPILING.md#how-to-build-code-generation-plugin\n\n> Task :grpc-alts:protobufDummy UP-TO-DATE\n> Task :grpc-protobuf-lite:protobufDummy UP-TO-DATE\n> Task :grpc-protobuf:protobufDummy UP-TO-DATE\n> Task :grpc-services:protobufDummy UP-TO-DATE\n> Task :grpc-rls:protobufDummy UP-TO-DATE\n> Task :grpc-xds:protobufDummy UP-TO-DATE\n> Task :grpc-alts:extractProto UP-TO-DATE\n> Task :grpc-netty:processResources UP-TO-DATE\n> Task :grpc-stub:processResources NO-SOURCE\n> Task :grpc-auth:processResources NO-SOURCE\n> Task :grpc-api:processResources NO-SOURCE\n> Task :grpc-testing-proto:protobufDummy UP-TO-DATE\n> Task :grpc-inprocess:processResources NO-SOURCE\n> Task :grpc-context:processResources NO-SOURCE\n> Task :grpc-protobuf-lite:extractProto UP-TO-DATE\n> Task :grpc-xds:extractThirdpartyProto UP-TO-DATE\n> Task :grpc-netty-shaded:processResources NO-SOURCE\n> Task :grpc-protobuf:extractProto UP-TO-DATE\n> Task :grpc-services:extractProto UP-TO-DATE\n> Task :grpc-rls:extractProto UP-TO-DATE\n> Task :grpc-testing-proto:extractProto UP-TO-DATE\n> Task :grpc-context:compileJava NO-SOURCE\n> Task :grpc-util:processResources UP-TO-DATE\n> Task :grpc-core:processResources UP-TO-DATE\n> Task :grpc-protobuf:processResources NO-SOURCE\n> Task :grpc-context:classes UP-TO-DATE\n> Task :grpc-protobuf-lite:processResources NO-SOURCE\n> Task :grpc-core:processTestFixturesResources NO-SOURCE\n> Task :grpc-util:processTestFixturesResources NO-SOURCE\n> Task :grpc-testing-proto:processResources UP-TO-DATE\n> Task :grpc-context:jar UP-TO-DATE\n> Task :grpc-alts:processResources UP-TO-DATE\n> Task :grpc-rls:processResources UP-TO-DATE\n> Task :grpc-services:processResources UP-TO-DATE\n> Task :grpc-protobuf-lite:extractIncludeProto UP-TO-DATE\n> Task :grpc-protobuf-lite:generateProto NO-SOURCE\n> Task :grpc-testing:processResources UP-TO-DATE\n> Task :grpc-testing-proto:extractIncludeProto UP-TO-DATE\n> Task :grpc-protobuf:extractIncludeProto UP-TO-DATE\n> Task :grpc-protobuf:generateProto NO-SOURCE\n> Task :grpc-rls:extractIncludeProto UP-TO-DATE\n> Task :grpc-services:extractIncludeProto UP-TO-DATE\n> Task :grpc-alts:extractIncludeProto UP-TO-DATE\n> Task :grpc-xds:processThirdpartyResources UP-TO-DATE\n> Task :grpc-xds:extractIncludeThirdpartyProto UP-TO-DATE\n> Task :grpc-xds:extractProto UP-TO-DATE\n> Task :grpc-xds:processResources UP-TO-DATE\n> Task :grpc-xds:extractTestProto UP-TO-DATE\n> Task :grpc-api:compileContextJava UP-TO-DATE\n> Task :grpc-api:processContextResources NO-SOURCE\n> Task :grpc-api:contextClasses UP-TO-DATE\n> Task :grpc-xds:processTestResources UP-TO-DATE\n> Task :grpc-api:compileJava UP-TO-DATE\n> Task :grpc-api:classes UP-TO-DATE\n> Task :grpc-compiler:compileJava_pluginExecutableJava_pluginCpp UP-TO-DATE\n> Task :grpc-protobuf-lite:compileJava UP-TO-DATE\n> Task :grpc-protobuf-lite:classes UP-TO-DATE\n> Task :grpc-auth:compileJava UP-TO-DATE\n> Task :grpc-auth:classes UP-TO-DATE\n> Task :grpc-api:jar UP-TO-DATE\n> Task :grpc-compiler:linkJava_pluginExecutable UP-TO-DATE\n> Task :grpc-compiler:java_pluginExecutable UP-TO-DATE\n> Task :grpc-protobuf-lite:jar UP-TO-DATE\n> Task :grpc-stub:compileJava UP-TO-DATE\n> Task :grpc-stub:classes UP-TO-DATE\n> Task :grpc-protobuf:compileJava UP-TO-DATE\n> Task :grpc-protobuf:classes UP-TO-DATE\n> Task :grpc-rls:generateProto UP-TO-DATE\n> Task :grpc-alts:generateProto UP-TO-DATE\n> Task :grpc-testing-proto:generateProto UP-TO-DATE\n> Task :grpc-auth:jar UP-TO-DATE\n> Task :grpc-services:generateProto UP-TO-DATE\n> Task :grpc-stub:jar UP-TO-DATE\n> Task :grpc-protobuf:jar UP-TO-DATE\n> Task :grpc-core:compileJava UP-TO-DATE\n> Task :grpc-core:classes UP-TO-DATE\n> Task :grpc-testing-proto:compileJava UP-TO-DATE\n> Task :grpc-testing-proto:classes UP-TO-DATE\n> Task :grpc-inprocess:compileJava UP-TO-DATE\n> Task :grpc-inprocess:classes UP-TO-DATE\n> Task :grpc-util:compileJava UP-TO-DATE\n> Task :grpc-util:classes UP-TO-DATE\n> Task :grpc-testing-proto:jar UP-TO-DATE\n> Task :grpc-core:jar UP-TO-DATE\n> Task :grpc-netty:compileJava UP-TO-DATE\n> Task :grpc-netty:classes UP-TO-DATE\n> Task :grpc-inprocess:jar UP-TO-DATE\n> Task :grpc-xds:generateThirdpartyProto UP-TO-DATE\n> Task :grpc-api:compileTestFixturesJava UP-TO-DATE\n> Task :grpc-util:jar UP-TO-DATE\n> Task :grpc-netty-shaded:compileJava NO-SOURCE\n> Task :grpc-netty-shaded:classes UP-TO-DATE\n> Task :grpc-testing:compileJava UP-TO-DATE\n> Task :grpc-testing:classes UP-TO-DATE\n> Task :grpc-rls:compileJava UP-TO-DATE\n> Task :grpc-rls:classes UP-TO-DATE\n> Task :grpc-netty:jar UP-TO-DATE\n> Task :grpc-api:processTestFixturesResources NO-SOURCE\n> Task :grpc-api:testFixturesClasses UP-TO-DATE\n> Task :grpc-testing:jar UP-TO-DATE\n> Task :grpc-services:compileJava UP-TO-DATE\n> Task :grpc-services:classes UP-TO-DATE\n> Task :grpc-api:testFixturesJar UP-TO-DATE\n> Task :grpc-rls:jar UP-TO-DATE\n> Task :grpc-services:jar UP-TO-DATE\n> Task :grpc-xds:compileThirdpartyJava UP-TO-DATE\n> Task :grpc-xds:thirdpartyClasses UP-TO-DATE\n> Task :grpc-core:compileTestFixturesJava UP-TO-DATE\n> Task :grpc-core:testFixturesClasses UP-TO-DATE\n> Task :grpc-netty-shaded:shadowJar UP-TO-DATE\n> Task :grpc-core:testFixturesJar UP-TO-DATE\n> Task :grpc-util:compileTestFixturesJava UP-TO-DATE\n> Task :grpc-util:testFixturesClasses UP-TO-DATE\n> Task :grpc-util:testFixturesJar UP-TO-DATE\n> Task :grpc-alts:compileJava UP-TO-DATE\n> Task :grpc-alts:classes UP-TO-DATE\n> Task :grpc-alts:shadowJar UP-TO-DATE\n> Task :grpc-xds:extractIncludeProto UP-TO-DATE\n> Task :grpc-xds:generateProto NO-SOURCE\n> Task :grpc-xds:compileJava FROM-CACHE\n> Task :grpc-xds:classes UP-TO-DATE\n> Task :grpc-xds:shadowJar FROM-CACHE\n> Task :grpc-xds:checkPackageLeakage\n> Task :grpc-xds:extractIncludeTestProto UP-TO-DATE\n> Task :grpc-xds:generateTestProto NO-SOURCE\n> Task :grpc-xds:compileTestJava FROM-CACHE\n> Task :grpc-xds:testClasses UP-TO-DATE\n\n> Task :grpc-xds:test\n\nCertProviderClientSslContextProviderTest > testProviderForClient_deprecatedCertProviderField FAILED\n    expected not to be: null\n        at app//io.grpc.xds.internal.security.certprovider.CertProviderClientSslContextProviderTest.testProviderForClient_deprecatedCertProviderField(CertProviderClientSslContextProviderTest.java:508)\n\n> Task :grpc-xds:test FAILED\n\n[Incubating] Problems report is available at: file:///repo/build/reports/problems/problems-report.html\n\nDeprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.\n\nYou can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.\n\nFor more on this, please refer to https://docs.gradle.org/8.14.3/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.\n81 actionable tasks: 2 executed, 3 from cache, 76 up-to-date\n--- Tests finished with exit code 1 ---\n\n\n10 tests completed, 1 failed\n\nFAILURE: Build failed with an exception.\n\n* What went wrong:\nExecution failed for task ':grpc-xds:test'.\n> There were failing tests. See the report at: file:///repo/xds/build/reports/tests/test/index.html\n\n* Try:\n> Run with --scan to get full insights.\n\nBUILD FAILED in 35s",
+            "failed_tests": [],
+            "mode": "grpc-java-helper-script",
+            "targets": {
+              "test_targets": [
+                "xds:io.grpc.xds.GrpcXdsClientImplDataTest",
+                "xds:io.grpc.xds.internal.security.certprovider.CertProviderClientSslContextProviderTest"
+              ],
+              "source_modules": [
+                "xds"
+              ],
+              "all_modules": [
+                "xds"
+              ],
+              "raw": {
+                "source": "changed_files",
+                "changed_files": [
+                  "xds/src/main/java/io/grpc/xds/XdsClusterResource.java",
+                  "xds/src/main/java/io/grpc/xds/internal/security/CommonTlsContextUtil.java",
+                  "xds/src/main/java/io/grpc/xds/internal/security/certprovider/CertProviderSslContextProvider.java",
+                  "xds/src/test/java/io/grpc/xds/GrpcXdsClientImplDataTest.java",
+                  "xds/src/test/java/io/grpc/xds/internal/security/CommonTlsContextTestsUtil.java",
+                  "xds/src/test/java/io/grpc/xds/internal/security/certprovider/CertProviderClientSslContextProviderTest.java"
+                ]
+              }
+            },
+            "test_state": {
+              "xml_reports": [
+                "/home/cseroot/retrofit-java/temp_repo_storage/grpc-java/xds/build/test-results/test/TEST-io.grpc.xds.internal.security.certprovider.CertProviderClientSslContextProviderTest.xml"
+              ],
+              "target_classes": [
+                "io.grpc.xds.GrpcXdsClientImplDataTest",
+                "io.grpc.xds.internal.security.certprovider.CertProviderClientSslContextProviderTest"
+              ],
+              "test_cases": {
+                "io.grpc.xds.internal.security.certprovider.CertProviderClientSslContextProviderTest#testProviderForClient_deprecatedCertProviderField": "failed",
+                "io.grpc.xds.internal.security.certprovider.CertProviderClientSslContextProviderTest#testProviderForClient_rootInstanceNull_and_notUsingSystemRootCerts_expectError": "passed",
+                "io.grpc.xds.internal.security.certprovider.CertProviderClientSslContextProviderTest#testProviderForClient_rootInstanceNull_but_isUsingSystemRootCerts_valid": "passed",
+                "io.grpc.xds.internal.security.certprovider.CertProviderClientSslContextProviderTest#testProviderForClient_mtls_newXds": "passed",
+                "io.grpc.xds.internal.security.certprovider.CertProviderClientSslContextProviderTest#testProviderForClient_sslContextException_onError": "passed",
+                "io.grpc.xds.internal.security.certprovider.CertProviderClientSslContextProviderTest#testProviderForClient_mtls": "passed",
+                "io.grpc.xds.internal.security.certprovider.CertProviderClientSslContextProviderTest#testProviderForClient_systemRootCerts_regularTls": "passed",
+                "io.grpc.xds.internal.security.certprovider.CertProviderClientSslContextProviderTest#testProviderForClient_systemRootCerts_mtls": "passed",
+                "io.grpc.xds.internal.security.certprovider.CertProviderClientSslContextProviderTest#testProviderForClient_queueExecutor": "passed",
+                "io.grpc.xds.internal.security.certprovider.CertProviderClientSslContextProviderTest#testProviderForClient_tls": "passed"
+              },
+              "classes": {
+                "io.grpc.xds.internal.security.certprovider.CertProviderClientSslContextProviderTest": "failed"
+              },
+              "summary": {
+                "passed": 9,
+                "failed": 1,
+                "skipped": 0,
+                "total": 10
+              }
+            }
+          },
+          "phase_0_post_patch_test_result": {
+            "success": true,
+            "compile_error": false,
+            "output": "=== Running grpc-java Tests for 6fc3fd0 ===\nTarget: xds:io.grpc.xds.GrpcXdsClientImplDataTest xds:io.grpc.xds.internal.security.certprovider.CertProviderClientSslContextProviderTest\n--- Container user: 1000:1000 ---\nCPU detected: 16\n--- Setting cache permissions ---\n--- Executing: ./gradlew  :grpc-xds:test --tests \"io.grpc.xds.GrpcXdsClientImplDataTest\" :grpc-xds:test --tests \"io.grpc.xds.internal.security.certprovider.CertProviderClientSslContextProviderTest\" -PskipAndroid=true --max-workers=16 --no-daemon ---\n\nWelcome to Gradle 8.14.3!\n\nHere are the highlights of this release:\n - Java 24 support\n - GraalVM Native Image toolchain selection\n - Enhancements to test reporting\n - Build Authoring improvements\n\nFor more details see https://docs.gradle.org/8.14.3/release-notes.html\n\nTo honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.14.3/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.\nDaemon will be stopped at the end of the build \n  * Skipping the build of Android projects because skipAndroid=true\n> Task :buildSrc:compileJava UP-TO-DATE\n> Task :buildSrc:compileGroovy NO-SOURCE\n> Task :buildSrc:processResources NO-SOURCE\n> Task :buildSrc:classes UP-TO-DATE\n> Task :buildSrc:jar UP-TO-DATE\n\n> Configure project :grpc-compiler\n*** Building codegen requires Protobuf\n*** Please refer to https://github.com/grpc/grpc-java/blob/master/COMPILING.md#how-to-build-code-generation-plugin\n\n> Task :grpc-protobuf:protobufDummy UP-TO-DATE\n> Task :grpc-protobuf-lite:protobufDummy UP-TO-DATE\n> Task :grpc-alts:protobufDummy UP-TO-DATE\n> Task :grpc-api:processResources NO-SOURCE\n> Task :grpc-stub:processResources NO-SOURCE\n> Task :grpc-services:protobufDummy UP-TO-DATE\n> Task :grpc-netty-shaded:processResources NO-SOURCE\n> Task :grpc-xds:protobufDummy UP-TO-DATE\n> Task :grpc-context:processResources NO-SOURCE\n> Task :grpc-netty:processResources UP-TO-DATE\n> Task :grpc-testing-proto:protobufDummy UP-TO-DATE\n> Task :grpc-rls:protobufDummy UP-TO-DATE\n> Task :grpc-auth:processResources NO-SOURCE\n> Task :grpc-alts:extractProto UP-TO-DATE\n> Task :grpc-xds:extractThirdpartyProto UP-TO-DATE\n> Task :grpc-protobuf-lite:extractProto UP-TO-DATE\n> Task :grpc-protobuf:extractProto UP-TO-DATE\n> Task :grpc-core:processResources UP-TO-DATE\n> Task :grpc-util:processResources UP-TO-DATE\n> Task :grpc-services:extractProto UP-TO-DATE\n> Task :grpc-inprocess:processResources NO-SOURCE\n> Task :grpc-context:compileJava NO-SOURCE\n> Task :grpc-protobuf:processResources NO-SOURCE\n> Task :grpc-testing-proto:extractProto UP-TO-DATE\n> Task :grpc-context:classes UP-TO-DATE\n> Task :grpc-util:processTestFixturesResources NO-SOURCE\n> Task :grpc-core:processTestFixturesResources NO-SOURCE\n> Task :grpc-protobuf-lite:processResources NO-SOURCE\n> Task :grpc-alts:processResources UP-TO-DATE\n> Task :grpc-context:jar UP-TO-DATE\n> Task :grpc-rls:extractProto UP-TO-DATE\n> Task :grpc-testing-proto:processResources UP-TO-DATE\n> Task :grpc-services:processResources UP-TO-DATE\n> Task :grpc-testing:processResources UP-TO-DATE\n> Task :grpc-protobuf-lite:extractIncludeProto UP-TO-DATE\n> Task :grpc-protobuf-lite:generateProto NO-SOURCE\n> Task :grpc-protobuf:extractIncludeProto UP-TO-DATE\n> Task :grpc-testing-proto:extractIncludeProto UP-TO-DATE\n> Task :grpc-protobuf:generateProto NO-SOURCE\n> Task :grpc-services:extractIncludeProto UP-TO-DATE\n> Task :grpc-rls:extractIncludeProto UP-TO-DATE\n> Task :grpc-rls:processResources UP-TO-DATE\n> Task :grpc-api:compileContextJava UP-TO-DATE\n> Task :grpc-api:processContextResources NO-SOURCE\n> Task :grpc-api:contextClasses UP-TO-DATE\n> Task :grpc-alts:extractIncludeProto UP-TO-DATE\n> Task :grpc-xds:processThirdpartyResources UP-TO-DATE\n> Task :grpc-xds:extractIncludeThirdpartyProto UP-TO-DATE\n> Task :grpc-xds:extractProto UP-TO-DATE\n> Task :grpc-xds:processResources UP-TO-DATE\n> Task :grpc-xds:extractTestProto UP-TO-DATE\n> Task :grpc-api:compileJava UP-TO-DATE\n> Task :grpc-api:classes UP-TO-DATE\n> Task :grpc-api:jar UP-TO-DATE\n> Task :grpc-auth:compileJava UP-TO-DATE\n> Task :grpc-auth:classes UP-TO-DATE\n> Task :grpc-protobuf-lite:compileJava UP-TO-DATE\n> Task :grpc-protobuf-lite:classes UP-TO-DATE\n> Task :grpc-auth:jar UP-TO-DATE\n> Task :grpc-stub:compileJava UP-TO-DATE\n> Task :grpc-stub:classes UP-TO-DATE\n> Task :grpc-protobuf-lite:jar UP-TO-DATE\n> Task :grpc-stub:jar UP-TO-DATE\n> Task :grpc-protobuf:compileJava UP-TO-DATE\n> Task :grpc-protobuf:classes UP-TO-DATE\n> Task :grpc-xds:processTestResources\n> Task :grpc-protobuf:jar UP-TO-DATE\n> Task :grpc-core:compileJava UP-TO-DATE\n> Task :grpc-core:classes UP-TO-DATE\n> Task :grpc-core:jar UP-TO-DATE\n> Task :grpc-api:compileTestFixturesJava FROM-CACHE\n> Task :grpc-api:processTestFixturesResources NO-SOURCE\n> Task :grpc-api:testFixturesClasses UP-TO-DATE\n> Task :grpc-util:compileJava UP-TO-DATE\n> Task :grpc-util:classes UP-TO-DATE\n> Task :grpc-util:jar UP-TO-DATE\n> Task :grpc-inprocess:compileJava UP-TO-DATE\n> Task :grpc-inprocess:classes UP-TO-DATE\n> Task :grpc-netty:compileJava UP-TO-DATE\n> Task :grpc-netty:classes UP-TO-DATE\n> Task :grpc-inprocess:jar UP-TO-DATE\n> Task :grpc-netty-shaded:compileJava NO-SOURCE\n> Task :grpc-netty-shaded:classes UP-TO-DATE\n> Task :grpc-netty:jar UP-TO-DATE\n> Task :grpc-testing:compileJava UP-TO-DATE\n> Task :grpc-testing:classes UP-TO-DATE\n> Task :grpc-testing:jar UP-TO-DATE\n> Task :grpc-compiler:compileJava_pluginExecutableJava_pluginCpp UP-TO-DATE\n> Task :grpc-api:testFixturesJar\n> Task :grpc-compiler:linkJava_pluginExecutable UP-TO-DATE\n> Task :grpc-compiler:java_pluginExecutable UP-TO-DATE\n> Task :grpc-netty-shaded:shadowJar UP-TO-DATE\n> Task :grpc-alts:generateProto UP-TO-DATE\n> Task :grpc-testing-proto:generateProto UP-TO-DATE\n> Task :grpc-rls:generateProto UP-TO-DATE\n> Task :grpc-core:compileTestFixturesJava FROM-CACHE\n> Task :grpc-core:testFixturesClasses UP-TO-DATE\n> Task :grpc-testing-proto:compileJava UP-TO-DATE\n> Task :grpc-testing-proto:classes UP-TO-DATE\n> Task :grpc-testing-proto:jar UP-TO-DATE\n> Task :grpc-core:testFixturesJar\n> Task :grpc-services:generateProto UP-TO-DATE\n> Task :grpc-util:compileTestFixturesJava FROM-CACHE\n> Task :grpc-util:testFixturesClasses UP-TO-DATE\n> Task :grpc-util:testFixturesJar\n> Task :grpc-alts:compileJava UP-TO-DATE\n> Task :grpc-alts:classes UP-TO-DATE\n> Task :grpc-rls:compileJava UP-TO-DATE\n> Task :grpc-rls:classes UP-TO-DATE\n> Task :grpc-rls:jar UP-TO-DATE\n> Task :grpc-alts:shadowJar UP-TO-DATE\n> Task :grpc-services:compileJava UP-TO-DATE\n> Task :grpc-services:classes UP-TO-DATE\n> Task :grpc-services:jar UP-TO-DATE\n> Task :grpc-xds:generateThirdpartyProto UP-TO-DATE\n> Task :grpc-xds:compileThirdpartyJava UP-TO-DATE\n> Task :grpc-xds:thirdpartyClasses UP-TO-DATE\n> Task :grpc-xds:extractIncludeProto UP-TO-DATE\n> Task :grpc-xds:generateProto NO-SOURCE\n> Task :grpc-xds:compileJava UP-TO-DATE\n> Task :grpc-xds:classes UP-TO-DATE\n> Task :grpc-xds:shadowJar UP-TO-DATE\n> Task :grpc-xds:checkPackageLeakage\n> Task :grpc-xds:extractIncludeTestProto UP-TO-DATE\n> Task :grpc-xds:generateTestProto NO-SOURCE\n> Task :grpc-xds:compileTestJava FROM-CACHE\n> Task :grpc-xds:testClasses\n> Task :grpc-xds:test FROM-CACHE\n\n[Incubating] Problems report is available at: file:///repo/build/reports/problems/problems-report.html\n\nDeprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.\n\nYou can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.\n\nFor more on this, please refer to https://docs.gradle.org/8.14.3/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.\n\nBUILD SUCCESSFUL in 18s\n81 actionable tasks: 5 executed, 5 from cache, 71 up-to-date\n--- Tests finished with exit code 0 ---",
+            "failed_tests": [],
+            "mode": "grpc-java-helper-script",
+            "targets": {
+              "test_targets": [
+                "xds:io.grpc.xds.GrpcXdsClientImplDataTest",
+                "xds:io.grpc.xds.internal.security.certprovider.CertProviderClientSslContextProviderTest"
+              ],
+              "source_modules": [
+                "xds"
+              ],
+              "all_modules": [
+                "xds"
+              ],
+              "raw": {
+                "source": "changed_files",
+                "changed_files": [
+                  "xds/src/main/java/io/grpc/xds/XdsClusterResource.java",
+                  "xds/src/main/java/io/grpc/xds/internal/security/CommonTlsContextUtil.java",
+                  "xds/src/main/java/io/grpc/xds/internal/security/certprovider/CertProviderSslContextProvider.java",
+                  "xds/src/test/java/io/grpc/xds/GrpcXdsClientImplDataTest.java",
+                  "xds/src/test/java/io/grpc/xds/internal/security/CommonTlsContextTestsUtil.java",
+                  "xds/src/test/java/io/grpc/xds/internal/security/certprovider/CertProviderClientSslContextProviderTest.java"
+                ]
+              }
+            },
+            "test_state": {
+              "xml_reports": [
+                "/home/cseroot/retrofit-java/temp_repo_storage/grpc-java/xds/build/test-results/test/TEST-io.grpc.xds.internal.security.certprovider.CertProviderClientSslContextProviderTest.xml"
+              ],
+              "target_classes": [
+                "io.grpc.xds.GrpcXdsClientImplDataTest",
+                "io.grpc.xds.internal.security.certprovider.CertProviderClientSslContextProviderTest"
+              ],
+              "test_cases": {
+                "io.grpc.xds.internal.security.certprovider.CertProviderClientSslContextProviderTest#testProviderForClient_deprecatedCertProviderField": "passed",
+                "io.grpc.xds.internal.security.certprovider.CertProviderClientSslContextProviderTest#testProviderForClient_rootInstanceNull_and_notUsingSystemRootCerts_expectError": "passed",
+                "io.grpc.xds.internal.security.certprovider.CertProviderClientSslContextProviderTest#testProviderForClient_rootInstanceNull_but_isUsingSystemRootCerts_valid": "passed",
+                "io.grpc.xds.internal.security.certprovider.CertProviderClientSslContextProviderTest#testProviderForClient_mtls_newXds": "passed",
+                "io.grpc.xds.internal.security.certprovider.CertProviderClientSslContextProviderTest#testProviderForClient_sslContextException_onError": "passed",
+                "io.grpc.xds.internal.security.certprovider.CertProviderClientSslContextProviderTest#testProviderForClient_mtls": "passed",
+                "io.grpc.xds.internal.security.certprovider.CertProviderClientSslContextProviderTest#testProviderForClient_systemRootCerts_regularTls": "passed",
+                "io.grpc.xds.internal.security.certprovider.CertProviderClientSslContextProviderTest#testProviderForClient_systemRootCerts_mtls": "passed",
+                "io.grpc.xds.internal.security.certprovider.CertProviderClientSslContextProviderTest#testProviderForClient_queueExecutor": "passed",
+                "io.grpc.xds.internal.security.certprovider.CertProviderClientSslContextProviderTest#testProviderForClient_tls": "passed"
+              },
+              "classes": {
+                "io.grpc.xds.internal.security.certprovider.CertProviderClientSslContextProviderTest": "passed"
+              },
+              "summary": {
+                "passed": 10,
+                "failed": 0,
+                "skipped": 0,
+                "total": 10
+              }
+            }
+          },
+          "phase_0_transition_evaluation": {
+            "valid_backport_signal": true,
+            "fail_to_pass": [
+              "io.grpc.xds.internal.security.certprovider.CertProviderClientSslContextProviderTest#testProviderForClient_deprecatedCertProviderField"
+            ],
+            "pass_to_fail": [],
+            "newly_passing": [],
+            "baseline_total": 10,
+            "patched_total": 10,
+            "reason": "Valid: Observed fail-to-pass and/or newly passing relevant tests with no regressions."
+          },
+          "patch_complexity": "TRIVIAL",
+          "complexity_reason": "git_apply_check_passes",
+          "complexity_details": {
+            "file_count": 3,
+            "git_apply_check": true
+          }
+        }
+      }
+    }
+  },
+  "pair_consistency": {
+    "mainline_java_files": [
+      "xds/src/main/java/io/grpc/xds/XdsClusterResource.java",
+      "xds/src/main/java/io/grpc/xds/internal/security/CommonTlsContextUtil.java",
+      "xds/src/main/java/io/grpc/xds/internal/security/certprovider/CertProviderSslContextProvider.java"
+    ],
+    "developer_java_files": [
+      "xds/src/main/java/io/grpc/xds/XdsClusterResource.java",
+      "xds/src/main/java/io/grpc/xds/internal/security/CommonTlsContextUtil.java",
+      "xds/src/main/java/io/grpc/xds/internal/security/certprovider/CertProviderSslContextProvider.java"
+    ],
+    "overlap_java_files": [
+      "xds/src/main/java/io/grpc/xds/XdsClusterResource.java",
+      "xds/src/main/java/io/grpc/xds/internal/security/CommonTlsContextUtil.java",
+      "xds/src/main/java/io/grpc/xds/internal/security/certprovider/CertProviderSslContextProvider.java"
+    ],
+    "overlap_ratio_mainline": 1.0,
+    "pair_mismatch": false,
+    "reason": "scope_overlap_ok"
+  },
+  "exact_developer_patch": false,
+  "developer_patch_comparison": {
+    "comparison_method": "file_state",
+    "compared_files": [
+      "xds/src/main/java/io/grpc/xds/XdsClusterResource.java",
+      "xds/src/main/java/io/grpc/xds/internal/security/CommonTlsContextUtil.java",
+      "xds/src/main/java/io/grpc/xds/internal/security/certprovider/CertProviderSslContextProvider.java"
+    ],
+    "mismatched_files": [
+      "xds/src/main/java/io/grpc/xds/XdsClusterResource.java",
+      "xds/src/main/java/io/grpc/xds/internal/security/CommonTlsContextUtil.java",
+      "xds/src/main/java/io/grpc/xds/internal/security/certprovider/CertProviderSslContextProvider.java"
+    ],
+    "developer_files": [
+      "xds/src/main/java/io/grpc/xds/XdsClusterResource.java",
+      "xds/src/main/java/io/grpc/xds/internal/security/CommonTlsContextUtil.java",
+      "xds/src/main/java/io/grpc/xds/internal/security/certprovider/CertProviderSslContextProvider.java"
+    ],
+    "generated_files": [],
+    "pair_consistency": {
+      "mainline_java_files": [
+        "xds/src/main/java/io/grpc/xds/XdsClusterResource.java",
+        "xds/src/main/java/io/grpc/xds/internal/security/CommonTlsContextUtil.java",
+        "xds/src/main/java/io/grpc/xds/internal/security/certprovider/CertProviderSslContextProvider.java"
+      ],
+      "developer_java_files": [
+        "xds/src/main/java/io/grpc/xds/XdsClusterResource.java",
+        "xds/src/main/java/io/grpc/xds/internal/security/CommonTlsContextUtil.java",
+        "xds/src/main/java/io/grpc/xds/internal/security/certprovider/CertProviderSslContextProvider.java"
+      ],
+      "overlap_java_files": [
+        "xds/src/main/java/io/grpc/xds/XdsClusterResource.java",
+        "xds/src/main/java/io/grpc/xds/internal/security/CommonTlsContextUtil.java",
+        "xds/src/main/java/io/grpc/xds/internal/security/certprovider/CertProviderSslContextProvider.java"
+      ],
+      "overlap_ratio_mainline": 1.0,
+      "pair_mismatch": false,
+      "reason": "scope_overlap_ok"
+    },
+    "error": null
+  },
+  "generated_patch_files": {
+    "agent_only": "/home/cseroot/retrofit-java/agents-backend/evaluate/full_run/results/grpc-java/grpc-java_3fc026c2/generated_patch_agent_only.patch",
+    "final_effective": "/home/cseroot/retrofit-java/agents-backend/evaluate/full_run/results/grpc-java/grpc-java_3fc026c2/generated_patch_final_effective.patch"
+  },
+  "status": "completed"
+}
