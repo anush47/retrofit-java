@@ -67,6 +67,7 @@ if ${DOCKER_CMD} run --rm \
     bash -c "git config --global --add safe.directory /repo || true; \
     export GRADLE_OPTS=\"\${GRADLE_OPTS:-} -XX:ActiveProcessorCount=${MAX_CPU} -Xmx2g\"; \
     ./gradlew clean assemble -x test \
+        -PskipAndroid=true \
         --max-workers=${MAX_CPU} \
         --no-daemon \
         2>&1"; then

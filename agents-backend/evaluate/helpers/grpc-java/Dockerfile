@@ -28,6 +28,7 @@ RUN echo "org.gradle.daemon=false" >> /home/gradle/.gradle/gradle.properties && 
     echo "org.gradle.parallel=true"  >> /home/gradle/.gradle/gradle.properties && \
     echo "org.gradle.caching=true"   >> /home/gradle/.gradle/gradle.properties && \
     echo "org.gradle.jvmargs=-Xmx4g -XX:+UseG1GC" >> /home/gradle/.gradle/gradle.properties && \
+    echo "skipAndroid=true" >> /home/gradle/.gradle/gradle.properties && \
     chown gradle:gradle /home/gradle/.gradle/gradle.properties
 
 # Set up working directory — the live repo is mounted here at runtime.
