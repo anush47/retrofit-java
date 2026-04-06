@@ -294,9 +294,18 @@ class ValidationToolkit:
             return None
 
         info = target_info or {}
-        target_classes = [
-            t.split(":", 1)[1] for t in (info.get("test_targets") or []) if ":" in t
-        ]
+        target_classes = []
+        for t in (info.get("test_targets") or []):
+            if "--tests" in t:
+                # Format is :module:test --tests "ClassName"
+                import re
+                match = re.search(r'--tests\s+"?([^"]+)"?', t)
+                if match:
+                    target_classes.append(match.group(1))
+            elif ":" in t:
+                # Support both :module:ClassName and module:ClassName
+                parts = t.split(":")
+                target_classes.append(parts[-1])
         target_classes_arg = ",".join(sorted(set(target_classes)))
 
         console_file = os.path.join(self.target_repo_path, "build", "test-console.log")
