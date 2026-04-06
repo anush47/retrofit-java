@@ -746,6 +746,7 @@ class ValidationToolkit:
         )
         test_suffixes = ("Test.java", "Tests.java", "IT.java", "TestCase.java")
 
+        np = (project or "").strip().lower()
         for rel_path in changed_files or []:
             p = (rel_path or "").replace("\\", "/")
             if not p:
@@ -776,7 +777,13 @@ class ValidationToolkit:
                 try:
                     class_path = p.split(matched_test_dir, 1)[1]
                     class_name = class_path.replace("/", ".").replace(".java", "")
-                    test_targets.add(f"{module_path}:{class_name}")
+                    
+                    if np == "grpc-java" and module_path and not module_path.startswith("grpc-"):
+                        test_gradle_module = f"grpc-{module_path}"
+                    else:
+                        test_gradle_module = module_path
+                    
+                    test_targets.add(f"{test_gradle_module}:{class_name}")
                 except Exception:
                     continue
 

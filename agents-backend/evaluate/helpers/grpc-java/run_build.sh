@@ -68,6 +68,7 @@ if ${DOCKER_CMD} run --rm \
     export GRADLE_OPTS=\"\${GRADLE_OPTS:-} -XX:ActiveProcessorCount=${MAX_CPU} -Xmx2g\"; \
     ./gradlew clean assemble -x test \
         -PskipAndroid=true \
+        -x :grpc-compiler:compileJava_pluginExecutableJava_pluginCpp \
         --max-workers=${MAX_CPU} \
         --no-daemon \
         2>&1"; then
