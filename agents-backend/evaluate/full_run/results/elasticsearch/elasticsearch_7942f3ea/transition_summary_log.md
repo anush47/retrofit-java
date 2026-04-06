@@ -1,0 +1,86 @@
+# Transition Summary
+
+- Source: phase_outputs
+- Valid backport signal: True
+- Reason: Valid: Observed fail-to-pass and/or newly passing relevant tests with no regressions.
+- fail->pass (2): ['org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests#testDims', 'org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests#testLargeDimsBit']
+- newly passing (0): []
+- pass->fail (0): []
+
+## Touched Test States
+- Touched tests (from patch): ['org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests']
+  - org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests#testAddDocumentsToIndexBefore_V_7_5_0: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests#testAggregatableConsistency: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests#testBlankName: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests#testBlockLoaderFromColumnReader: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests#testBlockLoaderFromColumnReaderWithSyntheticSource: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests#testBlockLoaderFromRowStrideReader: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests#testBlockLoaderFromRowStrideReaderWithSyntheticSource: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests#testBoostNotAllowed: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests#testByteVectorIndexBoundaries: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests#testByteVectorQueryBoundaries: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests#testCannotBeUsedInMultifields: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests#testCosineDenseVectorValues: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests#testCosineDenseVectorValuesOlderIndexVersions: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests#testCosineWithZeroByteVector: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests#testCosineWithZeroVector: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests#testDefaultParamsBeforeIndexByDefault: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests#testDefaultParamsIndexByDefault: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests#testDefaults: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests#testDeprecatedBoostWarning: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests#testDims: baseline=failed, patched=passed
+  - org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests#testDocumentsWithIncorrectDims: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests#testDotProductWithInvalidNorm: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests#testEmptyDocumentNoDocValueLoader: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests#testEmptyName: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests#testExistsQueryMinimalMapping: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests#testFetch: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests#testFetchMany: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests#testFieldHasValue: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests#testFieldHasValueWithEmptyFieldInfos: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests#testFloatVectorQueryBoundaries: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests#testIgnoreMalformedExplicitlyFalse: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests#testIgnoreMalformedFalseByDefault: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests#testIgnoreMalformedTrue: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests#testIndexTimeFieldData: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests#testIndexTimeStoredFieldsAccess: baseline=skipped, patched=skipped
+  - org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests#testIndexedByteVector: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests#testIndexedVector: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests#testInvalidParameters: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests#testInvalidParametersBeforeIndexedByDefault: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests#testInvalidVectorDimensions: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests#testKnnHalfByteQuantizedHNSWVectorsFormat: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests#testKnnQuantizedFlatVectorsFormat: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests#testKnnQuantizedHNSWVectorsFormat: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests#testKnnVectorsFormat: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests#testLargeDimsBit: baseline=failed, patched=passed
+  - org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests#testMaxDimsByteVector: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests#testMaxDimsFloatVector: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests#testMaxInnerProductWithValidNorm: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests#testMergeDims: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests#testMeta: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests#testMinimalIsInvalidInRoutingPath: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests#testMinimalSerializesToItself: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests#testMinimalToMaximal: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests#testNoSyntheticSourceForScript: baseline=skipped, patched=skipped
+  - org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests#testNonIndexedVector: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests#testNullInput: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests#testParamsBeforeIndexByDefault: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests#testSupportsParsingObject: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests#testSyntheticEmptyList: baseline=skipped, patched=skipped
+  - org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests#testSyntheticEmptyListNoDocValuesLoader: baseline=skipped, patched=skipped
+  - org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests#testSyntheticSource: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests#testSyntheticSourceIgnoreMalformedExamples: baseline=skipped, patched=skipped
+  - org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests#testSyntheticSourceInNestedObject: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests#testSyntheticSourceInObject: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests#testSyntheticSourceInvalid: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests#testSyntheticSourceKeepAll: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests#testSyntheticSourceKeepArrays: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests#testSyntheticSourceKeepNone: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests#testSyntheticSourceMany: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests#testTextSearchInfoConsistency: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests#testTotalFieldsCount: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests#testUpdates: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests#testValidateOnBuild: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests#testVectorSimilarity: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests#testWithExtremeFloatVector: baseline=passed, patched=passed

@@ -1,0 +1,50 @@
+{
+  "consistency_map": {},
+  "mapped_target_context": {
+    "x-pack/plugin/logsdb/src/main/java/org/elasticsearch/xpack/logsdb/LogsdbIndexModeSettingsProvider.java": [
+      {
+        "hunk_index": 1,
+        "mainline_method": "hunk_1",
+        "target_file": "x-pack/plugin/logsdb/src/main/java/org/elasticsearch/xpack/logsdb/LogsdbIndexModeSettingsProvider.java",
+        "target_method": null,
+        "start_line": 10,
+        "end_line": 10,
+        "code_snippet": "/*\n * Copyright Elasticsearch B.V. and/or licensed to Elasticsearch B.V. under one\n * or more contributor license agreements. Licensed under the Elastic License\n * 2.0; you may not use this file except in compliance with the Elastic License\n * 2.0.\n */\n\npackage org.elasticsearch.xpack.logsdb;\n\nimport org.elasticsearch.cluster.metadata.ComposableIndexTemplate;\nimport org.elasticsearch.cluster.metadata.Metadata;\nimport org.elasticsearch.cluster.metadata.MetadataIndexTemplateService;\nimport org.elasticsearch.common.compress.CompressedXContent;\nimport org.elasticsearch.common.regex.Regex;\nimport org.elasticsearch.common.settings.Settings;\nimport org.elasticsearch.index.IndexMode;\nimport org.elasticsearch.index.IndexSettingProvider;\nimport org.elasticsearch.index.IndexSettings;\n\nimport java.time.Instant;\nimport java.util.List;\nimport java.util.Locale;\n\nimport static org.elasticsearch.xpack.cluster.settings.ClusterSettings.CLUSTER_LOGSDB_ENABLED;\n\nfinal class LogsdbIndexModeSettingsProvider implements IndexSettingProvider {\n    private static final String LOGS_PATTERN = \"logs-*-*\";\n    private volatile boolean isLogsdbEnabled;\n\n    LogsdbIndexModeSettingsProvider(final Settings settings) {",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 2,
+        "mainline_method": "hunk_2",
+        "target_file": "x-pack/plugin/logsdb/src/main/java/org/elasticsearch/xpack/logsdb/LogsdbIndexModeSettingsProvider.java",
+        "target_method": null,
+        "start_line": 57,
+        "end_line": 57,
+        "code_snippet": "\n    @Override\n    public Settings getAdditionalIndexSettings(\n        final String indexName,\n        final String dataStreamName,\n        boolean isTimeSeries,\n        final Metadata metadata,\n        final Instant resolvedAt,\n        final Settings settings,\n        final List<CompressedXContent> combinedTemplateMappings\n    ) {\n        if (isLogsdbEnabled == false || dataStreamName == null) {\n            return Settings.EMPTY;\n        }\n\n        final IndexMode indexMode = resolveIndexMode(settings.get(IndexSettings.MODE.getKey()));\n        if (indexMode != null) {\n            return Settings.EMPTY;\n        }\n\n        if (usesLogsAtSettingsComponentTemplate(metadata, dataStreamName) && matchesLogsPattern(dataStreamName)) {\n            return Settings.builder().put(\"index.mode\", IndexMode.LOGSDB.getName()).build();\n        }\n\n        return Settings.EMPTY;\n    }\n\n    private static boolean matchesLogsPattern(final String name) {\n        return Regex.simpleMatch(LOGS_PATTERN, name);\n    }\n\n    private IndexMode resolveIndexMode(final String mode) {\n        return mode != null ? Enum.valueOf(IndexMode.class, mode.toUpperCase(Locale.ROOT)) : null;\n    }\n\n    private boolean usesLogsAtSettingsComponentTemplate(final Metadata metadata, final String name) {\n        final String template = MetadataIndexTemplateService.findV2Template(metadata, name, false);\n        if (template == null) {\n            return false;\n        }\n        final ComposableIndexTemplate composableIndexTemplate = metadata.templatesV2().get(template);",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 3,
+        "mainline_method": "usesLogsAtSettingsComponentTemplate",
+        "target_file": "x-pack/plugin/logsdb/src/main/java/org/elasticsearch/xpack/logsdb/LogsdbIndexModeSettingsProvider.java",
+        "target_method": "usesLogsAtSettingsComponentTemplate",
+        "start_line": 72,
+        "end_line": 72,
+        "code_snippet": "        final IndexMode indexMode = resolveIndexMode(settings.get(IndexSettings.MODE.getKey()));\n        if (indexMode != null) {\n            return Settings.EMPTY;\n        }\n\n        if (usesLogsAtSettingsComponentTemplate(metadata, dataStreamName) && matchesLogsPattern(dataStreamName)) {\n            return Settings.builder().put(\"index.mode\", IndexMode.LOGSDB.getName()).build();\n        }\n\n        return Settings.EMPTY;\n    }\n\n    private static boolean matchesLogsPattern(final String name) {\n        return Regex.simpleMatch(LOGS_PATTERN, name);\n    }\n\n    private IndexMode resolveIndexMode(final String mode) {\n        return mode != null ? Enum.valueOf(IndexMode.class, mode.toUpperCase(Locale.ROOT)) : null;\n    }\n\n    private boolean usesLogsAtSettingsComponentTemplate(final Metadata metadata, final String name) {\n        final String template = MetadataIndexTemplateService.findV2Template(metadata, name, false);\n        if (template == null) {\n            return false;\n        }\n        final ComposableIndexTemplate composableIndexTemplate = metadata.templatesV2().get(template);\n        if (composableIndexTemplate == null) {\n            return false;\n        }\n        for (final String componentTemplate : composableIndexTemplate.composedOf()) {\n            if (\"logs@settings\".equals(componentTemplate)) {\n                return true;\n            }\n        }\n        return false;\n    }\n\n}",
+        "anchor_confidence": "high",
+        "anchor_reason": "line_and_method_resolved",
+        "anchor_strategy": "deterministic_realign"
+      }
+    ]
+  },
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "reason": "llm_usage_not_collected_in_this_node"
+  }
+}

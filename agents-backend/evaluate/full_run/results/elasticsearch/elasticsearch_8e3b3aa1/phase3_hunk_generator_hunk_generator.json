@@ -1,0 +1,100 @@
+{
+  "adapted_file_edits": [
+    {
+      "target_file": "x-pack/plugin/logsdb/src/main/java/org/elasticsearch/xpack/logsdb/LogsdbIndexModeSettingsProvider.java",
+      "mainline_file": "x-pack/plugin/logsdb/src/main/java/org/elasticsearch/xpack/logsdb/LogsdbIndexModeSettingsProvider.java",
+      "old_string": "<developer patch fast path>",
+      "new_string": "diff --git a/x-pack/plugin/logsdb/src/main/java/org/elasticsearch/xpack/logsdb/LogsdbIndexModeSettingsProvider.java b/x-pack/plugin/logsdb/src/main/java/org/elasticsearch/xpack/logsdb/LogsdbIndexModeSettingsProvider.java\nindex 3f6bb66dfa4..966defb59c4 100644\n--- a/x-pack/plugin/logsdb/src/main/java/org/elasticsearch/xpack/logsdb/LogsdbIndexModeSettingsProvider.java\n+++ b/x-pack/plugin/logsdb/src/main/java/org/elasticsearch/xpack/logsdb/LogsdbIndexModeSettingsProvider.java\n@@ -7,9 +7,7 @@\n \n package org.elasticsearch.xpack.logsdb;\n \n-import org.elasticsearch.cluster.metadata.ComposableIndexTemplate;\n import org.elasticsearch.cluster.metadata.Metadata;\n-import org.elasticsearch.cluster.metadata.MetadataIndexTemplateService;\n import org.elasticsearch.common.compress.CompressedXContent;\n import org.elasticsearch.common.regex.Regex;\n import org.elasticsearch.common.settings.Settings;\n@@ -54,7 +52,7 @@ final class LogsdbIndexModeSettingsProvider implements IndexSettingProvider {\n             return Settings.EMPTY;\n         }\n \n-        if (usesLogsAtSettingsComponentTemplate(metadata, dataStreamName) && matchesLogsPattern(dataStreamName)) {\n+        if (matchesLogsPattern(dataStreamName)) {\n             return Settings.builder().put(\"index.mode\", IndexMode.LOGSDB.getName()).build();\n         }\n \n@@ -69,21 +67,4 @@ final class LogsdbIndexModeSettingsProvider implements IndexSettingProvider {\n         return mode != null ? Enum.valueOf(IndexMode.class, mode.toUpperCase(Locale.ROOT)) : null;\n     }\n \n-    private boolean usesLogsAtSettingsComponentTemplate(final Metadata metadata, final String name) {\n-        final String template = MetadataIndexTemplateService.findV2Template(metadata, name, false);\n-        if (template == null) {\n-            return false;\n-        }\n-        final ComposableIndexTemplate composableIndexTemplate = metadata.templatesV2().get(template);\n-        if (composableIndexTemplate == null) {\n-            return false;\n-        }\n-        for (final String componentTemplate : composableIndexTemplate.composedOf()) {\n-            if (\"logs@settings\".equals(componentTemplate)) {\n-                return true;\n-            }\n-        }\n-        return false;\n-    }\n-\n }",
+      "edit_type": "replace",
+      "verified": true,
+      "verification_result": "developer_fast_path_ok",
+      "applied": true,
+      "apply_result": "SUCCESS"
+    }
+  ],
+  "all_adapted_file_edits": [
+    [
+      {
+        "target_file": "x-pack/plugin/logsdb/src/main/java/org/elasticsearch/xpack/logsdb/LogsdbIndexModeSettingsProvider.java",
+        "mainline_file": "x-pack/plugin/logsdb/src/main/java/org/elasticsearch/xpack/logsdb/LogsdbIndexModeSettingsProvider.java",
+        "old_string": "<developer patch fast path>",
+        "new_string": "diff --git a/x-pack/plugin/logsdb/src/main/java/org/elasticsearch/xpack/logsdb/LogsdbIndexModeSettingsProvider.java b/x-pack/plugin/logsdb/src/main/java/org/elasticsearch/xpack/logsdb/LogsdbIndexModeSettingsProvider.java\nindex 3f6bb66dfa4..966defb59c4 100644\n--- a/x-pack/plugin/logsdb/src/main/java/org/elasticsearch/xpack/logsdb/LogsdbIndexModeSettingsProvider.java\n+++ b/x-pack/plugin/logsdb/src/main/java/org/elasticsearch/xpack/logsdb/LogsdbIndexModeSettingsProvider.java\n@@ -7,9 +7,7 @@\n \n package org.elasticsearch.xpack.logsdb;\n \n-import org.elasticsearch.cluster.metadata.ComposableIndexTemplate;\n import org.elasticsearch.cluster.metadata.Metadata;\n-import org.elasticsearch.cluster.metadata.MetadataIndexTemplateService;\n import org.elasticsearch.common.compress.CompressedXContent;\n import org.elasticsearch.common.regex.Regex;\n import org.elasticsearch.common.settings.Settings;\n@@ -54,7 +52,7 @@ final class LogsdbIndexModeSettingsProvider implements IndexSettingProvider {\n             return Settings.EMPTY;\n         }\n \n-        if (usesLogsAtSettingsComponentTemplate(metadata, dataStreamName) && matchesLogsPattern(dataStreamName)) {\n+        if (matchesLogsPattern(dataStreamName)) {\n             return Settings.builder().put(\"index.mode\", IndexMode.LOGSDB.getName()).build();\n         }\n \n@@ -69,21 +67,4 @@ final class LogsdbIndexModeSettingsProvider implements IndexSettingProvider {\n         return mode != null ? Enum.valueOf(IndexMode.class, mode.toUpperCase(Locale.ROOT)) : null;\n     }\n \n-    private boolean usesLogsAtSettingsComponentTemplate(final Metadata metadata, final String name) {\n-        final String template = MetadataIndexTemplateService.findV2Template(metadata, name, false);\n-        if (template == null) {\n-            return false;\n-        }\n-        final ComposableIndexTemplate composableIndexTemplate = metadata.templatesV2().get(template);\n-        if (composableIndexTemplate == null) {\n-            return false;\n-        }\n-        for (final String componentTemplate : composableIndexTemplate.composedOf()) {\n-            if (\"logs@settings\".equals(componentTemplate)) {\n-                return true;\n-            }\n-        }\n-        return false;\n-    }\n-\n }",
+        "edit_type": "replace",
+        "verified": true,
+        "verification_result": "developer_fast_path_ok",
+        "applied": true,
+        "apply_result": "SUCCESS"
+      }
+    ]
+  ],
+  "agent_trajectory_edits": [
+    []
+  ],
+  "adapted_code_hunks": [
+    {
+      "target_file": "x-pack/plugin/logsdb/src/main/java/org/elasticsearch/xpack/logsdb/LogsdbIndexModeSettingsProvider.java",
+      "mainline_file": "x-pack/plugin/logsdb/src/main/java/org/elasticsearch/xpack/logsdb/LogsdbIndexModeSettingsProvider.java",
+      "hunk_text": "diff --git a/x-pack/plugin/logsdb/src/main/java/org/elasticsearch/xpack/logsdb/LogsdbIndexModeSettingsProvider.java b/x-pack/plugin/logsdb/src/main/java/org/elasticsearch/xpack/logsdb/LogsdbIndexModeSettingsProvider.java\nindex 3f6bb66dfa4..966defb59c4 100644\n--- a/x-pack/plugin/logsdb/src/main/java/org/elasticsearch/xpack/logsdb/LogsdbIndexModeSettingsProvider.java\n+++ b/x-pack/plugin/logsdb/src/main/java/org/elasticsearch/xpack/logsdb/LogsdbIndexModeSettingsProvider.java\n@@ -7,9 +7,7 @@\n \n package org.elasticsearch.xpack.logsdb;\n \n-import org.elasticsearch.cluster.metadata.ComposableIndexTemplate;\n import org.elasticsearch.cluster.metadata.Metadata;\n-import org.elasticsearch.cluster.metadata.MetadataIndexTemplateService;\n import org.elasticsearch.common.compress.CompressedXContent;\n import org.elasticsearch.common.regex.Regex;\n import org.elasticsearch.common.settings.Settings;\n@@ -54,7 +52,7 @@ final class LogsdbIndexModeSettingsProvider implements IndexSettingProvider {\n             return Settings.EMPTY;\n         }\n \n-        if (usesLogsAtSettingsComponentTemplate(metadata, dataStreamName) && matchesLogsPattern(dataStreamName)) {\n+        if (matchesLogsPattern(dataStreamName)) {\n             return Settings.builder().put(\"index.mode\", IndexMode.LOGSDB.getName()).build();\n         }\n \n@@ -69,21 +67,4 @@ final class LogsdbIndexModeSettingsProvider implements IndexSettingProvider {\n         return mode != null ? Enum.valueOf(IndexMode.class, mode.toUpperCase(Locale.ROOT)) : null;\n     }\n \n-    private boolean usesLogsAtSettingsComponentTemplate(final Metadata metadata, final String name) {\n-        final String template = MetadataIndexTemplateService.findV2Template(metadata, name, false);\n-        if (template == null) {\n-            return false;\n-        }\n-        final ComposableIndexTemplate composableIndexTemplate = metadata.templatesV2().get(template);\n-        if (composableIndexTemplate == null) {\n-            return false;\n-        }\n-        for (final String componentTemplate : composableIndexTemplate.composedOf()) {\n-            if (\"logs@settings\".equals(componentTemplate)) {\n-                return true;\n-            }\n-        }\n-        return false;\n-    }\n-\n }\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    }
+  ],
+  "validation_repeated_patch_detected": false,
+  "validation_repeated_plan_detected": false,
+  "best_effort_adapted_code_hunks": [
+    {
+      "target_file": "x-pack/plugin/logsdb/src/main/java/org/elasticsearch/xpack/logsdb/LogsdbIndexModeSettingsProvider.java",
+      "mainline_file": "x-pack/plugin/logsdb/src/main/java/org/elasticsearch/xpack/logsdb/LogsdbIndexModeSettingsProvider.java",
+      "hunk_text": "diff --git a/x-pack/plugin/logsdb/src/main/java/org/elasticsearch/xpack/logsdb/LogsdbIndexModeSettingsProvider.java b/x-pack/plugin/logsdb/src/main/java/org/elasticsearch/xpack/logsdb/LogsdbIndexModeSettingsProvider.java\nindex 3f6bb66dfa4..966defb59c4 100644\n--- a/x-pack/plugin/logsdb/src/main/java/org/elasticsearch/xpack/logsdb/LogsdbIndexModeSettingsProvider.java\n+++ b/x-pack/plugin/logsdb/src/main/java/org/elasticsearch/xpack/logsdb/LogsdbIndexModeSettingsProvider.java\n@@ -7,9 +7,7 @@\n \n package org.elasticsearch.xpack.logsdb;\n \n-import org.elasticsearch.cluster.metadata.ComposableIndexTemplate;\n import org.elasticsearch.cluster.metadata.Metadata;\n-import org.elasticsearch.cluster.metadata.MetadataIndexTemplateService;\n import org.elasticsearch.common.compress.CompressedXContent;\n import org.elasticsearch.common.regex.Regex;\n import org.elasticsearch.common.settings.Settings;\n@@ -54,7 +52,7 @@ final class LogsdbIndexModeSettingsProvider implements IndexSettingProvider {\n             return Settings.EMPTY;\n         }\n \n-        if (usesLogsAtSettingsComponentTemplate(metadata, dataStreamName) && matchesLogsPattern(dataStreamName)) {\n+        if (matchesLogsPattern(dataStreamName)) {\n             return Settings.builder().put(\"index.mode\", IndexMode.LOGSDB.getName()).build();\n         }\n \n@@ -69,21 +67,4 @@ final class LogsdbIndexModeSettingsProvider implements IndexSettingProvider {\n         return mode != null ? Enum.valueOf(IndexMode.class, mode.toUpperCase(Locale.ROOT)) : null;\n     }\n \n-    private boolean usesLogsAtSettingsComponentTemplate(final Metadata metadata, final String name) {\n-        final String template = MetadataIndexTemplateService.findV2Template(metadata, name, false);\n-        if (template == null) {\n-            return false;\n-        }\n-        final ComposableIndexTemplate composableIndexTemplate = metadata.templatesV2().get(template);\n-        if (composableIndexTemplate == null) {\n-            return false;\n-        }\n-        for (final String componentTemplate : composableIndexTemplate.composedOf()) {\n-            if (\"logs@settings\".equals(componentTemplate)) {\n-                return true;\n-            }\n-        }\n-        return false;\n-    }\n-\n }\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    }
+  ],
+  "adapted_test_hunks": [],
+  "generation_checklist": [
+    {
+      "mainline_file": "x-pack/plugin/logsdb/src/main/java/org/elasticsearch/xpack/logsdb/LogsdbIndexModeSettingsProvider.java",
+      "target_file": "x-pack/plugin/logsdb/src/main/java/org/elasticsearch/xpack/logsdb/LogsdbIndexModeSettingsProvider.java",
+      "hunk_index": 0,
+      "adaptation_type": "TYPE_II",
+      "execution_types": [
+        "TYPE_II"
+      ],
+      "status": "success",
+      "reason": "developer_fast_path",
+      "todo_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ],
+      "completed_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ]
+    }
+  ],
+  "generated_patch_hash": "33784e0f32a3d5f51845fc9c6b75f07ec39eb1a5606699330f8a09bcb5bd01f7",
+  "force_type_v_until_success": false,
+  "force_type_v_reason": "",
+  "force_type_v_retry_files": [],
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "sources": []
+  }
+}

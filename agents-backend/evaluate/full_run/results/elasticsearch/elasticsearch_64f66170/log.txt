@@ -1,27 +1,27 @@
-patch_id=elasticsearch_150058ef
+patch_id=elasticsearch_64f66170
 project=elasticsearch
-mainline_commit=150058ef27df3da931b31e636bd8b335eacb1e66
-backport_commit=1ffe41b4a7d5feef4c8a4141c753ed54271e3a56
+mainline_commit=64f661702a8c6e8656b8585dd0d67bc77fc71496
+backport_commit=bdbd15eb68a4f53b38e70e2f2a34f882ee94e5fb
 mode=full
-started_at=2026-04-06T16:51:09.030232
+started_at=2026-04-06T17:06:03.961809
 ----------------------------------------
 Running full workflow graph
 Completed node=phase_0_optimistic
 Workflow completed successfully
 
-[elasticsearch/elasticsearch_150058ef] Setting up repositories for mode=full...
-[elasticsearch/elasticsearch_150058ef] Running full workflow graph...
+[elasticsearch/elasticsearch_64f66170] Setting up repositories for mode=full...
+[elasticsearch/elasticsearch_64f66170] Running full workflow graph...
 Router: Running Phase 0.
 Phase 0 (Optimistic): Checking direct patch applicability...
-Phase 0: Experiment mode — checking out parent of 1ffe41b4a7d5feef4c8a4141c753ed54271e3a56...
+Phase 0: Experiment mode — checking out parent of bdbd15eb68a4f53b38e70e2f2a34f882ee94e5fb...
 Phase 0: Building baseline by applying developer backport test hunks only...
-  Validation: x-pack/plugin/inference/src/test/java/org/elasticsearch/xpack/inference/external/http/StreamingHttpResultPublisherTests.java - applying 5 hunk(s) one by one in bottom-to-top order: [357, 237, 61, 39, 17]
+  Validation: x-pack/plugin/esql/src/test/java/org/elasticsearch/xpack/esql/optimizer/rules/logical/PushDownAndCombineFiltersTests.java - applying 4 hunk(s) one by one in bottom-to-top order: [245, 88, 25, 9]
     Agent 4: Executing elasticsearch helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/elasticsearch/run_tests.sh
 Phase 0: git apply --check SUCCEEDED. Attempting actual patch application and test run.
     Agent 4: Executing elasticsearch helper build script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/elasticsearch/run_build.sh
     Agent 4: Executing elasticsearch helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/elasticsearch/run_tests.sh
-Phase 0: Transition summary -> reason=Valid: Observed fail-to-pass and/or newly passing relevant tests with no regressions.; fail->pass(1): ['org.elasticsearch.xpack.inference.external.http.StreamingHttpResultPublisherTests#testErrorBeforeRequest']; newly_passing(0): []; pass->fail(0): []
+Phase 0: Transition summary -> reason=Valid: Observed fail-to-pass and/or newly passing relevant tests with no regressions.; fail->pass(1): ['org.elasticsearch.xpack.esql.optimizer.rules.logical.PushDownAndCombineFiltersTests#testPushDownFilterOnAliasInEval']; newly_passing(0): []; pass->fail(0): []
 Phase 0: Transition-based test validation passed. Fast-path success.
 Router: Phase 0 succeeded - taking fast-path exit.
   Completed: phase_0_optimistic
-[elasticsearch/elasticsearch_150058ef] Full workflow completed!
+[elasticsearch/elasticsearch_64f66170] Full workflow completed!

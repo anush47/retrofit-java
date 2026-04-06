@@ -4,57 +4,24 @@
 - **Root Cause**: Deterministic inference: target branch diverges from mainline; adapt hunks with exact target context.
 
 ## Hunk Segregation
-- Code files: 4
+- Code files: 1
 - Test files: 0
 
 ## Code File Mappings
 
-### `server/src/main/java/org/elasticsearch/index/codec/vectors/ES814ScalarQuantizedVectorsFormat.java`
+### `x-pack/plugin/logsdb/src/main/java/org/elasticsearch/xpack/logsdb/LogsdbIndexModeSettingsProvider.java`
 
-**Hunks in this file**: 2
+**Hunks in this file**: 3
 
-**Git Resolution**: Found `server/src/main/java/org/elasticsearch/index/codec/vectors/ES814ScalarQuantizedVectorsFormat.java`
-
-**Deterministic Mode**: raw-diff anchor mapping succeeded (no LLM call).
-
-| Hunk Idx | Role | Mainline Method | Target Method | Lines |
-|---|---|---|---|---|
-| 1 | declaration | `<import>` | `<import>` | 41–41 |
-| 2 | guard | `getMaxDimensions` | `getMaxDimensions` | 274–274 |
-### `server/src/main/java/org/elasticsearch/index/codec/vectors/ES815BitFlatVectorsFormat.java`
-
-**Hunks in this file**: 2
-
-**Git Resolution**: Found `server/src/main/java/org/elasticsearch/index/codec/vectors/ES815BitFlatVectorsFormat.java`
+**Git Resolution**: Found `x-pack/plugin/logsdb/src/main/java/org/elasticsearch/xpack/logsdb/LogsdbIndexModeSettingsProvider.java`
 
 **Deterministic Mode**: raw-diff anchor mapping succeeded (no LLM call).
 
 | Hunk Idx | Role | Mainline Method | Target Method | Lines |
 |---|---|---|---|---|
-| 1 | declaration | `<import>` | `<import>` | 26–26 |
-| 2 | guard | `getMaxDimensions` | `getMaxDimensions` | 43–43 |
-### `server/src/main/java/org/elasticsearch/index/mapper/vectors/DenseVectorFieldMapper.java`
-
-**Hunks in this file**: 1
-
-**Git Resolution**: Found `server/src/main/java/org/elasticsearch/index/mapper/vectors/DenseVectorFieldMapper.java`
-
-**Deterministic Mode**: raw-diff anchor mapping succeeded (no LLM call).
-
-| Hunk Idx | Role | Mainline Method | Target Method | Lines |
-|---|---|---|---|---|
-| 1 | core_fix | `hunk_1` | `None` | 2033–2033 |
-### `server/src/main/java/org/elasticsearch/rest/action/search/SearchCapabilities.java`
-
-**Hunks in this file**: 1
-
-**Git Resolution**: Found `server/src/main/java/org/elasticsearch/rest/action/search/SearchCapabilities.java`
-
-**Deterministic Mode**: raw-diff anchor mapping succeeded (no LLM call).
-
-| Hunk Idx | Role | Mainline Method | Target Method | Lines |
-|---|---|---|---|---|
-| 1 | declaration | `<class_declaration>` | `<class_declaration>` | 24–24 |
+| 1 | propagation | `hunk_1` | `None` | 10–10 |
+| 2 | guard | `hunk_2` | `None` | 57–57 |
+| 3 | core_fix | `usesLogsAtSettingsComponentTemplate` | `usesLogsAtSettingsComponentTemplate` | 72–72 |
 ## Test File Mappings
 
 

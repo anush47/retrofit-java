@@ -1,27 +1,27 @@
-patch_id=elasticsearch_150058ef
+patch_id=elasticsearch_e1451997
 project=elasticsearch
-mainline_commit=150058ef27df3da931b31e636bd8b335eacb1e66
-backport_commit=1ffe41b4a7d5feef4c8a4141c753ed54271e3a56
+mainline_commit=e1451997b1bbbf3f22b4b552352e65dc62e6a947
+backport_commit=fc63a614ee3059cc361458efb02aed6eb68d6629
 mode=full
-started_at=2026-04-06T16:51:09.030232
+started_at=2026-04-06T16:56:47.332648
 ----------------------------------------
 Running full workflow graph
 Completed node=phase_0_optimistic
 Workflow completed successfully
 
-[elasticsearch/elasticsearch_150058ef] Setting up repositories for mode=full...
-[elasticsearch/elasticsearch_150058ef] Running full workflow graph...
+[elasticsearch/elasticsearch_e1451997] Setting up repositories for mode=full...
+[elasticsearch/elasticsearch_e1451997] Running full workflow graph...
 Router: Running Phase 0.
 Phase 0 (Optimistic): Checking direct patch applicability...
-Phase 0: Experiment mode — checking out parent of 1ffe41b4a7d5feef4c8a4141c753ed54271e3a56...
+Phase 0: Experiment mode — checking out parent of fc63a614ee3059cc361458efb02aed6eb68d6629...
 Phase 0: Building baseline by applying developer backport test hunks only...
-  Validation: x-pack/plugin/inference/src/test/java/org/elasticsearch/xpack/inference/external/http/StreamingHttpResultPublisherTests.java - applying 5 hunk(s) one by one in bottom-to-top order: [357, 237, 61, 39, 17]
+  Validation: x-pack/plugin/inference/src/test/java/org/elasticsearch/xpack/inference/chunking/ChunkingSettingsBuilderTests.java - applying 1 hunk(s) one by one in bottom-to-top order: [17]
     Agent 4: Executing elasticsearch helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/elasticsearch/run_tests.sh
 Phase 0: git apply --check SUCCEEDED. Attempting actual patch application and test run.
     Agent 4: Executing elasticsearch helper build script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/elasticsearch/run_build.sh
     Agent 4: Executing elasticsearch helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/elasticsearch/run_tests.sh
-Phase 0: Transition summary -> reason=Valid: Observed fail-to-pass and/or newly passing relevant tests with no regressions.; fail->pass(1): ['org.elasticsearch.xpack.inference.external.http.StreamingHttpResultPublisherTests#testErrorBeforeRequest']; newly_passing(0): []; pass->fail(0): []
+Phase 0: Transition summary -> reason=Valid: Observed fail-to-pass and/or newly passing relevant tests with no regressions.; fail->pass(1): ['org.elasticsearch.xpack.inference.chunking.ChunkingSettingsBuilderTests#testEmptyChunkingSettingsMap']; newly_passing(0): []; pass->fail(0): []
 Phase 0: Transition-based test validation passed. Fast-path success.
 Router: Phase 0 succeeded - taking fast-path exit.
   Completed: phase_0_optimistic
-[elasticsearch/elasticsearch_150058ef] Full workflow completed!
+[elasticsearch/elasticsearch_e1451997] Full workflow completed!

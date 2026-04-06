@@ -1,0 +1,27 @@
+patch_id=elasticsearch_7942f3ea
+project=elasticsearch
+mainline_commit=7942f3eab080b053f97abbf6abef3619d515f32f
+backport_commit=1ad4ae155f6dbe473c7829864ca77974859be6bd
+mode=full
+started_at=2026-04-06T17:25:29.269192
+----------------------------------------
+Running full workflow graph
+Completed node=phase_0_optimistic
+Workflow completed successfully
+
+[elasticsearch/elasticsearch_7942f3ea] Setting up repositories for mode=full...
+[elasticsearch/elasticsearch_7942f3ea] Running full workflow graph...
+Router: Running Phase 0.
+Phase 0 (Optimistic): Checking direct patch applicability...
+Phase 0: Experiment mode — checking out parent of 1ad4ae155f6dbe473c7829864ca77974859be6bd...
+Phase 0: Building baseline by applying developer backport test hunks only...
+  Validation: server/src/test/java/org/elasticsearch/index/mapper/vectors/DenseVectorFieldMapperTests.java - applying 6 hunk(s) one by one in bottom-to-top order: [947, 914, 902, 891, 192, 175]
+    Agent 4: Executing elasticsearch helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/elasticsearch/run_tests.sh
+Phase 0: git apply --check SUCCEEDED. Attempting actual patch application and test run.
+    Agent 4: Executing elasticsearch helper build script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/elasticsearch/run_build.sh
+    Agent 4: Executing elasticsearch helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/elasticsearch/run_tests.sh
+Phase 0: Transition summary -> reason=Valid: Observed fail-to-pass and/or newly passing relevant tests with no regressions.; fail->pass(2): ['org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests#testDims', 'org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapperTests#testLargeDimsBit']; newly_passing(0): []; pass->fail(0): []
+Phase 0: Transition-based test validation passed. Fast-path success.
+Router: Phase 0 succeeded - taking fast-path exit.
+  Completed: phase_0_optimistic
+[elasticsearch/elasticsearch_7942f3ea] Full workflow completed!
