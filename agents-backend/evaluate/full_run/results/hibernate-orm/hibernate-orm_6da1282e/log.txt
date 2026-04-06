@@ -1,0 +1,28 @@
+patch_id=hibernate-orm_6da1282e
+project=hibernate-orm
+mainline_commit=6da1282e7030eb4539a31783172c75c9d04ca568
+backport_commit=eafaf38201a0fcaa5e20c448b1ec21531be697a4
+mode=full
+started_at=2026-04-06T18:41:12.864902
+----------------------------------------
+Running full workflow graph
+Completed node=phase_0_optimistic
+Workflow completed successfully
+
+[hibernate-orm/hibernate-orm_6da1282e] Setting up repositories for mode=full...
+[hibernate-orm/hibernate-orm_6da1282e] Running full workflow graph...
+Router: Running Phase 0.
+Phase 0 (Optimistic): Checking direct patch applicability...
+Phase 0: Experiment mode — checking out parent of eafaf38201a0fcaa5e20c448b1ec21531be697a4...
+Phase 0: Building baseline by applying developer backport test hunks only...
+  Validation: hibernate-core/src/test/java/org/hibernate/internal/util/SubSequenceTest.java - applying 1 hunk(s) one by one in bottom-to-top order: [1]
+  Validation: ADDED operation for hibernate-core/src/test/java/org/hibernate/internal/util/SubSequenceTest.java
+    Agent 4: Executing hibernate-orm helper test script: /home/retrofit/anush/retrofit-java/agents-backend/evaluate/helpers/hibernate-orm/run_tests.sh
+Phase 0: git apply --check SUCCEEDED. Attempting actual patch application and test run.
+    Agent 4: Executing hibernate-orm helper build script: /home/retrofit/anush/retrofit-java/agents-backend/evaluate/helpers/hibernate-orm/run_build.sh
+    Agent 4: Executing hibernate-orm helper test script: /home/retrofit/anush/retrofit-java/agents-backend/evaluate/helpers/hibernate-orm/run_tests.sh
+Phase 0: Transition summary -> reason=Valid: Observed fail-to-pass and/or newly passing relevant tests with no regressions.; fail->pass(1): ['org.hibernate.internal.util.SubSequenceTest#subSequenceAllowsEmptyAtEnd()']; newly_passing(0): []; pass->fail(0): []
+Phase 0: Transition-based test validation passed. Fast-path success.
+Router: Phase 0 succeeded - taking fast-path exit.
+  Completed: phase_0_optimistic
+[hibernate-orm/hibernate-orm_6da1282e] Full workflow completed!

@@ -58,12 +58,12 @@ def configure_logging() -> None:
 
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
 # DATASET_PATH = os.path.join(BASE_DIR, "datasets", "all_projects_final.csv")
-DATASET_PATH = os.path.join(BASE_DIR, "datasets", "all_projects_final_no_5_no_1.csv")
+DATASET_PATH = os.path.join(BASE_DIR, "datasets", "all_projects_final_no_5.csv")
 REPOS_DIR = os.path.join(BASE_DIR, "temp_repo_storage")
 RESULTS_DIR = os.path.join(os.path.dirname(__file__), "results")
 PHASE0_CACHE_DIR = os.path.join(os.path.dirname(__file__), "phase0_cache")
 
-TARGET_PROJECTS = ["elasticsearch", "crate", "graylog2-server", "druid", "grpc-java"]
+TARGET_PROJECTS = ["elasticsearch", "crate", "graylog2-server", "druid", "grpc-java", "hibernate-orm"]
 # TARGET_PROJECTS = ["elasticsearch", "druid", "graylog2-server"]
 MAX_PATCHES_PER_PROJECT = None
 
