@@ -1,0 +1,81 @@
+# Phase 0 Inputs
+
+- Mainline commit: 393ea618d7c01c7c5ef2bb23f4a41185833be5d3
+- Backport commit: b78cfd8ef7ccc8d79bbdb456b22f867b3e116d4b
+- Java-only files for agentic phases: 1
+- Developer auxiliary hunks (test + non-Java): 1
+
+## Commit Pair Consistency
+- Pair mismatch: False
+- Reason: scope_overlap_ok
+- Mainline Java files: ['x-pack/plugin/inference/src/main/java/org/elasticsearch/xpack/inference/mapper/SemanticTextFieldMapper.java']
+- Developer Java files: ['x-pack/plugin/inference/src/main/java/org/elasticsearch/xpack/inference/mapper/SemanticTextFieldMapper.java']
+- Overlap Java files: ['x-pack/plugin/inference/src/main/java/org/elasticsearch/xpack/inference/mapper/SemanticTextFieldMapper.java']
+- Overlap ratio (mainline): 1.0
+
+## Mainline Patch
+```diff
+From 393ea618d7c01c7c5ef2bb23f4a41185833be5d3 Mon Sep 17 00:00:00 2001
+From: Jim Ferenczi <jim.ferenczi@elastic.co>
+Date: Tue, 7 Jan 2025 19:27:06 +0000
+Subject: [PATCH] Semantic text with legacy format cannot store term vectors
+ (#119690)
+
+This change fixes the store option of the underlying sparse vector field for semantic text.
+For legacy indices, the store option should remain false since changing this option on an existing index is not allowed and that term vectors are already stored in _source.
+---
+ .../inference/mapper/SemanticTextFieldMapper.java      | 10 +++++++---
+ .../inference/mapper/SemanticTextFieldMapperTests.java |  6 +++++-
+ 2 files changed, 12 insertions(+), 4 deletions(-)
+
+diff --git a/x-pack/plugin/inference/src/main/java/org/elasticsearch/xpack/inference/mapper/SemanticTextFieldMapper.java b/x-pack/plugin/inference/src/main/java/org/elasticsearch/xpack/inference/mapper/SemanticTextFieldMapper.java
+index 690a136c566..9126fd78cad 100644
+--- a/x-pack/plugin/inference/src/main/java/org/elasticsearch/xpack/inference/mapper/SemanticTextFieldMapper.java
++++ b/x-pack/plugin/inference/src/main/java/org/elasticsearch/xpack/inference/mapper/SemanticTextFieldMapper.java
+@@ -858,7 +858,7 @@ public class SemanticTextFieldMapper extends FieldMapper implements InferenceFie
+         );
+         chunksField.dynamic(ObjectMapper.Dynamic.FALSE);
+         if (modelSettings != null) {
+-            chunksField.add(createEmbeddingsField(indexSettings.getIndexVersionCreated(), modelSettings));
++            chunksField.add(createEmbeddingsField(indexSettings.getIndexVersionCreated(), modelSettings, useLegacyFormat));
+         }
+         if (useLegacyFormat) {
+             var chunkTextField = new KeywordFieldMapper.Builder(TEXT_FIELD, indexVersionCreated).indexed(false).docValues(false);
+@@ -869,9 +869,13 @@ public class SemanticTextFieldMapper extends FieldMapper implements InferenceFie
+         return chunksField;
+     }
+ 
+-    private static Mapper.Builder createEmbeddingsField(IndexVersion indexVersionCreated, SemanticTextField.ModelSettings modelSettings) {
++    private static Mapper.Builder createEmbeddingsField(
++        IndexVersion indexVersionCreated,
++        SemanticTextField.ModelSettings modelSettings,
++        boolean useLegacyFormat
++    ) {
+         return switch (modelSettings.taskType()) {
+-            case SPARSE_EMBEDDING -> new SparseVectorFieldMapper.Builder(CHUNKED_EMBEDDINGS_FIELD).setStored(true);
++            case SPARSE_EMBEDDING -> new SparseVectorFieldMapper.Builder(CHUNKED_EMBEDDINGS_FIELD).setStored(useLegacyFormat == false);
+             case TEXT_EMBEDDING -> {
+                 DenseVectorFieldMapper.Builder denseVectorMapperBuilder = new DenseVectorFieldMapper.Builder(
+                     CHUNKED_EMBEDDINGS_FIELD,
+diff --git a/x-pack/plugin/inference/src/test/java/org/elasticsearch/xpack/inference/mapper/SemanticTextFieldMapperTests.java b/x-pack/plugin/inference/src/test/java/org/elasticsearch/xpack/inference/mapper/SemanticTextFieldMapperTests.java
+index e6d68c8343d..b056f5880b2 100644
+--- a/x-pack/plugin/inference/src/test/java/org/elasticsearch/xpack/inference/mapper/SemanticTextFieldMapperTests.java
++++ b/x-pack/plugin/inference/src/test/java/org/elasticsearch/xpack/inference/mapper/SemanticTextFieldMapperTests.java
+@@ -536,7 +536,11 @@ public class SemanticTextFieldMapperTests extends MapperTestCase {
+             assertTrue(embeddingsFieldMapper.fieldType() == mapperService.mappingLookup().getFieldType(getEmbeddingsFieldName(fieldName)));
+             assertThat(embeddingsMapper.fullPath(), equalTo(getEmbeddingsFieldName(fieldName)));
+             switch (semanticFieldMapper.fieldType().getModelSettings().taskType()) {
+-                case SPARSE_EMBEDDING -> assertThat(embeddingsMapper, instanceOf(SparseVectorFieldMapper.class));
++                case SPARSE_EMBEDDING -> {
++                    assertThat(embeddingsMapper, instanceOf(SparseVectorFieldMapper.class));
++                    SparseVectorFieldMapper sparseMapper = (SparseVectorFieldMapper) embeddingsMapper;
++                    assertEquals(sparseMapper.fieldType().isStored(), semanticTextFieldType.useLegacyFormat() == false);
++                }
+                 case TEXT_EMBEDDING -> assertThat(embeddingsMapper, instanceOf(DenseVectorFieldMapper.class));
+                 default -> throw new AssertionError("Invalid task type");
+             }
+-- 
+2.43.0
+
+
+```

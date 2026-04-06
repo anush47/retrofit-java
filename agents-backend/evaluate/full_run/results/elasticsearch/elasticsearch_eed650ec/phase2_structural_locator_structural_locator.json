@@ -1,0 +1,26 @@
+{
+  "consistency_map": {},
+  "mapped_target_context": {
+    "server/src/main/java/org/elasticsearch/index/mapper/AbstractShapeGeometryFieldMapper.java": [
+      {
+        "hunk_index": 1,
+        "mainline_method": "read",
+        "target_file": "server/src/main/java/org/elasticsearch/index/mapper/AbstractShapeGeometryFieldMapper.java",
+        "target_method": "read",
+        "start_line": 127,
+        "end_line": 127,
+        "code_snippet": "                    public BlockLoader.Block read(BlockLoader.BlockFactory factory, BlockLoader.Docs docs) throws IOException {\n                        var binaryDocValues = context.reader().getBinaryDocValues(fieldName);\n                        var reader = new GeometryDocValueReader();\n                        try (var builder = factory.bytesRefs(docs.count())) {\n                            for (int i = 0; i < docs.count(); i++) {\n                                read(binaryDocValues, docs.get(i), reader, builder);\n                            }\n                            return builder.build();\n                        }\n                    }\n\n                    @Override\n                    public void read(int docId, BlockLoader.StoredFields storedFields, BlockLoader.Builder builder) throws IOException {\n                        var binaryDocValues = context.reader().getBinaryDocValues(fieldName);\n                        var reader = new GeometryDocValueReader();\n                        read(binaryDocValues, docId, reader, (BytesRefBuilder) builder);\n                    }\n\n                    private void read(BinaryDocValues binaryDocValues, int doc, GeometryDocValueReader reader, BytesRefBuilder builder)\n                        throws IOException {\n                        binaryDocValues.advanceExact(doc);\n                        reader.reset(binaryDocValues.binaryValue());\n                        var extent = reader.getExtent();\n                        // This is rather silly: an extent is already encoded as ints, but we convert it to Rectangle to\n                        // preserve its properties as a WKB shape, only to convert it back to ints when we compute the\n                        // aggregation. An obvious optimization would be to avoid this back-and-forth conversion.\n                        var rectangle = new Rectangle(\n                            encoder.decodeX(extent.minX()),\n                            encoder.decodeX(extent.maxX()),\n                            encoder.decodeY(extent.maxY()),\n                            encoder.decodeY(extent.minY())\n                        );\n                        builder.appendBytesRef(new BytesRef(WellKnownBinary.toWKB(rectangle, ByteOrder.LITTLE_ENDIAN)));\n                    }\n\n                    @Override\n                    public boolean canReuse(int startingDocID) {\n                        return true;\n                    }\n                };\n            }",
+        "anchor_confidence": "high",
+        "anchor_reason": "line_and_method_resolved",
+        "anchor_strategy": "deterministic_realign"
+      }
+    ]
+  },
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "reason": "llm_usage_not_collected_in_this_node"
+  }
+}

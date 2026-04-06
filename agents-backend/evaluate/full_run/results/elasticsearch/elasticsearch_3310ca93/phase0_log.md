@@ -1,0 +1,81 @@
+# Phase 0 Inputs
+
+- Mainline commit: 3310ca9314ff40cabd523150cb000ebc643ee883
+- Backport commit: 3f87b3cd9842f3ffab51b5c886e8dcefbc656248
+- Java-only files for agentic phases: 1
+- Developer auxiliary hunks (test + non-Java): 2
+
+## Commit Pair Consistency
+- Pair mismatch: False
+- Reason: scope_overlap_ok
+- Mainline Java files: ['x-pack/plugin/ml/src/main/java/org/elasticsearch/xpack/ml/aggs/changepoint/SpikeAndDipDetector.java']
+- Developer Java files: ['x-pack/plugin/ml/src/main/java/org/elasticsearch/xpack/ml/aggs/changepoint/SpikeAndDipDetector.java']
+- Overlap Java files: ['x-pack/plugin/ml/src/main/java/org/elasticsearch/xpack/ml/aggs/changepoint/SpikeAndDipDetector.java']
+- Overlap ratio (mainline): 1.0
+
+## Mainline Patch
+```diff
+From 3310ca9314ff40cabd523150cb000ebc643ee883 Mon Sep 17 00:00:00 2001
+From: Jan Kuipers <148754765+jan-elastic@users.noreply.github.com>
+Date: Tue, 7 Jan 2025 14:14:37 +0100
+Subject: [PATCH] Fix spike detection for short spikes at the tail of the data.
+ (#119637)
+
+* Fix spike detection for short spikes at the tail of the data.
+
+* Update docs/changelog/119637.yaml
+---
+ docs/changelog/119637.yaml                             |  5 +++++
+ .../xpack/ml/aggs/changepoint/SpikeAndDipDetector.java |  2 +-
+ .../ml/aggs/changepoint/SpikeAndDipDetectorTests.java  | 10 ++++++++++
+ 3 files changed, 16 insertions(+), 1 deletion(-)
+ create mode 100644 docs/changelog/119637.yaml
+
+diff --git a/docs/changelog/119637.yaml b/docs/changelog/119637.yaml
+new file mode 100644
+index 00000000000..c2fd6dc51f0
+--- /dev/null
++++ b/docs/changelog/119637.yaml
+@@ -0,0 +1,5 @@
++pr: 119637
++summary: Fix spike detection for short spikes at the tail of the data
++area: Machine Learning
++type: bug
++issues: []
+diff --git a/x-pack/plugin/ml/src/main/java/org/elasticsearch/xpack/ml/aggs/changepoint/SpikeAndDipDetector.java b/x-pack/plugin/ml/src/main/java/org/elasticsearch/xpack/ml/aggs/changepoint/SpikeAndDipDetector.java
+index 365ebe8562d..fa632f643ff 100644
+--- a/x-pack/plugin/ml/src/main/java/org/elasticsearch/xpack/ml/aggs/changepoint/SpikeAndDipDetector.java
++++ b/x-pack/plugin/ml/src/main/java/org/elasticsearch/xpack/ml/aggs/changepoint/SpikeAndDipDetector.java
+@@ -58,7 +58,7 @@ final class SpikeAndDipDetector {
+         int maxEnd = Math.min(maxStart + extent, values.length);
+         double maxSum = sum(values, maxStart, maxEnd, negate);
+         for (int start = maxStart + 1; start <= argmax; start++) {
+-            if (start + extent >= values.length) {
++            if (start + extent > values.length) {
+                 break;
+             }
+             double average = sum(values, start, start + extent, negate);
+diff --git a/x-pack/plugin/ml/src/test/java/org/elasticsearch/xpack/ml/aggs/changepoint/SpikeAndDipDetectorTests.java b/x-pack/plugin/ml/src/test/java/org/elasticsearch/xpack/ml/aggs/changepoint/SpikeAndDipDetectorTests.java
+index b21a7c4625e..c80cfffbd73 100644
+--- a/x-pack/plugin/ml/src/test/java/org/elasticsearch/xpack/ml/aggs/changepoint/SpikeAndDipDetectorTests.java
++++ b/x-pack/plugin/ml/src/test/java/org/elasticsearch/xpack/ml/aggs/changepoint/SpikeAndDipDetectorTests.java
+@@ -184,4 +184,14 @@ public class SpikeAndDipDetectorTests extends ESTestCase {
+         assertThat(change, instanceOf(ChangeType.Spike.class));
+         assertThat(change.changePoint(), equalTo(10));
+     }
++
++    public void testSpikeAtTail() {
++        MlAggsHelper.DoubleBucketValues bucketValues = new MlAggsHelper.DoubleBucketValues(
++            null,
++            new double[] { 2, 2, 2, 2, 3, 2, 2, 2, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 2, 2, 9, 8 }
++        );
++        ChangeType change = new SpikeAndDipDetector(bucketValues).detect(0.01);
++        assertThat(change, instanceOf(ChangeType.Spike.class));
++        assertThat(change.changePoint(), equalTo(27));
++    }
+ }
+-- 
+2.43.0
+
+
+```

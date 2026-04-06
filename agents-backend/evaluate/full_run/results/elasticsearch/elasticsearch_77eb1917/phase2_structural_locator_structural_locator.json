@@ -1,0 +1,26 @@
+{
+  "consistency_map": {},
+  "mapped_target_context": {
+    "server/src/main/java/org/elasticsearch/cluster/node/DiscoveryNode.java": [
+      {
+        "hunk_index": 1,
+        "mainline_method": "hunk_1",
+        "target_file": "server/src/main/java/org/elasticsearch/cluster/node/DiscoveryNode.java",
+        "target_method": null,
+        "start_line": 628,
+        "end_line": 628,
+        "code_snippet": "        final StringBuilder stringBuilder = new StringBuilder();\n        appendDescriptionWithoutAttributes(stringBuilder);\n        return stringBuilder.toString();\n    }\n\n    @Override\n    public XContentBuilder toXContent(XContentBuilder builder, Params params) throws IOException {\n        builder.startObject(getId());\n        builder.field(\"name\", getName());\n        builder.field(\"ephemeral_id\", getEphemeralId());\n        builder.field(\"transport_address\", getAddress().toString());\n        builder.field(\"external_id\", getExternalId());\n        builder.stringStringMap(\"attributes\", attributes);\n        builder.startArray(\"roles\");\n        for (DiscoveryNodeRole role : roles) {\n            builder.value(role.roleName());\n        }\n        builder.endArray();\n        builder.field(\"version\", versionInfo.nodeVersion());\n        builder.field(\"min_index_version\", versionInfo.minIndexVersion());\n        builder.field(\"min_read_only_index_version\", versionInfo.minReadOnlyIndexVersion());\n        builder.field(\"max_index_version\", versionInfo.maxIndexVersion());\n        builder.endObject();\n        return builder;\n    }\n\n    public DiscoveryNode withTransportAddress(TransportAddress transportAddress) {\n        return new DiscoveryNode(\n            getName(),\n            getId(),\n            getEphemeralId(),\n            getHostName(),\n            getHostAddress(),\n            transportAddress,\n            getAttributes(),\n            getRoles(),\n            getVersionInformation(),\n            getExternalId()\n        );\n    }\n",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      }
+    ]
+  },
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "reason": "llm_usage_not_collected_in_this_node"
+  }
+}

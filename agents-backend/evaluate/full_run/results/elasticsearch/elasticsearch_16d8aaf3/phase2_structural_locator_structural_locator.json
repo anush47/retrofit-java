@@ -1,0 +1,110 @@
+{
+  "consistency_map": {},
+  "mapped_target_context": {
+    "server/src/main/java/org/elasticsearch/common/settings/KeyStoreWrapper.java": [
+      {
+        "hunk_index": 1,
+        "mainline_method": "hunk_1",
+        "target_file": "server/src/main/java/org/elasticsearch/common/settings/KeyStoreWrapper.java",
+        "target_method": null,
+        "start_line": 123,
+        "end_line": 123,
+        "code_snippet": "     * A regex for the valid characters that a setting name in the keystore may use.\n     */\n    private static final Pattern ALLOWED_SETTING_NAME = Pattern.compile(\"[A-Za-z0-9_\\\\-.]+\");\n\n    public static final Setting<SecureString> SEED_SETTING = SecureSetting.secureString(\"keystore.seed\", null);\n\n    /** Characters that may be used in the bootstrap seed setting added to all keystores. */\n    private static final char[] SEED_CHARS = (\"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789\" + \"~!@#$%^&*-_=+?\")\n        .toCharArray();\n\n    /** The name of the keystore file to read and write. */\n    public static final String KEYSTORE_FILENAME = \"elasticsearch.keystore\";\n\n    /** The oldest metadata format version that can be read. */\n    private static final int MIN_FORMAT_VERSION = 3;\n    public static final int V3_VERSION = 3;\n    public static final int V4_VERSION = 4;\n    /** The version where lucene directory API changed from BE to LE. */\n    public static final int LE_VERSION = 5;\n    public static final int HIGHER_KDF_ITERATION_COUNT_VERSION = 6;\n    public static final int CURRENT_VERSION = HIGHER_KDF_ITERATION_COUNT_VERSION;\n\n    /** The algorithm used to derive the cipher key from a password. */\n    private static final String KDF_ALGO = \"PBKDF2WithHmacSHA512\";\n\n    /** The number of iterations to derive the cipher key. */\n    private static final int KDF_ITERS = 210000;\n\n    /**\n     * The number of bits for the cipher key.\n     *\n     * Note: The Oracle JDK 8 ships with a limited JCE policy that restricts key length for AES to 128 bits.\n     * This can be increased to 256 bits once minimum java 9 is the minimum java version.\n     * See http://www.oracle.com/technetwork/java/javase/terms/readme/jdk9-readme-3852447.html#jce\n     * */\n    private static final int CIPHER_KEY_BITS = 128;\n\n    /** The number of bits for the GCM tag. */\n    private static final int GCM_TAG_BITS = 128;\n\n    /** The cipher used to encrypt the keystore data. */",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 2,
+        "mainline_method": "<class_declaration>",
+        "target_file": "server/src/main/java/org/elasticsearch/common/settings/KeyStoreWrapper.java",
+        "target_method": "<class_declaration>",
+        "start_line": 68,
+        "end_line": 68,
+        "code_snippet": "import java.nio.file.attribute.PosixFilePermissions;\nimport java.security.GeneralSecurityException;\nimport java.security.SecureRandom;\nimport java.util.Arrays;\nimport java.util.HashMap;\nimport java.util.Locale;\nimport java.util.Map;\nimport java.util.Set;\nimport java.util.regex.Pattern;\n\nimport javax.crypto.AEADBadTagException;\nimport javax.crypto.Cipher;\nimport javax.crypto.CipherInputStream;\nimport javax.crypto.CipherOutputStream;\nimport javax.crypto.SecretKey;\nimport javax.crypto.SecretKeyFactory;\nimport javax.crypto.spec.GCMParameterSpec;\nimport javax.crypto.spec.PBEKeySpec;\nimport javax.crypto.spec.SecretKeySpec;\n\n/**\n * A disk based container for sensitive settings in Elasticsearch.\n *\n * Loading a keystore has 2 phases. First, call {@link #load(Path)}. Then call\n * {@link #decrypt(char[])} with the keystore password, or an empty char array if\n * {@link #hasPassword()} is {@code false}.  Loading and decrypting should happen\n * in a single thread. Once decrypted, settings may be read in multiple threads.\n */\npublic class KeyStoreWrapper implements SecureSettings {\n\n    public static final String PROMPT = \"Enter password for the elasticsearch keystore : \";\n\n    /** An entry in the keystore. The bytes are opaque and interpreted based on the entry type. */\n    private static class Entry implements Writeable {\n        final byte[] bytes;\n        final byte[] sha256Digest;\n\n        Entry(byte[] bytes) {\n            this.bytes = bytes;\n            this.sha256Digest = MessageDigests.sha256().digest(bytes);\n        }",
+        "anchor_confidence": "high",
+        "anchor_reason": "line_and_method_resolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 3,
+        "mainline_method": "hunk_3",
+        "target_file": "server/src/main/java/org/elasticsearch/common/settings/KeyStoreWrapper.java",
+        "target_method": null,
+        "start_line": 156,
+        "end_line": 156,
+        "code_snippet": "     * See http://www.oracle.com/technetwork/java/javase/terms/readme/jdk9-readme-3852447.html#jce\n     * */\n    private static final int CIPHER_KEY_BITS = 128;\n\n    /** The number of bits for the GCM tag. */\n    private static final int GCM_TAG_BITS = 128;\n\n    /** The cipher used to encrypt the keystore data. */\n    private static final String CIPHER_ALGO = \"AES\";\n\n    /** The mode used with the cipher algorithm. */\n    private static final String CIPHER_MODE = \"GCM\";\n\n    /** The padding used with the cipher algorithm. */\n    private static final String CIPHER_PADDING = \"NoPadding\";\n\n    // format version changelog:\n    // 1: initial version, ES 5.3\n    // 2: file setting, ES 5.4\n    // 3: FIPS compliant algos, ES 6.3\n    // 4: remove distinction between string/files, ES 6.8/7.1\n    // 5: Lucene directory API changed to LE, ES 8.0\n    // 6: increase KDF iteration count, ES 8.14\n\n    /** The metadata format version used to read the current keystore wrapper. */\n    private final int formatVersion;\n\n    /** True iff the keystore has a password needed to read. */\n    private final boolean hasPassword;\n\n    /** The raw bytes of the encrypted keystore. */\n    private final byte[] dataBytes;\n\n    /** The decrypted secret data. See {@link #decrypt(char[])}. */\n    private final SetOnce<Map<String, Entry>> entries = new SetOnce<>();\n    private volatile boolean closed;\n\n    private KeyStoreWrapper(int formatVersion, boolean hasPassword, byte[] dataBytes) {\n        this.formatVersion = formatVersion;\n        this.hasPassword = hasPassword;\n        this.dataBytes = dataBytes;",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 4,
+        "mainline_method": "<class_declaration>",
+        "target_file": "server/src/main/java/org/elasticsearch/common/settings/KeyStoreWrapper.java",
+        "target_method": "<class_declaration>",
+        "start_line": 321,
+        "end_line": 321,
+        "code_snippet": "        if (wrapper.getFormatVersion() == CURRENT_VERSION && wrapper.getSettingNames().contains(SEED_SETTING.getKey())) {\n            return;\n        }\n        // add keystore.seed if necessary\n        if (wrapper.getSettingNames().contains(SEED_SETTING.getKey()) == false) {\n            addBootstrapSeed(wrapper);\n        }\n        wrapper.save(configDir, password);\n    }\n\n    @Override\n    public boolean isLoaded() {\n        return entries.get() != null;\n    }\n\n    /** Return true iff calling {@link #decrypt(char[])} requires a non-empty password. */\n    public boolean hasPassword() {\n        return hasPassword;\n    }\n\n    private static Cipher createCipher(int opmode, char[] password, byte[] salt, byte[] iv, int kdfIters) throws GeneralSecurityException {\n        PBEKeySpec keySpec = new PBEKeySpec(password, salt, kdfIters, CIPHER_KEY_BITS);\n        SecretKeyFactory keyFactory = SecretKeyFactory.getInstance(KDF_ALGO);\n        SecretKey secretKey;\n        try {\n            secretKey = keyFactory.generateSecret(keySpec);\n        } catch (Error e) {\n            // Security Providers might throw a subclass of Error in FIPS 140 mode, if some prerequisite like\n            // salt, iv, or password length is not met. We catch this because we don't want the JVM to exit.\n            throw new GeneralSecurityException(\"Error generating an encryption key from the provided password\", e);\n        }\n        SecretKeySpec secret = new SecretKeySpec(secretKey.getEncoded(), CIPHER_ALGO);\n\n        GCMParameterSpec spec = new GCMParameterSpec(GCM_TAG_BITS, iv);\n        Cipher cipher = Cipher.getInstance(CIPHER_ALGO + \"/\" + CIPHER_MODE + \"/\" + CIPHER_PADDING);\n        cipher.init(opmode, secret, spec);\n        cipher.updateAAD(salt);\n        return cipher;\n    }\n\n    private static int getKdfIterationCountForVersion(int formatVersion) {",
+        "anchor_confidence": "high",
+        "anchor_reason": "line_and_method_resolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 5,
+        "mainline_method": "<class_declaration>",
+        "target_file": "server/src/main/java/org/elasticsearch/common/settings/KeyStoreWrapper.java",
+        "target_method": "<class_declaration>",
+        "start_line": 343,
+        "end_line": 343,
+        "code_snippet": "        SecretKeyFactory keyFactory = SecretKeyFactory.getInstance(KDF_ALGO);\n        SecretKey secretKey;\n        try {\n            secretKey = keyFactory.generateSecret(keySpec);\n        } catch (Error e) {\n            // Security Providers might throw a subclass of Error in FIPS 140 mode, if some prerequisite like\n            // salt, iv, or password length is not met. We catch this because we don't want the JVM to exit.\n            throw new GeneralSecurityException(\"Error generating an encryption key from the provided password\", e);\n        }\n        SecretKeySpec secret = new SecretKeySpec(secretKey.getEncoded(), CIPHER_ALGO);\n\n        GCMParameterSpec spec = new GCMParameterSpec(GCM_TAG_BITS, iv);\n        Cipher cipher = Cipher.getInstance(CIPHER_ALGO + \"/\" + CIPHER_MODE + \"/\" + CIPHER_PADDING);\n        cipher.init(opmode, secret, spec);\n        cipher.updateAAD(salt);\n        return cipher;\n    }\n\n    private static int getKdfIterationCountForVersion(int formatVersion) {\n        // iteration count was increased in version 6; it was 10,000 in previous versions\n        return formatVersion < HIGHER_KDF_ITERATION_COUNT_VERSION ? 10000 : KDF_ITERS;\n    }\n\n    /**\n     * Decrypts the underlying keystore data.\n     *\n     * This may only be called once.\n     */\n    public void decrypt(char[] password) throws GeneralSecurityException, IOException {\n        if (entries.get() != null) {\n            throw new IllegalStateException(\"Keystore has already been decrypted\");\n        }\n\n        final byte[] salt;\n        final byte[] iv;\n        final byte[] encryptedBytes;\n        try {\n            final ByteArrayDataInput input = new ByteArrayDataInput(dataBytes);\n            // Wrap the DataInput for old version that are written in BE\n            final DataInput maybeWrappedInput = formatVersion < LE_VERSION ? EndiannessReverserUtil.wrapDataInput(input) : input;\n            salt = readByteArray(maybeWrappedInput);",
+        "anchor_confidence": "high",
+        "anchor_reason": "line_and_method_resolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 6,
+        "mainline_method": "hunk_6",
+        "target_file": "server/src/main/java/org/elasticsearch/common/settings/KeyStoreWrapper.java",
+        "target_method": null,
+        "start_line": 374,
+        "end_line": 374,
+        "code_snippet": "        }\n\n        final byte[] salt;\n        final byte[] iv;\n        final byte[] encryptedBytes;\n        try {\n            final ByteArrayDataInput input = new ByteArrayDataInput(dataBytes);\n            // Wrap the DataInput for old version that are written in BE\n            final DataInput maybeWrappedInput = formatVersion < LE_VERSION ? EndiannessReverserUtil.wrapDataInput(input) : input;\n            salt = readByteArray(maybeWrappedInput);\n            iv = readByteArray(maybeWrappedInput);\n            encryptedBytes = readByteArray(maybeWrappedInput);\n            // check we read all the buffer\n            if (input.eof() == false) {\n                throw new SecurityException(\"Keystore has been corrupted or tampered with\");\n            }\n        } catch (ArrayIndexOutOfBoundsException e) {\n            throw new SecurityException(\"Keystore has been corrupted or tampered with\", e);\n        }\n\n        Cipher cipher = createCipher(Cipher.DECRYPT_MODE, password, salt, iv, getKdfIterationCountForVersion(formatVersion));\n        try (\n            ByteArrayInputStream bytesStream = new ByteArrayInputStream(encryptedBytes);\n            CipherInputStream cipherStream = new CipherInputStream(bytesStream, cipher);\n            DataInputStream input = new DataInputStream(cipherStream)\n        ) {\n            entries.set(new HashMap<>());\n            int numEntries = input.readInt();\n            while (numEntries-- > 0) {\n                String setting = input.readUTF();\n                if (formatVersion == V3_VERSION) {\n                    // legacy, the keystore format would previously store the entry type\n                    input.readUTF();\n                }\n                int entrySize = input.readInt();\n                byte[] entryBytes = new byte[entrySize];\n                input.readFully(entryBytes);\n                entries.get().put(setting, new Entry(entryBytes));\n            }\n            if (input.read() != -1) {\n                throw new SecurityException(\"Keystore has been corrupted or tampered with\");",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 7,
+        "mainline_method": "encrypt",
+        "target_file": "server/src/main/java/org/elasticsearch/common/settings/KeyStoreWrapper.java",
+        "target_method": "encrypt",
+        "start_line": 412,
+        "end_line": 412,
+        "code_snippet": "            }\n            if (input.read() != -1) {\n                throw new SecurityException(\"Keystore has been corrupted or tampered with\");\n            }\n        } catch (IOException e) {\n            if (e.getCause() instanceof AEADBadTagException) {\n                throw new SecurityException(\"Provided keystore password was incorrect\", e);\n            }\n            throw new SecurityException(\"Keystore has been corrupted or tampered with\", e);\n        }\n    }\n\n    private static byte[] readByteArray(DataInput input) throws IOException {\n        final int len = input.readInt();\n        final byte[] b = new byte[len];\n        input.readBytes(b, 0, len);\n        return b;\n    }\n\n    /** Encrypt the keystore entries and return the encrypted data. */\n    private byte[] encrypt(char[] password, byte[] salt, byte[] iv, int kdfIterationCount) throws GeneralSecurityException, IOException {\n        assert isLoaded();\n\n        ByteArrayOutputStream bytes = new ByteArrayOutputStream();\n        Cipher cipher = createCipher(Cipher.ENCRYPT_MODE, password, salt, iv, kdfIterationCount);\n        try (\n            CipherOutputStream cipherStream = new CipherOutputStream(bytes, cipher);\n            DataOutputStream output = new DataOutputStream(cipherStream)\n        ) {\n            output.writeInt(entries.get().size());\n            for (Map.Entry<String, Entry> mapEntry : entries.get().entrySet()) {\n                output.writeUTF(mapEntry.getKey());\n                byte[] entryBytes = mapEntry.getValue().bytes;\n                output.writeInt(entryBytes.length);\n                output.write(entryBytes);\n            }\n        }\n        return bytes.toByteArray();\n    }\n\n    /** Write the keystore to the given config directory. */",
+        "anchor_confidence": "high",
+        "anchor_reason": "line_and_method_resolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 8,
+        "mainline_method": "hunk_8",
+        "target_file": "server/src/main/java/org/elasticsearch/common/settings/KeyStoreWrapper.java",
+        "target_method": null,
+        "start_line": 459,
+        "end_line": 459,
+        "code_snippet": "\n        Directory directory = new NIOFSDirectory(configDir);\n        // write to tmp file first, then overwrite\n        String tmpFile = KEYSTORE_FILENAME + \".tmp\";\n        Path keystoreTempFile = configDir.resolve(tmpFile);\n        try (IndexOutput output = directory.createOutput(tmpFile, IOContext.DEFAULT)) {\n            CodecUtil.writeHeader(output, KEYSTORE_FILENAME, CURRENT_VERSION);\n            output.writeByte(password.length == 0 ? (byte) 0 : (byte) 1);\n\n            // new cipher params\n            SecureRandom random = Randomness.createSecure();\n            // use 64 bytes salt, which surpasses that recommended by OWASP\n            // see https://www.owasp.org/index.php/Password_Storage_Cheat_Sheet\n            byte[] salt = new byte[64];\n            random.nextBytes(salt);\n            // use 96 bits (12 bytes) for IV as recommended by NIST\n            // see http://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-38d.pdf section 5.2.1.1\n            byte[] iv = new byte[12];\n            random.nextBytes(iv);\n            // encrypted data\n            byte[] encryptedBytes = encrypt(password, salt, iv, getKdfIterationCountForVersion(CURRENT_VERSION));\n\n            // size of data block\n            output.writeInt(4 + salt.length + 4 + iv.length + 4 + encryptedBytes.length);\n\n            output.writeInt(salt.length);\n            output.writeBytes(salt, salt.length);\n            output.writeInt(iv.length);\n            output.writeBytes(iv, iv.length);\n            output.writeInt(encryptedBytes.length);\n            output.writeBytes(encryptedBytes, encryptedBytes.length);\n\n            CodecUtil.writeFooter(output);\n\n        } catch (final AccessDeniedException e) {\n            final String message = String.format(\n                Locale.ROOT,\n                \"unable to create temporary keystore at [%s], write permissions required for [%s] or run [elasticsearch-keystore upgrade]\",\n                keystoreTempFile,\n                configDir\n            );",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      }
+    ]
+  },
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "reason": "llm_usage_not_collected_in_this_node"
+  }
+}

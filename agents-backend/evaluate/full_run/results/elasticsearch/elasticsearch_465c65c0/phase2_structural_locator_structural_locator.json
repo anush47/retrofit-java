@@ -1,0 +1,92 @@
+{
+  "consistency_map": {},
+  "mapped_target_context": {
+    "server/src/main/java/org/elasticsearch/index/codec/vectors/ES814ScalarQuantizedVectorsFormat.java": [
+      {
+        "hunk_index": 1,
+        "mainline_method": "<import>",
+        "target_file": "server/src/main/java/org/elasticsearch/index/codec/vectors/ES814ScalarQuantizedVectorsFormat.java",
+        "target_method": "<import>",
+        "start_line": 41,
+        "end_line": 41,
+        "code_snippet": "import org.apache.lucene.codecs.lucene99.Lucene99ScalarQuantizedVectorsWriter;\nimport org.apache.lucene.index.ByteVectorValues;\nimport org.apache.lucene.index.FieldInfo;\nimport org.apache.lucene.index.FloatVectorValues;\nimport org.apache.lucene.index.MergeState;\nimport org.apache.lucene.index.SegmentReadState;\nimport org.apache.lucene.index.SegmentWriteState;\nimport org.apache.lucene.index.Sorter;\nimport org.apache.lucene.index.VectorSimilarityFunction;\nimport org.apache.lucene.util.hnsw.CloseableRandomVectorScorerSupplier;\nimport org.apache.lucene.util.hnsw.RandomAccessVectorValues;\nimport org.apache.lucene.util.hnsw.RandomVectorScorer;\nimport org.apache.lucene.util.hnsw.RandomVectorScorerSupplier;\nimport org.apache.lucene.util.quantization.QuantizedByteVectorValues;\nimport org.apache.lucene.util.quantization.QuantizedVectorsReader;\nimport org.apache.lucene.util.quantization.RandomAccessQuantizedByteVectorValues;\nimport org.apache.lucene.util.quantization.ScalarQuantizer;\nimport org.elasticsearch.simdvec.VectorScorerFactory;\nimport org.elasticsearch.simdvec.VectorSimilarityType;\n\nimport java.io.IOException;\n\nimport static org.apache.lucene.codecs.lucene99.Lucene99ScalarQuantizedVectorsFormat.DYNAMIC_CONFIDENCE_INTERVAL;\n\npublic class ES814ScalarQuantizedVectorsFormat extends FlatVectorsFormat {\n\n    static final String NAME = \"ES814ScalarQuantizedVectorsFormat\";\n    private static final int ALLOWED_BITS = (1 << 8) | (1 << 7) | (1 << 4);\n\n    private static final FlatVectorsFormat rawVectorFormat = new Lucene99FlatVectorsFormat(DefaultFlatVectorScorer.INSTANCE);\n\n    /** The minimum confidence interval */\n    private static final float MINIMUM_CONFIDENCE_INTERVAL = 0.9f;\n\n    /** The maximum confidence interval */\n    private static final float MAXIMUM_CONFIDENCE_INTERVAL = 1f;\n\n    /**\n     * Controls the confidence interval used to scalar quantize the vectors the default value is\n     * calculated as `1-1/(vector_dimensions + 1)`\n     */",
+        "anchor_confidence": "high",
+        "anchor_reason": "line_and_method_resolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 2,
+        "mainline_method": "getMaxDimensions",
+        "target_file": "server/src/main/java/org/elasticsearch/index/codec/vectors/ES814ScalarQuantizedVectorsFormat.java",
+        "target_method": "getMaxDimensions",
+        "start_line": 274,
+        "end_line": 274,
+        "code_snippet": "                    var scorer = factory.getInt7SQVectorScorerSupplier(\n                        VectorSimilarityType.of(sim),\n                        values.getSlice(),\n                        qValues,\n                        qValues.getScalarQuantizer().getConstantMultiplier()\n                    );\n                    if (scorer.isPresent()) {\n                        return scorer.get();\n                    }\n                }\n            }\n            return delegate.getRandomVectorScorerSupplier(sim, values);\n        }\n\n        @Override\n        public RandomVectorScorer getRandomVectorScorer(VectorSimilarityFunction sim, RandomAccessVectorValues values, float[] query)\n            throws IOException {\n            if (values instanceof RandomAccessQuantizedByteVectorValues qValues && values.getSlice() != null) {\n                // TODO: optimize int4 quantization\n                if (qValues.getScalarQuantizer().getBits() != 7) {\n                    return delegate.getRandomVectorScorer(sim, values, query);\n                }\n                if (factory != null) {\n                    var scorer = factory.getInt7SQVectorScorer(sim, qValues, query);\n                    if (scorer.isPresent()) {\n                        return scorer.get();\n                    }\n                }\n            }\n            return delegate.getRandomVectorScorer(sim, values, query);\n        }\n\n        @Override\n        public RandomVectorScorer getRandomVectorScorer(VectorSimilarityFunction sim, RandomAccessVectorValues values, byte[] query)\n            throws IOException {\n            return delegate.getRandomVectorScorer(sim, values, query);\n        }\n    }\n}",
+        "anchor_confidence": "high",
+        "anchor_reason": "line_and_method_resolved",
+        "anchor_strategy": "deterministic_realign"
+      }
+    ],
+    "server/src/main/java/org/elasticsearch/index/codec/vectors/ES815BitFlatVectorsFormat.java": [
+      {
+        "hunk_index": 1,
+        "mainline_method": "<import>",
+        "target_file": "server/src/main/java/org/elasticsearch/index/codec/vectors/ES815BitFlatVectorsFormat.java",
+        "target_method": "<import>",
+        "start_line": 26,
+        "end_line": 26,
+        "code_snippet": " * your election, the \"Elastic License 2.0\", the \"GNU Affero General Public\n * License v3.0 only\", or the \"Server Side Public License, v 1\".\n */\n\npackage org.elasticsearch.index.codec.vectors;\n\nimport org.apache.lucene.codecs.hnsw.FlatVectorsFormat;\nimport org.apache.lucene.codecs.hnsw.FlatVectorsReader;\nimport org.apache.lucene.codecs.hnsw.FlatVectorsScorer;\nimport org.apache.lucene.codecs.hnsw.FlatVectorsWriter;\nimport org.apache.lucene.codecs.lucene99.Lucene99FlatVectorsFormat;\nimport org.apache.lucene.index.SegmentReadState;\nimport org.apache.lucene.index.SegmentWriteState;\nimport org.apache.lucene.index.VectorSimilarityFunction;\nimport org.apache.lucene.util.hnsw.RandomAccessVectorValues;\nimport org.apache.lucene.util.hnsw.RandomVectorScorer;\nimport org.apache.lucene.util.hnsw.RandomVectorScorerSupplier;\nimport org.apache.lucene.util.quantization.RandomAccessQuantizedByteVectorValues;\nimport org.elasticsearch.script.field.vectors.ESVectorUtil;\n\nimport java.io.IOException;\n\nclass ES815BitFlatVectorsFormat extends FlatVectorsFormat {\n\n    private final FlatVectorsFormat delegate = new Lucene99FlatVectorsFormat(FlatBitVectorScorer.INSTANCE);\n\n    protected ES815BitFlatVectorsFormat() {\n        super(\"ES815BitFlatVectorsFormat\");\n    }\n\n    @Override\n    public FlatVectorsWriter fieldsWriter(SegmentWriteState segmentWriteState) throws IOException {\n        return delegate.fieldsWriter(segmentWriteState);\n    }\n\n    @Override\n    public FlatVectorsReader fieldsReader(SegmentReadState segmentReadState) throws IOException {\n        return delegate.fieldsReader(segmentReadState);\n    }\n\n    static class FlatBitVectorScorer implements FlatVectorsScorer {",
+        "anchor_confidence": "high",
+        "anchor_reason": "line_and_method_resolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 2,
+        "mainline_method": "getMaxDimensions",
+        "target_file": "server/src/main/java/org/elasticsearch/index/codec/vectors/ES815BitFlatVectorsFormat.java",
+        "target_method": "getMaxDimensions",
+        "start_line": 43,
+        "end_line": 43,
+        "code_snippet": "import org.apache.lucene.util.quantization.RandomAccessQuantizedByteVectorValues;\nimport org.elasticsearch.script.field.vectors.ESVectorUtil;\n\nimport java.io.IOException;\n\nclass ES815BitFlatVectorsFormat extends FlatVectorsFormat {\n\n    private final FlatVectorsFormat delegate = new Lucene99FlatVectorsFormat(FlatBitVectorScorer.INSTANCE);\n\n    protected ES815BitFlatVectorsFormat() {\n        super(\"ES815BitFlatVectorsFormat\");\n    }\n\n    @Override\n    public FlatVectorsWriter fieldsWriter(SegmentWriteState segmentWriteState) throws IOException {\n        return delegate.fieldsWriter(segmentWriteState);\n    }\n\n    @Override\n    public FlatVectorsReader fieldsReader(SegmentReadState segmentReadState) throws IOException {\n        return delegate.fieldsReader(segmentReadState);\n    }\n\n    static class FlatBitVectorScorer implements FlatVectorsScorer {\n\n        static final FlatBitVectorScorer INSTANCE = new FlatBitVectorScorer();\n\n        static void checkDimensions(int queryLen, int fieldLen) {\n            if (queryLen != fieldLen) {\n                throw new IllegalArgumentException(\"vector query dimension: \" + queryLen + \" differs from field dimension: \" + fieldLen);\n            }\n        }\n\n        @Override\n        public String toString() {\n            return super.toString();\n        }\n\n        @Override\n        public RandomVectorScorerSupplier getRandomVectorScorerSupplier(\n            VectorSimilarityFunction vectorSimilarityFunction,",
+        "anchor_confidence": "high",
+        "anchor_reason": "line_and_method_resolved",
+        "anchor_strategy": "deterministic_realign"
+      }
+    ],
+    "server/src/main/java/org/elasticsearch/index/mapper/vectors/DenseVectorFieldMapper.java": [
+      {
+        "hunk_index": 1,
+        "mainline_method": "hunk_1",
+        "target_file": "server/src/main/java/org/elasticsearch/index/mapper/vectors/DenseVectorFieldMapper.java",
+        "target_method": null,
+        "start_line": 2033,
+        "end_line": 2033,
+        "code_snippet": "                indexOptions,\n                indexCreatedVersion\n            );\n            context.addDynamicMapper(update);\n            return;\n        }\n        if (fieldType().indexed) {\n            parseKnnVectorAndIndex(context);\n        } else {\n            parseBinaryDocValuesVectorAndIndex(context);\n        }\n    }\n\n    private void parseKnnVectorAndIndex(DocumentParserContext context) throws IOException {\n        fieldType().elementType.parseKnnVectorAndIndex(context, this);\n    }\n\n    private void parseBinaryDocValuesVectorAndIndex(DocumentParserContext context) throws IOException {\n        // encode array of floats as array of integers and store into buf\n        // this code is here and not in the VectorEncoderDecoder so not to create extra arrays\n        int dims = fieldType().dims;\n        ElementType elementType = fieldType().elementType;\n        int numBytes = indexCreatedVersion.onOrAfter(MAGNITUDE_STORED_INDEX_VERSION)\n            ? elementType.getNumBytes(dims) + MAGNITUDE_BYTES\n            : elementType.getNumBytes(dims);\n\n        ByteBuffer byteBuffer = elementType.createByteBuffer(indexCreatedVersion, numBytes);\n        VectorData vectorData = elementType.parseKnnVector(context, this);\n        vectorData.addToBuffer(byteBuffer);\n        if (indexCreatedVersion.onOrAfter(MAGNITUDE_STORED_INDEX_VERSION)) {\n            // encode vector magnitude at the end\n            double dotProduct = elementType.computeSquaredMagnitude(vectorData);\n            float vectorMagnitude = (float) Math.sqrt(dotProduct);\n            byteBuffer.putFloat(vectorMagnitude);\n        }\n        Field field = new BinaryDocValuesField(fieldType().name(), new BytesRef(byteBuffer.array()));\n        context.doc().addWithKey(fieldType().name(), field);\n    }\n\n    private void checkDimensionExceeded(int index, DocumentParserContext context) {\n        if (index >= fieldType().dims) {",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      }
+    ],
+    "server/src/main/java/org/elasticsearch/rest/action/search/SearchCapabilities.java": [
+      {
+        "hunk_index": 1,
+        "mainline_method": "<class_declaration>",
+        "target_file": "server/src/main/java/org/elasticsearch/rest/action/search/SearchCapabilities.java",
+        "target_method": "<class_declaration>",
+        "start_line": 24,
+        "end_line": 24,
+        "code_snippet": " * 2.0\", the \"GNU Affero General Public License v3.0 only\", and the \"Server Side\n * Public License v 1\"; you may not use this file except in compliance with, at\n * your election, the \"Elastic License 2.0\", the \"GNU Affero General Public\n * License v3.0 only\", or the \"Server Side Public License, v 1\".\n */\n\npackage org.elasticsearch.rest.action.search;\n\nimport java.util.Set;\n\n/**\n * A {@link Set} of \"capabilities\" supported by the {@link RestSearchAction}.\n */\npublic final class SearchCapabilities {\n\n    private SearchCapabilities() {}\n\n    /** Support regex and range match rules in interval queries. */\n    private static final String RANGE_REGEX_INTERVAL_QUERY_CAPABILITY = \"range_regexp_interval_queries\";\n\n    public static final Set<String> CAPABILITIES = Set.of(RANGE_REGEX_INTERVAL_QUERY_CAPABILITY);\n}",
+        "anchor_confidence": "high",
+        "anchor_reason": "line_and_method_resolved",
+        "anchor_strategy": "deterministic_realign"
+      }
+    ]
+  },
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "reason": "llm_usage_not_collected_in_this_node"
+  }
+}

@@ -1,0 +1,27 @@
+patch_id=elasticsearch_33ea3116
+project=elasticsearch
+mainline_commit=33ea3116c9295012ceddbdddb5310918973a4753
+backport_commit=59ed4058ecb837e9ae2baf144ab8e2313127360b
+mode=full
+started_at=2026-04-06T13:29:59.122930
+----------------------------------------
+Running full workflow graph
+Completed node=phase_0_optimistic
+Workflow completed successfully
+
+[elasticsearch/elasticsearch_33ea3116] Setting up repositories for mode=full...
+[elasticsearch/elasticsearch_33ea3116] Running full workflow graph...
+Router: Running Phase 0.
+Phase 0 (Optimistic): Checking direct patch applicability...
+Phase 0: Experiment mode — checking out parent of 59ed4058ecb837e9ae2baf144ab8e2313127360b...
+Phase 0: Building baseline by applying developer backport test hunks only...
+  Validation: modules/ingest-geoip/src/test/java/org/elasticsearch/ingest/geoip/GeoIpDownloaderTests.java - applying 3 hunk(s) one by one in bottom-to-top order: [580, 24, 9]
+    Agent 4: Executing elasticsearch helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/elasticsearch/run_tests.sh
+Phase 0: git apply --check SUCCEEDED. Attempting actual patch application and test run.
+    Agent 4: Executing elasticsearch helper build script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/elasticsearch/run_build.sh
+    Agent 4: Executing elasticsearch helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/elasticsearch/run_tests.sh
+Phase 0: Transition summary -> reason=Valid: Observed fail-to-pass and/or newly passing relevant tests with no regressions.; fail->pass(2): ['org.elasticsearch.ingest.geoip.GeoIpDownloaderTests#testUpdateDatabasesIndexNotReady', 'org.elasticsearch.ingest.geoip.GeoIpDownloaderTests#testUpdateDatabasesWriteBlock']; newly_passing(0): []; pass->fail(0): []
+Phase 0: Transition-based test validation passed. Fast-path success.
+Router: Phase 0 succeeded - taking fast-path exit.
+  Completed: phase_0_optimistic
+[elasticsearch/elasticsearch_33ea3116] Full workflow completed!

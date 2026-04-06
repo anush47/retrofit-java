@@ -1,0 +1,851 @@
+# Post-Pipeline Developer Patch Comparison
+
+**Exact Developer Patch (code-only)**: False
+
+**Comparison Method**: file_state
+
+## Commit Pair Consistency
+- Pair mismatch: False
+- Reason: scope_overlap_ok
+- Mainline Java files: ['server/src/main/java/org/elasticsearch/common/settings/KeyStoreWrapper.java']
+- Developer Java files: ['server/src/main/java/org/elasticsearch/common/settings/KeyStoreWrapper.java']
+- Overlap Java files: ['server/src/main/java/org/elasticsearch/common/settings/KeyStoreWrapper.java']
+- Overlap ratio (mainline): 1.0
+- Compare files scope used: ['server/src/main/java/org/elasticsearch/common/settings/KeyStoreWrapper.java']
+
+## File State Comparison
+- Compared files: ['server/src/main/java/org/elasticsearch/common/settings/KeyStoreWrapper.java']
+- Mismatched files: ['server/src/main/java/org/elasticsearch/common/settings/KeyStoreWrapper.java']
+- Error: None
+
+## Comparison Scope
+- Agent-only patch: code hunks produced by Agent 3
+- Final effective patch: agent code hunks + developer auxiliary hunks (still code-only for this report)
+
+## Agent-Only Hunk Comparison (code files)
+
+### server/src/main/java/org/elasticsearch/common/settings/KeyStoreWrapper.java
+
+- Developer hunks: 8
+- Generated hunks: 8
+
+#### Hunk 1
+
+Developer
+```diff
+@@ -120,7 +120,8 @@
+     /** The version where lucene directory API changed from BE to LE. */
+     public static final int LE_VERSION = 5;
+     public static final int HIGHER_KDF_ITERATION_COUNT_VERSION = 6;
+-    public static final int CURRENT_VERSION = HIGHER_KDF_ITERATION_COUNT_VERSION;
++    public static final int CIPHER_KEY_BITS_256_VERSION = 7;
++    public static final int CURRENT_VERSION = CIPHER_KEY_BITS_256_VERSION;
+ 
+     /** The algorithm used to derive the cipher key from a password. */
+     private static final String KDF_ALGO = "PBKDF2WithHmacSHA512";
+
+```
+
+Generated
+```diff
+@@ -120,7 +120,8 @@
+     /** The version where lucene directory API changed from BE to LE. */
+     public static final int LE_VERSION = 5;
+     public static final int HIGHER_KDF_ITERATION_COUNT_VERSION = 6;
+-    public static final int CURRENT_VERSION = HIGHER_KDF_ITERATION_COUNT_VERSION;
++    public static final int CIPHER_KEY_BITS_256_VERSION = 7;
++    public static final int CURRENT_VERSION = CIPHER_KEY_BITS_256_VERSION;
+ 
+     /** The algorithm used to derive the cipher key from a password. */
+     private static final String KDF_ALGO = "PBKDF2WithHmacSHA512";
+
+```
+
+Developer -> Generated (Unified Diff)
+```diff
+(No textual difference)
+
+```
+
+#### Hunk 2
+
+Developer
+```diff
+@@ -128,14 +129,8 @@
+     /** The number of iterations to derive the cipher key. */
+     private static final int KDF_ITERS = 210000;
+ 
+-    /**
+-     * The number of bits for the cipher key.
+-     *
+-     * Note: The Oracle JDK 8 ships with a limited JCE policy that restricts key length for AES to 128 bits.
+-     * This can be increased to 256 bits once minimum java 9 is the minimum java version.
+-     * See http://www.oracle.com/technetwork/java/javase/terms/readme/jdk9-readme-3852447.html#jce
+-     * */
+-    private static final int CIPHER_KEY_BITS = 128;
++    /** The number of bits for the cipher key (256 bits are supported as of Java 9).*/
++    private static final int CIPHER_KEY_BITS = 256;
+ 
+     /** The number of bits for the GCM tag. */
+     private static final int GCM_TAG_BITS = 128;
+
+```
+
+Generated
+```diff
+@@ -128,14 +129,8 @@
+     /** The number of iterations to derive the cipher key. */
+     private static final int KDF_ITERS = 210000;
+ 
+-    /**
+-     * The number of bits for the cipher key.
+-     *
+-     * Note: The Oracle JDK 8 ships with a limited JCE policy that restricts key length for AES to 128 bits.
+-     * This can be increased to 256 bits once minimum java 9 is the minimum java version.
+-     * See http://www.oracle.com/technetwork/java/javase/terms/readme/jdk9-readme-3852447.html#jce
+-     * */
+-    private static final int CIPHER_KEY_BITS = 128;
++    /** The number of bits for the cipher key (256 bits are supported as of Java 9).*/
++    private static final int CIPHER_KEY_BITS = 256;
+ 
+     /** The number of bits for the GCM tag. */
+     private static final int GCM_TAG_BITS = 128;
+
+```
+
+Developer -> Generated (Unified Diff)
+```diff
+(No textual difference)
+
+```
+
+#### Hunk 3
+
+Developer
+```diff
+@@ -156,6 +151,7 @@
+     // 4: remove distinction between string/files, ES 6.8/7.1
+     // 5: Lucene directory API changed to LE, ES 8.0
+     // 6: increase KDF iteration count, ES 8.14
++    // 7: increase cipher key length to 256 bits, ES 9.0
+ 
+     /** The metadata format version used to read the current keystore wrapper. */
+     private final int formatVersion;
+
+```
+
+Generated
+```diff
+@@ -157,6 +152,7 @@
+     // 5: Lucene directory API changed to LE, ES 8.0
+     // 6: increase KDF iteration count, ES 8.14
+ 
++    // 7: increase cipher key length to 256 bits, ES 9.0
+     /** The metadata format version used to read the current keystore wrapper. */
+     private final int formatVersion;
+ 
+
+```
+
+Developer -> Generated (Unified Diff)
+```diff
+--- developer+++ generated@@ -1,8 +1,8 @@-@@ -156,6 +151,7 @@
+-     // 4: remove distinction between string/files, ES 6.8/7.1
++@@ -157,6 +152,7 @@
+      // 5: Lucene directory API changed to LE, ES 8.0
+      // 6: increase KDF iteration count, ES 8.14
++ 
+ +    // 7: increase cipher key length to 256 bits, ES 9.0
+- 
+      /** The metadata format version used to read the current keystore wrapper. */
+      private final int formatVersion;
++ 
+
+```
+
+#### Hunk 4
+
+Developer
+```diff
+@@ -318,8 +314,9 @@
+         return hasPassword;
+     }
+ 
+-    private static Cipher createCipher(int opmode, char[] password, byte[] salt, byte[] iv, int kdfIters) throws GeneralSecurityException {
+-        PBEKeySpec keySpec = new PBEKeySpec(password, salt, kdfIters, CIPHER_KEY_BITS);
++    private static Cipher createCipher(int opmode, char[] password, byte[] salt, byte[] iv, int kdfIters, int cipherKeyBits)
++        throws GeneralSecurityException {
++        PBEKeySpec keySpec = new PBEKeySpec(password, salt, kdfIters, cipherKeyBits);
+         SecretKeyFactory keyFactory = SecretKeyFactory.getInstance(KDF_ALGO);
+         SecretKey secretKey;
+         try {
+
+```
+
+Generated
+```diff
+@@ -318,8 +314,9 @@
+         return hasPassword;
+     }
+ 
+-    private static Cipher createCipher(int opmode, char[] password, byte[] salt, byte[] iv, int kdfIters) throws GeneralSecurityException {
+-        PBEKeySpec keySpec = new PBEKeySpec(password, salt, kdfIters, CIPHER_KEY_BITS);
++    private static Cipher createCipher(int opmode, char[] password, byte[] salt, byte[] iv, int kdfIters, int cipherKeyBits)
++        throws GeneralSecurityException {
++        PBEKeySpec keySpec = new PBEKeySpec(password, salt, kdfIters, cipherKeyBits);
+         SecretKeyFactory keyFactory = SecretKeyFactory.getInstance(KDF_ALGO);
+         SecretKey secretKey;
+         try {
+
+```
+
+Developer -> Generated (Unified Diff)
+```diff
+(No textual difference)
+
+```
+
+#### Hunk 5
+
+Developer
+```diff
+@@ -343,6 +340,11 @@
+         return formatVersion < HIGHER_KDF_ITERATION_COUNT_VERSION ? 10000 : KDF_ITERS;
+     }
+ 
++    private static int getCipherKeyBitsForVersion(int formatVersion) {
++        // cipher key length was increased in version 7; it was 128 bits in previous versions
++        return formatVersion < CIPHER_KEY_BITS_256_VERSION ? 128 : CIPHER_KEY_BITS;
++    }
++
+     /**
+      * Decrypts the underlying keystore data.
+      *
+
+```
+
+Generated
+```diff
+@@ -344,6 +341,11 @@
+     }
+ 
+     /**
++    private static int getCipherKeyBitsForVersion(int formatVersion) {
++        // cipher key length was increased in version 7; it was 128 bits in previous versions
++        return formatVersion < CIPHER_KEY_BITS_256_VERSION ? 128 : CIPHER_KEY_BITS;
++    }
++
+      * Decrypts the underlying keystore data.
+      *
+      * This may only be called once.
+
+```
+
+Developer -> Generated (Unified Diff)
+```diff
+--- developer+++ generated@@ -1,12 +1,12 @@-@@ -343,6 +340,11 @@
+-         return formatVersion < HIGHER_KDF_ITERATION_COUNT_VERSION ? 10000 : KDF_ITERS;
++@@ -344,6 +341,11 @@
+      }
+  
++     /**
+ +    private static int getCipherKeyBitsForVersion(int formatVersion) {
+ +        // cipher key length was increased in version 7; it was 128 bits in previous versions
+ +        return formatVersion < CIPHER_KEY_BITS_256_VERSION ? 128 : CIPHER_KEY_BITS;
+ +    }
+ +
+-     /**
+       * Decrypts the underlying keystore data.
+       *
++      * This may only be called once.
+
+```
+
+#### Hunk 6
+
+Developer
+```diff
+@@ -371,7 +373,14 @@
+             throw new SecurityException("Keystore has been corrupted or tampered with", e);
+         }
+ 
+-        Cipher cipher = createCipher(Cipher.DECRYPT_MODE, password, salt, iv, getKdfIterationCountForVersion(formatVersion));
++        Cipher cipher = createCipher(
++            Cipher.DECRYPT_MODE,
++            password,
++            salt,
++            iv,
++            getKdfIterationCountForVersion(formatVersion),
++            getCipherKeyBitsForVersion(formatVersion)
++        );
+         try (
+             ByteArrayInputStream bytesStream = new ByteArrayInputStream(encryptedBytes);
+             CipherInputStream cipherStream = new CipherInputStream(bytesStream, cipher);
+
+```
+
+Generated
+```diff
+@@ -371,7 +373,14 @@
+             throw new SecurityException("Keystore has been corrupted or tampered with", e);
+         }
+ 
+-        Cipher cipher = createCipher(Cipher.DECRYPT_MODE, password, salt, iv, getKdfIterationCountForVersion(formatVersion));
++        Cipher cipher = createCipher(
++            Cipher.DECRYPT_MODE,
++            password,
++            salt,
++            iv,
++            getKdfIterationCountForVersion(formatVersion),
++            getCipherKeyBitsForVersion(formatVersion)
++        );
+         try (
+             ByteArrayInputStream bytesStream = new ByteArrayInputStream(encryptedBytes);
+             CipherInputStream cipherStream = new CipherInputStream(bytesStream, cipher);
+
+```
+
+Developer -> Generated (Unified Diff)
+```diff
+(No textual difference)
+
+```
+
+#### Hunk 7
+
+Developer
+```diff
+@@ -409,11 +418,12 @@
+     }
+ 
+     /** Encrypt the keystore entries and return the encrypted data. */
+-    private byte[] encrypt(char[] password, byte[] salt, byte[] iv, int kdfIterationCount) throws GeneralSecurityException, IOException {
++    private byte[] encrypt(char[] password, byte[] salt, byte[] iv, int kdfIterationCount, int cipherKeyBits)
++        throws GeneralSecurityException, IOException {
+         assert isLoaded();
+ 
+         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+-        Cipher cipher = createCipher(Cipher.ENCRYPT_MODE, password, salt, iv, kdfIterationCount);
++        Cipher cipher = createCipher(Cipher.ENCRYPT_MODE, password, salt, iv, kdfIterationCount, cipherKeyBits);
+         try (
+             CipherOutputStream cipherStream = new CipherOutputStream(bytes, cipher);
+             DataOutputStream output = new DataOutputStream(cipherStream)
+
+```
+
+Generated
+```diff
+@@ -409,11 +418,12 @@
+     }
+ 
+     /** Encrypt the keystore entries and return the encrypted data. */
+-    private byte[] encrypt(char[] password, byte[] salt, byte[] iv, int kdfIterationCount) throws GeneralSecurityException, IOException {
++    private byte[] encrypt(char[] password, byte[] salt, byte[] iv, int kdfIterationCount, int cipherKeyBits)
++        throws GeneralSecurityException, IOException {
+         assert isLoaded();
+ 
+         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+-        Cipher cipher = createCipher(Cipher.ENCRYPT_MODE, password, salt, iv, kdfIterationCount);
++        Cipher cipher = createCipher(Cipher.ENCRYPT_MODE, password, salt, iv, kdfIterationCount, cipherKeyBits);
+         try (
+             CipherOutputStream cipherStream = new CipherOutputStream(bytes, cipher);
+             DataOutputStream output = new DataOutputStream(cipherStream)
+
+```
+
+Developer -> Generated (Unified Diff)
+```diff
+(No textual difference)
+
+```
+
+#### Hunk 8
+
+Developer
+```diff
+@@ -456,7 +466,13 @@
+             byte[] iv = new byte[12];
+             random.nextBytes(iv);
+             // encrypted data
+-            byte[] encryptedBytes = encrypt(password, salt, iv, getKdfIterationCountForVersion(CURRENT_VERSION));
++            byte[] encryptedBytes = encrypt(
++                password,
++                salt,
++                iv,
++                getKdfIterationCountForVersion(CURRENT_VERSION),
++                getCipherKeyBitsForVersion(CURRENT_VERSION)
++            );
+ 
+             // size of data block
+             output.writeInt(4 + salt.length + 4 + iv.length + 4 + encryptedBytes.length);
+
+```
+
+Generated
+```diff
+@@ -456,7 +466,13 @@
+             byte[] iv = new byte[12];
+             random.nextBytes(iv);
+             // encrypted data
+-            byte[] encryptedBytes = encrypt(password, salt, iv, getKdfIterationCountForVersion(CURRENT_VERSION));
++            byte[] encryptedBytes = encrypt(
++                password,
++                salt,
++                iv,
++                getKdfIterationCountForVersion(CURRENT_VERSION),
++                getCipherKeyBitsForVersion(CURRENT_VERSION)
++            );
+ 
+             // size of data block
+             output.writeInt(4 + salt.length + 4 + iv.length + 4 + encryptedBytes.length);
+
+```
+
+Developer -> Generated (Unified Diff)
+```diff
+(No textual difference)
+
+```
+
+
+
+## Full Generated Patch (Agent-Only, code-only)
+```diff
+diff --git a/server/src/main/java/org/elasticsearch/common/settings/KeyStoreWrapper.java b/server/src/main/java/org/elasticsearch/common/settings/KeyStoreWrapper.java
+index 232ce34b153..002019bf404 100644
+--- a/server/src/main/java/org/elasticsearch/common/settings/KeyStoreWrapper.java
++++ b/server/src/main/java/org/elasticsearch/common/settings/KeyStoreWrapper.java
+@@ -120,7 +120,8 @@ public class KeyStoreWrapper implements SecureSettings {
+     /** The version where lucene directory API changed from BE to LE. */
+     public static final int LE_VERSION = 5;
+     public static final int HIGHER_KDF_ITERATION_COUNT_VERSION = 6;
+-    public static final int CURRENT_VERSION = HIGHER_KDF_ITERATION_COUNT_VERSION;
++    public static final int CIPHER_KEY_BITS_256_VERSION = 7;
++    public static final int CURRENT_VERSION = CIPHER_KEY_BITS_256_VERSION;
+ 
+     /** The algorithm used to derive the cipher key from a password. */
+     private static final String KDF_ALGO = "PBKDF2WithHmacSHA512";
+@@ -128,14 +129,8 @@ public class KeyStoreWrapper implements SecureSettings {
+     /** The number of iterations to derive the cipher key. */
+     private static final int KDF_ITERS = 210000;
+ 
+-    /**
+-     * The number of bits for the cipher key.
+-     *
+-     * Note: The Oracle JDK 8 ships with a limited JCE policy that restricts key length for AES to 128 bits.
+-     * This can be increased to 256 bits once minimum java 9 is the minimum java version.
+-     * See http://www.oracle.com/technetwork/java/javase/terms/readme/jdk9-readme-3852447.html#jce
+-     * */
+-    private static final int CIPHER_KEY_BITS = 128;
++    /** The number of bits for the cipher key (256 bits are supported as of Java 9).*/
++    private static final int CIPHER_KEY_BITS = 256;
+ 
+     /** The number of bits for the GCM tag. */
+     private static final int GCM_TAG_BITS = 128;
+@@ -157,6 +152,7 @@ public class KeyStoreWrapper implements SecureSettings {
+     // 5: Lucene directory API changed to LE, ES 8.0
+     // 6: increase KDF iteration count, ES 8.14
+ 
++    // 7: increase cipher key length to 256 bits, ES 9.0
+     /** The metadata format version used to read the current keystore wrapper. */
+     private final int formatVersion;
+ 
+@@ -318,8 +314,9 @@ public class KeyStoreWrapper implements SecureSettings {
+         return hasPassword;
+     }
+ 
+-    private static Cipher createCipher(int opmode, char[] password, byte[] salt, byte[] iv, int kdfIters) throws GeneralSecurityException {
+-        PBEKeySpec keySpec = new PBEKeySpec(password, salt, kdfIters, CIPHER_KEY_BITS);
++    private static Cipher createCipher(int opmode, char[] password, byte[] salt, byte[] iv, int kdfIters, int cipherKeyBits)
++        throws GeneralSecurityException {
++        PBEKeySpec keySpec = new PBEKeySpec(password, salt, kdfIters, cipherKeyBits);
+         SecretKeyFactory keyFactory = SecretKeyFactory.getInstance(KDF_ALGO);
+         SecretKey secretKey;
+         try {
+@@ -344,6 +341,11 @@ public class KeyStoreWrapper implements SecureSettings {
+     }
+ 
+     /**
++    private static int getCipherKeyBitsForVersion(int formatVersion) {
++        // cipher key length was increased in version 7; it was 128 bits in previous versions
++        return formatVersion < CIPHER_KEY_BITS_256_VERSION ? 128 : CIPHER_KEY_BITS;
++    }
++
+      * Decrypts the underlying keystore data.
+      *
+      * This may only be called once.
+@@ -371,7 +373,14 @@ public class KeyStoreWrapper implements SecureSettings {
+             throw new SecurityException("Keystore has been corrupted or tampered with", e);
+         }
+ 
+-        Cipher cipher = createCipher(Cipher.DECRYPT_MODE, password, salt, iv, getKdfIterationCountForVersion(formatVersion));
++        Cipher cipher = createCipher(
++            Cipher.DECRYPT_MODE,
++            password,
++            salt,
++            iv,
++            getKdfIterationCountForVersion(formatVersion),
++            getCipherKeyBitsForVersion(formatVersion)
++        );
+         try (
+             ByteArrayInputStream bytesStream = new ByteArrayInputStream(encryptedBytes);
+             CipherInputStream cipherStream = new CipherInputStream(bytesStream, cipher);
+@@ -409,11 +418,12 @@ public class KeyStoreWrapper implements SecureSettings {
+     }
+ 
+     /** Encrypt the keystore entries and return the encrypted data. */
+-    private byte[] encrypt(char[] password, byte[] salt, byte[] iv, int kdfIterationCount) throws GeneralSecurityException, IOException {
++    private byte[] encrypt(char[] password, byte[] salt, byte[] iv, int kdfIterationCount, int cipherKeyBits)
++        throws GeneralSecurityException, IOException {
+         assert isLoaded();
+ 
+         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+-        Cipher cipher = createCipher(Cipher.ENCRYPT_MODE, password, salt, iv, kdfIterationCount);
++        Cipher cipher = createCipher(Cipher.ENCRYPT_MODE, password, salt, iv, kdfIterationCount, cipherKeyBits);
+         try (
+             CipherOutputStream cipherStream = new CipherOutputStream(bytes, cipher);
+             DataOutputStream output = new DataOutputStream(cipherStream)
+@@ -456,7 +466,13 @@ public class KeyStoreWrapper implements SecureSettings {
+             byte[] iv = new byte[12];
+             random.nextBytes(iv);
+             // encrypted data
+-            byte[] encryptedBytes = encrypt(password, salt, iv, getKdfIterationCountForVersion(CURRENT_VERSION));
++            byte[] encryptedBytes = encrypt(
++                password,
++                salt,
++                iv,
++                getKdfIterationCountForVersion(CURRENT_VERSION),
++                getCipherKeyBitsForVersion(CURRENT_VERSION)
++            );
+ 
+             // size of data block
+             output.writeInt(4 + salt.length + 4 + iv.length + 4 + encryptedBytes.length);
+
+```
+
+## Full Generated Patch (Final Effective, code-only)
+```diff
+diff --git a/server/src/main/java/org/elasticsearch/common/settings/KeyStoreWrapper.java b/server/src/main/java/org/elasticsearch/common/settings/KeyStoreWrapper.java
+index 232ce34b153..002019bf404 100644
+--- a/server/src/main/java/org/elasticsearch/common/settings/KeyStoreWrapper.java
++++ b/server/src/main/java/org/elasticsearch/common/settings/KeyStoreWrapper.java
+@@ -120,7 +120,8 @@ public class KeyStoreWrapper implements SecureSettings {
+     /** The version where lucene directory API changed from BE to LE. */
+     public static final int LE_VERSION = 5;
+     public static final int HIGHER_KDF_ITERATION_COUNT_VERSION = 6;
+-    public static final int CURRENT_VERSION = HIGHER_KDF_ITERATION_COUNT_VERSION;
++    public static final int CIPHER_KEY_BITS_256_VERSION = 7;
++    public static final int CURRENT_VERSION = CIPHER_KEY_BITS_256_VERSION;
+ 
+     /** The algorithm used to derive the cipher key from a password. */
+     private static final String KDF_ALGO = "PBKDF2WithHmacSHA512";
+@@ -128,14 +129,8 @@ public class KeyStoreWrapper implements SecureSettings {
+     /** The number of iterations to derive the cipher key. */
+     private static final int KDF_ITERS = 210000;
+ 
+-    /**
+-     * The number of bits for the cipher key.
+-     *
+-     * Note: The Oracle JDK 8 ships with a limited JCE policy that restricts key length for AES to 128 bits.
+-     * This can be increased to 256 bits once minimum java 9 is the minimum java version.
+-     * See http://www.oracle.com/technetwork/java/javase/terms/readme/jdk9-readme-3852447.html#jce
+-     * */
+-    private static final int CIPHER_KEY_BITS = 128;
++    /** The number of bits for the cipher key (256 bits are supported as of Java 9).*/
++    private static final int CIPHER_KEY_BITS = 256;
+ 
+     /** The number of bits for the GCM tag. */
+     private static final int GCM_TAG_BITS = 128;
+@@ -157,6 +152,7 @@ public class KeyStoreWrapper implements SecureSettings {
+     // 5: Lucene directory API changed to LE, ES 8.0
+     // 6: increase KDF iteration count, ES 8.14
+ 
++    // 7: increase cipher key length to 256 bits, ES 9.0
+     /** The metadata format version used to read the current keystore wrapper. */
+     private final int formatVersion;
+ 
+@@ -318,8 +314,9 @@ public class KeyStoreWrapper implements SecureSettings {
+         return hasPassword;
+     }
+ 
+-    private static Cipher createCipher(int opmode, char[] password, byte[] salt, byte[] iv, int kdfIters) throws GeneralSecurityException {
+-        PBEKeySpec keySpec = new PBEKeySpec(password, salt, kdfIters, CIPHER_KEY_BITS);
++    private static Cipher createCipher(int opmode, char[] password, byte[] salt, byte[] iv, int kdfIters, int cipherKeyBits)
++        throws GeneralSecurityException {
++        PBEKeySpec keySpec = new PBEKeySpec(password, salt, kdfIters, cipherKeyBits);
+         SecretKeyFactory keyFactory = SecretKeyFactory.getInstance(KDF_ALGO);
+         SecretKey secretKey;
+         try {
+@@ -344,6 +341,11 @@ public class KeyStoreWrapper implements SecureSettings {
+     }
+ 
+     /**
++    private static int getCipherKeyBitsForVersion(int formatVersion) {
++        // cipher key length was increased in version 7; it was 128 bits in previous versions
++        return formatVersion < CIPHER_KEY_BITS_256_VERSION ? 128 : CIPHER_KEY_BITS;
++    }
++
+      * Decrypts the underlying keystore data.
+      *
+      * This may only be called once.
+@@ -371,7 +373,14 @@ public class KeyStoreWrapper implements SecureSettings {
+             throw new SecurityException("Keystore has been corrupted or tampered with", e);
+         }
+ 
+-        Cipher cipher = createCipher(Cipher.DECRYPT_MODE, password, salt, iv, getKdfIterationCountForVersion(formatVersion));
++        Cipher cipher = createCipher(
++            Cipher.DECRYPT_MODE,
++            password,
++            salt,
++            iv,
++            getKdfIterationCountForVersion(formatVersion),
++            getCipherKeyBitsForVersion(formatVersion)
++        );
+         try (
+             ByteArrayInputStream bytesStream = new ByteArrayInputStream(encryptedBytes);
+             CipherInputStream cipherStream = new CipherInputStream(bytesStream, cipher);
+@@ -409,11 +418,12 @@ public class KeyStoreWrapper implements SecureSettings {
+     }
+ 
+     /** Encrypt the keystore entries and return the encrypted data. */
+-    private byte[] encrypt(char[] password, byte[] salt, byte[] iv, int kdfIterationCount) throws GeneralSecurityException, IOException {
++    private byte[] encrypt(char[] password, byte[] salt, byte[] iv, int kdfIterationCount, int cipherKeyBits)
++        throws GeneralSecurityException, IOException {
+         assert isLoaded();
+ 
+         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+-        Cipher cipher = createCipher(Cipher.ENCRYPT_MODE, password, salt, iv, kdfIterationCount);
++        Cipher cipher = createCipher(Cipher.ENCRYPT_MODE, password, salt, iv, kdfIterationCount, cipherKeyBits);
+         try (
+             CipherOutputStream cipherStream = new CipherOutputStream(bytes, cipher);
+             DataOutputStream output = new DataOutputStream(cipherStream)
+@@ -456,7 +466,13 @@ public class KeyStoreWrapper implements SecureSettings {
+             byte[] iv = new byte[12];
+             random.nextBytes(iv);
+             // encrypted data
+-            byte[] encryptedBytes = encrypt(password, salt, iv, getKdfIterationCountForVersion(CURRENT_VERSION));
++            byte[] encryptedBytes = encrypt(
++                password,
++                salt,
++                iv,
++                getKdfIterationCountForVersion(CURRENT_VERSION),
++                getCipherKeyBitsForVersion(CURRENT_VERSION)
++            );
+ 
+             // size of data block
+             output.writeInt(4 + salt.length + 4 + iv.length + 4 + encryptedBytes.length);
+
+```
+## Full Developer Backport Patch (full commit diff)
+```diff
+diff --git a/distribution/tools/keystore-cli/src/test/java/org/elasticsearch/cli/keystore/KeyStoreWrapperTests.java b/distribution/tools/keystore-cli/src/test/java/org/elasticsearch/cli/keystore/KeyStoreWrapperTests.java
+index 38bb7d592f7..5ab27bac399 100644
+--- a/distribution/tools/keystore-cli/src/test/java/org/elasticsearch/cli/keystore/KeyStoreWrapperTests.java
++++ b/distribution/tools/keystore-cli/src/test/java/org/elasticsearch/cli/keystore/KeyStoreWrapperTests.java
+@@ -58,6 +58,7 @@ import static org.hamcrest.Matchers.containsString;
+ import static org.hamcrest.Matchers.equalTo;
+ import static org.hamcrest.Matchers.hasSize;
+ import static org.hamcrest.Matchers.instanceOf;
++import static org.hamcrest.Matchers.is;
+ import static org.hamcrest.Matchers.notNullValue;
+ 
+ public class KeyStoreWrapperTests extends ESTestCase {
+@@ -436,17 +437,8 @@ public class KeyStoreWrapperTests extends ESTestCase {
+     public void testLegacyV3() throws GeneralSecurityException, IOException {
+         assumeFalse("Cannot open unprotected keystore on FIPS JVM", inFipsJvm());
+         final Path configDir = createTempDir();
+-        final Path keystore = configDir.resolve("elasticsearch.keystore");
+-        try (
+-            InputStream is = KeyStoreWrapperTests.class.getResourceAsStream("/format-v3-elasticsearch.keystore");
+-            OutputStream os = Files.newOutputStream(keystore)
+-        ) {
+-            final byte[] buffer = new byte[4096];
+-            int readBytes;
+-            while ((readBytes = is.read(buffer)) > 0) {
+-                os.write(buffer, 0, readBytes);
+-            }
+-        }
++        copyKeyStoreFromResourceToConfigDir(configDir, "/format-v3-elasticsearch.keystore");
++
+         final KeyStoreWrapper wrapper = KeyStoreWrapper.load(configDir);
+         assertNotNull(wrapper);
+         wrapper.decrypt(new char[0]);
+@@ -460,9 +452,31 @@ public class KeyStoreWrapperTests extends ESTestCase {
+ 
+     public void testLegacyV5() throws GeneralSecurityException, IOException {
+         final Path configDir = createTempDir();
++        copyKeyStoreFromResourceToConfigDir(configDir, "/format-v5-with-password-elasticsearch.keystore");
++
++        final KeyStoreWrapper wrapper = KeyStoreWrapper.load(configDir);
++        assertNotNull(wrapper);
++        wrapper.decrypt("keystorepassword".toCharArray());
++        assertThat(wrapper.getFormatVersion(), equalTo(5));
++        assertThat(wrapper.getSettingNames(), equalTo(Set.of("keystore.seed")));
++    }
++
++    public void testLegacyV6() throws GeneralSecurityException, IOException {
++        final Path configDir = createTempDir();
++        copyKeyStoreFromResourceToConfigDir(configDir, "/format-v6-elasticsearch.keystore");
++
++        final KeyStoreWrapper wrapper = KeyStoreWrapper.load(configDir);
++        assertNotNull(wrapper);
++        wrapper.decrypt("keystorepassword".toCharArray());
++        assertThat(wrapper.getFormatVersion(), equalTo(6));
++        assertThat(wrapper.getSettingNames(), equalTo(Set.of("keystore.seed", "string")));
++        assertThat(wrapper.getString("string"), equalTo("value"));
++    }
++
++    private void copyKeyStoreFromResourceToConfigDir(Path configDir, String name) throws IOException {
+         final Path keystore = configDir.resolve("elasticsearch.keystore");
+         try (
+-            InputStream is = KeyStoreWrapperTests.class.getResourceAsStream("/format-v5-with-password-elasticsearch.keystore");
++            InputStream is = KeyStoreWrapperTests.class.getResourceAsStream(name); //
+             OutputStream os = Files.newOutputStream(keystore)
+         ) {
+             final byte[] buffer = new byte[4096];
+@@ -471,11 +485,6 @@ public class KeyStoreWrapperTests extends ESTestCase {
+                 os.write(buffer, 0, readBytes);
+             }
+         }
+-        final KeyStoreWrapper wrapper = KeyStoreWrapper.load(configDir);
+-        assertNotNull(wrapper);
+-        wrapper.decrypt("keystorepassword".toCharArray());
+-        assertThat(wrapper.getFormatVersion(), equalTo(5));
+-        assertThat(wrapper.getSettingNames(), equalTo(Set.of("keystore.seed")));
+     }
+ 
+     public void testSerializationNewlyCreated() throws Exception {
+@@ -487,6 +496,7 @@ public class KeyStoreWrapperTests extends ESTestCase {
+         wrapper.writeTo(out);
+         final KeyStoreWrapper fromStream = new KeyStoreWrapper(out.bytes().streamInput());
+ 
++        assertThat(fromStream.getFormatVersion(), is(KeyStoreWrapper.CURRENT_VERSION));
+         assertThat(fromStream.getSettingNames(), hasSize(2));
+         assertThat(fromStream.getSettingNames(), containsInAnyOrder("string_setting", "keystore.seed"));
+ 
+diff --git a/distribution/tools/keystore-cli/src/test/resources/format-v6-elasticsearch.keystore b/distribution/tools/keystore-cli/src/test/resources/format-v6-elasticsearch.keystore
+new file mode 100644
+index 00000000000..0f680cc0135
+Binary files /dev/null and b/distribution/tools/keystore-cli/src/test/resources/format-v6-elasticsearch.keystore differ
+diff --git a/docs/changelog/119749.yaml b/docs/changelog/119749.yaml
+new file mode 100644
+index 00000000000..aa2b16ceda5
+--- /dev/null
++++ b/docs/changelog/119749.yaml
+@@ -0,0 +1,5 @@
++pr: 119749
++summary: Strengthen encryption for elasticsearch-keystore tool to AES 256
++area: Infra/CLI
++type: enhancement
++issues: []
+diff --git a/server/src/main/java/org/elasticsearch/common/settings/KeyStoreWrapper.java b/server/src/main/java/org/elasticsearch/common/settings/KeyStoreWrapper.java
+index 232ce34b153..fabcc7625d3 100644
+--- a/server/src/main/java/org/elasticsearch/common/settings/KeyStoreWrapper.java
++++ b/server/src/main/java/org/elasticsearch/common/settings/KeyStoreWrapper.java
+@@ -120,7 +120,8 @@ public class KeyStoreWrapper implements SecureSettings {
+     /** The version where lucene directory API changed from BE to LE. */
+     public static final int LE_VERSION = 5;
+     public static final int HIGHER_KDF_ITERATION_COUNT_VERSION = 6;
+-    public static final int CURRENT_VERSION = HIGHER_KDF_ITERATION_COUNT_VERSION;
++    public static final int CIPHER_KEY_BITS_256_VERSION = 7;
++    public static final int CURRENT_VERSION = CIPHER_KEY_BITS_256_VERSION;
+ 
+     /** The algorithm used to derive the cipher key from a password. */
+     private static final String KDF_ALGO = "PBKDF2WithHmacSHA512";
+@@ -128,14 +129,8 @@ public class KeyStoreWrapper implements SecureSettings {
+     /** The number of iterations to derive the cipher key. */
+     private static final int KDF_ITERS = 210000;
+ 
+-    /**
+-     * The number of bits for the cipher key.
+-     *
+-     * Note: The Oracle JDK 8 ships with a limited JCE policy that restricts key length for AES to 128 bits.
+-     * This can be increased to 256 bits once minimum java 9 is the minimum java version.
+-     * See http://www.oracle.com/technetwork/java/javase/terms/readme/jdk9-readme-3852447.html#jce
+-     * */
+-    private static final int CIPHER_KEY_BITS = 128;
++    /** The number of bits for the cipher key (256 bits are supported as of Java 9).*/
++    private static final int CIPHER_KEY_BITS = 256;
+ 
+     /** The number of bits for the GCM tag. */
+     private static final int GCM_TAG_BITS = 128;
+@@ -156,6 +151,7 @@ public class KeyStoreWrapper implements SecureSettings {
+     // 4: remove distinction between string/files, ES 6.8/7.1
+     // 5: Lucene directory API changed to LE, ES 8.0
+     // 6: increase KDF iteration count, ES 8.14
++    // 7: increase cipher key length to 256 bits, ES 9.0
+ 
+     /** The metadata format version used to read the current keystore wrapper. */
+     private final int formatVersion;
+@@ -318,8 +314,9 @@ public class KeyStoreWrapper implements SecureSettings {
+         return hasPassword;
+     }
+ 
+-    private static Cipher createCipher(int opmode, char[] password, byte[] salt, byte[] iv, int kdfIters) throws GeneralSecurityException {
+-        PBEKeySpec keySpec = new PBEKeySpec(password, salt, kdfIters, CIPHER_KEY_BITS);
++    private static Cipher createCipher(int opmode, char[] password, byte[] salt, byte[] iv, int kdfIters, int cipherKeyBits)
++        throws GeneralSecurityException {
++        PBEKeySpec keySpec = new PBEKeySpec(password, salt, kdfIters, cipherKeyBits);
+         SecretKeyFactory keyFactory = SecretKeyFactory.getInstance(KDF_ALGO);
+         SecretKey secretKey;
+         try {
+@@ -343,6 +340,11 @@ public class KeyStoreWrapper implements SecureSettings {
+         return formatVersion < HIGHER_KDF_ITERATION_COUNT_VERSION ? 10000 : KDF_ITERS;
+     }
+ 
++    private static int getCipherKeyBitsForVersion(int formatVersion) {
++        // cipher key length was increased in version 7; it was 128 bits in previous versions
++        return formatVersion < CIPHER_KEY_BITS_256_VERSION ? 128 : CIPHER_KEY_BITS;
++    }
++
+     /**
+      * Decrypts the underlying keystore data.
+      *
+@@ -371,7 +373,14 @@ public class KeyStoreWrapper implements SecureSettings {
+             throw new SecurityException("Keystore has been corrupted or tampered with", e);
+         }
+ 
+-        Cipher cipher = createCipher(Cipher.DECRYPT_MODE, password, salt, iv, getKdfIterationCountForVersion(formatVersion));
++        Cipher cipher = createCipher(
++            Cipher.DECRYPT_MODE,
++            password,
++            salt,
++            iv,
++            getKdfIterationCountForVersion(formatVersion),
++            getCipherKeyBitsForVersion(formatVersion)
++        );
+         try (
+             ByteArrayInputStream bytesStream = new ByteArrayInputStream(encryptedBytes);
+             CipherInputStream cipherStream = new CipherInputStream(bytesStream, cipher);
+@@ -409,11 +418,12 @@ public class KeyStoreWrapper implements SecureSettings {
+     }
+ 
+     /** Encrypt the keystore entries and return the encrypted data. */
+-    private byte[] encrypt(char[] password, byte[] salt, byte[] iv, int kdfIterationCount) throws GeneralSecurityException, IOException {
++    private byte[] encrypt(char[] password, byte[] salt, byte[] iv, int kdfIterationCount, int cipherKeyBits)
++        throws GeneralSecurityException, IOException {
+         assert isLoaded();
+ 
+         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+-        Cipher cipher = createCipher(Cipher.ENCRYPT_MODE, password, salt, iv, kdfIterationCount);
++        Cipher cipher = createCipher(Cipher.ENCRYPT_MODE, password, salt, iv, kdfIterationCount, cipherKeyBits);
+         try (
+             CipherOutputStream cipherStream = new CipherOutputStream(bytes, cipher);
+             DataOutputStream output = new DataOutputStream(cipherStream)
+@@ -456,7 +466,13 @@ public class KeyStoreWrapper implements SecureSettings {
+             byte[] iv = new byte[12];
+             random.nextBytes(iv);
+             // encrypted data
+-            byte[] encryptedBytes = encrypt(password, salt, iv, getKdfIterationCountForVersion(CURRENT_VERSION));
++            byte[] encryptedBytes = encrypt(
++                password,
++                salt,
++                iv,
++                getKdfIterationCountForVersion(CURRENT_VERSION),
++                getCipherKeyBitsForVersion(CURRENT_VERSION)
++            );
+ 
+             // size of data block
+             output.writeInt(4 + salt.length + 4 + iv.length + 4 + encryptedBytes.length);
+
+```

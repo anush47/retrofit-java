@@ -1,0 +1,165 @@
+# Phase 0 Inputs
+
+- Mainline commit: 77eb19172418d3b336180ae594266fb25c724b49
+- Backport commit: fb45fd724afa1bb9e102bd64478cf7249382c49d
+- Java-only files for agentic phases: 1
+- Developer auxiliary hunks (test + non-Java): 13
+
+## Commit Pair Consistency
+- Pair mismatch: False
+- Reason: scope_overlap_ok
+- Mainline Java files: ['server/src/main/java/org/elasticsearch/cluster/node/DiscoveryNode.java']
+- Developer Java files: ['server/src/main/java/org/elasticsearch/cluster/node/DiscoveryNode.java']
+- Overlap Java files: ['server/src/main/java/org/elasticsearch/cluster/node/DiscoveryNode.java']
+- Overlap ratio (mainline): 1.0
+
+## Mainline Patch
+```diff
+From 77eb19172418d3b336180ae594266fb25c724b49 Mon Sep 17 00:00:00 2001
+From: Tanguy Leroux <tlrx.dev@gmail.com>
+Date: Thu, 19 Dec 2024 17:39:15 +0100
+Subject: [PATCH] Remove min_read_only_index_version from XContent node
+ (#119083)
+
+We prefer to remove this information from the API since they are not
+useful externally, impact the search shard API and may be removed later
+(which would be a breaking change).
+
+Follow-up #118744
+---
+ .../java/org/elasticsearch/cluster/node/DiscoveryNode.java  | 1 -
+ .../admin/cluster/reroute/ClusterRerouteResponseTests.java  | 2 --
+ .../java/org/elasticsearch/cluster/ClusterStateTests.java   | 6 ------
+ .../org/elasticsearch/cluster/node/DiscoveryNodeTests.java  | 2 --
+ .../collector/cluster/ClusterStatsMonitoringDocTests.java   | 2 --
+ 5 files changed, 13 deletions(-)
+
+diff --git a/server/src/main/java/org/elasticsearch/cluster/node/DiscoveryNode.java b/server/src/main/java/org/elasticsearch/cluster/node/DiscoveryNode.java
+index 7c757e76578..46a83495ecf 100644
+--- a/server/src/main/java/org/elasticsearch/cluster/node/DiscoveryNode.java
++++ b/server/src/main/java/org/elasticsearch/cluster/node/DiscoveryNode.java
+@@ -595,7 +595,6 @@ public class DiscoveryNode implements Writeable, ToXContentFragment {
+         builder.endArray();
+         builder.field("version", versionInfo.buildVersion().toString());
+         builder.field("min_index_version", versionInfo.minIndexVersion());
+-        builder.field("min_read_only_index_version", versionInfo.minReadOnlyIndexVersion());
+         builder.field("max_index_version", versionInfo.maxIndexVersion());
+         builder.endObject();
+         return builder;
+diff --git a/server/src/test/java/org/elasticsearch/action/admin/cluster/reroute/ClusterRerouteResponseTests.java b/server/src/test/java/org/elasticsearch/action/admin/cluster/reroute/ClusterRerouteResponseTests.java
+index 69cff0fc45a..b59cc13a20f 100644
+--- a/server/src/test/java/org/elasticsearch/action/admin/cluster/reroute/ClusterRerouteResponseTests.java
++++ b/server/src/test/java/org/elasticsearch/action/admin/cluster/reroute/ClusterRerouteResponseTests.java
+@@ -127,7 +127,6 @@ public class ClusterRerouteResponseTests extends ESTestCase {
+                             ],
+                             "version": "%s",
+                             "min_index_version": %s,
+-                            "min_read_only_index_version": %s,
+                             "max_index_version": %s
+                           }
+                         },
+@@ -219,7 +218,6 @@ public class ClusterRerouteResponseTests extends ESTestCase {
+                 clusterState.getNodes().get("node0").getEphemeralId(),
+                 Version.CURRENT,
+                 IndexVersions.MINIMUM_COMPATIBLE,
+-                IndexVersions.MINIMUM_READONLY_COMPATIBLE,
+                 IndexVersion.current(),
+                 IndexVersion.current(),
+                 IndexVersion.current()
+diff --git a/server/src/test/java/org/elasticsearch/cluster/ClusterStateTests.java b/server/src/test/java/org/elasticsearch/cluster/ClusterStateTests.java
+index 5f4426b02ce..668aea70c23 100644
+--- a/server/src/test/java/org/elasticsearch/cluster/ClusterStateTests.java
++++ b/server/src/test/java/org/elasticsearch/cluster/ClusterStateTests.java
+@@ -213,7 +213,6 @@ public class ClusterStateTests extends ESTestCase {
+                               ],
+                               "version": "%s",
+                               "min_index_version":%s,
+-                              "min_read_only_index_version":%s,
+                               "max_index_version":%s
+                             }
+                           },
+@@ -390,7 +389,6 @@ public class ClusterStateTests extends ESTestCase {
+                     ephemeralId,
+                     Version.CURRENT,
+                     IndexVersions.MINIMUM_COMPATIBLE,
+-                    IndexVersions.MINIMUM_READONLY_COMPATIBLE,
+                     IndexVersion.current(),
+                     TransportVersion.current(),
+                     IndexVersion.current(),
+@@ -490,7 +488,6 @@ public class ClusterStateTests extends ESTestCase {
+                           ],
+                           "version" : "%s",
+                           "min_index_version" : %s,
+-                          "min_read_only_index_version" : %s,
+                           "max_index_version" : %s
+                         }
+                       },
+@@ -666,7 +663,6 @@ public class ClusterStateTests extends ESTestCase {
+                 ephemeralId,
+                 Version.CURRENT,
+                 IndexVersions.MINIMUM_COMPATIBLE,
+-                IndexVersions.MINIMUM_READONLY_COMPATIBLE,
+                 IndexVersion.current(),
+                 TransportVersion.current(),
+                 IndexVersion.current(),
+@@ -766,7 +762,6 @@ public class ClusterStateTests extends ESTestCase {
+                           ],
+                           "version" : "%s",
+                           "min_index_version" : %s,
+-                          "min_read_only_index_version" : %s,
+                           "max_index_version" : %s
+                         }
+                       },
+@@ -948,7 +943,6 @@ public class ClusterStateTests extends ESTestCase {
+                 ephemeralId,
+                 Version.CURRENT,
+                 IndexVersions.MINIMUM_COMPATIBLE,
+-                IndexVersions.MINIMUM_READONLY_COMPATIBLE,
+                 IndexVersion.current(),
+                 TransportVersion.current(),
+                 IndexVersion.current(),
+diff --git a/server/src/test/java/org/elasticsearch/cluster/node/DiscoveryNodeTests.java b/server/src/test/java/org/elasticsearch/cluster/node/DiscoveryNodeTests.java
+index fa7633f0eaf..a91cef576df 100644
+--- a/server/src/test/java/org/elasticsearch/cluster/node/DiscoveryNodeTests.java
++++ b/server/src/test/java/org/elasticsearch/cluster/node/DiscoveryNodeTests.java
+@@ -223,7 +223,6 @@ public class DiscoveryNodeTests extends ESTestCase {
+                             ],
+                             "version" : "%s",
+                             "min_index_version" : %s,
+-                            "min_read_only_index_version" : %s,
+                             "max_index_version" : %s
+                           }
+                         }""",
+@@ -231,7 +230,6 @@ public class DiscoveryNodeTests extends ESTestCase {
+                     withExternalId ? "test-external-id" : "test-name",
+                     Version.CURRENT,
+                     IndexVersions.MINIMUM_COMPATIBLE,
+-                    IndexVersions.MINIMUM_READONLY_COMPATIBLE,
+                     IndexVersion.current()
+                 )
+             )
+diff --git a/x-pack/plugin/monitoring/src/test/java/org/elasticsearch/xpack/monitoring/collector/cluster/ClusterStatsMonitoringDocTests.java b/x-pack/plugin/monitoring/src/test/java/org/elasticsearch/xpack/monitoring/collector/cluster/ClusterStatsMonitoringDocTests.java
+index 35da4abec22..f4d50df4ff6 100644
+--- a/x-pack/plugin/monitoring/src/test/java/org/elasticsearch/xpack/monitoring/collector/cluster/ClusterStatsMonitoringDocTests.java
++++ b/x-pack/plugin/monitoring/src/test/java/org/elasticsearch/xpack/monitoring/collector/cluster/ClusterStatsMonitoringDocTests.java
+@@ -462,7 +462,6 @@ public class ClusterStatsMonitoringDocTests extends BaseMonitoringDocTestCase<Cl
+             pluginEsBuildVersion,
+             Version.CURRENT,
+             IndexVersions.MINIMUM_COMPATIBLE,
+-            IndexVersions.MINIMUM_READONLY_COMPATIBLE,
+             IndexVersion.current(),
+             apmIndicesExist };
+         final String expectedJson = """
+@@ -818,7 +817,6 @@ public class ClusterStatsMonitoringDocTests extends BaseMonitoringDocTestCase<Cl
+                     ],
+                     "version": "%s",
+                     "min_index_version":%s,
+-                    "min_read_only_index_version":%s,
+                     "max_index_version":%s
+                   }
+                 },
+-- 
+2.43.0
+
+
+```

@@ -1,0 +1,69 @@
+{
+  "semantic_blueprint": {
+    "root_cause_hypothesis": "Deterministic inference: target branch diverges from mainline; adapt hunks with exact target context.",
+    "fix_logic": "Apply each source hunk with target-verified context and symbol consistency while preserving behavior.",
+    "dependent_apis": [
+      "getMaxDimensions",
+      "fieldType"
+    ],
+    "patch_intent_summary": "Backport patch behavior to target branch with minimal, context-correct edits.",
+    "hunk_chain": [
+      {
+        "hunk_index": 1,
+        "file": "server/src/main/java/org/elasticsearch/index/codec/vectors/ES814ScalarQuantizedVectorsFormat.java",
+        "summary": "Adds logic (+1 lines).",
+        "role": "declaration",
+        "connects_to_next": "Prepares next hunk in same file with related context.",
+        "global_index": 1
+      },
+      {
+        "hunk_index": 2,
+        "file": "server/src/main/java/org/elasticsearch/index/codec/vectors/ES814ScalarQuantizedVectorsFormat.java",
+        "summary": "Adds logic (+5 lines).",
+        "role": "guard",
+        "connects_to_next": "",
+        "global_index": 2
+      },
+      {
+        "hunk_index": 1,
+        "file": "server/src/main/java/org/elasticsearch/index/codec/vectors/ES815BitFlatVectorsFormat.java",
+        "summary": "Adds logic (+2 lines).",
+        "role": "declaration",
+        "connects_to_next": "Prepares next hunk in same file with related context.",
+        "global_index": 3
+      },
+      {
+        "hunk_index": 2,
+        "file": "server/src/main/java/org/elasticsearch/index/codec/vectors/ES815BitFlatVectorsFormat.java",
+        "summary": "Adds logic (+5 lines).",
+        "role": "guard",
+        "connects_to_next": "",
+        "global_index": 4
+      },
+      {
+        "hunk_index": 1,
+        "file": "server/src/main/java/org/elasticsearch/index/mapper/vectors/DenseVectorFieldMapper.java",
+        "summary": "Modifies logic (+1/-1 lines).",
+        "role": "core_fix",
+        "connects_to_next": "",
+        "global_index": 5
+      },
+      {
+        "hunk_index": 1,
+        "file": "server/src/main/java/org/elasticsearch/rest/action/search/SearchCapabilities.java",
+        "summary": "Modifies logic (+6/-1 lines).",
+        "role": "declaration",
+        "connects_to_next": "",
+        "global_index": 6
+      }
+    ]
+  },
+  "patch_diff": "From 465c65c02fdca9f3c3faa01a8cb15f9f58dde58e Mon Sep 17 00:00:00 2001\nFrom: Rassyan <yjkhngds@gmail.com>\nDate: Tue, 15 Oct 2024 02:59:56 +0800\nSubject: [PATCH] Fix Synthetic Source Handling for `bit` Type in\n `dense_vector` Field (#114407)\n\n**Description:**\n\nThis PR addresses the issue described in [#114402](https://github.com/elastic/elasticsearch/issues/114402), where the `synthetic_source` feature does not correctly handle the `bit` type in `dense_vector` fields when `index` is set to `false`. The root cause of the issue was that the `bit` type was not properly accounted for, leading to an array that is 8 times the size of the actual `dims` value of docvalue. This mismatch will causes an array out-of-bounds exception when reconstructing the document.\n\n**Changes:**\n\n- Adjusted the `synthetic_source` logic to correctly handle the `bit` type by ensuring the array size accounts for the 8x difference in dimensions.\n- Added yaml test to cover the `bit` type scenario in `dense_vector` fields with `index` set to `false`.\n\n**Related Issues:**\n\n- Closes [#114402](https://github.com/elastic/elasticsearch/issues/114402)\n- Introduced in [#110059](https://github.com/elastic/elasticsearch/pull/110059)\n---\n docs/changelog/114407.yaml                    |  6 +++\n .../test/search.vectors/45_knn_search_bit.yml | 51 +++++++++++++++++++\n .../ES814ScalarQuantizedVectorsFormat.java    |  6 +++\n .../vectors/ES815BitFlatVectorsFormat.java    |  7 +++\n .../vectors/DenseVectorFieldMapper.java       |  2 +-\n .../action/search/SearchCapabilities.java     |  7 ++-\n .../vectors/DenseVectorFieldMapperTests.java  | 15 +++---\n 7 files changed, 86 insertions(+), 8 deletions(-)\n create mode 100644 docs/changelog/114407.yaml\n\ndiff --git a/docs/changelog/114407.yaml b/docs/changelog/114407.yaml\nnew file mode 100644\nindex 00000000000..4c1134a9d38\n--- /dev/null\n+++ b/docs/changelog/114407.yaml\n@@ -0,0 +1,6 @@\n+pr: 114407\n+summary: Fix synthetic source handling for `bit` type in `dense_vector` field\n+area: Search\n+type: bug\n+issues:\n+  - 114402\ndiff --git a/rest-api-spec/src/yamlRestTest/resources/rest-api-spec/test/search.vectors/45_knn_search_bit.yml b/rest-api-spec/src/yamlRestTest/resources/rest-api-spec/test/search.vectors/45_knn_search_bit.yml\nindex ed469ffd7ff..02576ad1b2b 100644\n--- a/rest-api-spec/src/yamlRestTest/resources/rest-api-spec/test/search.vectors/45_knn_search_bit.yml\n+++ b/rest-api-spec/src/yamlRestTest/resources/rest-api-spec/test/search.vectors/45_knn_search_bit.yml\n@@ -354,3 +354,54 @@ setup:\n               dims: 40\n               index: true\n               similarity: max_inner_product\n+\n+\n+---\n+\"Search with synthetic source\":\n+  - requires:\n+      capabilities:\n+        - method: POST\n+          path: /_search\n+          capabilities: [ bit_dense_vector_synthetic_source ]\n+      test_runner_features: capabilities\n+      reason: \"Support for bit dense vector synthetic source capability required\"\n+  - do:\n+      indices.create:\n+        index: test_synthetic_source\n+        body:\n+          mappings:\n+            properties:\n+              name:\n+                type: keyword\n+              vector1:\n+                type: dense_vector\n+                element_type: bit\n+                dims: 40\n+                index: false\n+              vector2:\n+                type: dense_vector\n+                element_type: bit\n+                dims: 40\n+                index: true\n+                similarity: l2_norm\n+\n+  - do:\n+      index:\n+        index: test_synthetic_source\n+        id: \"1\"\n+        body:\n+          name: cow.jpg\n+          vector1: [2, -1, 1, 4, -3]\n+          vector2: [2, -1, 1, 4, -3]\n+\n+  - do:\n+      indices.refresh: {}\n+\n+  - do:\n+      search:\n+        force_synthetic_source: true\n+        index: test_synthetic_source\n+\n+  - match: {hits.hits.0._id: \"1\"}\n+  - match: {hits.hits.0._source.vector1: [2, -1, 1, 4, -3]}\n+  - match: {hits.hits.0._source.vector2: [2, -1, 1, 4, -3]}\ndiff --git a/server/src/main/java/org/elasticsearch/index/codec/vectors/ES814ScalarQuantizedVectorsFormat.java b/server/src/main/java/org/elasticsearch/index/codec/vectors/ES814ScalarQuantizedVectorsFormat.java\nindex 4bf396e8d5a..10a20839ab3 100644\n--- a/server/src/main/java/org/elasticsearch/index/codec/vectors/ES814ScalarQuantizedVectorsFormat.java\n+++ b/server/src/main/java/org/elasticsearch/index/codec/vectors/ES814ScalarQuantizedVectorsFormat.java\n@@ -41,6 +41,7 @@ import org.elasticsearch.simdvec.VectorSimilarityType;\n import java.io.IOException;\n \n import static org.apache.lucene.codecs.lucene99.Lucene99ScalarQuantizedVectorsFormat.DYNAMIC_CONFIDENCE_INTERVAL;\n+import static org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapper.MAX_DIMS_COUNT;\n \n public class ES814ScalarQuantizedVectorsFormat extends FlatVectorsFormat {\n \n@@ -291,4 +292,9 @@ public class ES814ScalarQuantizedVectorsFormat extends FlatVectorsFormat {\n             return delegate.getRandomVectorScorer(sim, values, query);\n         }\n     }\n+\n+    @Override\n+    public int getMaxDimensions(String fieldName) {\n+        return MAX_DIMS_COUNT;\n+    }\n }\ndiff --git a/server/src/main/java/org/elasticsearch/index/codec/vectors/ES815BitFlatVectorsFormat.java b/server/src/main/java/org/elasticsearch/index/codec/vectors/ES815BitFlatVectorsFormat.java\nindex f0f25bd7027..7e586e210af 100644\n--- a/server/src/main/java/org/elasticsearch/index/codec/vectors/ES815BitFlatVectorsFormat.java\n+++ b/server/src/main/java/org/elasticsearch/index/codec/vectors/ES815BitFlatVectorsFormat.java\n@@ -25,6 +25,8 @@ import org.apache.lucene.util.quantization.RandomAccessQuantizedByteVectorValues\n \n import java.io.IOException;\n \n+import static org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapper.MAX_DIMS_COUNT;\n+\n class ES815BitFlatVectorsFormat extends FlatVectorsFormat {\n \n     private static final FlatVectorsFormat delegate = new Lucene99FlatVectorsFormat(FlatBitVectorScorer.INSTANCE);\n@@ -43,6 +45,11 @@ class ES815BitFlatVectorsFormat extends FlatVectorsFormat {\n         return delegate.fieldsReader(segmentReadState);\n     }\n \n+    @Override\n+    public int getMaxDimensions(String fieldName) {\n+        return MAX_DIMS_COUNT;\n+    }\n+\n     static class FlatBitVectorScorer implements FlatVectorsScorer {\n \n         static final FlatBitVectorScorer INSTANCE = new FlatBitVectorScorer();\ndiff --git a/server/src/main/java/org/elasticsearch/index/mapper/vectors/DenseVectorFieldMapper.java b/server/src/main/java/org/elasticsearch/index/mapper/vectors/DenseVectorFieldMapper.java\nindex d7353584706..c3959bd442a 100644\n--- a/server/src/main/java/org/elasticsearch/index/mapper/vectors/DenseVectorFieldMapper.java\n+++ b/server/src/main/java/org/elasticsearch/index/mapper/vectors/DenseVectorFieldMapper.java\n@@ -2270,7 +2270,7 @@ public class DenseVectorFieldMapper extends FieldMapper {\n             if (indexCreatedVersion.onOrAfter(LITTLE_ENDIAN_FLOAT_STORED_INDEX_VERSION)) {\n                 byteBuffer.order(ByteOrder.LITTLE_ENDIAN);\n             }\n-            int dims = fieldType().dims;\n+            int dims = fieldType().elementType == ElementType.BIT ? fieldType().dims / Byte.SIZE : fieldType().dims;\n             for (int dim = 0; dim < dims; dim++) {\n                 fieldType().elementType.readAndWriteValue(byteBuffer, b);\n             }\ndiff --git a/server/src/main/java/org/elasticsearch/rest/action/search/SearchCapabilities.java b/server/src/main/java/org/elasticsearch/rest/action/search/SearchCapabilities.java\nindex 45fd6afe4fc..7828bb956a1 100644\n--- a/server/src/main/java/org/elasticsearch/rest/action/search/SearchCapabilities.java\n+++ b/server/src/main/java/org/elasticsearch/rest/action/search/SearchCapabilities.java\n@@ -20,6 +20,11 @@ public final class SearchCapabilities {\n \n     /** Support regex and range match rules in interval queries. */\n     private static final String RANGE_REGEX_INTERVAL_QUERY_CAPABILITY = \"range_regexp_interval_queries\";\n+    /** Support synthetic source with `bit` type in `dense_vector` field when `index` is set to `false`. */\n+    private static final String BIT_DENSE_VECTOR_SYNTHETIC_SOURCE_CAPABILITY = \"bit_dense_vector_synthetic_source\";\n \n-    public static final Set<String> CAPABILITIES = Set.of(RANGE_REGEX_INTERVAL_QUERY_CAPABILITY);\n+    public static final Set<String> CAPABILITIES = Set.of(\n+        RANGE_REGEX_INTERVAL_QUERY_CAPABILITY,\n+        BIT_DENSE_VECTOR_SYNTHETIC_SOURCE_CAPABILITY\n+    );\n }\ndiff --git a/server/src/test/java/org/elasticsearch/index/mapper/vectors/DenseVectorFieldMapperTests.java b/server/src/test/java/org/elasticsearch/index/mapper/vectors/DenseVectorFieldMapperTests.java\nindex 04b9b05ecfe..492c76924c7 100644\n--- a/server/src/test/java/org/elasticsearch/index/mapper/vectors/DenseVectorFieldMapperTests.java\n+++ b/server/src/test/java/org/elasticsearch/index/mapper/vectors/DenseVectorFieldMapperTests.java\n@@ -2022,24 +2022,27 @@ public class DenseVectorFieldMapperTests extends MapperTestCase {\n \n     private static class DenseVectorSyntheticSourceSupport implements SyntheticSourceSupport {\n         private final int dims = between(5, 1000);\n-        private final ElementType elementType = randomFrom(ElementType.BYTE, ElementType.FLOAT);\n+        private final ElementType elementType = randomFrom(ElementType.BYTE, ElementType.FLOAT, ElementType.BIT);\n         private final boolean indexed = randomBoolean();\n         private final boolean indexOptionsSet = indexed && randomBoolean();\n \n         @Override\n         public SyntheticSourceExample example(int maxValues) throws IOException {\n-            Object value = elementType == ElementType.BYTE\n-                ? randomList(dims, dims, ESTestCase::randomByte)\n-                : randomList(dims, dims, ESTestCase::randomFloat);\n+            Object value = switch (elementType) {\n+                case BYTE, BIT:\n+                    yield randomList(dims, dims, ESTestCase::randomByte);\n+                case FLOAT:\n+                    yield randomList(dims, dims, ESTestCase::randomFloat);\n+            };\n             return new SyntheticSourceExample(value, value, this::mapping);\n         }\n \n         private void mapping(XContentBuilder b) throws IOException {\n             b.field(\"type\", \"dense_vector\");\n-            b.field(\"dims\", dims);\n-            if (elementType == ElementType.BYTE || randomBoolean()) {\n+            if (elementType == ElementType.BYTE || elementType == ElementType.BIT || randomBoolean()) {\n                 b.field(\"element_type\", elementType.toString());\n             }\n+            b.field(\"dims\", elementType == ElementType.BIT ? dims * Byte.SIZE : dims);\n             if (indexed) {\n                 b.field(\"index\", true);\n                 b.field(\"similarity\", \"l2_norm\");\n-- \n2.43.0\n\n",
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "reason": "deterministic_no_llm"
+  }
+}

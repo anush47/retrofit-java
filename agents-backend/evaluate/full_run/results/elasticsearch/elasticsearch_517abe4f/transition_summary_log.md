@@ -1,0 +1,50 @@
+# Transition Summary
+
+- Source: phase_outputs
+- Valid backport signal: True
+- Reason: Valid: Observed fail-to-pass and/or newly passing relevant tests with no regressions.
+- fail->pass (1): ['org.elasticsearch.ExceptionSerializationTests#testConnectTransportException']
+- newly passing (0): []
+- pass->fail (0): []
+
+## Touched Test States
+- Touched tests (from patch): ['org.elasticsearch.ExceptionSerializationTests']
+  - org.elasticsearch.ExceptionSerializationTests#testActionNotFoundTransportException: baseline=passed, patched=passed
+  - org.elasticsearch.ExceptionSerializationTests#testActionTransportException: baseline=passed, patched=passed
+  - org.elasticsearch.ExceptionSerializationTests#testAliasesMissingException: baseline=passed, patched=passed
+  - org.elasticsearch.ExceptionSerializationTests#testCircuitBreakingException: baseline=passed, patched=passed
+  - org.elasticsearch.ExceptionSerializationTests#testClusterBlockException: baseline=passed, patched=passed
+  - org.elasticsearch.ExceptionSerializationTests#testConnectTransportException: baseline=failed, patched=passed
+  - org.elasticsearch.ExceptionSerializationTests#testElasticsearchRemoteException: baseline=passed, patched=passed
+  - org.elasticsearch.ExceptionSerializationTests#testElasticsearchSecurityException: baseline=passed, patched=passed
+  - org.elasticsearch.ExceptionSerializationTests#testExceptionRegistration: baseline=passed, patched=passed
+  - org.elasticsearch.ExceptionSerializationTests#testFailedNodeException: baseline=passed, patched=passed
+  - org.elasticsearch.ExceptionSerializationTests#testFileSystemExceptions: baseline=passed, patched=passed
+  - org.elasticsearch.ExceptionSerializationTests#testIOException: baseline=passed, patched=passed
+  - org.elasticsearch.ExceptionSerializationTests#testIds: baseline=passed, patched=passed
+  - org.elasticsearch.ExceptionSerializationTests#testIllegalIndexShardStateException: baseline=passed, patched=passed
+  - org.elasticsearch.ExceptionSerializationTests#testIllegalShardRoutingStateException: baseline=passed, patched=passed
+  - org.elasticsearch.ExceptionSerializationTests#testIndexTemplateMissingException: baseline=passed, patched=passed
+  - org.elasticsearch.ExceptionSerializationTests#testInterruptedException: baseline=passed, patched=passed
+  - org.elasticsearch.ExceptionSerializationTests#testInvalidIndexTemplateException: baseline=passed, patched=passed
+  - org.elasticsearch.ExceptionSerializationTests#testNoLongerPrimaryShardException: baseline=passed, patched=passed
+  - org.elasticsearch.ExceptionSerializationTests#testNotSerializableExceptionWrapper: baseline=passed, patched=passed
+  - org.elasticsearch.ExceptionSerializationTests#testParsingException: baseline=passed, patched=passed
+  - org.elasticsearch.ExceptionSerializationTests#testQueryShardException: baseline=passed, patched=passed
+  - org.elasticsearch.ExceptionSerializationTests#testRecoverFilesRecoveryException: baseline=passed, patched=passed
+  - org.elasticsearch.ExceptionSerializationTests#testRecoveryEngineException: baseline=passed, patched=passed
+  - org.elasticsearch.ExceptionSerializationTests#testRepositoryException: baseline=passed, patched=passed
+  - org.elasticsearch.ExceptionSerializationTests#testRoutingMissingException: baseline=passed, patched=passed
+  - org.elasticsearch.ExceptionSerializationTests#testSearchContextMissingException: baseline=passed, patched=passed
+  - org.elasticsearch.ExceptionSerializationTests#testSearchException: baseline=passed, patched=passed
+  - org.elasticsearch.ExceptionSerializationTests#testSearchPhaseExecutionException: baseline=passed, patched=passed
+  - org.elasticsearch.ExceptionSerializationTests#testShardLockObtainFailedException: baseline=passed, patched=passed
+  - org.elasticsearch.ExceptionSerializationTests#testSnapshotException: baseline=passed, patched=passed
+  - org.elasticsearch.ExceptionSerializationTests#testSnapshotInProgressException: baseline=passed, patched=passed
+  - org.elasticsearch.ExceptionSerializationTests#testThatIdsArePositive: baseline=passed, patched=passed
+  - org.elasticsearch.ExceptionSerializationTests#testThatIdsAreUnique: baseline=passed, patched=passed
+  - org.elasticsearch.ExceptionSerializationTests#testTimestampParsingException: baseline=passed, patched=passed
+  - org.elasticsearch.ExceptionSerializationTests#testTooManyBucketsException: baseline=passed, patched=passed
+  - org.elasticsearch.ExceptionSerializationTests#testUnknownException: baseline=passed, patched=passed
+  - org.elasticsearch.ExceptionSerializationTests#testWithRestHeadersException: baseline=passed, patched=passed
+  - org.elasticsearch.ExceptionSerializationTests#testWriteThrowable: baseline=passed, patched=passed

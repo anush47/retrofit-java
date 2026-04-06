@@ -1,0 +1,34 @@
+{
+  "semantic_blueprint": {
+    "root_cause_hypothesis": "Deterministic inference: target branch diverges from mainline; adapt hunks with exact target context.",
+    "fix_logic": "Apply each source hunk with target-verified context and symbol consistency while preserving behavior.",
+    "dependent_apis": [],
+    "patch_intent_summary": "Backport patch behavior to target branch with minimal, context-correct edits.",
+    "hunk_chain": [
+      {
+        "hunk_index": 1,
+        "file": "x-pack/plugin/esql/src/main/java/org/elasticsearch/xpack/esql/optimizer/rules/physical/local/PushFiltersToSource.java",
+        "summary": "Removes logic (-1 lines).",
+        "role": "propagation",
+        "connects_to_next": "Prepares next hunk in same file with related context.",
+        "global_index": 1
+      },
+      {
+        "hunk_index": 2,
+        "file": "x-pack/plugin/esql/src/main/java/org/elasticsearch/xpack/esql/optimizer/rules/physical/local/PushFiltersToSource.java",
+        "summary": "Removes logic (-2 lines).",
+        "role": "core_fix",
+        "connects_to_next": "",
+        "global_index": 2
+      }
+    ]
+  },
+  "patch_diff": "From 355aed7fc80c1e9a2ce58ffd45615ed110312f0f Mon Sep 17 00:00:00 2001\nFrom: Ioana Tagirta <ioanatia@users.noreply.github.com>\nDate: Tue, 7 Jan 2025 12:19:19 +0100\nSubject: [PATCH] Add semantic_text to mapping_all_types and switch to\n TranslationAware in PushFiltersToSource (#118982)\n\n* Add semantic_text to mapping-all-types.json and switch to TranslationAware in PushFiltersToSource\n\n* Continue to use FullTextFunction for now\n\n---------\n\nCo-authored-by: Elastic Machine <elasticmachine@users.noreply.github.com>\n---\n .../testFixtures/src/main/resources/mapping-all-types.json   | 4 ++++\n .../optimizer/rules/physical/local/PushFiltersToSource.java  | 3 ---\n .../esql/optimizer/LocalPhysicalPlanOptimizerTests.java      | 5 -----\n 3 files changed, 4 insertions(+), 8 deletions(-)\n\ndiff --git a/x-pack/plugin/esql/qa/testFixtures/src/main/resources/mapping-all-types.json b/x-pack/plugin/esql/qa/testFixtures/src/main/resources/mapping-all-types.json\nindex 04b59f347eb..17348adb6af 100644\n--- a/x-pack/plugin/esql/qa/testFixtures/src/main/resources/mapping-all-types.json\n+++ b/x-pack/plugin/esql/qa/testFixtures/src/main/resources/mapping-all-types.json\n@@ -59,6 +59,10 @@\n         },\n         \"wildcard\": {\n             \"type\": \"wildcard\"\n+        },\n+        \"semantic_text\": {\n+            \"type\": \"semantic_text\",\n+            \"inference_id\": \"foo_inference_id\"\n         }\n     }\n }\ndiff --git a/x-pack/plugin/esql/src/main/java/org/elasticsearch/xpack/esql/optimizer/rules/physical/local/PushFiltersToSource.java b/x-pack/plugin/esql/src/main/java/org/elasticsearch/xpack/esql/optimizer/rules/physical/local/PushFiltersToSource.java\nindex 6fcdd538fdf..dae84bb6b64 100644\n--- a/x-pack/plugin/esql/src/main/java/org/elasticsearch/xpack/esql/optimizer/rules/physical/local/PushFiltersToSource.java\n+++ b/x-pack/plugin/esql/src/main/java/org/elasticsearch/xpack/esql/optimizer/rules/physical/local/PushFiltersToSource.java\n@@ -31,7 +31,6 @@ import org.elasticsearch.xpack.esql.core.type.DataType;\n import org.elasticsearch.xpack.esql.core.util.CollectionUtils;\n import org.elasticsearch.xpack.esql.core.util.Queries;\n import org.elasticsearch.xpack.esql.expression.function.fulltext.FullTextFunction;\n-import org.elasticsearch.xpack.esql.expression.function.fulltext.Term;\n import org.elasticsearch.xpack.esql.expression.function.scalar.ip.CIDRMatch;\n import org.elasticsearch.xpack.esql.expression.function.scalar.spatial.BinarySpatialFunction;\n import org.elasticsearch.xpack.esql.expression.function.scalar.spatial.SpatialRelatesFunction;\n@@ -252,8 +251,6 @@ public class PushFiltersToSource extends PhysicalOptimizerRules.ParameterizedOpt\n                 && Expressions.foldable(cidrMatch.matches());\n         } else if (exp instanceof SpatialRelatesFunction spatial) {\n             return canPushSpatialFunctionToSource(spatial, lucenePushdownPredicates);\n-        } else if (exp instanceof Term term) {\n-            return term.field() instanceof FieldAttribute && DataType.isString(term.field().dataType());\n         } else if (exp instanceof FullTextFunction) {\n             return true;\n         }\ndiff --git a/x-pack/plugin/esql/src/test/java/org/elasticsearch/xpack/esql/optimizer/LocalPhysicalPlanOptimizerTests.java b/x-pack/plugin/esql/src/test/java/org/elasticsearch/xpack/esql/optimizer/LocalPhysicalPlanOptimizerTests.java\nindex 928c849b847..fc2f6320274 100644\n--- a/x-pack/plugin/esql/src/test/java/org/elasticsearch/xpack/esql/optimizer/LocalPhysicalPlanOptimizerTests.java\n+++ b/x-pack/plugin/esql/src/test/java/org/elasticsearch/xpack/esql/optimizer/LocalPhysicalPlanOptimizerTests.java\n@@ -1450,11 +1450,6 @@ public class LocalPhysicalPlanOptimizerTests extends MapperServiceTestCase {\n         var analyzer = makeAnalyzer(\"mapping-all-types.json\");\n         // Check for every possible query data type\n         for (DataType fieldDataType : fieldDataTypes) {\n-            // TODO: semantic_text is not present in mapping-all-types.json so we skip it for now\n-            if (fieldDataType == DataType.SEMANTIC_TEXT) {\n-                continue;\n-            }\n-\n             var queryValue = randomQueryValue(fieldDataType);\n \n             String fieldName = fieldDataType == DataType.DATETIME ? \"date\" : fieldDataType.name().toLowerCase(Locale.ROOT);\n-- \n2.43.0\n\n",
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "reason": "deterministic_no_llm"
+  }
+}

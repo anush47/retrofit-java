@@ -1,0 +1,89 @@
+{
+  "semantic_blueprint": {
+    "root_cause_hypothesis": "Deterministic inference: target branch diverges from mainline; adapt hunks with exact target context.",
+    "fix_logic": "Apply each source hunk with target-verified context and symbol consistency while preserving behavior.",
+    "dependent_apis": [
+      "key",
+      "createCipher",
+      "PBEKeySpec",
+      "getCipherKeyBitsForVersion",
+      "getKdfIterationCountForVersion",
+      "encrypt"
+    ],
+    "patch_intent_summary": "Backport patch behavior to target branch with minimal, context-correct edits.",
+    "hunk_chain": [
+      {
+        "hunk_index": 1,
+        "file": "server/src/main/java/org/elasticsearch/common/settings/KeyStoreWrapper.java",
+        "summary": "Modifies logic (+2/-1 lines).",
+        "role": "propagation",
+        "connects_to_next": "Prepares next hunk in same file with related context.",
+        "global_index": 1
+      },
+      {
+        "hunk_index": 2,
+        "file": "server/src/main/java/org/elasticsearch/common/settings/KeyStoreWrapper.java",
+        "summary": "Modifies logic (+2/-8 lines).",
+        "role": "declaration",
+        "connects_to_next": "Prepares next hunk in same file with related context.",
+        "global_index": 2
+      },
+      {
+        "hunk_index": 3,
+        "file": "server/src/main/java/org/elasticsearch/common/settings/KeyStoreWrapper.java",
+        "summary": "Adds logic (+1 lines).",
+        "role": "propagation",
+        "connects_to_next": "Prepares next hunk in same file with related context.",
+        "global_index": 3
+      },
+      {
+        "hunk_index": 4,
+        "file": "server/src/main/java/org/elasticsearch/common/settings/KeyStoreWrapper.java",
+        "summary": "Modifies logic (+3/-2 lines).",
+        "role": "declaration",
+        "connects_to_next": "Prepares next hunk in same file with related context.",
+        "global_index": 4
+      },
+      {
+        "hunk_index": 5,
+        "file": "server/src/main/java/org/elasticsearch/common/settings/KeyStoreWrapper.java",
+        "summary": "Adds logic (+5 lines).",
+        "role": "declaration",
+        "connects_to_next": "Prepares next hunk in same file with related context.",
+        "global_index": 5
+      },
+      {
+        "hunk_index": 6,
+        "file": "server/src/main/java/org/elasticsearch/common/settings/KeyStoreWrapper.java",
+        "summary": "Modifies logic (+8/-1 lines).",
+        "role": "core_fix",
+        "connects_to_next": "Prepares next hunk in same file with related context.",
+        "global_index": 6
+      },
+      {
+        "hunk_index": 7,
+        "file": "server/src/main/java/org/elasticsearch/common/settings/KeyStoreWrapper.java",
+        "summary": "Modifies logic (+3/-2 lines).",
+        "role": "core_fix",
+        "connects_to_next": "Prepares next hunk in same file with related context.",
+        "global_index": 7
+      },
+      {
+        "hunk_index": 8,
+        "file": "server/src/main/java/org/elasticsearch/common/settings/KeyStoreWrapper.java",
+        "summary": "Modifies logic (+7/-1 lines).",
+        "role": "core_fix",
+        "connects_to_next": "",
+        "global_index": 8
+      }
+    ]
+  },
+  "patch_diff": "From 16d8aaf3865588a323b04d281985bd8daf569daf Mon Sep 17 00:00:00 2001\nFrom: Moritz Mack <mmack@apache.org>\nDate: Thu, 9 Jan 2025 08:57:47 +0100\nSubject: [PATCH] Strengthen encryption for elasticsearch-keystore tool to AES\n 256 (#119749)\n\nThe latest format version (7) of KeyStoreWrapper will be using a 256\nbits key for the AES cipher.\n\nCloses #ES-10419\n---\n .../cli/keystore/KeyStoreWrapperTests.java    |  44 ++++++++++-------\n .../format-v6-elasticsearch.keystore          | Bin 0 -> 216 bytes\n docs/changelog/119749.yaml                    |   5 ++\n .../common/settings/KeyStoreWrapper.java      |  46 ++++++++++++------\n 4 files changed, 63 insertions(+), 32 deletions(-)\n create mode 100644 distribution/tools/keystore-cli/src/test/resources/format-v6-elasticsearch.keystore\n create mode 100644 docs/changelog/119749.yaml\n\ndiff --git a/distribution/tools/keystore-cli/src/test/java/org/elasticsearch/cli/keystore/KeyStoreWrapperTests.java b/distribution/tools/keystore-cli/src/test/java/org/elasticsearch/cli/keystore/KeyStoreWrapperTests.java\nindex 38bb7d592f7..5ab27bac399 100644\n--- a/distribution/tools/keystore-cli/src/test/java/org/elasticsearch/cli/keystore/KeyStoreWrapperTests.java\n+++ b/distribution/tools/keystore-cli/src/test/java/org/elasticsearch/cli/keystore/KeyStoreWrapperTests.java\n@@ -58,6 +58,7 @@ import static org.hamcrest.Matchers.containsString;\n import static org.hamcrest.Matchers.equalTo;\n import static org.hamcrest.Matchers.hasSize;\n import static org.hamcrest.Matchers.instanceOf;\n+import static org.hamcrest.Matchers.is;\n import static org.hamcrest.Matchers.notNullValue;\n \n public class KeyStoreWrapperTests extends ESTestCase {\n@@ -436,17 +437,8 @@ public class KeyStoreWrapperTests extends ESTestCase {\n     public void testLegacyV3() throws GeneralSecurityException, IOException {\n         assumeFalse(\"Cannot open unprotected keystore on FIPS JVM\", inFipsJvm());\n         final Path configDir = createTempDir();\n-        final Path keystore = configDir.resolve(\"elasticsearch.keystore\");\n-        try (\n-            InputStream is = KeyStoreWrapperTests.class.getResourceAsStream(\"/format-v3-elasticsearch.keystore\");\n-            OutputStream os = Files.newOutputStream(keystore)\n-        ) {\n-            final byte[] buffer = new byte[4096];\n-            int readBytes;\n-            while ((readBytes = is.read(buffer)) > 0) {\n-                os.write(buffer, 0, readBytes);\n-            }\n-        }\n+        copyKeyStoreFromResourceToConfigDir(configDir, \"/format-v3-elasticsearch.keystore\");\n+\n         final KeyStoreWrapper wrapper = KeyStoreWrapper.load(configDir);\n         assertNotNull(wrapper);\n         wrapper.decrypt(new char[0]);\n@@ -460,9 +452,31 @@ public class KeyStoreWrapperTests extends ESTestCase {\n \n     public void testLegacyV5() throws GeneralSecurityException, IOException {\n         final Path configDir = createTempDir();\n+        copyKeyStoreFromResourceToConfigDir(configDir, \"/format-v5-with-password-elasticsearch.keystore\");\n+\n+        final KeyStoreWrapper wrapper = KeyStoreWrapper.load(configDir);\n+        assertNotNull(wrapper);\n+        wrapper.decrypt(\"keystorepassword\".toCharArray());\n+        assertThat(wrapper.getFormatVersion(), equalTo(5));\n+        assertThat(wrapper.getSettingNames(), equalTo(Set.of(\"keystore.seed\")));\n+    }\n+\n+    public void testLegacyV6() throws GeneralSecurityException, IOException {\n+        final Path configDir = createTempDir();\n+        copyKeyStoreFromResourceToConfigDir(configDir, \"/format-v6-elasticsearch.keystore\");\n+\n+        final KeyStoreWrapper wrapper = KeyStoreWrapper.load(configDir);\n+        assertNotNull(wrapper);\n+        wrapper.decrypt(\"keystorepassword\".toCharArray());\n+        assertThat(wrapper.getFormatVersion(), equalTo(6));\n+        assertThat(wrapper.getSettingNames(), equalTo(Set.of(\"keystore.seed\", \"string\")));\n+        assertThat(wrapper.getString(\"string\"), equalTo(\"value\"));\n+    }\n+\n+    private void copyKeyStoreFromResourceToConfigDir(Path configDir, String name) throws IOException {\n         final Path keystore = configDir.resolve(\"elasticsearch.keystore\");\n         try (\n-            InputStream is = KeyStoreWrapperTests.class.getResourceAsStream(\"/format-v5-with-password-elasticsearch.keystore\");\n+            InputStream is = KeyStoreWrapperTests.class.getResourceAsStream(name); //\n             OutputStream os = Files.newOutputStream(keystore)\n         ) {\n             final byte[] buffer = new byte[4096];\n@@ -471,11 +485,6 @@ public class KeyStoreWrapperTests extends ESTestCase {\n                 os.write(buffer, 0, readBytes);\n             }\n         }\n-        final KeyStoreWrapper wrapper = KeyStoreWrapper.load(configDir);\n-        assertNotNull(wrapper);\n-        wrapper.decrypt(\"keystorepassword\".toCharArray());\n-        assertThat(wrapper.getFormatVersion(), equalTo(5));\n-        assertThat(wrapper.getSettingNames(), equalTo(Set.of(\"keystore.seed\")));\n     }\n \n     public void testSerializationNewlyCreated() throws Exception {\n@@ -487,6 +496,7 @@ public class KeyStoreWrapperTests extends ESTestCase {\n         wrapper.writeTo(out);\n         final KeyStoreWrapper fromStream = new KeyStoreWrapper(out.bytes().streamInput());\n \n+        assertThat(fromStream.getFormatVersion(), is(KeyStoreWrapper.CURRENT_VERSION));\n         assertThat(fromStream.getSettingNames(), hasSize(2));\n         assertThat(fromStream.getSettingNames(), containsInAnyOrder(\"string_setting\", \"keystore.seed\"));\n \ndiff --git a/distribution/tools/keystore-cli/src/test/resources/format-v6-elasticsearch.keystore b/distribution/tools/keystore-cli/src/test/resources/format-v6-elasticsearch.keystore\nnew file mode 100644\nindex 0000000000000000000000000000000000000000..0f680cc013563e3b1841070919b8e093a25759ca\nGIT binary patch\nliteral 216\nzcmcD&o+B=nnv+;ul9^nbnpl*ap_iRnSzMA|l*+)sz{a=)NIC#<L7qXHt@pbitM#to\nzId5i8`Kngg!%?Sm=jFV9*`MZOL1i<KZ)AEHrtZWV6=Z%p#NzJ8BjMrvTb`*!-QQ7C\nzwPqs^(2QBLekvXl?^$AK%jxd}<kz}>Y+Dw1H^olTsHf8<+PYxg|MxTO!e^|TC+Mx_\nzS#jZ9#*;R??>+%u%hlg)Im;muRX)dwzs*z9a=-1&`DZ0#4yCSJaH3dlC1=yZzXvoX\nOzW^Eu2FqW5V+H^riC9|z\n\nliteral 0\nHcmV?d00001\n\ndiff --git a/docs/changelog/119749.yaml b/docs/changelog/119749.yaml\nnew file mode 100644\nindex 00000000000..aa2b16ceda5\n--- /dev/null\n+++ b/docs/changelog/119749.yaml\n@@ -0,0 +1,5 @@\n+pr: 119749\n+summary: Strengthen encryption for elasticsearch-keystore tool to AES 256\n+area: Infra/CLI\n+type: enhancement\n+issues: []\ndiff --git a/server/src/main/java/org/elasticsearch/common/settings/KeyStoreWrapper.java b/server/src/main/java/org/elasticsearch/common/settings/KeyStoreWrapper.java\nindex defaddb25eb..a192dda84c4 100644\n--- a/server/src/main/java/org/elasticsearch/common/settings/KeyStoreWrapper.java\n+++ b/server/src/main/java/org/elasticsearch/common/settings/KeyStoreWrapper.java\n@@ -120,7 +120,8 @@ public class KeyStoreWrapper implements SecureSettings {\n     /** The version where lucene directory API changed from BE to LE. */\n     public static final int LE_VERSION = 5;\n     public static final int HIGHER_KDF_ITERATION_COUNT_VERSION = 6;\n-    public static final int CURRENT_VERSION = HIGHER_KDF_ITERATION_COUNT_VERSION;\n+    public static final int CIPHER_KEY_BITS_256_VERSION = 7;\n+    public static final int CURRENT_VERSION = CIPHER_KEY_BITS_256_VERSION;\n \n     /** The algorithm used to derive the cipher key from a password. */\n     private static final String KDF_ALGO = \"PBKDF2WithHmacSHA512\";\n@@ -128,14 +129,8 @@ public class KeyStoreWrapper implements SecureSettings {\n     /** The number of iterations to derive the cipher key. */\n     private static final int KDF_ITERS = 210000;\n \n-    /**\n-     * The number of bits for the cipher key.\n-     *\n-     * Note: The Oracle JDK 8 ships with a limited JCE policy that restricts key length for AES to 128 bits.\n-     * This can be increased to 256 bits once minimum java 9 is the minimum java version.\n-     * See http://www.oracle.com/technetwork/java/javase/terms/readme/jdk9-readme-3852447.html#jce\n-     * */\n-    private static final int CIPHER_KEY_BITS = 128;\n+    /** The number of bits for the cipher key (256 bits are supported as of Java 9).*/\n+    private static final int CIPHER_KEY_BITS = 256;\n \n     /** The number of bits for the GCM tag. */\n     private static final int GCM_TAG_BITS = 128;\n@@ -156,6 +151,7 @@ public class KeyStoreWrapper implements SecureSettings {\n     // 4: remove distinction between string/files, ES 6.8/7.1\n     // 5: Lucene directory API changed to LE, ES 8.0\n     // 6: increase KDF iteration count, ES 8.14\n+    // 7: increase cipher key length to 256 bits, ES 9.0\n \n     /** The metadata format version used to read the current keystore wrapper. */\n     private final int formatVersion;\n@@ -318,8 +314,9 @@ public class KeyStoreWrapper implements SecureSettings {\n         return hasPassword;\n     }\n \n-    private static Cipher createCipher(int opmode, char[] password, byte[] salt, byte[] iv, int kdfIters) throws GeneralSecurityException {\n-        PBEKeySpec keySpec = new PBEKeySpec(password, salt, kdfIters, CIPHER_KEY_BITS);\n+    private static Cipher createCipher(int opmode, char[] password, byte[] salt, byte[] iv, int kdfIters, int cipherKeyBits)\n+        throws GeneralSecurityException {\n+        PBEKeySpec keySpec = new PBEKeySpec(password, salt, kdfIters, cipherKeyBits);\n         SecretKeyFactory keyFactory = SecretKeyFactory.getInstance(KDF_ALGO);\n         SecretKey secretKey;\n         try {\n@@ -343,6 +340,11 @@ public class KeyStoreWrapper implements SecureSettings {\n         return formatVersion < HIGHER_KDF_ITERATION_COUNT_VERSION ? 10000 : KDF_ITERS;\n     }\n \n+    private static int getCipherKeyBitsForVersion(int formatVersion) {\n+        // cipher key length was increased in version 7; it was 128 bits in previous versions\n+        return formatVersion < CIPHER_KEY_BITS_256_VERSION ? 128 : CIPHER_KEY_BITS;\n+    }\n+\n     /**\n      * Decrypts the underlying keystore data.\n      *\n@@ -371,7 +373,14 @@ public class KeyStoreWrapper implements SecureSettings {\n             throw new SecurityException(\"Keystore has been corrupted or tampered with\", e);\n         }\n \n-        Cipher cipher = createCipher(Cipher.DECRYPT_MODE, password, salt, iv, getKdfIterationCountForVersion(formatVersion));\n+        Cipher cipher = createCipher(\n+            Cipher.DECRYPT_MODE,\n+            password,\n+            salt,\n+            iv,\n+            getKdfIterationCountForVersion(formatVersion),\n+            getCipherKeyBitsForVersion(formatVersion)\n+        );\n         try (\n             ByteArrayInputStream bytesStream = new ByteArrayInputStream(encryptedBytes);\n             CipherInputStream cipherStream = new CipherInputStream(bytesStream, cipher);\n@@ -409,11 +418,12 @@ public class KeyStoreWrapper implements SecureSettings {\n     }\n \n     /** Encrypt the keystore entries and return the encrypted data. */\n-    private byte[] encrypt(char[] password, byte[] salt, byte[] iv, int kdfIterationCount) throws GeneralSecurityException, IOException {\n+    private byte[] encrypt(char[] password, byte[] salt, byte[] iv, int kdfIterationCount, int cipherKeyBits)\n+        throws GeneralSecurityException, IOException {\n         assert isLoaded();\n \n         ByteArrayOutputStream bytes = new ByteArrayOutputStream();\n-        Cipher cipher = createCipher(Cipher.ENCRYPT_MODE, password, salt, iv, kdfIterationCount);\n+        Cipher cipher = createCipher(Cipher.ENCRYPT_MODE, password, salt, iv, kdfIterationCount, cipherKeyBits);\n         try (\n             CipherOutputStream cipherStream = new CipherOutputStream(bytes, cipher);\n             DataOutputStream output = new DataOutputStream(cipherStream)\n@@ -456,7 +466,13 @@ public class KeyStoreWrapper implements SecureSettings {\n             byte[] iv = new byte[12];\n             random.nextBytes(iv);\n             // encrypted data\n-            byte[] encryptedBytes = encrypt(password, salt, iv, getKdfIterationCountForVersion(CURRENT_VERSION));\n+            byte[] encryptedBytes = encrypt(\n+                password,\n+                salt,\n+                iv,\n+                getKdfIterationCountForVersion(CURRENT_VERSION),\n+                getCipherKeyBitsForVersion(CURRENT_VERSION)\n+            );\n \n             // size of data block\n             output.writeInt(4 + salt.length + 4 + iv.length + 4 + encryptedBytes.length);\n-- \n2.43.0\n\n",
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "reason": "deterministic_no_llm"
+  }
+}

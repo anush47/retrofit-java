@@ -1,0 +1,59 @@
+# Transition Summary
+
+- Source: phase_outputs
+- Valid backport signal: False
+- Reason: Invalid: No fail-to-pass or newly passing relevant tests were observed.
+- fail->pass (0): []
+- newly passing (0): []
+- pass->fail (0): []
+
+## Touched Test States
+- Touched tests (from patch): ['org.elasticsearch.xpack.esql.optimizer.LocalPhysicalPlanOptimizerTests']
+  - org.elasticsearch.xpack.esql.optimizer.LocalPhysicalPlanOptimizerTests#testAnotherCountAllWithFilter {default}: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.esql.optimizer.LocalPhysicalPlanOptimizerTests#testCountAllWithEval {default}: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.esql.optimizer.LocalPhysicalPlanOptimizerTests#testCountAllWithFilter {default}: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.esql.optimizer.LocalPhysicalPlanOptimizerTests#testCountFieldWithEval {default}: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.esql.optimizer.LocalPhysicalPlanOptimizerTests#testCountFieldWithFilter {default}: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.esql.optimizer.LocalPhysicalPlanOptimizerTests#testCountFieldsAndAllWithFilter {default}: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.esql.optimizer.LocalPhysicalPlanOptimizerTests#testCountMultipleFieldsWithFilter {default}: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.esql.optimizer.LocalPhysicalPlanOptimizerTests#testCountOneFieldWithFilter {default}: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.esql.optimizer.LocalPhysicalPlanOptimizerTests#testCountOneFieldWithFilterAndLimit {default}: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.esql.optimizer.LocalPhysicalPlanOptimizerTests#testCountPushdownForSvAndMvFields {default}: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.esql.optimizer.LocalPhysicalPlanOptimizerTests#testFieldHasValue {default}: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.esql.optimizer.LocalPhysicalPlanOptimizerTests#testFieldHasValueWithEmptyFieldInfos {default}: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.esql.optimizer.LocalPhysicalPlanOptimizerTests#testFullTextFunctionsDisjunctionPushdown {default}: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.esql.optimizer.LocalPhysicalPlanOptimizerTests#testFullTextFunctionsDisjunctionWithFiltersPushdown {default}: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.esql.optimizer.LocalPhysicalPlanOptimizerTests#testIsNotNullPushdownFilter {default}: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.esql.optimizer.LocalPhysicalPlanOptimizerTests#testIsNotNull_TextField_Pushdown {default}: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.esql.optimizer.LocalPhysicalPlanOptimizerTests#testIsNotNull_TextField_Pushdown_WithCount {default}: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.esql.optimizer.LocalPhysicalPlanOptimizerTests#testIsNullPushdownFilter {default}: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.esql.optimizer.LocalPhysicalPlanOptimizerTests#testIsNull_TextField_Pushdown {default}: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.esql.optimizer.LocalPhysicalPlanOptimizerTests#testIsNull_TextField_Pushdown_WithCount {default}: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.esql.optimizer.LocalPhysicalPlanOptimizerTests#testKqlFunction {default}: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.esql.optimizer.LocalPhysicalPlanOptimizerTests#testKqlFunctionConjunctionWhereOperands {default}: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.esql.optimizer.LocalPhysicalPlanOptimizerTests#testKqlFunctionMultipleKqlClauses {default}: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.esql.optimizer.LocalPhysicalPlanOptimizerTests#testKqlFunctionMultipleWhereClauses {default}: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.esql.optimizer.LocalPhysicalPlanOptimizerTests#testKqlFunctionWithFunctionsPushedToLucene {default}: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.esql.optimizer.LocalPhysicalPlanOptimizerTests#testLocalAggOptimizedToLocalRelation {default}: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.esql.optimizer.LocalPhysicalPlanOptimizerTests#testMatchFunction {default}: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.esql.optimizer.LocalPhysicalPlanOptimizerTests#testMatchFunctionConjunctionWhereOperands {default}: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.esql.optimizer.LocalPhysicalPlanOptimizerTests#testMatchFunctionMultipleMatchClauses {default}: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.esql.optimizer.LocalPhysicalPlanOptimizerTests#testMatchFunctionMultipleWhereClauses {default}: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.esql.optimizer.LocalPhysicalPlanOptimizerTests#testMatchFunctionWithFunctionsPushedToLucene {default}: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.esql.optimizer.LocalPhysicalPlanOptimizerTests#testMatchWithFieldCasting {default}: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.esql.optimizer.LocalPhysicalPlanOptimizerTests#testMissingFieldsDoNotGetExtracted {default}: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.esql.optimizer.LocalPhysicalPlanOptimizerTests#testMultiCountAllWithFilter {default}: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.esql.optimizer.LocalPhysicalPlanOptimizerTests#testMultipleMatchFilterPushdown {default}: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.esql.optimizer.LocalPhysicalPlanOptimizerTests#testOutOfRangeFilterPushdown {default}: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.esql.optimizer.LocalPhysicalPlanOptimizerTests#testQueryStringFunction {default}: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.esql.optimizer.LocalPhysicalPlanOptimizerTests#testQueryStringFunctionConjunctionWhereOperands {default}: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.esql.optimizer.LocalPhysicalPlanOptimizerTests#testQueryStringFunctionMultipleQstrClauses {default}: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.esql.optimizer.LocalPhysicalPlanOptimizerTests#testQueryStringFunctionMultipleWhereClauses {default}: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.esql.optimizer.LocalPhysicalPlanOptimizerTests#testQueryStringFunctionWithFunctionsPushedToLucene {default}: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.esql.optimizer.LocalPhysicalPlanOptimizerTests#testSingleCountWithStatsFilter {default}: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.esql.optimizer.LocalPhysicalPlanOptimizerTests#testSingleMatchFunctionFilterPushdownWithStringValues {default}: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.esql.optimizer.LocalPhysicalPlanOptimizerTests#testSingleMatchFunctionFilterPushdownWithoutCasting {default}: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.esql.optimizer.LocalPhysicalPlanOptimizerTests#testSingleMatchFunctionPushdownWithCasting {default}: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.esql.optimizer.LocalPhysicalPlanOptimizerTests#testSingleMatchOperatorFilterPushdownWithStringValues {default}: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.esql.optimizer.LocalPhysicalPlanOptimizerTests#testSingleMatchOperatorFilterPushdownWithoutCasting {default}: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.esql.optimizer.LocalPhysicalPlanOptimizerTests#testTermFunction {default}: baseline=passed, patched=passed

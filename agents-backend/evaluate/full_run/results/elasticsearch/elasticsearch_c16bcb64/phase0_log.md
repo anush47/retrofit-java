@@ -1,0 +1,116 @@
+# Phase 0 Inputs
+
+- Mainline commit: c16bcb64a16521011677f95286202b86d9f4711b
+- Backport commit: 027f96a427b87c597d1508e290f084b93b67b745
+- Java-only files for agentic phases: 1
+- Developer auxiliary hunks (test + non-Java): 3
+
+## Commit Pair Consistency
+- Pair mismatch: False
+- Reason: scope_overlap_ok
+- Mainline Java files: ['x-pack/plugin/downsample/src/main/java/org/elasticsearch/xpack/downsample/TransportDownsampleAction.java']
+- Developer Java files: ['x-pack/plugin/downsample/src/main/java/org/elasticsearch/xpack/downsample/TransportDownsampleAction.java']
+- Overlap Java files: ['x-pack/plugin/downsample/src/main/java/org/elasticsearch/xpack/downsample/TransportDownsampleAction.java']
+- Overlap ratio (mainline): 1.0
+
+## Mainline Patch
+```diff
+From c16bcb64a16521011677f95286202b86d9f4711b Mon Sep 17 00:00:00 2001
+From: Oleksandr Kolomiiets <oleksandr.kolomiiets@elastic.co>
+Date: Mon, 23 Dec 2024 10:48:20 -0800
+Subject: [PATCH] Handle `index.mapping.ignore_malformed` in downsampling
+ (#119134)
+
+---
+ docs/changelog/119134.yaml                             |  6 ++++++
+ .../xpack/downsample/TransportDownsampleAction.java    | 10 ++++++++++
+ .../downsample/DownsampleActionSingleNodeTests.java    | 10 ++++++++--
+ 3 files changed, 24 insertions(+), 2 deletions(-)
+ create mode 100644 docs/changelog/119134.yaml
+
+diff --git a/docs/changelog/119134.yaml b/docs/changelog/119134.yaml
+new file mode 100644
+index 00000000000..c4aefac91c7
+--- /dev/null
++++ b/docs/changelog/119134.yaml
+@@ -0,0 +1,6 @@
++pr: 119134
++summary: Handle `index.mapping.ignore_malformed` in downsampling
++area: Downsampling
++type: bug
++issues:
++ - 119075
+diff --git a/x-pack/plugin/downsample/src/main/java/org/elasticsearch/xpack/downsample/TransportDownsampleAction.java b/x-pack/plugin/downsample/src/main/java/org/elasticsearch/xpack/downsample/TransportDownsampleAction.java
+index 58a0370efb5..01a26a7a0b7 100644
+--- a/x-pack/plugin/downsample/src/main/java/org/elasticsearch/xpack/downsample/TransportDownsampleAction.java
++++ b/x-pack/plugin/downsample/src/main/java/org/elasticsearch/xpack/downsample/TransportDownsampleAction.java
+@@ -58,6 +58,7 @@ import org.elasticsearch.index.IndexMode;
+ import org.elasticsearch.index.IndexNotFoundException;
+ import org.elasticsearch.index.IndexSettings;
+ import org.elasticsearch.index.mapper.DateFieldMapper;
++import org.elasticsearch.index.mapper.FieldMapper;
+ import org.elasticsearch.index.mapper.MappedFieldType;
+ import org.elasticsearch.index.mapper.MapperService;
+ import org.elasticsearch.index.mapper.TimeSeriesParams;
+@@ -723,6 +724,9 @@ public class TransportDownsampleAction extends AcknowledgedTransportMasterNodeAc
+                     if (mapping.get("format") != null) {
+                         builder.field("format", mapping.get("format"));
+                     }
++                    if (mapping.get("ignore_malformed") != null) {
++                        builder.field("ignore_malformed", mapping.get("ignore_malformed"));
++                    }
+                 }
+             } catch (IOException e) {
+                 throw new ElasticsearchException("Unable to create timestamp field mapping for field [" + timestampField + "]", e);
+@@ -897,6 +901,12 @@ public class TransportDownsampleAction extends AcknowledgedTransportMasterNodeAc
+                 sourceIndexMetadata.getSettings().get(MapperService.INDEX_MAPPING_TOTAL_FIELDS_LIMIT_SETTING.getKey())
+             );
+         }
++        if (sourceIndexMetadata.getSettings().hasValue(FieldMapper.IGNORE_MALFORMED_SETTING.getKey())) {
++            builder.put(
++                FieldMapper.IGNORE_MALFORMED_SETTING.getKey(),
++                sourceIndexMetadata.getSettings().get(FieldMapper.IGNORE_MALFORMED_SETTING.getKey())
++            );
++        }
+ 
+         CreateIndexClusterStateUpdateRequest createIndexClusterStateUpdateRequest = new CreateIndexClusterStateUpdateRequest(
+             "downsample",
+diff --git a/x-pack/plugin/downsample/src/test/java/org/elasticsearch/xpack/downsample/DownsampleActionSingleNodeTests.java b/x-pack/plugin/downsample/src/test/java/org/elasticsearch/xpack/downsample/DownsampleActionSingleNodeTests.java
+index 812b48ee4ca..33a436a1c7f 100644
+--- a/x-pack/plugin/downsample/src/test/java/org/elasticsearch/xpack/downsample/DownsampleActionSingleNodeTests.java
++++ b/x-pack/plugin/downsample/src/test/java/org/elasticsearch/xpack/downsample/DownsampleActionSingleNodeTests.java
+@@ -49,6 +49,7 @@ import org.elasticsearch.index.IndexService;
+ import org.elasticsearch.index.IndexSettings;
+ import org.elasticsearch.index.engine.VersionConflictEngineException;
+ import org.elasticsearch.index.mapper.DateFieldMapper;
++import org.elasticsearch.index.mapper.FieldMapper;
+ import org.elasticsearch.index.mapper.MapperService;
+ import org.elasticsearch.index.mapper.TimeSeriesIdFieldMapper;
+ import org.elasticsearch.index.mapper.TimeSeriesParams;
+@@ -201,14 +202,19 @@ public class DownsampleActionSingleNodeTests extends ESSingleNodeTestCase {
+                 IndexSettings.TIME_SERIES_START_TIME.getKey(),
+                 DateFieldMapper.DEFAULT_DATE_TIME_FORMATTER.formatMillis(Instant.ofEpochMilli(startTime).toEpochMilli())
+             )
+-            .put(IndexSettings.TIME_SERIES_END_TIME.getKey(), "2106-01-08T23:40:53.384Z");
++            .put(IndexSettings.TIME_SERIES_END_TIME.getKey(), "2106-01-08T23:40:53.384Z")
++            .put(FieldMapper.IGNORE_MALFORMED_SETTING.getKey(), randomBoolean());
+ 
+         if (randomBoolean()) {
+             settings.put(IndexMetadata.SETTING_INDEX_HIDDEN, randomBoolean());
+         }
+ 
+         XContentBuilder mapping = jsonBuilder().startObject().startObject("_doc").startObject("properties");
+-        mapping.startObject(FIELD_TIMESTAMP).field("type", "date").endObject();
++        mapping.startObject(FIELD_TIMESTAMP).field("type", "date");
++        if (settings.get(FieldMapper.IGNORE_MALFORMED_SETTING.getKey()).equals("true")) {
++            mapping.field("ignore_malformed", false);
++        }
++        mapping.endObject();
+ 
+         // Dimensions
+         mapping.startObject(FIELD_DIMENSION_1).field("type", "keyword").field("time_series_dimension", true).endObject();
+-- 
+2.43.0
+
+
+```

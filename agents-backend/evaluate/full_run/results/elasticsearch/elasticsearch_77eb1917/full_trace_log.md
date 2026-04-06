@@ -1,0 +1,23 @@
+# Full Trace of Agentic File Edits
+
+## Attempt #1
+
+### Final Output Diff
+**server/src/main/java/org/elasticsearch/cluster/node/DiscoveryNode.java** [replace]
+```java
+// --- OLD ---
+<developer patch fast path>
+// --- NEW ---
+diff --git a/server/src/main/java/org/elasticsearch/cluster/node/DiscoveryNode.java b/server/src/main/java/org/elasticsearch/cluster/node/DiscoveryNode.java
+index 0251b464de9..fb7c0433cd0 100644
+--- a/server/src/main/java/org/elasticsearch/cluster/node/DiscoveryNode.java
++++ b/server/src/main/java/org/elasticsearch/cluster/node/DiscoveryNode.java
+@@ -625,7 +625,6 @@ public class DiscoveryNode implements Writeable, ToXContentFragment {
+         builder.endArray();
+         builder.field("version", versionInfo.nodeVersion());
+         builder.field("min_index_version", versionInfo.minIndexVersion());
+-        builder.field("min_read_only_index_version", versionInfo.minReadOnlyIndexVersion());
+         builder.field("max_index_version", versionInfo.maxIndexVersion());
+         builder.endObject();
+         return builder;
+```

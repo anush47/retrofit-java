@@ -1,0 +1,27 @@
+patch_id=elasticsearch_c16bcb64
+project=elasticsearch
+mainline_commit=c16bcb64a16521011677f95286202b86d9f4711b
+backport_commit=027f96a427b87c597d1508e290f084b93b67b745
+mode=full
+started_at=2026-04-06T11:35:42.780336
+----------------------------------------
+Running full workflow graph
+Completed node=phase_0_optimistic
+Workflow completed successfully
+
+[elasticsearch/elasticsearch_c16bcb64] Setting up repositories for mode=full...
+[elasticsearch/elasticsearch_c16bcb64] Running full workflow graph...
+Router: Running Phase 0.
+Phase 0 (Optimistic): Checking direct patch applicability...
+Phase 0: Experiment mode — checking out parent of 027f96a427b87c597d1508e290f084b93b67b745...
+Phase 0: Building baseline by applying developer backport test hunks only...
+  Validation: x-pack/plugin/downsample/src/test/java/org/elasticsearch/xpack/downsample/DownsampleActionSingleNodeTests.java - applying 2 hunk(s) one by one in bottom-to-top order: [202, 49]
+    Agent 4: Executing elasticsearch helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/elasticsearch/run_tests.sh
+Phase 0: git apply --check SUCCEEDED. Attempting actual patch application and test run.
+    Agent 4: Executing elasticsearch helper build script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/elasticsearch/run_build.sh
+    Agent 4: Executing elasticsearch helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/elasticsearch/run_tests.sh
+Phase 0: Transition summary -> reason=Valid: Observed fail-to-pass and/or newly passing relevant tests with no regressions.; fail->pass(3): ['org.elasticsearch.xpack.downsample.DownsampleActionSingleNodeTests#testDownsampleEmptyIndex', 'org.elasticsearch.xpack.downsample.DownsampleActionSingleNodeTests#testDownsampleOfDownsample', 'org.elasticsearch.xpack.downsample.DownsampleActionSingleNodeTests#testDuplicateDownsampleRequest']; newly_passing(0): []; pass->fail(0): []
+Phase 0: Transition-based test validation passed. Fast-path success.
+Router: Phase 0 succeeded - taking fast-path exit.
+  Completed: phase_0_optimistic
+[elasticsearch/elasticsearch_c16bcb64] Full workflow completed!

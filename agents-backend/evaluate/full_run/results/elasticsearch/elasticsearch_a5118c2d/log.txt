@@ -1,0 +1,29 @@
+patch_id=elasticsearch_a5118c2d
+project=elasticsearch
+mainline_commit=a5118c2d9fa5e2442c408089387e75337b2a5d4a
+backport_commit=e7ac7c3c960e38fb06aabdc09efc3e635424732b
+mode=full
+started_at=2026-04-06T12:59:23.883447
+----------------------------------------
+Running full workflow graph
+Completed node=phase_0_optimistic
+Workflow completed successfully
+
+[elasticsearch/elasticsearch_a5118c2d] Setting up repositories for mode=full...
+[elasticsearch/elasticsearch_a5118c2d] Running full workflow graph...
+Router: Running Phase 0.
+Phase 0 (Optimistic): Checking direct patch applicability...
+Phase 0: Experiment mode — checking out parent of e7ac7c3c960e38fb06aabdc09efc3e635424732b...
+Phase 0: Building baseline by applying developer backport test hunks only...
+  Validation: server/src/internalClusterTest/java/org/elasticsearch/search/functionscore/QueryRescorerIT.java - applying 3 hunk(s) one by one in bottom-to-top order: [993, 40, 9]
+  Validation: server/src/test/java/org/elasticsearch/search/rescore/RescorePhaseTests.java - applying 1 hunk(s) one by one in bottom-to-top order: [1]
+  Validation: ADDED operation for server/src/test/java/org/elasticsearch/search/rescore/RescorePhaseTests.java
+    Agent 4: Executing elasticsearch helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/elasticsearch/run_tests.sh
+Phase 0: git apply --check SUCCEEDED. Attempting actual patch application and test run.
+    Agent 4: Executing elasticsearch helper build script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/elasticsearch/run_build.sh
+    Agent 4: Executing elasticsearch helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/elasticsearch/run_tests.sh
+Phase 0: Transition summary -> reason=Valid: Observed fail-to-pass and/or newly passing relevant tests with no regressions.; fail->pass(0): []; newly_passing(15): ['org.elasticsearch.search.functionscore.QueryRescorerIT#testEnforceWindowSize', 'org.elasticsearch.search.functionscore.QueryRescorerIT#testEquivalence', 'org.elasticsearch.search.functionscore.QueryRescorerIT#testExplain', 'org.elasticsearch.search.functionscore.QueryRescorerIT#testFromSize', 'org.elasticsearch.search.functionscore.QueryRescorerIT#testMoreDocs', 'org.elasticsearch.search.functionscore.QueryRescorerIT#testMultipleRescores', 'org.elasticsearch.search.functionscore.QueryRescorerIT#testRescoreAfterCollapse', 'org.elasticsearch.search.functionscore.QueryRescorerIT#testRescoreAfterCollapseRandom', 'org.elasticsearch.search.functionscore.QueryRescorerIT#testRescorePhaseWithInvalidSort', 'org.elasticsearch.search.functionscore.QueryRescorerIT#testRescorePhrase', 'org.elasticsearch.search.functionscore.QueryRescorerIT#testRescoreWithTimeout', 'org.elasticsearch.search.functionscore.QueryRescorerIT#testRescorerMadeScoresWorse', 'org.elasticsearch.search.functionscore.QueryRescorerIT#testScoring', 'org.elasticsearch.search.functionscore.QueryRescorerIT#testSmallRescoreWindow', 'org.elasticsearch.search.rescore.RescorePhaseTests#testRescorePhaseCancellation']; pass->fail(0): []
+Phase 0: Transition-based test validation passed. Fast-path success.
+Router: Phase 0 succeeded - taking fast-path exit.
+  Completed: phase_0_optimistic
+[elasticsearch/elasticsearch_a5118c2d] Full workflow completed!

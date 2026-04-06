@@ -1,0 +1,128 @@
+{
+  "consistency_map": {},
+  "mapped_target_context": {
+    "x-pack/plugin/esql/src/main/java/org/elasticsearch/xpack/esql/optimizer/rules/logical/PruneColumns.java": [
+      {
+        "hunk_index": 1,
+        "mainline_method": "<import>",
+        "target_file": "x-pack/plugin/esql/src/main/java/org/elasticsearch/xpack/esql/optimizer/rules/logical/PruneColumns.java",
+        "target_method": "<import>",
+        "start_line": 16,
+        "end_line": 16,
+        "code_snippet": "/*\n * Copyright Elasticsearch B.V. and/or licensed to Elasticsearch B.V. under one\n * or more contributor license agreements. Licensed under the Elastic License\n * 2.0; you may not use this file except in compliance with the Elastic License\n * 2.0.\n */\n\npackage org.elasticsearch.xpack.esql.optimizer.rules.logical;\n\nimport org.elasticsearch.compute.data.Block;\nimport org.elasticsearch.compute.data.BlockUtils;\nimport org.elasticsearch.xpack.esql.core.expression.AttributeSet;\nimport org.elasticsearch.xpack.esql.core.expression.EmptyAttribute;\nimport org.elasticsearch.xpack.esql.core.expression.Expressions;\nimport org.elasticsearch.xpack.esql.core.expression.NamedExpression;\nimport org.elasticsearch.xpack.esql.core.util.Holder;\nimport org.elasticsearch.xpack.esql.plan.logical.Aggregate;\nimport org.elasticsearch.xpack.esql.plan.logical.Eval;\nimport org.elasticsearch.xpack.esql.plan.logical.Limit;\nimport org.elasticsearch.xpack.esql.plan.logical.LogicalPlan;\nimport org.elasticsearch.xpack.esql.plan.logical.Project;\nimport org.elasticsearch.xpack.esql.plan.logical.local.LocalRelation;\nimport org.elasticsearch.xpack.esql.plan.logical.local.LocalSupplier;\nimport org.elasticsearch.xpack.esql.planner.PlannerUtils;\nimport org.elasticsearch.xpack.esql.rule.Rule;\n\nimport java.util.ArrayList;\nimport java.util.List;\n\n/**\n * Remove unused columns created in the plan, in fields inside eval or aggregations inside stats.\n */\npublic final class PruneColumns extends Rule<LogicalPlan, LogicalPlan> {\n\n    @Override\n    public LogicalPlan apply(LogicalPlan plan) {",
+        "anchor_confidence": "high",
+        "anchor_reason": "line_and_method_resolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 2,
+        "mainline_method": "apply",
+        "target_file": "x-pack/plugin/esql/src/main/java/org/elasticsearch/xpack/esql/optimizer/rules/logical/PruneColumns.java",
+        "target_method": "apply",
+        "start_line": 37,
+        "end_line": 37,
+        "code_snippet": "import org.elasticsearch.xpack.esql.plan.logical.Aggregate;\nimport org.elasticsearch.xpack.esql.plan.logical.Eval;\nimport org.elasticsearch.xpack.esql.plan.logical.Limit;\nimport org.elasticsearch.xpack.esql.plan.logical.LogicalPlan;\nimport org.elasticsearch.xpack.esql.plan.logical.Project;\nimport org.elasticsearch.xpack.esql.plan.logical.local.LocalRelation;\nimport org.elasticsearch.xpack.esql.plan.logical.local.LocalSupplier;\nimport org.elasticsearch.xpack.esql.planner.PlannerUtils;\nimport org.elasticsearch.xpack.esql.rule.Rule;\n\nimport java.util.ArrayList;\nimport java.util.List;\n\n/**\n * Remove unused columns created in the plan, in fields inside eval or aggregations inside stats.\n */\npublic final class PruneColumns extends Rule<LogicalPlan, LogicalPlan> {\n\n    @Override\n    public LogicalPlan apply(LogicalPlan plan) {\n        var used = new AttributeSet();\n        // don't remove Evals without any Project/Aggregate (which might not occur as the last node in the plan)\n        var seenProjection = new Holder<>(Boolean.FALSE);\n\n        // start top-to-bottom\n        // and track used references\n        var pl = plan.transformDown(p -> {\n            // skip nodes that simply pass the input through\n            if (p instanceof Limit) {\n                return p;\n            }\n\n            // remember used\n            boolean recheck;\n            // analyze the unused items against dedicated 'producer' nodes such as Eval and Aggregate\n            // perform a loop to retry checking if the current node is completely eliminated\n            do {\n                recheck = false;\n                if (p instanceof Aggregate aggregate) {\n                    var remaining = seenProjection.get() ? removeUnused(aggregate.aggregates(), used) : null;\n",
+        "anchor_confidence": "high",
+        "anchor_reason": "line_and_method_resolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 3,
+        "mainline_method": "hunk_3",
+        "target_file": "x-pack/plugin/esql/src/main/java/org/elasticsearch/xpack/esql/optimizer/rules/logical/PruneColumns.java",
+        "target_method": null,
+        "start_line": 56,
+        "end_line": 56,
+        "code_snippet": "    public LogicalPlan apply(LogicalPlan plan) {\n        var used = new AttributeSet();\n        // don't remove Evals without any Project/Aggregate (which might not occur as the last node in the plan)\n        var seenProjection = new Holder<>(Boolean.FALSE);\n\n        // start top-to-bottom\n        // and track used references\n        var pl = plan.transformDown(p -> {\n            // skip nodes that simply pass the input through\n            if (p instanceof Limit) {\n                return p;\n            }\n\n            // remember used\n            boolean recheck;\n            // analyze the unused items against dedicated 'producer' nodes such as Eval and Aggregate\n            // perform a loop to retry checking if the current node is completely eliminated\n            do {\n                recheck = false;\n                if (p instanceof Aggregate aggregate) {\n                    var remaining = seenProjection.get() ? removeUnused(aggregate.aggregates(), used) : null;\n\n                    if (remaining != null) {\n                        if (remaining.isEmpty()) {\n                            // We still need to have a plan that produces 1 row per group.\n                            if (aggregate.groupings().isEmpty()) {\n                                p = new LocalRelation(\n                                    aggregate.source(),\n                                    List.of(new EmptyAttribute(aggregate.source())),\n                                    LocalSupplier.of(\n                                        new Block[] { BlockUtils.constantBlock(PlannerUtils.NON_BREAKING_BLOCK_FACTORY, null, 1) }\n                                    )\n                                );\n                            } else {\n                                // Aggs cannot produce pages with 0 columns, so retain one grouping.\n                                remaining = List.of(Expressions.attribute(aggregate.groupings().get(0)));\n                                p = new Aggregate(\n                                    aggregate.source(),\n                                    aggregate.child(),\n                                    aggregate.aggregateType(),\n                                    aggregate.groupings(),",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 4,
+        "mainline_method": "hunk_4",
+        "target_file": "x-pack/plugin/esql/src/main/java/org/elasticsearch/xpack/esql/optimizer/rules/logical/PruneColumns.java",
+        "target_method": null,
+        "start_line": 91,
+        "end_line": 91,
+        "code_snippet": "                                remaining = List.of(Expressions.attribute(aggregate.groupings().get(0)));\n                                p = new Aggregate(\n                                    aggregate.source(),\n                                    aggregate.child(),\n                                    aggregate.aggregateType(),\n                                    aggregate.groupings(),\n                                    remaining\n                                );\n                            }\n                        } else {\n                            p = new Aggregate(\n                                aggregate.source(),\n                                aggregate.child(),\n                                aggregate.aggregateType(),\n                                aggregate.groupings(),\n                                remaining\n                            );\n                        }\n                    }\n\n                    seenProjection.set(Boolean.TRUE);\n                } else if (p instanceof Eval eval) {\n                    var remaining = seenProjection.get() ? removeUnused(eval.fields(), used) : null;\n                    // no fields, no eval\n                    if (remaining != null) {\n                        if (remaining.isEmpty()) {\n                            p = eval.child();\n                            recheck = true;\n                        } else {\n                            p = new Eval(eval.source(), eval.child(), remaining);\n                        }\n                    }\n                } else if (p instanceof Project) {\n                    seenProjection.set(Boolean.TRUE);\n                }\n            } while (recheck);\n\n            used.addAll(p.references());\n\n            // preserve the state before going to the next node\n            return p;",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 5,
+        "mainline_method": "hunk_5",
+        "target_file": "x-pack/plugin/esql/src/main/java/org/elasticsearch/xpack/esql/optimizer/rules/logical/PruneColumns.java",
+        "target_method": null,
+        "start_line": 103,
+        "end_line": 103,
+        "code_snippet": "                                aggregate.child(),\n                                aggregate.aggregateType(),\n                                aggregate.groupings(),\n                                remaining\n                            );\n                        }\n                    }\n\n                    seenProjection.set(Boolean.TRUE);\n                } else if (p instanceof Eval eval) {\n                    var remaining = seenProjection.get() ? removeUnused(eval.fields(), used) : null;\n                    // no fields, no eval\n                    if (remaining != null) {\n                        if (remaining.isEmpty()) {\n                            p = eval.child();\n                            recheck = true;\n                        } else {\n                            p = new Eval(eval.source(), eval.child(), remaining);\n                        }\n                    }\n                } else if (p instanceof Project) {\n                    seenProjection.set(Boolean.TRUE);\n                }\n            } while (recheck);\n\n            used.addAll(p.references());\n\n            // preserve the state before going to the next node\n            return p;\n        });\n\n        return pl;\n    }\n\n    /**\n     * Prunes attributes from the list not found in the given set.\n     * Returns null if no changed occurred.\n     */\n    private static <N extends NamedExpression> List<N> removeUnused(List<N> named, AttributeSet used) {\n        var clone = new ArrayList<>(named);\n        var it = clone.listIterator(clone.size());",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      }
+    ],
+    "x-pack/plugin/esql/src/main/java/org/elasticsearch/xpack/esql/optimizer/rules/logical/local/ReplaceMissingFieldWithNull.java": [
+      {
+        "hunk_index": 1,
+        "mainline_method": "hunk_1",
+        "target_file": "x-pack/plugin/esql/src/main/java/org/elasticsearch/xpack/esql/optimizer/rules/logical/local/ReplaceMissingFieldWithNull.java",
+        "target_method": null,
+        "start_line": 104,
+        "end_line": 104,
+        "code_snippet": "                    // otherwise point to it\n                    else {\n                        // since avoids creating field copies\n                        projection = new Alias(f.source(), f.name(), nullAlias.toAttribute(), f.id());\n                    }\n                }\n\n                newProjections.add(projection);\n            }\n            // add the first found field as null\n            if (nullLiteral.size() > 0) {\n                plan = new Eval(project.source(), project.child(), new ArrayList<>(nullLiteral.values()));\n                plan = new Project(project.source(), plan, newProjections);\n            }\n        } else if (plan instanceof Eval\n            || plan instanceof Filter\n            || plan instanceof OrderBy\n            || plan instanceof RegexExtract\n            || plan instanceof TopN) {\n                plan = plan.transformExpressionsOnlyUp(\n                    FieldAttribute.class,\n                    // Do not use the attribute name, this can deviate from the field name for union types.\n                    // Also skip fields from lookup indices because we do not have stats for these.\n                    f -> stats.exists(f.fieldName()) || lookupFields.contains(f) ? f : Literal.of(f, null)\n                );\n            }\n\n        return plan;\n    }\n\n    private AttributeSet joinAttributes(Project project) {\n        var attributes = new AttributeSet();\n        project.forEachDown(Join.class, j -> j.right().forEachDown(EsRelation.class, p -> attributes.addAll(p.output())));\n        return attributes;\n    }\n}",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      }
+    ],
+    "x-pack/plugin/esql/src/main/java/org/elasticsearch/xpack/esql/plan/logical/join/LookupJoin.java": [
+      {
+        "hunk_index": 1,
+        "mainline_method": "hunk_1",
+        "target_file": "x-pack/plugin/esql/src/main/java/org/elasticsearch/xpack/esql/plan/logical/join/LookupJoin.java",
+        "target_method": null,
+        "start_line": 14,
+        "end_line": 14,
+        "code_snippet": "/*\n * Copyright Elasticsearch B.V. and/or licensed to Elasticsearch B.V. under one\n * or more contributor license agreements. Licensed under the Elastic License\n * 2.0; you may not use this file except in compliance with the Elastic License\n * 2.0.\n */\n\npackage org.elasticsearch.xpack.esql.plan.logical.join;\n\nimport org.elasticsearch.xpack.esql.core.expression.Attribute;\nimport org.elasticsearch.xpack.esql.core.tree.NodeInfo;\nimport org.elasticsearch.xpack.esql.core.tree.Source;\nimport org.elasticsearch.xpack.esql.plan.logical.LogicalPlan;\nimport org.elasticsearch.xpack.esql.plan.logical.Project;\nimport org.elasticsearch.xpack.esql.plan.logical.SurrogateLogicalPlan;\nimport org.elasticsearch.xpack.esql.plan.logical.join.JoinTypes.UsingJoinType;\n\nimport java.util.List;\n\nimport static java.util.Collections.emptyList;\nimport static org.elasticsearch.xpack.esql.plan.logical.join.JoinTypes.LEFT;\n\n/**\n * Lookup join - specialized LEFT (OUTER) JOIN between the main left side and a lookup index (index_mode = lookup) on the right.\n */\npublic class LookupJoin extends Join implements SurrogateLogicalPlan {\n\n    public LookupJoin(Source source, LogicalPlan left, LogicalPlan right, List<Attribute> joinFields) {\n        this(source, left, right, new UsingJoinType(LEFT, joinFields), emptyList(), emptyList(), emptyList());\n    }\n\n    public LookupJoin(\n        Source source,\n        LogicalPlan left,",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 2,
+        "mainline_method": "surrogate",
+        "target_file": "x-pack/plugin/esql/src/main/java/org/elasticsearch/xpack/esql/plan/logical/join/LookupJoin.java",
+        "target_method": "surrogate",
+        "start_line": 53,
+        "end_line": 53,
+        "code_snippet": "        Source source,\n        LogicalPlan left,\n        LogicalPlan right,\n        JoinType type,\n        List<Attribute> joinFields,\n        List<Attribute> leftFields,\n        List<Attribute> rightFields\n    ) {\n        this(source, left, right, new JoinConfig(type, joinFields, leftFields, rightFields));\n    }\n\n    public LookupJoin(Source source, LogicalPlan left, LogicalPlan right, JoinConfig joinConfig) {\n        super(source, left, right, joinConfig);\n    }\n\n    /**\n     * Translate the expression into a regular join with a Projection on top, to deal with serialization &amp; co.\n     */\n    @Override\n    public LogicalPlan surrogate() {\n        Join normalized = new Join(source(), left(), right(), config());\n        // TODO: decide whether to introduce USING or just basic ON semantics - keep the ordering out for now\n        return new Project(source(), normalized, output());\n    }\n\n    @Override\n    public Join replaceChildren(LogicalPlan left, LogicalPlan right) {\n        return new LookupJoin(source(), left, right, config());\n    }\n\n    @Override\n    protected NodeInfo<Join> info() {\n        return NodeInfo.create(\n            this,\n            LookupJoin::new,\n            left(),\n            right(),\n            config().type(),\n            config().matchFields(),\n            config().leftFields(),\n            config().rightFields()",
+        "anchor_confidence": "high",
+        "anchor_reason": "line_and_method_resolved",
+        "anchor_strategy": "deterministic_realign"
+      }
+    ],
+    "x-pack/plugin/esql/src/main/java/org/elasticsearch/xpack/esql/planner/LocalExecutionPlanner.java": [
+      {
+        "hunk_index": 1,
+        "mainline_method": "hunk_1",
+        "target_file": "x-pack/plugin/esql/src/main/java/org/elasticsearch/xpack/esql/planner/LocalExecutionPlanner.java",
+        "target_method": null,
+        "start_line": 752,
+        "end_line": 752,
+        "code_snippet": "            this.layout = layout;\n        }\n\n        public SourceOperator source(DriverContext driverContext) {\n            return sourceOperatorFactory.get(driverContext);\n        }\n\n        public void operators(List<Operator> operators, DriverContext driverContext) {\n            intermediateOperatorFactories.stream().map(opFactory -> opFactory.get(driverContext)).forEach(operators::add);\n        }\n\n        public SinkOperator sink(DriverContext driverContext) {\n            return sinkOperatorFactory.get(driverContext);\n        }\n\n        @Override\n        public String describe() {\n            return Stream.concat(\n                Stream.concat(Stream.of(sourceOperatorFactory), intermediateOperatorFactories.stream()),\n                Stream.of(sinkOperatorFactory)\n            ).map(Describable::describe).collect(joining(\"\\n\\\\_\", \"\\\\_\", \"\"));\n        }\n\n        @Override\n        public String toString() {\n            return describe();\n        }\n    }\n\n    /**\n     * The count and type of driver parallelism.\n     */\n    record DriverParallelism(Type type, int instanceCount) {\n\n        DriverParallelism {\n            if (instanceCount <= 0) {\n                throw new IllegalArgumentException(\"instance count must be greater than zero; got: \" + instanceCount);\n            }\n        }\n\n        static final DriverParallelism SINGLE = new DriverParallelism(Type.SINGLETON, 1);",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      }
+    ]
+  },
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "reason": "llm_usage_not_collected_in_this_node"
+  }
+}

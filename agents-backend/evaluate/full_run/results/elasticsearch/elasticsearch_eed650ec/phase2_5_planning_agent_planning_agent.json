@@ -1,0 +1,65 @@
+{
+  "hunk_generation_plan": {
+    "server/src/main/java/org/elasticsearch/index/mapper/AbstractShapeGeometryFieldMapper.java": [
+      {
+        "hunk_index": 0,
+        "target_file": "server/src/main/java/org/elasticsearch/index/mapper/AbstractShapeGeometryFieldMapper.java",
+        "operation_index": 0,
+        "edit_type": "replace",
+        "old_string": "                    private void read(BinaryDocValues binaryDocValues, int doc, GeometryDocValueReader reader, BytesRefBuilder builder)\n                        throws IOException {\n                        binaryDocValues.advanceExact(doc);\n                        reader.reset(binaryDocValues.binaryValue());",
+        "new_string": "                    private void read(BinaryDocValues binaryDocValues, int doc, GeometryDocValueReader reader, BytesRefBuilder builder)\n                        throws IOException {\n                        if (binaryDocValues.advanceExact(doc) == false) {\n                            builder.appendNull();\n                            return;\n                        }\n                        reader.reset(binaryDocValues.binaryValue());",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_replace|forced_type_v:failed_stage_generation_contract",
+        "surround_before_3": [
+          "                        read(binaryDocValues, docId, reader, (BytesRefBuilder) builder);",
+          "                    }",
+          ""
+        ],
+        "surround_after_3": [
+          "                        var extent = reader.getExtent();",
+          "                        // This is rather silly: an extent is already encoded as ints, but we convert it to Rectangle to",
+          "                        // preserve its properties as a WKB shape, only to convert it back to ints when we compute the"
+        ],
+        "adaptation_type": "TYPE_V",
+        "base_adaptation_type": "TYPE_II",
+        "execution_type": "TYPE_V",
+        "location_match": true,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": true,
+        "namespace_changes": [],
+        "required_invariants": [
+          "if (binaryDocValues.advanceExact(doc) == false) {",
+          "builder.appendNull();"
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 11,
+          "target_declared_methods_count": 11,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      }
+    ]
+  },
+  "last_plan_signature": "0e6e5e0b6ffc9903c953fee2e94239c8ec8938232afc3b71f821262194600671",
+  "validation_repeated_plan_detected": false,
+  "force_type_v_until_success": true,
+  "force_type_v_reason": "failed_stage_generation_contract",
+  "force_type_v_retry_files": [
+    "server/src/main/java/org/elasticsearch/index/mapper/AbstractShapeGeometryFieldMapper.java"
+  ],
+  "token_usage": {
+    "input_tokens": 1390,
+    "output_tokens": 330,
+    "total_tokens": 1720,
+    "estimated": false,
+    "sources": [
+      "planning_agent.provider_usage"
+    ]
+  }
+}

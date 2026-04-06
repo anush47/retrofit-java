@@ -1,0 +1,41 @@
+# Transition Summary
+
+- Source: phase_outputs
+- Valid backport signal: True
+- Reason: Valid: Observed fail-to-pass and/or newly passing relevant tests with no regressions.
+- fail->pass (1): ['org.elasticsearch.index.query.BoolQueryBuilderTests#testRewriteWithMatchNone']
+- newly passing (0): []
+- pass->fail (0): []
+
+## Touched Test States
+- Touched tests (from patch): ['org.elasticsearch.index.query.BoolQueryBuilderTests']
+  - org.elasticsearch.index.query.BoolQueryBuilderTests#testCacheability: baseline=passed, patched=passed
+  - org.elasticsearch.index.query.BoolQueryBuilderTests#testDeprecation: baseline=passed, patched=passed
+  - org.elasticsearch.index.query.BoolQueryBuilderTests#testEmptyBooleanQuery: baseline=passed, patched=passed
+  - org.elasticsearch.index.query.BoolQueryBuilderTests#testEqualsAndHashcode: baseline=passed, patched=passed
+  - org.elasticsearch.index.query.BoolQueryBuilderTests#testFilterNull: baseline=passed, patched=passed
+  - org.elasticsearch.index.query.BoolQueryBuilderTests#testFromJson: baseline=passed, patched=passed
+  - org.elasticsearch.index.query.BoolQueryBuilderTests#testFromXContent: baseline=passed, patched=passed
+  - org.elasticsearch.index.query.BoolQueryBuilderTests#testIllegalArguments: baseline=passed, patched=passed
+  - org.elasticsearch.index.query.BoolQueryBuilderTests#testMaxNestedDepth: baseline=passed, patched=passed
+  - org.elasticsearch.index.query.BoolQueryBuilderTests#testMinShouldMatchBiggerThanNumberOfShouldClauses: baseline=passed, patched=passed
+  - org.elasticsearch.index.query.BoolQueryBuilderTests#testMinShouldMatchDisableCoord: baseline=passed, patched=passed
+  - org.elasticsearch.index.query.BoolQueryBuilderTests#testMinShouldMatchFilterWithoutShouldClauses: baseline=passed, patched=passed
+  - org.elasticsearch.index.query.BoolQueryBuilderTests#testMinimumShouldMatchNull: baseline=passed, patched=passed
+  - org.elasticsearch.index.query.BoolQueryBuilderTests#testMinimumShouldMatchNumber: baseline=passed, patched=passed
+  - org.elasticsearch.index.query.BoolQueryBuilderTests#testMustNotNull: baseline=passed, patched=passed
+  - org.elasticsearch.index.query.BoolQueryBuilderTests#testMustNull: baseline=passed, patched=passed
+  - org.elasticsearch.index.query.BoolQueryBuilderTests#testMustRewrite: baseline=passed, patched=passed
+  - org.elasticsearch.index.query.BoolQueryBuilderTests#testNegativeBoosts: baseline=passed, patched=passed
+  - org.elasticsearch.index.query.BoolQueryBuilderTests#testQueryWrappedInArray: baseline=passed, patched=passed
+  - org.elasticsearch.index.query.BoolQueryBuilderTests#testRewrite: baseline=passed, patched=passed
+  - org.elasticsearch.index.query.BoolQueryBuilderTests#testRewriteMultipleTimes: baseline=passed, patched=passed
+  - org.elasticsearch.index.query.BoolQueryBuilderTests#testRewriteWithMatchNone: baseline=failed, patched=passed
+  - org.elasticsearch.index.query.BoolQueryBuilderTests#testSerialization: baseline=passed, patched=passed
+  - org.elasticsearch.index.query.BoolQueryBuilderTests#testShallowCopy: baseline=passed, patched=passed
+  - org.elasticsearch.index.query.BoolQueryBuilderTests#testShouldNull: baseline=passed, patched=passed
+  - org.elasticsearch.index.query.BoolQueryBuilderTests#testToQuery: baseline=passed, patched=passed
+  - org.elasticsearch.index.query.BoolQueryBuilderTests#testUnknownField: baseline=passed, patched=passed
+  - org.elasticsearch.index.query.BoolQueryBuilderTests#testUnknownObjectException: baseline=passed, patched=passed
+  - org.elasticsearch.index.query.BoolQueryBuilderTests#testUnknownQueryName: baseline=passed, patched=passed
+  - org.elasticsearch.index.query.BoolQueryBuilderTests#testValidOutput: baseline=passed, patched=passed

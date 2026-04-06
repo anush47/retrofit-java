@@ -1,0 +1,27 @@
+patch_id=elasticsearch_393ea618
+project=elasticsearch
+mainline_commit=393ea618d7c01c7c5ef2bb23f4a41185833be5d3
+backport_commit=b78cfd8ef7ccc8d79bbdb456b22f867b3e116d4b
+mode=full
+started_at=2026-04-06T10:06:44.328956
+----------------------------------------
+Running full workflow graph
+Completed node=phase_0_optimistic
+Workflow completed successfully
+
+[elasticsearch/elasticsearch_393ea618] Setting up repositories for mode=full...
+[elasticsearch/elasticsearch_393ea618] Running full workflow graph...
+Router: Running Phase 0.
+Phase 0 (Optimistic): Checking direct patch applicability...
+Phase 0: Experiment mode — checking out parent of b78cfd8ef7ccc8d79bbdb456b22f867b3e116d4b...
+Phase 0: Building baseline by applying developer backport test hunks only...
+  Validation: x-pack/plugin/inference/src/test/java/org/elasticsearch/xpack/inference/mapper/SemanticTextFieldMapperTests.java - applying 1 hunk(s) one by one in bottom-to-top order: [531]
+    Agent 4: Executing elasticsearch helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/elasticsearch/run_tests.sh
+Phase 0: git apply --check SUCCEEDED. Attempting actual patch application and test run.
+    Agent 4: Executing elasticsearch helper build script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/elasticsearch/run_build.sh
+    Agent 4: Executing elasticsearch helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/elasticsearch/run_tests.sh
+Phase 0: Transition summary -> reason=Valid: Observed fail-to-pass and/or newly passing relevant tests with no regressions.; fail->pass(3): ['org.elasticsearch.xpack.inference.mapper.SemanticTextFieldMapperTests#testDynamicUpdate {p0=true}', 'org.elasticsearch.xpack.inference.mapper.SemanticTextFieldMapperTests#testUpdateModelSettings {p0=true}', 'org.elasticsearch.xpack.inference.mapper.SemanticTextFieldMapperTests#testUpdateSearchInferenceId {p0=true}']; newly_passing(0): []; pass->fail(0): []
+Phase 0: Transition-based test validation passed. Fast-path success.
+Router: Phase 0 succeeded - taking fast-path exit.
+  Completed: phase_0_optimistic
+[elasticsearch/elasticsearch_393ea618] Full workflow completed!

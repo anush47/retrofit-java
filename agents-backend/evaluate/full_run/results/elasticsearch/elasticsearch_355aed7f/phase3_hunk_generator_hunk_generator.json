@@ -1,0 +1,161 @@
+{
+  "adapted_file_edits": [
+    {
+      "target_file": "x-pack/plugin/esql/src/main/java/org/elasticsearch/xpack/esql/optimizer/rules/physical/local/PushFiltersToSource.java",
+      "mainline_file": "x-pack/plugin/esql/src/main/java/org/elasticsearch/xpack/esql/optimizer/rules/physical/local/PushFiltersToSource.java",
+      "old_string": "<deterministic file-editor diff>",
+      "new_string": "diff --git a/x-pack/plugin/esql/src/main/java/org/elasticsearch/xpack/esql/optimizer/rules/physical/local/PushFiltersToSource.java b/x-pack/plugin/esql/src/main/java/org/elasticsearch/xpack/esql/optimizer/rules/physical/local/PushFiltersToSource.java\nindex 6fcdd538fdf..703be33de13 100644\n--- a/x-pack/plugin/esql/src/main/java/org/elasticsearch/xpack/esql/optimizer/rules/physical/local/PushFiltersToSource.java\n+++ b/x-pack/plugin/esql/src/main/java/org/elasticsearch/xpack/esql/optimizer/rules/physical/local/PushFiltersToSource.java\n@@ -31,7 +31,7 @@ import org.elasticsearch.xpack.esql.core.type.DataType;\n import org.elasticsearch.xpack.esql.core.util.CollectionUtils;\n import org.elasticsearch.xpack.esql.core.util.Queries;\n import org.elasticsearch.xpack.esql.expression.function.fulltext.FullTextFunction;\n-import org.elasticsearch.xpack.esql.expression.function.fulltext.Term;\n+\n import org.elasticsearch.xpack.esql.expression.function.scalar.ip.CIDRMatch;\n import org.elasticsearch.xpack.esql.expression.function.scalar.spatial.BinarySpatialFunction;\n import org.elasticsearch.xpack.esql.expression.function.scalar.spatial.SpatialRelatesFunction;\n@@ -252,8 +252,7 @@ public class PushFiltersToSource extends PhysicalOptimizerRules.ParameterizedOpt\n                 && Expressions.foldable(cidrMatch.matches());\n         } else if (exp instanceof SpatialRelatesFunction spatial) {\n             return canPushSpatialFunctionToSource(spatial, lucenePushdownPredicates);\n-        } else if (exp instanceof Term term) {\n-            return term.field() instanceof FieldAttribute && DataType.isString(term.field().dataType());\n+\n         } else if (exp instanceof FullTextFunction) {\n             return true;\n         }",
+      "edit_type": "replace",
+      "verified": true,
+      "verification_result": "Deterministic file editor applied",
+      "applied": true,
+      "apply_result": "SUCCESS"
+    }
+  ],
+  "all_adapted_file_edits": [
+    [
+      {
+        "target_file": "x-pack/plugin/esql/src/main/java/org/elasticsearch/xpack/esql/optimizer/rules/physical/local/PushFiltersToSource.java",
+        "mainline_file": "x-pack/plugin/esql/src/main/java/org/elasticsearch/xpack/esql/optimizer/rules/physical/local/PushFiltersToSource.java",
+        "old_string": "<developer patch fast path>",
+        "new_string": "diff --git a/x-pack/plugin/esql/src/main/java/org/elasticsearch/xpack/esql/optimizer/rules/physical/local/PushFiltersToSource.java b/x-pack/plugin/esql/src/main/java/org/elasticsearch/xpack/esql/optimizer/rules/physical/local/PushFiltersToSource.java\nindex 6fcdd538fdf..dae84bb6b64 100644\n--- a/x-pack/plugin/esql/src/main/java/org/elasticsearch/xpack/esql/optimizer/rules/physical/local/PushFiltersToSource.java\n+++ b/x-pack/plugin/esql/src/main/java/org/elasticsearch/xpack/esql/optimizer/rules/physical/local/PushFiltersToSource.java\n@@ -31,7 +31,6 @@ import org.elasticsearch.xpack.esql.core.type.DataType;\n import org.elasticsearch.xpack.esql.core.util.CollectionUtils;\n import org.elasticsearch.xpack.esql.core.util.Queries;\n import org.elasticsearch.xpack.esql.expression.function.fulltext.FullTextFunction;\n-import org.elasticsearch.xpack.esql.expression.function.fulltext.Term;\n import org.elasticsearch.xpack.esql.expression.function.scalar.ip.CIDRMatch;\n import org.elasticsearch.xpack.esql.expression.function.scalar.spatial.BinarySpatialFunction;\n import org.elasticsearch.xpack.esql.expression.function.scalar.spatial.SpatialRelatesFunction;\n@@ -252,8 +251,6 @@ public class PushFiltersToSource extends PhysicalOptimizerRules.ParameterizedOpt\n                 && Expressions.foldable(cidrMatch.matches());\n         } else if (exp instanceof SpatialRelatesFunction spatial) {\n             return canPushSpatialFunctionToSource(spatial, lucenePushdownPredicates);\n-        } else if (exp instanceof Term term) {\n-            return term.field() instanceof FieldAttribute && DataType.isString(term.field().dataType());\n         } else if (exp instanceof FullTextFunction) {\n             return true;\n         }",
+        "edit_type": "replace",
+        "verified": true,
+        "verification_result": "developer_fast_path_ok",
+        "applied": true,
+        "apply_result": "SUCCESS"
+      }
+    ],
+    [
+      {
+        "target_file": "x-pack/plugin/esql/src/main/java/org/elasticsearch/xpack/esql/optimizer/rules/physical/local/PushFiltersToSource.java",
+        "mainline_file": "x-pack/plugin/esql/src/main/java/org/elasticsearch/xpack/esql/optimizer/rules/physical/local/PushFiltersToSource.java",
+        "old_string": "<deterministic file-editor diff>",
+        "new_string": "diff --git a/x-pack/plugin/esql/src/main/java/org/elasticsearch/xpack/esql/optimizer/rules/physical/local/PushFiltersToSource.java b/x-pack/plugin/esql/src/main/java/org/elasticsearch/xpack/esql/optimizer/rules/physical/local/PushFiltersToSource.java\nindex 6fcdd538fdf..703be33de13 100644\n--- a/x-pack/plugin/esql/src/main/java/org/elasticsearch/xpack/esql/optimizer/rules/physical/local/PushFiltersToSource.java\n+++ b/x-pack/plugin/esql/src/main/java/org/elasticsearch/xpack/esql/optimizer/rules/physical/local/PushFiltersToSource.java\n@@ -31,7 +31,7 @@ import org.elasticsearch.xpack.esql.core.type.DataType;\n import org.elasticsearch.xpack.esql.core.util.CollectionUtils;\n import org.elasticsearch.xpack.esql.core.util.Queries;\n import org.elasticsearch.xpack.esql.expression.function.fulltext.FullTextFunction;\n-import org.elasticsearch.xpack.esql.expression.function.fulltext.Term;\n+\n import org.elasticsearch.xpack.esql.expression.function.scalar.ip.CIDRMatch;\n import org.elasticsearch.xpack.esql.expression.function.scalar.spatial.BinarySpatialFunction;\n import org.elasticsearch.xpack.esql.expression.function.scalar.spatial.SpatialRelatesFunction;\n@@ -252,8 +252,7 @@ public class PushFiltersToSource extends PhysicalOptimizerRules.ParameterizedOpt\n                 && Expressions.foldable(cidrMatch.matches());\n         } else if (exp instanceof SpatialRelatesFunction spatial) {\n             return canPushSpatialFunctionToSource(spatial, lucenePushdownPredicates);\n-        } else if (exp instanceof Term term) {\n-            return term.field() instanceof FieldAttribute && DataType.isString(term.field().dataType());\n+\n         } else if (exp instanceof FullTextFunction) {\n             return true;\n         }",
+        "edit_type": "replace",
+        "verified": true,
+        "verification_result": "Deterministic file editor applied",
+        "applied": true,
+        "apply_result": "SUCCESS"
+      }
+    ],
+    [
+      {
+        "target_file": "x-pack/plugin/esql/src/main/java/org/elasticsearch/xpack/esql/optimizer/rules/physical/local/PushFiltersToSource.java",
+        "mainline_file": "x-pack/plugin/esql/src/main/java/org/elasticsearch/xpack/esql/optimizer/rules/physical/local/PushFiltersToSource.java",
+        "old_string": "<deterministic file-editor diff>",
+        "new_string": "diff --git a/x-pack/plugin/esql/src/main/java/org/elasticsearch/xpack/esql/optimizer/rules/physical/local/PushFiltersToSource.java b/x-pack/plugin/esql/src/main/java/org/elasticsearch/xpack/esql/optimizer/rules/physical/local/PushFiltersToSource.java\nindex 6fcdd538fdf..703be33de13 100644\n--- a/x-pack/plugin/esql/src/main/java/org/elasticsearch/xpack/esql/optimizer/rules/physical/local/PushFiltersToSource.java\n+++ b/x-pack/plugin/esql/src/main/java/org/elasticsearch/xpack/esql/optimizer/rules/physical/local/PushFiltersToSource.java\n@@ -31,7 +31,7 @@ import org.elasticsearch.xpack.esql.core.type.DataType;\n import org.elasticsearch.xpack.esql.core.util.CollectionUtils;\n import org.elasticsearch.xpack.esql.core.util.Queries;\n import org.elasticsearch.xpack.esql.expression.function.fulltext.FullTextFunction;\n-import org.elasticsearch.xpack.esql.expression.function.fulltext.Term;\n+\n import org.elasticsearch.xpack.esql.expression.function.scalar.ip.CIDRMatch;\n import org.elasticsearch.xpack.esql.expression.function.scalar.spatial.BinarySpatialFunction;\n import org.elasticsearch.xpack.esql.expression.function.scalar.spatial.SpatialRelatesFunction;\n@@ -252,8 +252,7 @@ public class PushFiltersToSource extends PhysicalOptimizerRules.ParameterizedOpt\n                 && Expressions.foldable(cidrMatch.matches());\n         } else if (exp instanceof SpatialRelatesFunction spatial) {\n             return canPushSpatialFunctionToSource(spatial, lucenePushdownPredicates);\n-        } else if (exp instanceof Term term) {\n-            return term.field() instanceof FieldAttribute && DataType.isString(term.field().dataType());\n+\n         } else if (exp instanceof FullTextFunction) {\n             return true;\n         }",
+        "edit_type": "replace",
+        "verified": true,
+        "verification_result": "Deterministic file editor applied",
+        "applied": true,
+        "apply_result": "SUCCESS"
+      }
+    ]
+  ],
+  "agent_trajectory_edits": [
+    [],
+    [
+      {
+        "target_file": "x-pack/plugin/esql/src/main/java/org/elasticsearch/xpack/esql/optimizer/rules/physical/local/PushFiltersToSource.java",
+        "tool": "str_replace_in_file",
+        "args": {
+          "file_path": "x-pack/plugin/esql/src/main/java/org/elasticsearch/xpack/esql/optimizer/rules/physical/local/PushFiltersToSource.java",
+          "edit_type": "delete",
+          "resolution_reason": "exact",
+          "resolved_old_preview": "import org.elasticsearch.xpack.esql.expression.function.fulltext.Term;",
+          "resolved_new_preview": ""
+        }
+      },
+      {
+        "target_file": "x-pack/plugin/esql/src/main/java/org/elasticsearch/xpack/esql/optimizer/rules/physical/local/PushFiltersToSource.java",
+        "tool": "str_replace_in_file",
+        "args": {
+          "file_path": "x-pack/plugin/esql/src/main/java/org/elasticsearch/xpack/esql/optimizer/rules/physical/local/PushFiltersToSource.java",
+          "edit_type": "delete",
+          "resolution_reason": "exact",
+          "resolved_old_preview": "        } else if (exp instanceof Term term) {\n            return term.field() instanceof FieldAttribute && DataType.isString(term.field().dataType());",
+          "resolved_new_preview": ""
+        }
+      }
+    ],
+    [
+      {
+        "target_file": "x-pack/plugin/esql/src/main/java/org/elasticsearch/xpack/esql/optimizer/rules/physical/local/PushFiltersToSource.java",
+        "tool": "str_replace_in_file",
+        "args": {
+          "file_path": "x-pack/plugin/esql/src/main/java/org/elasticsearch/xpack/esql/optimizer/rules/physical/local/PushFiltersToSource.java",
+          "edit_type": "delete",
+          "resolution_reason": "exact",
+          "resolved_old_preview": "import org.elasticsearch.xpack.esql.expression.function.fulltext.Term;",
+          "resolved_new_preview": ""
+        }
+      },
+      {
+        "target_file": "x-pack/plugin/esql/src/main/java/org/elasticsearch/xpack/esql/optimizer/rules/physical/local/PushFiltersToSource.java",
+        "tool": "str_replace_in_file",
+        "args": {
+          "file_path": "x-pack/plugin/esql/src/main/java/org/elasticsearch/xpack/esql/optimizer/rules/physical/local/PushFiltersToSource.java",
+          "edit_type": "delete",
+          "resolution_reason": "exact",
+          "resolved_old_preview": "        } else if (exp instanceof Term term) {\n            return term.field() instanceof FieldAttribute && DataType.isString(term.field().dataType());",
+          "resolved_new_preview": ""
+        }
+      }
+    ]
+  ],
+  "adapted_code_hunks": [
+    {
+      "target_file": "x-pack/plugin/esql/src/main/java/org/elasticsearch/xpack/esql/optimizer/rules/physical/local/PushFiltersToSource.java",
+      "mainline_file": "x-pack/plugin/esql/src/main/java/org/elasticsearch/xpack/esql/optimizer/rules/physical/local/PushFiltersToSource.java",
+      "hunk_text": "diff --git a/x-pack/plugin/esql/src/main/java/org/elasticsearch/xpack/esql/optimizer/rules/physical/local/PushFiltersToSource.java b/x-pack/plugin/esql/src/main/java/org/elasticsearch/xpack/esql/optimizer/rules/physical/local/PushFiltersToSource.java\nindex 6fcdd538fdf..703be33de13 100644\n--- a/x-pack/plugin/esql/src/main/java/org/elasticsearch/xpack/esql/optimizer/rules/physical/local/PushFiltersToSource.java\n+++ b/x-pack/plugin/esql/src/main/java/org/elasticsearch/xpack/esql/optimizer/rules/physical/local/PushFiltersToSource.java\n@@ -31,7 +31,7 @@ import org.elasticsearch.xpack.esql.core.type.DataType;\n import org.elasticsearch.xpack.esql.core.util.CollectionUtils;\n import org.elasticsearch.xpack.esql.core.util.Queries;\n import org.elasticsearch.xpack.esql.expression.function.fulltext.FullTextFunction;\n-import org.elasticsearch.xpack.esql.expression.function.fulltext.Term;\n+\n import org.elasticsearch.xpack.esql.expression.function.scalar.ip.CIDRMatch;\n import org.elasticsearch.xpack.esql.expression.function.scalar.spatial.BinarySpatialFunction;\n import org.elasticsearch.xpack.esql.expression.function.scalar.spatial.SpatialRelatesFunction;\n@@ -252,8 +252,7 @@ public class PushFiltersToSource extends PhysicalOptimizerRules.ParameterizedOpt\n                 && Expressions.foldable(cidrMatch.matches());\n         } else if (exp instanceof SpatialRelatesFunction spatial) {\n             return canPushSpatialFunctionToSource(spatial, lucenePushdownPredicates);\n-        } else if (exp instanceof Term term) {\n-            return term.field() instanceof FieldAttribute && DataType.isString(term.field().dataType());\n+\n         } else if (exp instanceof FullTextFunction) {\n             return true;\n         }\n",
+      "insertion_line": 31,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    }
+  ],
+  "best_effort_adapted_code_hunks": [
+    {
+      "target_file": "x-pack/plugin/esql/src/main/java/org/elasticsearch/xpack/esql/optimizer/rules/physical/local/PushFiltersToSource.java",
+      "mainline_file": "x-pack/plugin/esql/src/main/java/org/elasticsearch/xpack/esql/optimizer/rules/physical/local/PushFiltersToSource.java",
+      "hunk_text": "diff --git a/x-pack/plugin/esql/src/main/java/org/elasticsearch/xpack/esql/optimizer/rules/physical/local/PushFiltersToSource.java b/x-pack/plugin/esql/src/main/java/org/elasticsearch/xpack/esql/optimizer/rules/physical/local/PushFiltersToSource.java\nindex 6fcdd538fdf..703be33de13 100644\n--- a/x-pack/plugin/esql/src/main/java/org/elasticsearch/xpack/esql/optimizer/rules/physical/local/PushFiltersToSource.java\n+++ b/x-pack/plugin/esql/src/main/java/org/elasticsearch/xpack/esql/optimizer/rules/physical/local/PushFiltersToSource.java\n@@ -31,7 +31,7 @@ import org.elasticsearch.xpack.esql.core.type.DataType;\n import org.elasticsearch.xpack.esql.core.util.CollectionUtils;\n import org.elasticsearch.xpack.esql.core.util.Queries;\n import org.elasticsearch.xpack.esql.expression.function.fulltext.FullTextFunction;\n-import org.elasticsearch.xpack.esql.expression.function.fulltext.Term;\n+\n import org.elasticsearch.xpack.esql.expression.function.scalar.ip.CIDRMatch;\n import org.elasticsearch.xpack.esql.expression.function.scalar.spatial.BinarySpatialFunction;\n import org.elasticsearch.xpack.esql.expression.function.scalar.spatial.SpatialRelatesFunction;\n@@ -252,8 +252,7 @@ public class PushFiltersToSource extends PhysicalOptimizerRules.ParameterizedOpt\n                 && Expressions.foldable(cidrMatch.matches());\n         } else if (exp instanceof SpatialRelatesFunction spatial) {\n             return canPushSpatialFunctionToSource(spatial, lucenePushdownPredicates);\n-        } else if (exp instanceof Term term) {\n-            return term.field() instanceof FieldAttribute && DataType.isString(term.field().dataType());\n+\n         } else if (exp instanceof FullTextFunction) {\n             return true;\n         }\n",
+      "insertion_line": 31,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    }
+  ],
+  "adapted_test_hunks": [],
+  "generation_checklist": [
+    {
+      "mainline_file": "<all>",
+      "target_file": "<all>",
+      "hunk_index": 0,
+      "status": "failed",
+      "reason": "generation_contract_failed",
+      "todo_steps": [
+        "replan"
+      ],
+      "completed_steps": []
+    }
+  ],
+  "validation_failed_stage": "generation_contract_failed",
+  "validation_repeated_patch_detected": true,
+  "validation_repeated_plan_detected": false,
+  "generated_patch_hash": "b55acd62408c9a2d41f071e334e63c14387e0715381c284ce55470064cff7265",
+  "force_type_v_until_success": false,
+  "force_type_v_reason": "",
+  "force_type_v_retry_files": [],
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "sources": []
+  }
+}

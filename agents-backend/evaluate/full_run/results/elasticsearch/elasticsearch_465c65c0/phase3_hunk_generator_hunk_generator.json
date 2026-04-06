@@ -1,0 +1,307 @@
+{
+  "adapted_file_edits": [
+    {
+      "target_file": "server/src/main/java/org/elasticsearch/index/codec/vectors/ES814ScalarQuantizedVectorsFormat.java",
+      "mainline_file": "server/src/main/java/org/elasticsearch/index/codec/vectors/ES814ScalarQuantizedVectorsFormat.java",
+      "old_string": "<developer patch fast path>",
+      "new_string": "diff --git a/server/src/main/java/org/elasticsearch/index/codec/vectors/ES814ScalarQuantizedVectorsFormat.java b/server/src/main/java/org/elasticsearch/index/codec/vectors/ES814ScalarQuantizedVectorsFormat.java\nindex 4313aa40cf1..e6ca1eb014f 100644\n--- a/server/src/main/java/org/elasticsearch/index/codec/vectors/ES814ScalarQuantizedVectorsFormat.java\n+++ b/server/src/main/java/org/elasticsearch/index/codec/vectors/ES814ScalarQuantizedVectorsFormat.java\n@@ -41,6 +41,7 @@ import org.elasticsearch.simdvec.VectorSimilarityType;\n import java.io.IOException;\n \n import static org.apache.lucene.codecs.lucene99.Lucene99ScalarQuantizedVectorsFormat.DYNAMIC_CONFIDENCE_INTERVAL;\n+import static org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapper.MAX_DIMS_COUNT;\n \n public class ES814ScalarQuantizedVectorsFormat extends FlatVectorsFormat {\n \n@@ -289,4 +290,9 @@ public class ES814ScalarQuantizedVectorsFormat extends FlatVectorsFormat {\n             return delegate.getRandomVectorScorer(sim, values, query);\n         }\n     }\n+\n+    @Override\n+    public int getMaxDimensions(String fieldName) {\n+        return MAX_DIMS_COUNT;\n+    }\n }",
+      "edit_type": "replace",
+      "verified": true,
+      "verification_result": "developer_fast_path_ok",
+      "applied": true,
+      "apply_result": "SUCCESS"
+    },
+    {
+      "target_file": "server/src/main/java/org/elasticsearch/index/codec/vectors/ES815BitFlatVectorsFormat.java",
+      "mainline_file": "server/src/main/java/org/elasticsearch/index/codec/vectors/ES815BitFlatVectorsFormat.java",
+      "old_string": "<developer patch fast path>",
+      "new_string": "diff --git a/server/src/main/java/org/elasticsearch/index/codec/vectors/ES815BitFlatVectorsFormat.java b/server/src/main/java/org/elasticsearch/index/codec/vectors/ES815BitFlatVectorsFormat.java\nindex f1ae4e3fded..eda1596b895 100644\n--- a/server/src/main/java/org/elasticsearch/index/codec/vectors/ES815BitFlatVectorsFormat.java\n+++ b/server/src/main/java/org/elasticsearch/index/codec/vectors/ES815BitFlatVectorsFormat.java\n@@ -25,6 +25,8 @@ import org.elasticsearch.script.field.vectors.ESVectorUtil;\n \n import java.io.IOException;\n \n+import static org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapper.MAX_DIMS_COUNT;\n+\n class ES815BitFlatVectorsFormat extends FlatVectorsFormat {\n \n     private final FlatVectorsFormat delegate = new Lucene99FlatVectorsFormat(FlatBitVectorScorer.INSTANCE);\n@@ -43,6 +45,11 @@ class ES815BitFlatVectorsFormat extends FlatVectorsFormat {\n         return delegate.fieldsReader(segmentReadState);\n     }\n \n+    @Override\n+    public int getMaxDimensions(String fieldName) {\n+        return MAX_DIMS_COUNT;\n+    }\n+\n     static class FlatBitVectorScorer implements FlatVectorsScorer {\n \n         static final FlatBitVectorScorer INSTANCE = new FlatBitVectorScorer();",
+      "edit_type": "replace",
+      "verified": true,
+      "verification_result": "developer_fast_path_ok",
+      "applied": true,
+      "apply_result": "SUCCESS"
+    },
+    {
+      "target_file": "server/src/main/java/org/elasticsearch/index/mapper/vectors/DenseVectorFieldMapper.java",
+      "mainline_file": "server/src/main/java/org/elasticsearch/index/mapper/vectors/DenseVectorFieldMapper.java",
+      "old_string": "<developer patch fast path>",
+      "new_string": "diff --git a/server/src/main/java/org/elasticsearch/index/mapper/vectors/DenseVectorFieldMapper.java b/server/src/main/java/org/elasticsearch/index/mapper/vectors/DenseVectorFieldMapper.java\nindex d7353584706..c3959bd442a 100644\n--- a/server/src/main/java/org/elasticsearch/index/mapper/vectors/DenseVectorFieldMapper.java\n+++ b/server/src/main/java/org/elasticsearch/index/mapper/vectors/DenseVectorFieldMapper.java\n@@ -2270,7 +2270,7 @@ public class DenseVectorFieldMapper extends FieldMapper {\n             if (indexCreatedVersion.onOrAfter(LITTLE_ENDIAN_FLOAT_STORED_INDEX_VERSION)) {\n                 byteBuffer.order(ByteOrder.LITTLE_ENDIAN);\n             }\n-            int dims = fieldType().dims;\n+            int dims = fieldType().elementType == ElementType.BIT ? fieldType().dims / Byte.SIZE : fieldType().dims;\n             for (int dim = 0; dim < dims; dim++) {\n                 fieldType().elementType.readAndWriteValue(byteBuffer, b);\n             }",
+      "edit_type": "replace",
+      "verified": true,
+      "verification_result": "developer_fast_path_ok",
+      "applied": true,
+      "apply_result": "SUCCESS"
+    },
+    {
+      "target_file": "server/src/main/java/org/elasticsearch/rest/action/search/SearchCapabilities.java",
+      "mainline_file": "server/src/main/java/org/elasticsearch/rest/action/search/SearchCapabilities.java",
+      "old_string": "<developer patch fast path>",
+      "new_string": "diff --git a/server/src/main/java/org/elasticsearch/rest/action/search/SearchCapabilities.java b/server/src/main/java/org/elasticsearch/rest/action/search/SearchCapabilities.java\nindex 45fd6afe4fc..7828bb956a1 100644\n--- a/server/src/main/java/org/elasticsearch/rest/action/search/SearchCapabilities.java\n+++ b/server/src/main/java/org/elasticsearch/rest/action/search/SearchCapabilities.java\n@@ -20,6 +20,11 @@ public final class SearchCapabilities {\n \n     /** Support regex and range match rules in interval queries. */\n     private static final String RANGE_REGEX_INTERVAL_QUERY_CAPABILITY = \"range_regexp_interval_queries\";\n+    /** Support synthetic source with `bit` type in `dense_vector` field when `index` is set to `false`. */\n+    private static final String BIT_DENSE_VECTOR_SYNTHETIC_SOURCE_CAPABILITY = \"bit_dense_vector_synthetic_source\";\n \n-    public static final Set<String> CAPABILITIES = Set.of(RANGE_REGEX_INTERVAL_QUERY_CAPABILITY);\n+    public static final Set<String> CAPABILITIES = Set.of(\n+        RANGE_REGEX_INTERVAL_QUERY_CAPABILITY,\n+        BIT_DENSE_VECTOR_SYNTHETIC_SOURCE_CAPABILITY\n+    );\n }",
+      "edit_type": "replace",
+      "verified": true,
+      "verification_result": "developer_fast_path_ok",
+      "applied": true,
+      "apply_result": "SUCCESS"
+    }
+  ],
+  "all_adapted_file_edits": [
+    [
+      {
+        "target_file": "server/src/main/java/org/elasticsearch/index/codec/vectors/ES814ScalarQuantizedVectorsFormat.java",
+        "mainline_file": "server/src/main/java/org/elasticsearch/index/codec/vectors/ES814ScalarQuantizedVectorsFormat.java",
+        "old_string": "<developer patch fast path>",
+        "new_string": "diff --git a/server/src/main/java/org/elasticsearch/index/codec/vectors/ES814ScalarQuantizedVectorsFormat.java b/server/src/main/java/org/elasticsearch/index/codec/vectors/ES814ScalarQuantizedVectorsFormat.java\nindex 4313aa40cf1..e6ca1eb014f 100644\n--- a/server/src/main/java/org/elasticsearch/index/codec/vectors/ES814ScalarQuantizedVectorsFormat.java\n+++ b/server/src/main/java/org/elasticsearch/index/codec/vectors/ES814ScalarQuantizedVectorsFormat.java\n@@ -41,6 +41,7 @@ import org.elasticsearch.simdvec.VectorSimilarityType;\n import java.io.IOException;\n \n import static org.apache.lucene.codecs.lucene99.Lucene99ScalarQuantizedVectorsFormat.DYNAMIC_CONFIDENCE_INTERVAL;\n+import static org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapper.MAX_DIMS_COUNT;\n \n public class ES814ScalarQuantizedVectorsFormat extends FlatVectorsFormat {\n \n@@ -289,4 +290,9 @@ public class ES814ScalarQuantizedVectorsFormat extends FlatVectorsFormat {\n             return delegate.getRandomVectorScorer(sim, values, query);\n         }\n     }\n+\n+    @Override\n+    public int getMaxDimensions(String fieldName) {\n+        return MAX_DIMS_COUNT;\n+    }\n }",
+        "edit_type": "replace",
+        "verified": true,
+        "verification_result": "developer_fast_path_ok",
+        "applied": true,
+        "apply_result": "SUCCESS"
+      },
+      {
+        "target_file": "server/src/main/java/org/elasticsearch/index/codec/vectors/ES815BitFlatVectorsFormat.java",
+        "mainline_file": "server/src/main/java/org/elasticsearch/index/codec/vectors/ES815BitFlatVectorsFormat.java",
+        "old_string": "<developer patch fast path>",
+        "new_string": "diff --git a/server/src/main/java/org/elasticsearch/index/codec/vectors/ES815BitFlatVectorsFormat.java b/server/src/main/java/org/elasticsearch/index/codec/vectors/ES815BitFlatVectorsFormat.java\nindex f1ae4e3fded..eda1596b895 100644\n--- a/server/src/main/java/org/elasticsearch/index/codec/vectors/ES815BitFlatVectorsFormat.java\n+++ b/server/src/main/java/org/elasticsearch/index/codec/vectors/ES815BitFlatVectorsFormat.java\n@@ -25,6 +25,8 @@ import org.elasticsearch.script.field.vectors.ESVectorUtil;\n \n import java.io.IOException;\n \n+import static org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapper.MAX_DIMS_COUNT;\n+\n class ES815BitFlatVectorsFormat extends FlatVectorsFormat {\n \n     private final FlatVectorsFormat delegate = new Lucene99FlatVectorsFormat(FlatBitVectorScorer.INSTANCE);\n@@ -43,6 +45,11 @@ class ES815BitFlatVectorsFormat extends FlatVectorsFormat {\n         return delegate.fieldsReader(segmentReadState);\n     }\n \n+    @Override\n+    public int getMaxDimensions(String fieldName) {\n+        return MAX_DIMS_COUNT;\n+    }\n+\n     static class FlatBitVectorScorer implements FlatVectorsScorer {\n \n         static final FlatBitVectorScorer INSTANCE = new FlatBitVectorScorer();",
+        "edit_type": "replace",
+        "verified": true,
+        "verification_result": "developer_fast_path_ok",
+        "applied": true,
+        "apply_result": "SUCCESS"
+      },
+      {
+        "target_file": "server/src/main/java/org/elasticsearch/index/mapper/vectors/DenseVectorFieldMapper.java",
+        "mainline_file": "server/src/main/java/org/elasticsearch/index/mapper/vectors/DenseVectorFieldMapper.java",
+        "old_string": "<developer patch fast path>",
+        "new_string": "diff --git a/server/src/main/java/org/elasticsearch/index/mapper/vectors/DenseVectorFieldMapper.java b/server/src/main/java/org/elasticsearch/index/mapper/vectors/DenseVectorFieldMapper.java\nindex d7353584706..c3959bd442a 100644\n--- a/server/src/main/java/org/elasticsearch/index/mapper/vectors/DenseVectorFieldMapper.java\n+++ b/server/src/main/java/org/elasticsearch/index/mapper/vectors/DenseVectorFieldMapper.java\n@@ -2270,7 +2270,7 @@ public class DenseVectorFieldMapper extends FieldMapper {\n             if (indexCreatedVersion.onOrAfter(LITTLE_ENDIAN_FLOAT_STORED_INDEX_VERSION)) {\n                 byteBuffer.order(ByteOrder.LITTLE_ENDIAN);\n             }\n-            int dims = fieldType().dims;\n+            int dims = fieldType().elementType == ElementType.BIT ? fieldType().dims / Byte.SIZE : fieldType().dims;\n             for (int dim = 0; dim < dims; dim++) {\n                 fieldType().elementType.readAndWriteValue(byteBuffer, b);\n             }",
+        "edit_type": "replace",
+        "verified": true,
+        "verification_result": "developer_fast_path_ok",
+        "applied": true,
+        "apply_result": "SUCCESS"
+      },
+      {
+        "target_file": "server/src/main/java/org/elasticsearch/rest/action/search/SearchCapabilities.java",
+        "mainline_file": "server/src/main/java/org/elasticsearch/rest/action/search/SearchCapabilities.java",
+        "old_string": "<developer patch fast path>",
+        "new_string": "diff --git a/server/src/main/java/org/elasticsearch/rest/action/search/SearchCapabilities.java b/server/src/main/java/org/elasticsearch/rest/action/search/SearchCapabilities.java\nindex 45fd6afe4fc..7828bb956a1 100644\n--- a/server/src/main/java/org/elasticsearch/rest/action/search/SearchCapabilities.java\n+++ b/server/src/main/java/org/elasticsearch/rest/action/search/SearchCapabilities.java\n@@ -20,6 +20,11 @@ public final class SearchCapabilities {\n \n     /** Support regex and range match rules in interval queries. */\n     private static final String RANGE_REGEX_INTERVAL_QUERY_CAPABILITY = \"range_regexp_interval_queries\";\n+    /** Support synthetic source with `bit` type in `dense_vector` field when `index` is set to `false`. */\n+    private static final String BIT_DENSE_VECTOR_SYNTHETIC_SOURCE_CAPABILITY = \"bit_dense_vector_synthetic_source\";\n \n-    public static final Set<String> CAPABILITIES = Set.of(RANGE_REGEX_INTERVAL_QUERY_CAPABILITY);\n+    public static final Set<String> CAPABILITIES = Set.of(\n+        RANGE_REGEX_INTERVAL_QUERY_CAPABILITY,\n+        BIT_DENSE_VECTOR_SYNTHETIC_SOURCE_CAPABILITY\n+    );\n }",
+        "edit_type": "replace",
+        "verified": true,
+        "verification_result": "developer_fast_path_ok",
+        "applied": true,
+        "apply_result": "SUCCESS"
+      }
+    ]
+  ],
+  "agent_trajectory_edits": [
+    []
+  ],
+  "adapted_code_hunks": [
+    {
+      "target_file": "server/src/main/java/org/elasticsearch/index/codec/vectors/ES814ScalarQuantizedVectorsFormat.java",
+      "mainline_file": "server/src/main/java/org/elasticsearch/index/codec/vectors/ES814ScalarQuantizedVectorsFormat.java",
+      "hunk_text": "diff --git a/server/src/main/java/org/elasticsearch/index/codec/vectors/ES814ScalarQuantizedVectorsFormat.java b/server/src/main/java/org/elasticsearch/index/codec/vectors/ES814ScalarQuantizedVectorsFormat.java\nindex 4313aa40cf1..e6ca1eb014f 100644\n--- a/server/src/main/java/org/elasticsearch/index/codec/vectors/ES814ScalarQuantizedVectorsFormat.java\n+++ b/server/src/main/java/org/elasticsearch/index/codec/vectors/ES814ScalarQuantizedVectorsFormat.java\n@@ -41,6 +41,7 @@ import org.elasticsearch.simdvec.VectorSimilarityType;\n import java.io.IOException;\n \n import static org.apache.lucene.codecs.lucene99.Lucene99ScalarQuantizedVectorsFormat.DYNAMIC_CONFIDENCE_INTERVAL;\n+import static org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapper.MAX_DIMS_COUNT;\n \n public class ES814ScalarQuantizedVectorsFormat extends FlatVectorsFormat {\n \n@@ -289,4 +290,9 @@ public class ES814ScalarQuantizedVectorsFormat extends FlatVectorsFormat {\n             return delegate.getRandomVectorScorer(sim, values, query);\n         }\n     }\n+\n+    @Override\n+    public int getMaxDimensions(String fieldName) {\n+        return MAX_DIMS_COUNT;\n+    }\n }\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    },
+    {
+      "target_file": "server/src/main/java/org/elasticsearch/index/codec/vectors/ES815BitFlatVectorsFormat.java",
+      "mainline_file": "server/src/main/java/org/elasticsearch/index/codec/vectors/ES815BitFlatVectorsFormat.java",
+      "hunk_text": "diff --git a/server/src/main/java/org/elasticsearch/index/codec/vectors/ES815BitFlatVectorsFormat.java b/server/src/main/java/org/elasticsearch/index/codec/vectors/ES815BitFlatVectorsFormat.java\nindex f1ae4e3fded..eda1596b895 100644\n--- a/server/src/main/java/org/elasticsearch/index/codec/vectors/ES815BitFlatVectorsFormat.java\n+++ b/server/src/main/java/org/elasticsearch/index/codec/vectors/ES815BitFlatVectorsFormat.java\n@@ -25,6 +25,8 @@ import org.elasticsearch.script.field.vectors.ESVectorUtil;\n \n import java.io.IOException;\n \n+import static org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapper.MAX_DIMS_COUNT;\n+\n class ES815BitFlatVectorsFormat extends FlatVectorsFormat {\n \n     private final FlatVectorsFormat delegate = new Lucene99FlatVectorsFormat(FlatBitVectorScorer.INSTANCE);\n@@ -43,6 +45,11 @@ class ES815BitFlatVectorsFormat extends FlatVectorsFormat {\n         return delegate.fieldsReader(segmentReadState);\n     }\n \n+    @Override\n+    public int getMaxDimensions(String fieldName) {\n+        return MAX_DIMS_COUNT;\n+    }\n+\n     static class FlatBitVectorScorer implements FlatVectorsScorer {\n \n         static final FlatBitVectorScorer INSTANCE = new FlatBitVectorScorer();\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    },
+    {
+      "target_file": "server/src/main/java/org/elasticsearch/index/mapper/vectors/DenseVectorFieldMapper.java",
+      "mainline_file": "server/src/main/java/org/elasticsearch/index/mapper/vectors/DenseVectorFieldMapper.java",
+      "hunk_text": "diff --git a/server/src/main/java/org/elasticsearch/index/mapper/vectors/DenseVectorFieldMapper.java b/server/src/main/java/org/elasticsearch/index/mapper/vectors/DenseVectorFieldMapper.java\nindex d7353584706..c3959bd442a 100644\n--- a/server/src/main/java/org/elasticsearch/index/mapper/vectors/DenseVectorFieldMapper.java\n+++ b/server/src/main/java/org/elasticsearch/index/mapper/vectors/DenseVectorFieldMapper.java\n@@ -2270,7 +2270,7 @@ public class DenseVectorFieldMapper extends FieldMapper {\n             if (indexCreatedVersion.onOrAfter(LITTLE_ENDIAN_FLOAT_STORED_INDEX_VERSION)) {\n                 byteBuffer.order(ByteOrder.LITTLE_ENDIAN);\n             }\n-            int dims = fieldType().dims;\n+            int dims = fieldType().elementType == ElementType.BIT ? fieldType().dims / Byte.SIZE : fieldType().dims;\n             for (int dim = 0; dim < dims; dim++) {\n                 fieldType().elementType.readAndWriteValue(byteBuffer, b);\n             }\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    },
+    {
+      "target_file": "server/src/main/java/org/elasticsearch/rest/action/search/SearchCapabilities.java",
+      "mainline_file": "server/src/main/java/org/elasticsearch/rest/action/search/SearchCapabilities.java",
+      "hunk_text": "diff --git a/server/src/main/java/org/elasticsearch/rest/action/search/SearchCapabilities.java b/server/src/main/java/org/elasticsearch/rest/action/search/SearchCapabilities.java\nindex 45fd6afe4fc..7828bb956a1 100644\n--- a/server/src/main/java/org/elasticsearch/rest/action/search/SearchCapabilities.java\n+++ b/server/src/main/java/org/elasticsearch/rest/action/search/SearchCapabilities.java\n@@ -20,6 +20,11 @@ public final class SearchCapabilities {\n \n     /** Support regex and range match rules in interval queries. */\n     private static final String RANGE_REGEX_INTERVAL_QUERY_CAPABILITY = \"range_regexp_interval_queries\";\n+    /** Support synthetic source with `bit` type in `dense_vector` field when `index` is set to `false`. */\n+    private static final String BIT_DENSE_VECTOR_SYNTHETIC_SOURCE_CAPABILITY = \"bit_dense_vector_synthetic_source\";\n \n-    public static final Set<String> CAPABILITIES = Set.of(RANGE_REGEX_INTERVAL_QUERY_CAPABILITY);\n+    public static final Set<String> CAPABILITIES = Set.of(\n+        RANGE_REGEX_INTERVAL_QUERY_CAPABILITY,\n+        BIT_DENSE_VECTOR_SYNTHETIC_SOURCE_CAPABILITY\n+    );\n }\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    }
+  ],
+  "validation_repeated_patch_detected": false,
+  "validation_repeated_plan_detected": false,
+  "best_effort_adapted_code_hunks": [
+    {
+      "target_file": "server/src/main/java/org/elasticsearch/index/codec/vectors/ES814ScalarQuantizedVectorsFormat.java",
+      "mainline_file": "server/src/main/java/org/elasticsearch/index/codec/vectors/ES814ScalarQuantizedVectorsFormat.java",
+      "hunk_text": "diff --git a/server/src/main/java/org/elasticsearch/index/codec/vectors/ES814ScalarQuantizedVectorsFormat.java b/server/src/main/java/org/elasticsearch/index/codec/vectors/ES814ScalarQuantizedVectorsFormat.java\nindex 4313aa40cf1..e6ca1eb014f 100644\n--- a/server/src/main/java/org/elasticsearch/index/codec/vectors/ES814ScalarQuantizedVectorsFormat.java\n+++ b/server/src/main/java/org/elasticsearch/index/codec/vectors/ES814ScalarQuantizedVectorsFormat.java\n@@ -41,6 +41,7 @@ import org.elasticsearch.simdvec.VectorSimilarityType;\n import java.io.IOException;\n \n import static org.apache.lucene.codecs.lucene99.Lucene99ScalarQuantizedVectorsFormat.DYNAMIC_CONFIDENCE_INTERVAL;\n+import static org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapper.MAX_DIMS_COUNT;\n \n public class ES814ScalarQuantizedVectorsFormat extends FlatVectorsFormat {\n \n@@ -289,4 +290,9 @@ public class ES814ScalarQuantizedVectorsFormat extends FlatVectorsFormat {\n             return delegate.getRandomVectorScorer(sim, values, query);\n         }\n     }\n+\n+    @Override\n+    public int getMaxDimensions(String fieldName) {\n+        return MAX_DIMS_COUNT;\n+    }\n }\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    },
+    {
+      "target_file": "server/src/main/java/org/elasticsearch/index/codec/vectors/ES815BitFlatVectorsFormat.java",
+      "mainline_file": "server/src/main/java/org/elasticsearch/index/codec/vectors/ES815BitFlatVectorsFormat.java",
+      "hunk_text": "diff --git a/server/src/main/java/org/elasticsearch/index/codec/vectors/ES815BitFlatVectorsFormat.java b/server/src/main/java/org/elasticsearch/index/codec/vectors/ES815BitFlatVectorsFormat.java\nindex f1ae4e3fded..eda1596b895 100644\n--- a/server/src/main/java/org/elasticsearch/index/codec/vectors/ES815BitFlatVectorsFormat.java\n+++ b/server/src/main/java/org/elasticsearch/index/codec/vectors/ES815BitFlatVectorsFormat.java\n@@ -25,6 +25,8 @@ import org.elasticsearch.script.field.vectors.ESVectorUtil;\n \n import java.io.IOException;\n \n+import static org.elasticsearch.index.mapper.vectors.DenseVectorFieldMapper.MAX_DIMS_COUNT;\n+\n class ES815BitFlatVectorsFormat extends FlatVectorsFormat {\n \n     private final FlatVectorsFormat delegate = new Lucene99FlatVectorsFormat(FlatBitVectorScorer.INSTANCE);\n@@ -43,6 +45,11 @@ class ES815BitFlatVectorsFormat extends FlatVectorsFormat {\n         return delegate.fieldsReader(segmentReadState);\n     }\n \n+    @Override\n+    public int getMaxDimensions(String fieldName) {\n+        return MAX_DIMS_COUNT;\n+    }\n+\n     static class FlatBitVectorScorer implements FlatVectorsScorer {\n \n         static final FlatBitVectorScorer INSTANCE = new FlatBitVectorScorer();\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    },
+    {
+      "target_file": "server/src/main/java/org/elasticsearch/index/mapper/vectors/DenseVectorFieldMapper.java",
+      "mainline_file": "server/src/main/java/org/elasticsearch/index/mapper/vectors/DenseVectorFieldMapper.java",
+      "hunk_text": "diff --git a/server/src/main/java/org/elasticsearch/index/mapper/vectors/DenseVectorFieldMapper.java b/server/src/main/java/org/elasticsearch/index/mapper/vectors/DenseVectorFieldMapper.java\nindex d7353584706..c3959bd442a 100644\n--- a/server/src/main/java/org/elasticsearch/index/mapper/vectors/DenseVectorFieldMapper.java\n+++ b/server/src/main/java/org/elasticsearch/index/mapper/vectors/DenseVectorFieldMapper.java\n@@ -2270,7 +2270,7 @@ public class DenseVectorFieldMapper extends FieldMapper {\n             if (indexCreatedVersion.onOrAfter(LITTLE_ENDIAN_FLOAT_STORED_INDEX_VERSION)) {\n                 byteBuffer.order(ByteOrder.LITTLE_ENDIAN);\n             }\n-            int dims = fieldType().dims;\n+            int dims = fieldType().elementType == ElementType.BIT ? fieldType().dims / Byte.SIZE : fieldType().dims;\n             for (int dim = 0; dim < dims; dim++) {\n                 fieldType().elementType.readAndWriteValue(byteBuffer, b);\n             }\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    },
+    {
+      "target_file": "server/src/main/java/org/elasticsearch/rest/action/search/SearchCapabilities.java",
+      "mainline_file": "server/src/main/java/org/elasticsearch/rest/action/search/SearchCapabilities.java",
+      "hunk_text": "diff --git a/server/src/main/java/org/elasticsearch/rest/action/search/SearchCapabilities.java b/server/src/main/java/org/elasticsearch/rest/action/search/SearchCapabilities.java\nindex 45fd6afe4fc..7828bb956a1 100644\n--- a/server/src/main/java/org/elasticsearch/rest/action/search/SearchCapabilities.java\n+++ b/server/src/main/java/org/elasticsearch/rest/action/search/SearchCapabilities.java\n@@ -20,6 +20,11 @@ public final class SearchCapabilities {\n \n     /** Support regex and range match rules in interval queries. */\n     private static final String RANGE_REGEX_INTERVAL_QUERY_CAPABILITY = \"range_regexp_interval_queries\";\n+    /** Support synthetic source with `bit` type in `dense_vector` field when `index` is set to `false`. */\n+    private static final String BIT_DENSE_VECTOR_SYNTHETIC_SOURCE_CAPABILITY = \"bit_dense_vector_synthetic_source\";\n \n-    public static final Set<String> CAPABILITIES = Set.of(RANGE_REGEX_INTERVAL_QUERY_CAPABILITY);\n+    public static final Set<String> CAPABILITIES = Set.of(\n+        RANGE_REGEX_INTERVAL_QUERY_CAPABILITY,\n+        BIT_DENSE_VECTOR_SYNTHETIC_SOURCE_CAPABILITY\n+    );\n }\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    }
+  ],
+  "adapted_test_hunks": [],
+  "generation_checklist": [
+    {
+      "mainline_file": "server/src/main/java/org/elasticsearch/index/codec/vectors/ES814ScalarQuantizedVectorsFormat.java",
+      "target_file": "server/src/main/java/org/elasticsearch/index/codec/vectors/ES814ScalarQuantizedVectorsFormat.java",
+      "hunk_index": 0,
+      "adaptation_type": "TYPE_II",
+      "execution_types": [
+        "TYPE_II"
+      ],
+      "status": "success",
+      "reason": "developer_fast_path",
+      "todo_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ],
+      "completed_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ]
+    },
+    {
+      "mainline_file": "server/src/main/java/org/elasticsearch/index/codec/vectors/ES815BitFlatVectorsFormat.java",
+      "target_file": "server/src/main/java/org/elasticsearch/index/codec/vectors/ES815BitFlatVectorsFormat.java",
+      "hunk_index": 0,
+      "adaptation_type": "TYPE_II",
+      "execution_types": [
+        "TYPE_II"
+      ],
+      "status": "success",
+      "reason": "developer_fast_path",
+      "todo_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ],
+      "completed_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ]
+    },
+    {
+      "mainline_file": "server/src/main/java/org/elasticsearch/index/mapper/vectors/DenseVectorFieldMapper.java",
+      "target_file": "server/src/main/java/org/elasticsearch/index/mapper/vectors/DenseVectorFieldMapper.java",
+      "hunk_index": 0,
+      "adaptation_type": "TYPE_II",
+      "execution_types": [
+        "TYPE_II"
+      ],
+      "status": "success",
+      "reason": "developer_fast_path",
+      "todo_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ],
+      "completed_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ]
+    },
+    {
+      "mainline_file": "server/src/main/java/org/elasticsearch/rest/action/search/SearchCapabilities.java",
+      "target_file": "server/src/main/java/org/elasticsearch/rest/action/search/SearchCapabilities.java",
+      "hunk_index": 0,
+      "adaptation_type": "TYPE_II",
+      "execution_types": [
+        "TYPE_II"
+      ],
+      "status": "success",
+      "reason": "developer_fast_path",
+      "todo_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ],
+      "completed_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ]
+    }
+  ],
+  "generated_patch_hash": "9642a5aec1e5c88c305c7ba57388fae808486911ac08d60b0a42e7275cf6051f",
+  "force_type_v_until_success": false,
+  "force_type_v_reason": "",
+  "force_type_v_retry_files": [],
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "sources": []
+  }
+}

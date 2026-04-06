@@ -1,0 +1,100 @@
+{
+  "adapted_file_edits": [
+    {
+      "target_file": "server/src/main/java/org/elasticsearch/cluster/node/DiscoveryNode.java",
+      "mainline_file": "server/src/main/java/org/elasticsearch/cluster/node/DiscoveryNode.java",
+      "old_string": "<developer patch fast path>",
+      "new_string": "diff --git a/server/src/main/java/org/elasticsearch/cluster/node/DiscoveryNode.java b/server/src/main/java/org/elasticsearch/cluster/node/DiscoveryNode.java\nindex 0251b464de9..fb7c0433cd0 100644\n--- a/server/src/main/java/org/elasticsearch/cluster/node/DiscoveryNode.java\n+++ b/server/src/main/java/org/elasticsearch/cluster/node/DiscoveryNode.java\n@@ -625,7 +625,6 @@ public class DiscoveryNode implements Writeable, ToXContentFragment {\n         builder.endArray();\n         builder.field(\"version\", versionInfo.nodeVersion());\n         builder.field(\"min_index_version\", versionInfo.minIndexVersion());\n-        builder.field(\"min_read_only_index_version\", versionInfo.minReadOnlyIndexVersion());\n         builder.field(\"max_index_version\", versionInfo.maxIndexVersion());\n         builder.endObject();\n         return builder;",
+      "edit_type": "replace",
+      "verified": true,
+      "verification_result": "developer_fast_path_ok",
+      "applied": true,
+      "apply_result": "SUCCESS"
+    }
+  ],
+  "all_adapted_file_edits": [
+    [
+      {
+        "target_file": "server/src/main/java/org/elasticsearch/cluster/node/DiscoveryNode.java",
+        "mainline_file": "server/src/main/java/org/elasticsearch/cluster/node/DiscoveryNode.java",
+        "old_string": "<developer patch fast path>",
+        "new_string": "diff --git a/server/src/main/java/org/elasticsearch/cluster/node/DiscoveryNode.java b/server/src/main/java/org/elasticsearch/cluster/node/DiscoveryNode.java\nindex 0251b464de9..fb7c0433cd0 100644\n--- a/server/src/main/java/org/elasticsearch/cluster/node/DiscoveryNode.java\n+++ b/server/src/main/java/org/elasticsearch/cluster/node/DiscoveryNode.java\n@@ -625,7 +625,6 @@ public class DiscoveryNode implements Writeable, ToXContentFragment {\n         builder.endArray();\n         builder.field(\"version\", versionInfo.nodeVersion());\n         builder.field(\"min_index_version\", versionInfo.minIndexVersion());\n-        builder.field(\"min_read_only_index_version\", versionInfo.minReadOnlyIndexVersion());\n         builder.field(\"max_index_version\", versionInfo.maxIndexVersion());\n         builder.endObject();\n         return builder;",
+        "edit_type": "replace",
+        "verified": true,
+        "verification_result": "developer_fast_path_ok",
+        "applied": true,
+        "apply_result": "SUCCESS"
+      }
+    ]
+  ],
+  "agent_trajectory_edits": [
+    []
+  ],
+  "adapted_code_hunks": [
+    {
+      "target_file": "server/src/main/java/org/elasticsearch/cluster/node/DiscoveryNode.java",
+      "mainline_file": "server/src/main/java/org/elasticsearch/cluster/node/DiscoveryNode.java",
+      "hunk_text": "diff --git a/server/src/main/java/org/elasticsearch/cluster/node/DiscoveryNode.java b/server/src/main/java/org/elasticsearch/cluster/node/DiscoveryNode.java\nindex 0251b464de9..fb7c0433cd0 100644\n--- a/server/src/main/java/org/elasticsearch/cluster/node/DiscoveryNode.java\n+++ b/server/src/main/java/org/elasticsearch/cluster/node/DiscoveryNode.java\n@@ -625,7 +625,6 @@ public class DiscoveryNode implements Writeable, ToXContentFragment {\n         builder.endArray();\n         builder.field(\"version\", versionInfo.nodeVersion());\n         builder.field(\"min_index_version\", versionInfo.minIndexVersion());\n-        builder.field(\"min_read_only_index_version\", versionInfo.minReadOnlyIndexVersion());\n         builder.field(\"max_index_version\", versionInfo.maxIndexVersion());\n         builder.endObject();\n         return builder;\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    }
+  ],
+  "validation_repeated_patch_detected": false,
+  "validation_repeated_plan_detected": false,
+  "best_effort_adapted_code_hunks": [
+    {
+      "target_file": "server/src/main/java/org/elasticsearch/cluster/node/DiscoveryNode.java",
+      "mainline_file": "server/src/main/java/org/elasticsearch/cluster/node/DiscoveryNode.java",
+      "hunk_text": "diff --git a/server/src/main/java/org/elasticsearch/cluster/node/DiscoveryNode.java b/server/src/main/java/org/elasticsearch/cluster/node/DiscoveryNode.java\nindex 0251b464de9..fb7c0433cd0 100644\n--- a/server/src/main/java/org/elasticsearch/cluster/node/DiscoveryNode.java\n+++ b/server/src/main/java/org/elasticsearch/cluster/node/DiscoveryNode.java\n@@ -625,7 +625,6 @@ public class DiscoveryNode implements Writeable, ToXContentFragment {\n         builder.endArray();\n         builder.field(\"version\", versionInfo.nodeVersion());\n         builder.field(\"min_index_version\", versionInfo.minIndexVersion());\n-        builder.field(\"min_read_only_index_version\", versionInfo.minReadOnlyIndexVersion());\n         builder.field(\"max_index_version\", versionInfo.maxIndexVersion());\n         builder.endObject();\n         return builder;\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    }
+  ],
+  "adapted_test_hunks": [],
+  "generation_checklist": [
+    {
+      "mainline_file": "server/src/main/java/org/elasticsearch/cluster/node/DiscoveryNode.java",
+      "target_file": "server/src/main/java/org/elasticsearch/cluster/node/DiscoveryNode.java",
+      "hunk_index": 0,
+      "adaptation_type": "TYPE_II",
+      "execution_types": [
+        "TYPE_II"
+      ],
+      "status": "success",
+      "reason": "developer_fast_path",
+      "todo_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ],
+      "completed_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ]
+    }
+  ],
+  "generated_patch_hash": "b93c14b8d0873cd4e38dc223df34b0f0a954969723475b5f4aea038201d8dc77",
+  "force_type_v_until_success": false,
+  "force_type_v_reason": "",
+  "force_type_v_retry_files": [],
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "sources": []
+  }
+}

@@ -1,0 +1,258 @@
+{
+  "patch_analysis": "[FileChange(file_path='server/src/main/java/org/elasticsearch/index/query/BoolQueryBuilder.java', change_type='MODIFIED', added_lines=['&& mustNotClauses.size() == 0'], removed_lines=[], is_test_file=False, previous_file_path=None)]",
+  "patch_diff": "From 5e381a3a89fb734ade6a1a299881ef1be4df7019 Mon Sep 17 00:00:00 2001\nFrom: Matteo Piergiovanni <134913285+piergm@users.noreply.github.com>\nDate: Fri, 18 Oct 2024 08:44:39 +0200\nSubject: [PATCH] Bool query early termination should also consider must_not\n clauses (#115031)\n\n* Bool query early termination should also consider must_not clauses\n\n* Update docs/changelog/115031.yaml\n---\n docs/changelog/115031.yaml                                  | 5 +++++\n .../org/elasticsearch/index/query/BoolQueryBuilder.java     | 1 +\n .../elasticsearch/index/query/BoolQueryBuilderTests.java    | 6 ++++++\n 3 files changed, 12 insertions(+)\n create mode 100644 docs/changelog/115031.yaml\n\ndiff --git a/docs/changelog/115031.yaml b/docs/changelog/115031.yaml\nnew file mode 100644\nindex 00000000000..d8d6e1a3f81\n--- /dev/null\n+++ b/docs/changelog/115031.yaml\n@@ -0,0 +1,5 @@\n+pr: 115031\n+summary: Bool query early termination should also consider `must_not` clauses\n+area: Search\n+type: enhancement\n+issues: []\ndiff --git a/server/src/main/java/org/elasticsearch/index/query/BoolQueryBuilder.java b/server/src/main/java/org/elasticsearch/index/query/BoolQueryBuilder.java\nindex 2401719caaa..5329dbf0197 100644\n--- a/server/src/main/java/org/elasticsearch/index/query/BoolQueryBuilder.java\n+++ b/server/src/main/java/org/elasticsearch/index/query/BoolQueryBuilder.java\n@@ -356,6 +356,7 @@ public class BoolQueryBuilder extends AbstractQueryBuilder<BoolQueryBuilder> {\n         if (mustClauses.size() == 0\n             && filterClauses.size() == 0\n             && shouldClauses.size() > 0\n+            && mustNotClauses.size() == 0\n             && newBuilder.shouldClauses.stream().allMatch(b -> b instanceof MatchNoneQueryBuilder)) {\n             return new MatchNoneQueryBuilder(\"The \\\"\" + getName() + \"\\\" query was rewritten to a \\\"match_none\\\" query.\");\n         }\ndiff --git a/server/src/test/java/org/elasticsearch/index/query/BoolQueryBuilderTests.java b/server/src/test/java/org/elasticsearch/index/query/BoolQueryBuilderTests.java\nindex 25d4c1008ba..0fa8f70525e 100644\n--- a/server/src/test/java/org/elasticsearch/index/query/BoolQueryBuilderTests.java\n+++ b/server/src/test/java/org/elasticsearch/index/query/BoolQueryBuilderTests.java\n@@ -449,6 +449,12 @@ public class BoolQueryBuilderTests extends AbstractQueryTestCase<BoolQueryBuilde\n         rewritten = Rewriteable.rewrite(boolQueryBuilder, createSearchExecutionContext());\n         assertNotEquals(new MatchNoneQueryBuilder(), rewritten);\n \n+        boolQueryBuilder = new BoolQueryBuilder();\n+        boolQueryBuilder.should(new WrapperQueryBuilder(new MatchNoneQueryBuilder().toString()));\n+        boolQueryBuilder.mustNot(new TermQueryBuilder(TEXT_FIELD_NAME, \"bar\"));\n+        rewritten = Rewriteable.rewrite(boolQueryBuilder, createSearchExecutionContext());\n+        assertNotEquals(new MatchNoneQueryBuilder(), rewritten);\n+\n         boolQueryBuilder = new BoolQueryBuilder();\n         boolQueryBuilder.filter(new TermQueryBuilder(TEXT_FIELD_NAME, \"bar\"));\n         boolQueryBuilder.mustNot(new WrapperQueryBuilder(new WrapperQueryBuilder(new MatchAllQueryBuilder().toString()).toString()));\n-- \n2.43.0\n\n",
+  "fast_path_success": true,
+  "implementation_plan": {
+    "patch_intent": "Direct Backport (Phase 0 Fast-Path)",
+    "compatibility_analysis": {
+      "java_version_differences": "Unknown (Optimistic)",
+      "refactoring_notes": "None",
+      "missing_dependencies": []
+    },
+    "file_mappings": [
+      {
+        "source_file": "server/src/main/java/org/elasticsearch/index/query/BoolQueryBuilder.java",
+        "target_file": "server/src/main/java/org/elasticsearch/index/query/BoolQueryBuilder.java",
+        "confidence": 1.0,
+        "reasoning": "Phase 0 Optimistic Patch \u2014 git apply and tests passed."
+      }
+    ],
+    "steps": [
+      {
+        "step_id": 1,
+        "description": "Apply patch directly \u2014 clean git apply.",
+        "file_path": "server/src/main/java/org/elasticsearch/index/query/BoolQueryBuilder.java",
+        "action": "apply_patch_hunk",
+        "start_line": null,
+        "end_line": null,
+        "target_context": null
+      }
+    ]
+  },
+  "phase_0_test_targets": {
+    "test_targets": [
+      "server:org.elasticsearch.index.query.BoolQueryBuilderTests"
+    ],
+    "source_modules": [
+      "server"
+    ],
+    "all_modules": [
+      "server"
+    ],
+    "raw": {
+      "source": "changed_files",
+      "changed_files": [
+        "docs/changelog/115031.yaml",
+        "server/src/main/java/org/elasticsearch/index/query/BoolQueryBuilder.java",
+        "server/src/test/java/org/elasticsearch/index/query/BoolQueryBuilderTests.java"
+      ]
+    }
+  },
+  "phase_0_baseline_test_result": {
+    "success": false,
+    "compile_error": false,
+    "output": "=== Running Elasticsearch Tests for 3b2cfae ===\nTarget: server:org.elasticsearch.index.query.BoolQueryBuilderTests\n--- Container user: 1000:1000 ---\n--- Using Docker Image: retrofit-elasticsearch-builder:local ---\nCPU detected: 16\ngradle-cache-es\ngradle-wrapper-es\n--- Setting cache permissions ---\n--- Executing: ./gradlew :server:test --tests \"org.elasticsearch.index.query.BoolQueryBuilderTests\" --no-daemon -Dbuild.docker=false -DfailIfNoTests=false --max-workers=16 --project-cache-dir /tmp/gradle-project-cache ---\nTo honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.10.2/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.\nDaemon will be stopped at the end of the build \n> Task :build-conventions:compileJava FROM-CACHE\n> Task :build-conventions:pluginDescriptors\n> Task :build-conventions:processResources\n> Task :build-conventions:classes\n> Task :build-conventions:jar\n> Task :build-tools:reaper:compileJava FROM-CACHE\n> Task :build-tools:reaper:processResources NO-SOURCE\n> Task :build-tools:reaper:classes UP-TO-DATE\n> Task :build-tools-internal:extractPluginRequests FROM-CACHE\n> Task :build-tools-internal:generatePluginAdapters FROM-CACHE\n> Task :build-tools:reaper:jar\n> Task :build-tools-internal:pluginDescriptors\n> Task :build-tools-internal:processResources\n> Task :build-tools:compileJava FROM-CACHE\n> Task :build-tools:compileGroovy NO-SOURCE\n> Task :build-tools:generateVersionProperties FROM-CACHE\n> Task :build-tools:pluginDescriptors\n> Task :build-tools:processResources\n> Task :build-tools:classes\n> Task :build-tools:jar\n> Task :build-tools-internal:compileJava FROM-CACHE\n> Task :build-tools-internal:compileGroovy FROM-CACHE\n> Task :build-tools-internal:compileGroovyPlugins FROM-CACHE\n> Task :build-tools-internal:classes\n> Task :build-tools-internal:jar\nInvalid Java installation found at '/home/gradle/.gradle/.tmp/jdks/openjdk-22170477885418157157.tmp' (provisioned toolchain) auto-detected auto-provisioned. It will be re-checked in the next build. This might have performance impact if it keeps failing. Run the 'javaToolchains' task for more details.\nInvalid Java installation found at '/home/gradle/.gradle/.tmp/jdks/OpenJDK17U-jdk_x64_linux_hotspot_171177537857793779612.tmp' (provisioned toolchain) auto-detected auto-provisioned. It will be re-checked in the next build. This might have performance impact if it keeps failing. Run the 'javaToolchains' task for more details.\n=======================================\nElasticsearch Build Hamster says Hello!\n  Gradle Version        : 8.10.2\n  OS Info               : Linux 6.8.0-88-generic (amd64)\n  JDK Version           : 21.0.10+7-LTS (Eclipse Temurin)\n  JAVA_HOME             : /opt/java/openjdk\n  Random Testing Seed   : 1B2877D5A1C152CE\n  In FIPS 140 mode      : false\n=======================================\n> Task :libs:elasticsearch-core:processResources NO-SOURCE\n> Task :libs:elasticsearch-native:processResources NO-SOURCE\n> Task :libs:elasticsearch-cli:processResources NO-SOURCE\n> Task :libs:elasticsearch-lz4:processResources NO-SOURCE\n> Task :libs:elasticsearch-plugin-analysis-api:processResources NO-SOURCE\n> Task :libs:elasticsearch-native:processMain21Resources NO-SOURCE\n> Task :libs:elasticsearch-ssl-config:processResources NO-SOURCE\n> Task :libs:elasticsearch-x-content:processResources NO-SOURCE\n> Task :modules:transport-netty4:processResources NO-SOURCE\n> Task :libs:elasticsearch-simdvec:processResources NO-SOURCE\n> Task :libs:elasticsearch-tdigest:processResources NO-SOURCE\n> Task :libs:elasticsearch-native:processMain22Resources NO-SOURCE\n> Task :libs:elasticsearch-simdvec:processMain21Resources NO-SOURCE\n> Task :libs:elasticsearch-simdvec:processMain22Resources NO-SOURCE\n> Task :libs:elasticsearch-native:jna:processResources\n> Task :libs:elasticsearch-x-content:impl:processResources\n> Task :test:immutable-collections-patch:compileJava FROM-CACHE\n> Task :libs:elasticsearch-secure-sm:compileJava FROM-CACHE\n> Task :test:immutable-collections-patch:processResources NO-SOURCE\n> Task :test:immutable-collections-patch:classes UP-TO-DATE\n> Task :server:processResources\n> Task :libs:elasticsearch-secure-sm:processResources NO-SOURCE\n> Task :libs:elasticsearch-secure-sm:classes UP-TO-DATE\n> Task :libs:elasticsearch-plugin-api:compileJava FROM-CACHE\n> Task :libs:elasticsearch-plugin-api:processResources NO-SOURCE\n> Task :libs:elasticsearch-plugin-api:classes UP-TO-DATE\n> Task :server:generateModulesList\n> Task :libs:elasticsearch-grok:compileJava FROM-CACHE\n> Task :server:generatePluginsList\n> Task :libs:elasticsearch-logging:compileJava FROM-CACHE\n> Task :test:framework:processResources\n> Task :libs:elasticsearch-logging:processResources NO-SOURCE\n> Task :libs:elasticsearch-logging:classes UP-TO-DATE\n> Task :libs:elasticsearch-native:elasticsearch-native-libraries:extractLibs\n> Task :libs:elasticsearch-secure-sm:jar\n> Task :libs:elasticsearch-plugin-api:jar\n> Task :libs:elasticsearch-logging:jar\n> Task :client:rest:compileJava FROM-CACHE\n> Task :libs:elasticsearch-geo:compileJava FROM-CACHE\n> Task :libs:elasticsearch-geo:processResources NO-SOURCE\n> Task :libs:elasticsearch-geo:classes UP-TO-DATE\n> Task :libs:elasticsearch-grok:processResources\n> Task :libs:elasticsearch-plugin-analysis-api:compileJava FROM-CACHE\n> Task :libs:elasticsearch-grok:classes\n> Task :libs:elasticsearch-plugin-analysis-api:classes UP-TO-DATE\n> Task :libs:elasticsearch-geo:jar\n> Task :libs:elasticsearch-plugin-analysis-api:jar\n> Task :libs:elasticsearch-core:compileJava FROM-CACHE\n> Task :libs:elasticsearch-core:classes UP-TO-DATE\n> Task :libs:elasticsearch-grok:jar\n> Task :test:immutable-collections-patch:generatePatch\n> Task :libs:elasticsearch-core:jar\n> Task :libs:elasticsearch-cli:compileJava FROM-CACHE\n> Task :libs:elasticsearch-lz4:compileJava FROM-CACHE\n> Task :libs:elasticsearch-cli:classes UP-TO-DATE\n> Task :libs:elasticsearch-lz4:classes UP-TO-DATE\n> Task :libs:elasticsearch-native:compileJava FROM-CACHE\n> Task :server:processTestResources\n> Task :libs:elasticsearch-tdigest:compileJava FROM-CACHE\n> Task :libs:elasticsearch-tdigest:classes UP-TO-DATE\n> Task :libs:elasticsearch-ssl-config:compileJava FROM-CACHE\n> Task :libs:elasticsearch-ssl-config:classes UP-TO-DATE\n> Task :libs:elasticsearch-lz4:jar\n> Task :libs:elasticsearch-cli:jar\n> Task :libs:elasticsearch-x-content:compileJava FROM-CACHE\n> Task :libs:elasticsearch-simdvec:compileJava FROM-CACHE\n> Task :libs:elasticsearch-simdvec:classes UP-TO-DATE\n> Task :libs:elasticsearch-tdigest:jar\n> Task :libs:elasticsearch-native:jna:compileJava FROM-CACHE\n> Task :libs:elasticsearch-native:jna:classes\n> Task :libs:elasticsearch-ssl-config:jar\n> Task :libs:elasticsearch-simdvec:compileMain21Java FROM-CACHE\n> Task :libs:elasticsearch-native:jna:jar\n> Task :libs:elasticsearch-simdvec:main21Classes UP-TO-DATE\n> Task :libs:elasticsearch-x-content:impl:compileJava FROM-CACHE\n> Task :libs:elasticsearch-simdvec:compileMain22Java FROM-CACHE\n> Task :libs:elasticsearch-simdvec:main22Classes UP-TO-DATE\n> Task :libs:elasticsearch-x-content:impl:classes\n> Task :libs:elasticsearch-simdvec:jar\n> Task :libs:elasticsearch-x-content:impl:jar\n> Task :libs:elasticsearch-native:generateJnaProviderManifest\n> Task :libs:elasticsearch-x-content:generateImplProviderManifest\n> Task :libs:elasticsearch-native:generateJnaProviderImpl\n> Task :libs:elasticsearch-native:classes\n> Task :client:rest:processResources\n> Task :client:rest:classes\n> Task :client:rest:jar\n> Task :libs:elasticsearch-native:compileMain21Java FROM-CACHE\n> Task :libs:elasticsearch-native:main21Classes UP-TO-DATE\n> Task :libs:elasticsearch-native:compileMain22Java FROM-CACHE\n> Task :libs:elasticsearch-native:main22Classes UP-TO-DATE\n> Task :libs:elasticsearch-x-content:generateImplProviderImpl\n> Task :libs:elasticsearch-x-content:classes\n> Task :libs:elasticsearch-x-content:jar\n> Task :libs:elasticsearch-native:jar\n> Task :server:compileJava\nNote: Some input files use or override a deprecated API.\nNote: Recompile with -Xlint:deprecation for details.\nNote: Some input files use or override a deprecated API that is marked for removal.\nNote: Recompile with -Xlint:removal for details.\n\n> Task :server:classes\n> Task :modules:transport-netty4:compileJava FROM-CACHE\n> Task :modules:transport-netty4:classes UP-TO-DATE\n> Task :modules:transport-netty4:jar\n> Task :test:framework:compileJava FROM-CACHE\n> Task :test:framework:classes\n> Task :test:framework:jar\n> Task :server:compileTestJava FROM-CACHE\n> Task :server:testClasses\n\n> Task :server:test\n\nREPRODUCE WITH: ./gradlew \":server:test\" --tests \"org.elasticsearch.index.query.BoolQueryBuilderTests.testRewriteWithMatchNone\" -Dtests.seed=1B2877D5A1C152CE -Dtests.locale=te -Dtests.timezone=America/Eirunepe -Druntime.java=22\n\nBoolQueryBuilderTests > testRewriteWithMatchNone FAILED\n    java.lang.AssertionError: Values should be different. Actual: {\n      \"match_none\" : {\n        \"boost\" : 1.0\n      }\n    }\n        at __randomizedtesting.SeedInfo.seed([1B2877D5A1C152CE:ADDFC078148BA349]:0)\n        at org.junit.Assert.fail(Assert.java:89)\n        at org.junit.Assert.failEquals(Assert.java:187)\n        at org.junit.Assert.assertNotEquals(Assert.java:163)\n        at org.junit.Assert.assertNotEquals(Assert.java:177)\n        at org.elasticsearch.index.query.BoolQueryBuilderTests.testRewriteWithMatchNone(BoolQueryBuilderTests.java:456)\n\n\nSuite: Test class org.elasticsearch.index.query.BoolQueryBuilderTests\n\nWARNING: A terminally deprecated method in java.lang.System has been called\nWARNING: System::setSecurityManager has been called by org.gradle.api.internal.tasks.testing.worker.TestWorker (file:/home/gradle/.gradle/wrapper/dists/gradle-8.10.2-all/7iv73wktx1xtkvlq19urqw1wm/gradle-8.10.2/lib/plugins/gradle-testing-base-infrastructure-8.10.2.jar)\nWARNING: Please consider reporting this to the maintainers of org.gradle.api.internal.tasks.testing.worker.TestWorker\nWARNING: System::setSecurityManager will be removed in a future release\n\n> Task :server:test FAILED\n  2> WARNING: A restricted method in   2> java.lang.foreign.Linker  2>  has been called\n  2> WARNING:   2> java.lang.foreign.Linker::downcallHandle  2>  has been called by   2> org.elasticsearch.nativeaccess.jdk.LinkerHelper  2>  in   2> an unnamed module\n  2> WARNING: Use --enable-native-access=  2> ALL-UNNAMED  2>  to avoid a warning for callers in this module\n  2> WARNING: Restricted methods will be blocked in a future release unless native access is enabled\n\n  1> [2026-04-06T12:52:02,654][INFO ][o.e.n.NativeAccess       ] [[SUITE-BoolQueryBuilderTests-seed#[1B2877D5A1C152CE]]] Using native vector library; to disable start with -Dorg.elasticsearch.nativeaccess.enableVectorLibrary=false\n  1> [2026-04-06T12:52:02,686][INFO ][o.e.n.NativeAccess       ] [[SUITE-BoolQueryBuilderTests-seed#[1B2877D5A1C152CE]]] Using [jdk] native provider and native methods for [Linux]\n  2> Apr 06, 2026 12:52:03 PM org.apache.lucene.internal.vectorization.VectorizationProvider lookup\n  2> WARNING: Java vector incubator module is not readable. For optimal vector performance, pass '--add-modules jdk.incubator.vector' to enable Vector API.\n  2> REPRODUCE WITH: ./gradlew \":server:test\" --tests \"org.elasticsearch.index.query.BoolQueryBuilderTests.testRewriteWithMatchNone\" -Dtests.seed=1B2877D5A1C152CE -Dtests.locale=te -Dtests.timezone=America/Eirunepe -Druntime.java=22\n  2> java.lang.AssertionError: Values should be different. Actual: {\n      \"match_none\" : {\n        \"boost\" : 1.0\n      }\n    }\n        at __randomizedtesting.SeedInfo.seed([1B2877D5A1C152CE:ADDFC078148BA349]:0)\n        at org.junit.Assert.fail(Assert.java:89)\n        at org.junit.Assert.failEquals(Assert.java:187)\n  1> [2026-04-06T12:52:02,748][INFO ][o.e.c.t.DateFormatters   ] [[SUITE-BoolQueryBuilderTests-seed#[1B2877D5A1C152CE]]] Using java.time datetime parsers only\n  1> [2026-04-06T07:52:03,850][INFO ][o.e.i.q.BoolQueryBuilderTests] [testMinShouldMatchFilterWithoutShouldClauses] before test\n  1> [2026-04-06T07:52:04,971][INFO ][o.e.c.u.FeatureFlag      ] [testMinShouldMatchFilterWithoutShouldClauses] The current build is a snapshot, feature flag [sub_objects_auto] is enabled\n  1> [2026-04-06T07:52:05,104][INFO ][o.e.i.q.BoolQueryBuilderTests] [testMinShouldMatchFilterWithoutShouldClauses] after test\n  1> [2026-04-06T07:52:05,119][INFO ][o.e.i.q.BoolQueryBuilderTests] [testQueryWrappedInArray] before test\n  1> [2026-04-06T07:52:05,195][INFO ][o.e.i.q.BoolQueryBuilderTests] [testQueryWrappedInArray] after test\n  1> [2026-04-06T07:52:05,206][INFO ][o.e.i.q.BoolQueryBuilderTests] [testMustRewrite] before test\n  1> [2026-04-06T07:52:05,211][INFO ][o.e.i.q.BoolQueryBuilderTests] [testMustRewrite] after test\n  1> [2026-04-06T07:52:05,221][INFO ][o.e.i.q.BoolQueryBuilderTests] [testRewriteWithMatchNone] before test\n  1> [2026-04-06T07:52:05,251][INFO ][o.e.i.q.BoolQueryBuilderTests] [testRewriteWithMatchNone] after test\n        at org.junit.Assert.assertNotEquals(Assert.java:163)\n        at org.junit.Assert.assertNotEquals(Assert.java:177)\n        at org.elasticsearch.index.query.BoolQueryBuilderTests.testRewriteWithMatchNone(BoolQueryBuilderTests.java:456)\n  1> [2026-04-06T07:52:05,272][INFO ][o.e.i.q.BoolQueryBuilderTests] [testCacheability] before test\n  1> [2026-04-06T07:52:05,290][INFO ][o.e.i.q.BoolQueryBuilderTests] [testCacheability] after test\n  1> [2026-04-06T07:52:05,301][INFO ][o.e.i.q.BoolQueryBuilderTests] [testMinimumShouldMatchNumber] before test\n  1> [2026-04-06T07:52:05,308][INFO ][o.e.i.q.BoolQueryBuilderTests] [testMinimumShouldMatchNumber] after test\n  1> [2026-04-06T07:52:05,317][INFO ][o.e.i.q.BoolQueryBuilderTests] [testMinShouldMatchDisableCoord] before test\n  1> [2026-04-06T07:52:05,326][INFO ][o.e.i.q.BoolQueryBuilderTests] [testMinShouldMatchDisableCoord] after test\n  1> [2026-04-06T07:52:05,335][INFO ][o.e.i.q.BoolQueryBuilderTests] [testFromJson] before test\n  1> [2026-04-06T07:52:05,342][INFO ][o.e.i.q.BoolQueryBuilderTests] [testFromJson] after test\n  1> [2026-04-06T07:52:05,350][INFO ][o.e.i.q.BoolQueryBuilderTests] [testFilterNull] before test\n  1> [2026-04-06T07:52:05,353][INFO ][o.e.i.q.BoolQueryBuilderTests] [testFilterNull] after test\n  1> [2026-04-06T07:52:05,361][INFO ][o.e.i.q.BoolQueryBuilderTests] [testMinimumShouldMatchNull] before test\n  1> [2026-04-06T07:52:05,364][INFO ][o.e.i.q.BoolQueryBuilderTests] [testMinimumShouldMatchNull] after test\n  1> [2026-04-06T07:52:05,372][INFO ][o.e.i.q.BoolQueryBuilderTests] [testShallowCopy] before test\n  1> [2026-04-06T07:52:05,380][INFO ][o.e.i.q.BoolQueryBuilderTests] [testShallowCopy] after test\n  1> [2026-04-06T07:52:05,387][INFO ][o.e.i.q.BoolQueryBuilderTests] [testDeprecation] before test\n  1> [2026-04-06T07:52:05,395][WARN ][o.e.d.x.ParseField       ] [testDeprecation] data_stream.dataset=\"deprecation.elasticsearch\" data_stream.namespace=\"default\" data_stream.type=\"logs\" elasticsearch.event.category=\"api\" event.code=\"deprecated_field_mustNot\" message=\"[bool][1:24] Deprecated field [mustNot] used, expected [must_not] instead\"\n  1> [2026-04-06T07:52:05,404][INFO ][o.e.i.q.BoolQueryBuilderTests] [testDeprecation] after test\n  1> [2026-04-06T07:52:05,413][INFO ][o.e.i.q.BoolQueryBuilderTests] [testEqualsAndHashcode] before test\n  1> [2026-04-06T07:52:05,441][INFO ][o.e.i.q.BoolQueryBuilderTests] [testEqualsAndHashcode] after test\n  1> [2026-04-06T07:52:05,449][INFO ][o.e.i.q.BoolQueryBuilderTests] [testMustNotNull] before test\n  1> [2026-04-06T07:52:05,453][INFO ][o.e.i.q.BoolQueryBuilderTests] [testMustNotNull] after test\n  1> [2026-04-06T07:52:05,461][INFO ][o.e.i.q.BoolQueryBuilderTests] [testEmptyBooleanQuery] before test\n  1> [2026-04-06T07:52:05,464][INFO ][o.e.i.q.BoolQueryBuilderTests] [testEmptyBooleanQuery] after test\n  1> [2026-04-06T07:52:05,473][INFO ][o.e.i.q.BoolQueryBuilderTests] [testMinShouldMatchBiggerThanNumberOfShouldClauses] before test\n  1> [2026-04-06T07:52:05,478][INFO ][o.e.i.q.BoolQueryBuilderTests] [testMinShouldMatchBiggerThanNumberOfShouldClauses] after test\n  1> [2026-04-06T07:52:05,487][INFO ][o.e.i.q.BoolQueryBuilderTests] [testFromXContent] before test\n  1> [2026-04-06T07:52:05,633][INFO ][o.e.i.q.BoolQueryBuilderTests] [testFromXContent] after test\n  1> [2026-04-06T07:52:05,641][INFO ][o.e.i.q.BoolQueryBuilderTests] [testUnknownQueryName] before test\n  1> [2026-04-06T07:52:05,650][INFO ][o.e.i.q.BoolQueryBuilderTests] [testUnknownQueryName] after test\n  1> [2026-04-06T07:52:05,656][INFO ][o.e.i.q.BoolQueryBuilderTests] [testRewriteMultipleTimes] before test\n  1> [2026-04-06T07:52:05,661][INFO ][o.e.i.q.BoolQueryBuilderTests] [testRewriteMultipleTimes] after test\n  1> [2026-04-06T07:52:05,667][INFO ][o.e.i.q.BoolQueryBuilderTests] [testRewrite] before test\n  1> [2026-04-06T07:52:05,672][INFO ][o.e.i.q.BoolQueryBuilderTests] [testRewrite] after test\n  1> [2026-04-06T07:52:05,679][INFO ][o.e.i.q.BoolQueryBuilderTests] [testValidOutput] before test\n  1> [2026-04-06T07:52:05,705][INFO ][o.e.i.q.BoolQueryBuilderTests] [testValidOutput] after test\n  1> [2026-04-06T07:52:05,711][INFO ][o.e.i.q.BoolQueryBuilderTests] [testShouldNull] before test\n  1> [2026-04-06T07:52:05,714][INFO ][o.e.i.q.BoolQueryBuilderTests] [testShouldNull] after test\n  1> [2026-04-06T07:52:05,720][INFO ][o.e.i.q.BoolQueryBuilderTests] [testIllegalArguments] before test\n  1> [2026-04-06T07:52:05,723][INFO ][o.e.i.q.BoolQueryBuilderTests] [testIllegalArguments] after test\n  1> [2026-04-06T07:52:05,729][INFO ][o.e.i.q.BoolQueryBuilderTests] [testSerialization] before test\n  1> [2026-04-06T07:52:05,735][INFO ][o.e.i.q.BoolQueryBuilderTests] [testSerialization] after test\n  1> [2026-04-06T07:52:05,741][INFO ][o.e.i.q.BoolQueryBuilderTests] [testUnknownObjectException] before test\n  1> [2026-04-06T07:52:05,763][INFO ][o.e.i.q.BoolQueryBuilderTests] [testUnknownObjectException] after test\n  1> [2026-04-06T07:52:05,769][INFO ][o.e.i.q.BoolQueryBuilderTests] [testMaxNestedDepth] before test\n  1> [2026-04-06T07:52:05,774][INFO ][o.e.i.q.BoolQueryBuilderTests] [testMaxNestedDepth] after test\n  1> [2026-04-06T07:52:05,781][INFO ][o.e.i.q.BoolQueryBuilderTests] [testUnknownField] before test\n  1> [2026-04-06T07:52:05,784][INFO ][o.e.i.q.BoolQueryBuilderTests] [testUnknownField] after test\n  1> [2026-04-06T07:52:05,790][INFO ][o.e.i.q.BoolQueryBuilderTests] [testMustNull] before test\n  1> [2026-04-06T07:52:05,793][INFO ][o.e.i.q.BoolQueryBuilderTests] [testMustNull] after test\n  1> [2026-04-06T07:52:05,799][INFO ][o.e.i.q.BoolQueryBuilderTests] [testNegativeBoosts] before test\n  2> NOTE: leaving temporary files on disk at: /repo/server/build/testrun/test/temp/org.elasticsearch.index.query.BoolQueryBuilderTests_1B2877D5A1C152CE-001  1> [2026-04-06T07:52:05,802][INFO ][o.e.i.q.BoolQueryBuilderTests] [testNegativeBoosts] after test\n  1> [2026-04-06T07:52:05,809][INFO ][o.e.i.q.BoolQueryBuilderTests] [testToQuery] before test\n  1> [2026-04-06T07:52:05,905][INFO ][o.e.i.q.BoolQueryBuilderTests] [testToQuery] after test\n\n  2> NOTE: test params are: codec=Asserting(Lucene912): {}, docValues:{}, maxPointsInLeafNode=1277, maxMBSortInHeap=7.830713170586979, sim=Asserting(RandomSimilarity(queryNorm=false): {}), locale=te, timezone=America/Eirunepe\n  2> NOTE: Linux 6.8.0-88-generic amd64/Oracle Corporation 22.0.1 (64-bit)/cpus=16,threads=1,free=289700400,total=536870912\n  2> NOTE: All tests run in this JVM: [BoolQueryBuilderTests]\n\nTests with failures:\n - org.elasticsearch.index.query.BoolQueryBuilderTests.testRewriteWithMatchNone\n30 tests completed, 1 failed\n\n\nFAILURE: Build failed with an exception.\n\n* What went wrong:\nExecution failed for task ':server:test'.\n> There were failing tests. See the report at: file:///repo/server/build/reports/tests/test/index.html\n\nBUILD FAILED in 1m 52s\n80 actionable tasks: 46 executed, 34 from cache\n--- Test results are available in build/test-results/ ---\n\u274c Tests Failed",
+    "failed_tests": [],
+    "mode": "elasticsearch-helper-script",
+    "targets": {
+      "test_targets": [
+        "server:org.elasticsearch.index.query.BoolQueryBuilderTests"
+      ],
+      "source_modules": [
+        "server"
+      ],
+      "all_modules": [
+        "server"
+      ],
+      "raw": {
+        "source": "changed_files",
+        "changed_files": [
+          "docs/changelog/115031.yaml",
+          "server/src/main/java/org/elasticsearch/index/query/BoolQueryBuilder.java",
+          "server/src/test/java/org/elasticsearch/index/query/BoolQueryBuilderTests.java"
+        ]
+      }
+    },
+    "test_state": {
+      "xml_reports": [
+        "/home/cseroot/retrofit-java/temp_repo_storage/elasticsearch/libs/entitlement/build/test-results/test/TEST-org.elasticsearch.entitlement.runtime.policy.PolicyManagerTests.xml",
+        "/home/cseroot/retrofit-java/temp_repo_storage/elasticsearch/libs/entitlement/qa/build/test-results/javaRestTest/TEST-org.elasticsearch.entitlement.qa.EntitlementsDeniedIT.xml",
+        "/home/cseroot/retrofit-java/temp_repo_storage/elasticsearch/modules/data-streams/build/test-results/internalClusterTest/TEST-org.elasticsearch.datastreams.lifecycle.DataStreamLifecycleServiceIT.xml",
+        "/home/cseroot/retrofit-java/temp_repo_storage/elasticsearch/modules/data-streams/build/test-results/test/TEST-org.elasticsearch.datastreams.DataStreamsStatsTests.xml",
+        "/home/cseroot/retrofit-java/temp_repo_storage/elasticsearch/server/build/test-results/test/TEST-org.elasticsearch.index.query.BoolQueryBuilderTests.xml",
+        "/home/cseroot/retrofit-java/temp_repo_storage/elasticsearch/x-pack/plugin/async-search/build/test-results/test/TEST-org.elasticsearch.xpack.search.AsyncSearchTaskTests.xml",
+        "/home/cseroot/retrofit-java/temp_repo_storage/elasticsearch/x-pack/plugin/deprecation/build/test-results/test/TEST-org.elasticsearch.xpack.deprecation.NodeDeprecationChecksTests.xml",
+        "/home/cseroot/retrofit-java/temp_repo_storage/elasticsearch/x-pack/plugin/downsample/build/test-results/test/TEST-org.elasticsearch.xpack.downsample.DownsampleActionSingleNodeTests.xml",
+        "/home/cseroot/retrofit-java/temp_repo_storage/elasticsearch/x-pack/plugin/downsample/qa/rest/build/test-results/yamlRestTest/TEST-org.elasticsearch.xpack.downsample.DownsampleRestIT.xml",
+        "/home/cseroot/retrofit-java/temp_repo_storage/elasticsearch/x-pack/plugin/esql/build/test-results/test/TEST-org.elasticsearch.xpack.esql.expression.function.scalar.date.DateParseTests.xml",
+        "/home/cseroot/retrofit-java/temp_repo_storage/elasticsearch/x-pack/plugin/esql/compute/build/test-results/test/TEST-org.elasticsearch.compute.lucene.LuceneSourceOperatorTests.xml",
+        "/home/cseroot/retrofit-java/temp_repo_storage/elasticsearch/x-pack/plugin/inference/build/test-results/test/TEST-org.elasticsearch.xpack.inference.highlight.SemanticTextHighlighterTests.xml",
+        "/home/cseroot/retrofit-java/temp_repo_storage/elasticsearch/x-pack/plugin/logsdb/build/test-results/javaRestTest/TEST-org.elasticsearch.xpack.logsdb.LogsdbRestIT.xml",
+        "/home/cseroot/retrofit-java/temp_repo_storage/elasticsearch/x-pack/plugin/logsdb/build/test-results/test/TEST-org.elasticsearch.xpack.logsdb.SyntheticSourceIndexSettingsProviderTests.xml",
+        "/home/cseroot/retrofit-java/temp_repo_storage/elasticsearch/x-pack/plugin/logsdb/qa/with-basic/build/test-results/javaRestTest/TEST-org.elasticsearch.xpack.logsdb.LogsdbRestIT.xml",
+        "/home/cseroot/retrofit-java/temp_repo_storage/elasticsearch/x-pack/plugin/migrate/build/test-results/internalClusterTest/TEST-org.elasticsearch.xpack.migrate.action.ReindexDatastreamIndexTransportActionIT.xml",
+        "/home/cseroot/retrofit-java/temp_repo_storage/elasticsearch/x-pack/plugin/migrate/build/test-results/test/TEST-org.elasticsearch.xpack.migrate.action.ReindexDataStreamIndexTransportActionTests.xml",
+        "/home/cseroot/retrofit-java/temp_repo_storage/elasticsearch/x-pack/plugin/ml/build/test-results/test/TEST-org.elasticsearch.xpack.ml.aggs.changepoint.SpikeAndDipDetectorTests.xml",
+        "/home/cseroot/retrofit-java/temp_repo_storage/elasticsearch/x-pack/plugin/monitoring/build/test-results/test/TEST-org.elasticsearch.xpack.monitoring.collector.cluster.ClusterStatsMonitoringDocTests.xml",
+        "/home/cseroot/retrofit-java/temp_repo_storage/elasticsearch/x-pack/plugin/redact/build/test-results/test/TEST-org.elasticsearch.xpack.redact.RedactProcessorTests.xml",
+        "/home/cseroot/retrofit-java/temp_repo_storage/elasticsearch/x-pack/plugin/security/build/test-results/test/TEST-org.elasticsearch.xpack.security.authc.ApiKeyServiceTests.xml"
+      ],
+      "target_classes": [
+        "org.elasticsearch.index.query.BoolQueryBuilderTests"
+      ],
+      "test_cases": {
+        "org.elasticsearch.index.query.BoolQueryBuilderTests#testMinShouldMatchFilterWithoutShouldClauses": "passed",
+        "org.elasticsearch.index.query.BoolQueryBuilderTests#testQueryWrappedInArray": "passed",
+        "org.elasticsearch.index.query.BoolQueryBuilderTests#testMustRewrite": "passed",
+        "org.elasticsearch.index.query.BoolQueryBuilderTests#testRewriteWithMatchNone": "failed",
+        "org.elasticsearch.index.query.BoolQueryBuilderTests#testCacheability": "passed",
+        "org.elasticsearch.index.query.BoolQueryBuilderTests#testMinimumShouldMatchNumber": "passed",
+        "org.elasticsearch.index.query.BoolQueryBuilderTests#testMinShouldMatchDisableCoord": "passed",
+        "org.elasticsearch.index.query.BoolQueryBuilderTests#testFromJson": "passed",
+        "org.elasticsearch.index.query.BoolQueryBuilderTests#testFilterNull": "passed",
+        "org.elasticsearch.index.query.BoolQueryBuilderTests#testMinimumShouldMatchNull": "passed",
+        "org.elasticsearch.index.query.BoolQueryBuilderTests#testShallowCopy": "passed",
+        "org.elasticsearch.index.query.BoolQueryBuilderTests#testDeprecation": "passed",
+        "org.elasticsearch.index.query.BoolQueryBuilderTests#testEqualsAndHashcode": "passed",
+        "org.elasticsearch.index.query.BoolQueryBuilderTests#testMustNotNull": "passed",
+        "org.elasticsearch.index.query.BoolQueryBuilderTests#testEmptyBooleanQuery": "passed",
+        "org.elasticsearch.index.query.BoolQueryBuilderTests#testMinShouldMatchBiggerThanNumberOfShouldClauses": "passed",
+        "org.elasticsearch.index.query.BoolQueryBuilderTests#testFromXContent": "passed",
+        "org.elasticsearch.index.query.BoolQueryBuilderTests#testUnknownQueryName": "passed",
+        "org.elasticsearch.index.query.BoolQueryBuilderTests#testRewriteMultipleTimes": "passed",
+        "org.elasticsearch.index.query.BoolQueryBuilderTests#testRewrite": "passed",
+        "org.elasticsearch.index.query.BoolQueryBuilderTests#testValidOutput": "passed",
+        "org.elasticsearch.index.query.BoolQueryBuilderTests#testShouldNull": "passed",
+        "org.elasticsearch.index.query.BoolQueryBuilderTests#testIllegalArguments": "passed",
+        "org.elasticsearch.index.query.BoolQueryBuilderTests#testSerialization": "passed",
+        "org.elasticsearch.index.query.BoolQueryBuilderTests#testUnknownObjectException": "passed",
+        "org.elasticsearch.index.query.BoolQueryBuilderTests#testMaxNestedDepth": "passed",
+        "org.elasticsearch.index.query.BoolQueryBuilderTests#testUnknownField": "passed",
+        "org.elasticsearch.index.query.BoolQueryBuilderTests#testMustNull": "passed",
+        "org.elasticsearch.index.query.BoolQueryBuilderTests#testNegativeBoosts": "passed",
+        "org.elasticsearch.index.query.BoolQueryBuilderTests#testToQuery": "passed"
+      },
+      "classes": {
+        "org.elasticsearch.index.query.BoolQueryBuilderTests": "failed"
+      },
+      "summary": {
+        "passed": 29,
+        "failed": 1,
+        "skipped": 0,
+        "total": 30
+      }
+    }
+  },
+  "phase_0_post_patch_test_result": {
+    "success": true,
+    "compile_error": false,
+    "output": "=== Running Elasticsearch Tests for 3b2cfae ===\nTarget: server:org.elasticsearch.index.query.BoolQueryBuilderTests\n--- Container user: 1000:1000 ---\n--- Using Docker Image: retrofit-elasticsearch-builder:local ---\nCPU detected: 16\ngradle-cache-es\ngradle-wrapper-es\n--- Setting cache permissions ---\n--- Executing: ./gradlew :server:test --tests \"org.elasticsearch.index.query.BoolQueryBuilderTests\" --no-daemon -Dbuild.docker=false -DfailIfNoTests=false --max-workers=16 --project-cache-dir /tmp/gradle-project-cache ---\nTo honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.10.2/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.\nDaemon will be stopped at the end of the build \n> Task :build-conventions:compileJava FROM-CACHE\n> Task :build-conventions:pluginDescriptors\n> Task :build-conventions:processResources\n> Task :build-conventions:classes\n> Task :build-conventions:jar\n> Task :build-tools:reaper:compileJava FROM-CACHE\n> Task :build-tools:reaper:processResources NO-SOURCE\n> Task :build-tools:reaper:classes UP-TO-DATE\n> Task :build-tools-internal:extractPluginRequests FROM-CACHE\n> Task :build-tools:reaper:jar\n> Task :build-tools-internal:generatePluginAdapters FROM-CACHE\n> Task :build-tools-internal:pluginDescriptors\n> Task :build-tools:compileJava FROM-CACHE\n> Task :build-tools:compileGroovy NO-SOURCE\n> Task :build-tools:generateVersionProperties FROM-CACHE\n> Task :build-tools-internal:processResources\n> Task :build-tools:pluginDescriptors\n> Task :build-tools:processResources\n> Task :build-tools:classes\n> Task :build-tools:jar\n> Task :build-tools-internal:compileJava FROM-CACHE\n> Task :build-tools-internal:compileGroovy FROM-CACHE\n> Task :build-tools-internal:compileGroovyPlugins FROM-CACHE\n> Task :build-tools-internal:classes\n> Task :build-tools-internal:jar\nInvalid Java installation found at '/home/gradle/.gradle/.tmp/jdks/openjdk-228345195040629018088.tmp' (provisioned toolchain) auto-detected auto-provisioned. It will be re-checked in the next build. This might have performance impact if it keeps failing. Run the 'javaToolchains' task for more details.\nInvalid Java installation found at '/home/gradle/.gradle/.tmp/jdks/OpenJDK17U-jdk_x64_linux_hotspot_1716063711691746628183.tmp' (provisioned toolchain) auto-detected auto-provisioned. It will be re-checked in the next build. This might have performance impact if it keeps failing. Run the 'javaToolchains' task for more details.\n=======================================\nElasticsearch Build Hamster says Hello!\n  Gradle Version        : 8.10.2\n  OS Info               : Linux 6.8.0-88-generic (amd64)\n  JDK Version           : 21.0.10+7-LTS (Eclipse Temurin)\n  JAVA_HOME             : /opt/java/openjdk\n  Random Testing Seed   : F281AA480CF64865\n  In FIPS 140 mode      : false\n=======================================\n> Task :libs:elasticsearch-plugin-analysis-api:processResources NO-SOURCE\n> Task :libs:elasticsearch-simdvec:processResources NO-SOURCE\n> Task :libs:elasticsearch-native:processResources NO-SOURCE\n> Task :libs:elasticsearch-tdigest:processResources NO-SOURCE\n> Task :libs:elasticsearch-ssl-config:processResources NO-SOURCE\n> Task :libs:elasticsearch-core:processResources NO-SOURCE\n> Task :libs:elasticsearch-cli:processResources NO-SOURCE\n> Task :libs:elasticsearch-native:processMain21Resources NO-SOURCE\n> Task :libs:elasticsearch-x-content:processResources NO-SOURCE\n> Task :libs:elasticsearch-simdvec:processMain21Resources NO-SOURCE\n> Task :libs:elasticsearch-native:processMain22Resources NO-SOURCE\n> Task :modules:transport-netty4:processResources NO-SOURCE\n> Task :libs:elasticsearch-simdvec:processMain22Resources NO-SOURCE\n> Task :libs:elasticsearch-lz4:processResources NO-SOURCE\n> Task :libs:elasticsearch-x-content:impl:processResources\n> Task :libs:elasticsearch-native:jna:processResources\n> Task :libs:elasticsearch-logging:compileJava FROM-CACHE\n> Task :libs:elasticsearch-logging:processResources NO-SOURCE\n> Task :libs:elasticsearch-logging:classes UP-TO-DATE\n> Task :libs:elasticsearch-secure-sm:compileJava FROM-CACHE\n> Task :libs:elasticsearch-secure-sm:processResources NO-SOURCE\n> Task :libs:elasticsearch-secure-sm:classes UP-TO-DATE\n> Task :test:immutable-collections-patch:compileJava FROM-CACHE\n> Task :test:immutable-collections-patch:processResources NO-SOURCE\n> Task :test:immutable-collections-patch:classes UP-TO-DATE\n> Task :libs:elasticsearch-logging:jar\n> Task :server:processResources\n> Task :libs:elasticsearch-grok:compileJava FROM-CACHE\n> Task :libs:elasticsearch-plugin-api:compileJava FROM-CACHE\n> Task :libs:elasticsearch-secure-sm:jar\n> Task :test:framework:processResources\n> Task :libs:elasticsearch-plugin-api:processResources NO-SOURCE\n> Task :libs:elasticsearch-plugin-api:classes UP-TO-DATE\n> Task :libs:elasticsearch-native:elasticsearch-native-libraries:extractLibs\n> Task :server:generateModulesList\n> Task :client:rest:compileJava FROM-CACHE\n> Task :libs:elasticsearch-geo:compileJava FROM-CACHE\n> Task :libs:elasticsearch-plugin-api:jar\n> Task :libs:elasticsearch-geo:processResources NO-SOURCE\n> Task :server:generatePluginsList\n> Task :libs:elasticsearch-geo:classes UP-TO-DATE\n> Task :libs:elasticsearch-core:compileJava FROM-CACHE\n> Task :libs:elasticsearch-core:classes UP-TO-DATE\n> Task :libs:elasticsearch-plugin-analysis-api:compileJava FROM-CACHE\n> Task :libs:elasticsearch-plugin-analysis-api:classes UP-TO-DATE\n> Task :libs:elasticsearch-grok:processResources\n> Task :libs:elasticsearch-geo:jar\n> Task :libs:elasticsearch-grok:classes\n> Task :libs:elasticsearch-plugin-analysis-api:jar\n> Task :libs:elasticsearch-core:jar\n> Task :test:immutable-collections-patch:generatePatch\n> Task :libs:elasticsearch-grok:jar\n> Task :libs:elasticsearch-cli:compileJava FROM-CACHE\n> Task :libs:elasticsearch-cli:classes UP-TO-DATE\n> Task :libs:elasticsearch-ssl-config:compileJava FROM-CACHE\n> Task :libs:elasticsearch-lz4:compileJava FROM-CACHE\n> Task :libs:elasticsearch-lz4:classes UP-TO-DATE\n> Task :libs:elasticsearch-ssl-config:classes UP-TO-DATE\n> Task :libs:elasticsearch-native:compileJava FROM-CACHE\n> Task :libs:elasticsearch-tdigest:compileJava FROM-CACHE\n> Task :libs:elasticsearch-tdigest:classes UP-TO-DATE\n> Task :libs:elasticsearch-x-content:compileJava FROM-CACHE\n> Task :libs:elasticsearch-cli:jar\n> Task :libs:elasticsearch-lz4:jar\n> Task :libs:elasticsearch-ssl-config:jar\n> Task :libs:elasticsearch-simdvec:compileJava FROM-CACHE\n> Task :libs:elasticsearch-simdvec:classes UP-TO-DATE\n> Task :libs:elasticsearch-native:jna:compileJava FROM-CACHE\n> Task :libs:elasticsearch-native:jna:classes\n> Task :server:processTestResources\n> Task :libs:elasticsearch-tdigest:jar\n> Task :libs:elasticsearch-native:jna:jar\n> Task :libs:elasticsearch-simdvec:compileMain21Java FROM-CACHE\n> Task :libs:elasticsearch-simdvec:main21Classes UP-TO-DATE\n> Task :libs:elasticsearch-x-content:impl:compileJava FROM-CACHE\n> Task :libs:elasticsearch-x-content:impl:classes\n> Task :libs:elasticsearch-simdvec:compileMain22Java FROM-CACHE\n> Task :libs:elasticsearch-simdvec:main22Classes UP-TO-DATE\n> Task :libs:elasticsearch-x-content:impl:jar\n> Task :libs:elasticsearch-simdvec:jar\n> Task :libs:elasticsearch-native:generateJnaProviderManifest\n> Task :libs:elasticsearch-x-content:generateImplProviderManifest\n> Task :libs:elasticsearch-native:generateJnaProviderImpl\n> Task :libs:elasticsearch-native:classes\n> Task :client:rest:processResources\n> Task :client:rest:classes\n> Task :libs:elasticsearch-native:compileMain21Java FROM-CACHE\n> Task :libs:elasticsearch-native:main21Classes UP-TO-DATE\n> Task :libs:elasticsearch-native:compileMain22Java FROM-CACHE\n> Task :libs:elasticsearch-native:main22Classes UP-TO-DATE\n> Task :libs:elasticsearch-x-content:generateImplProviderImpl\n> Task :libs:elasticsearch-x-content:classes\n> Task :client:rest:jar\n> Task :libs:elasticsearch-x-content:jar\n> Task :libs:elasticsearch-native:jar\n> Task :server:compileJava FROM-CACHE\n> Task :server:classes\n> Task :modules:transport-netty4:compileJava FROM-CACHE\n> Task :modules:transport-netty4:classes UP-TO-DATE\n> Task :modules:transport-netty4:jar\n> Task :test:framework:compileJava FROM-CACHE\n> Task :test:framework:classes\n> Task :test:framework:jar\n> Task :server:compileTestJava FROM-CACHE\n> Task :server:testClasses\nWARNING: A terminally deprecated method in java.lang.System has been called\nWARNING: System::setSecurityManager has been called by org.gradle.api.internal.tasks.testing.worker.TestWorker (file:/home/gradle/.gradle/wrapper/dists/gradle-8.10.2-all/7iv73wktx1xtkvlq19urqw1wm/gradle-8.10.2/lib/plugins/gradle-testing-base-infrastructure-8.10.2.jar)\nWARNING: Please consider reporting this to the maintainers of org.gradle.api.internal.tasks.testing.worker.TestWorker\nWARNING: System::setSecurityManager will be removed in a future release\n> Task :server:test\n\nBUILD SUCCESSFUL in 1m\n80 actionable tasks: 45 executed, 35 from cache\n--- Test results are available in build/test-results/ ---\n\u2705 Tests Passed",
+    "failed_tests": [],
+    "mode": "elasticsearch-helper-script",
+    "targets": {
+      "test_targets": [
+        "server:org.elasticsearch.index.query.BoolQueryBuilderTests"
+      ],
+      "source_modules": [
+        "server"
+      ],
+      "all_modules": [
+        "server"
+      ],
+      "raw": {
+        "source": "changed_files",
+        "changed_files": [
+          "docs/changelog/115031.yaml",
+          "server/src/main/java/org/elasticsearch/index/query/BoolQueryBuilder.java",
+          "server/src/test/java/org/elasticsearch/index/query/BoolQueryBuilderTests.java"
+        ]
+      }
+    },
+    "test_state": {
+      "xml_reports": [
+        "/home/cseroot/retrofit-java/temp_repo_storage/elasticsearch/libs/entitlement/build/test-results/test/TEST-org.elasticsearch.entitlement.runtime.policy.PolicyManagerTests.xml",
+        "/home/cseroot/retrofit-java/temp_repo_storage/elasticsearch/libs/entitlement/qa/build/test-results/javaRestTest/TEST-org.elasticsearch.entitlement.qa.EntitlementsDeniedIT.xml",
+        "/home/cseroot/retrofit-java/temp_repo_storage/elasticsearch/modules/data-streams/build/test-results/internalClusterTest/TEST-org.elasticsearch.datastreams.lifecycle.DataStreamLifecycleServiceIT.xml",
+        "/home/cseroot/retrofit-java/temp_repo_storage/elasticsearch/modules/data-streams/build/test-results/test/TEST-org.elasticsearch.datastreams.DataStreamsStatsTests.xml",
+        "/home/cseroot/retrofit-java/temp_repo_storage/elasticsearch/server/build/test-results/test/TEST-org.elasticsearch.index.query.BoolQueryBuilderTests.xml",
+        "/home/cseroot/retrofit-java/temp_repo_storage/elasticsearch/x-pack/plugin/async-search/build/test-results/test/TEST-org.elasticsearch.xpack.search.AsyncSearchTaskTests.xml",
+        "/home/cseroot/retrofit-java/temp_repo_storage/elasticsearch/x-pack/plugin/deprecation/build/test-results/test/TEST-org.elasticsearch.xpack.deprecation.NodeDeprecationChecksTests.xml",
+        "/home/cseroot/retrofit-java/temp_repo_storage/elasticsearch/x-pack/plugin/downsample/build/test-results/test/TEST-org.elasticsearch.xpack.downsample.DownsampleActionSingleNodeTests.xml",
+        "/home/cseroot/retrofit-java/temp_repo_storage/elasticsearch/x-pack/plugin/downsample/qa/rest/build/test-results/yamlRestTest/TEST-org.elasticsearch.xpack.downsample.DownsampleRestIT.xml",
+        "/home/cseroot/retrofit-java/temp_repo_storage/elasticsearch/x-pack/plugin/esql/build/test-results/test/TEST-org.elasticsearch.xpack.esql.expression.function.scalar.date.DateParseTests.xml",
+        "/home/cseroot/retrofit-java/temp_repo_storage/elasticsearch/x-pack/plugin/esql/compute/build/test-results/test/TEST-org.elasticsearch.compute.lucene.LuceneSourceOperatorTests.xml",
+        "/home/cseroot/retrofit-java/temp_repo_storage/elasticsearch/x-pack/plugin/inference/build/test-results/test/TEST-org.elasticsearch.xpack.inference.highlight.SemanticTextHighlighterTests.xml",
+        "/home/cseroot/retrofit-java/temp_repo_storage/elasticsearch/x-pack/plugin/logsdb/build/test-results/javaRestTest/TEST-org.elasticsearch.xpack.logsdb.LogsdbRestIT.xml",
+        "/home/cseroot/retrofit-java/temp_repo_storage/elasticsearch/x-pack/plugin/logsdb/build/test-results/test/TEST-org.elasticsearch.xpack.logsdb.SyntheticSourceIndexSettingsProviderTests.xml",
+        "/home/cseroot/retrofit-java/temp_repo_storage/elasticsearch/x-pack/plugin/logsdb/qa/with-basic/build/test-results/javaRestTest/TEST-org.elasticsearch.xpack.logsdb.LogsdbRestIT.xml",
+        "/home/cseroot/retrofit-java/temp_repo_storage/elasticsearch/x-pack/plugin/migrate/build/test-results/internalClusterTest/TEST-org.elasticsearch.xpack.migrate.action.ReindexDatastreamIndexTransportActionIT.xml",
+        "/home/cseroot/retrofit-java/temp_repo_storage/elasticsearch/x-pack/plugin/migrate/build/test-results/test/TEST-org.elasticsearch.xpack.migrate.action.ReindexDataStreamIndexTransportActionTests.xml",
+        "/home/cseroot/retrofit-java/temp_repo_storage/elasticsearch/x-pack/plugin/ml/build/test-results/test/TEST-org.elasticsearch.xpack.ml.aggs.changepoint.SpikeAndDipDetectorTests.xml",
+        "/home/cseroot/retrofit-java/temp_repo_storage/elasticsearch/x-pack/plugin/monitoring/build/test-results/test/TEST-org.elasticsearch.xpack.monitoring.collector.cluster.ClusterStatsMonitoringDocTests.xml",
+        "/home/cseroot/retrofit-java/temp_repo_storage/elasticsearch/x-pack/plugin/redact/build/test-results/test/TEST-org.elasticsearch.xpack.redact.RedactProcessorTests.xml",
+        "/home/cseroot/retrofit-java/temp_repo_storage/elasticsearch/x-pack/plugin/security/build/test-results/test/TEST-org.elasticsearch.xpack.security.authc.ApiKeyServiceTests.xml"
+      ],
+      "target_classes": [
+        "org.elasticsearch.index.query.BoolQueryBuilderTests"
+      ],
+      "test_cases": {
+        "org.elasticsearch.index.query.BoolQueryBuilderTests#testRewrite": "passed",
+        "org.elasticsearch.index.query.BoolQueryBuilderTests#testMaxNestedDepth": "passed",
+        "org.elasticsearch.index.query.BoolQueryBuilderTests#testMustNotNull": "passed",
+        "org.elasticsearch.index.query.BoolQueryBuilderTests#testDeprecation": "passed",
+        "org.elasticsearch.index.query.BoolQueryBuilderTests#testMustRewrite": "passed",
+        "org.elasticsearch.index.query.BoolQueryBuilderTests#testFilterNull": "passed",
+        "org.elasticsearch.index.query.BoolQueryBuilderTests#testIllegalArguments": "passed",
+        "org.elasticsearch.index.query.BoolQueryBuilderTests#testFromXContent": "passed",
+        "org.elasticsearch.index.query.BoolQueryBuilderTests#testEmptyBooleanQuery": "passed",
+        "org.elasticsearch.index.query.BoolQueryBuilderTests#testValidOutput": "passed",
+        "org.elasticsearch.index.query.BoolQueryBuilderTests#testMinShouldMatchBiggerThanNumberOfShouldClauses": "passed",
+        "org.elasticsearch.index.query.BoolQueryBuilderTests#testMinShouldMatchFilterWithoutShouldClauses": "passed",
+        "org.elasticsearch.index.query.BoolQueryBuilderTests#testToQuery": "passed",
+        "org.elasticsearch.index.query.BoolQueryBuilderTests#testEqualsAndHashcode": "passed",
+        "org.elasticsearch.index.query.BoolQueryBuilderTests#testMinimumShouldMatchNull": "passed",
+        "org.elasticsearch.index.query.BoolQueryBuilderTests#testRewriteMultipleTimes": "passed",
+        "org.elasticsearch.index.query.BoolQueryBuilderTests#testMinimumShouldMatchNumber": "passed",
+        "org.elasticsearch.index.query.BoolQueryBuilderTests#testFromJson": "passed",
+        "org.elasticsearch.index.query.BoolQueryBuilderTests#testNegativeBoosts": "passed",
+        "org.elasticsearch.index.query.BoolQueryBuilderTests#testMustNull": "passed",
+        "org.elasticsearch.index.query.BoolQueryBuilderTests#testQueryWrappedInArray": "passed",
+        "org.elasticsearch.index.query.BoolQueryBuilderTests#testUnknownField": "passed",
+        "org.elasticsearch.index.query.BoolQueryBuilderTests#testShouldNull": "passed",
+        "org.elasticsearch.index.query.BoolQueryBuilderTests#testShallowCopy": "passed",
+        "org.elasticsearch.index.query.BoolQueryBuilderTests#testUnknownQueryName": "passed",
+        "org.elasticsearch.index.query.BoolQueryBuilderTests#testSerialization": "passed",
+        "org.elasticsearch.index.query.BoolQueryBuilderTests#testRewriteWithMatchNone": "passed",
+        "org.elasticsearch.index.query.BoolQueryBuilderTests#testCacheability": "passed",
+        "org.elasticsearch.index.query.BoolQueryBuilderTests#testUnknownObjectException": "passed",
+        "org.elasticsearch.index.query.BoolQueryBuilderTests#testMinShouldMatchDisableCoord": "passed"
+      },
+      "classes": {
+        "org.elasticsearch.index.query.BoolQueryBuilderTests": "passed"
+      },
+      "summary": {
+        "passed": 30,
+        "failed": 0,
+        "skipped": 0,
+        "total": 30
+      }
+    }
+  },
+  "phase_0_transition_evaluation": {
+    "valid_backport_signal": true,
+    "fail_to_pass": [
+      "org.elasticsearch.index.query.BoolQueryBuilderTests#testRewriteWithMatchNone"
+    ],
+    "pass_to_fail": [],
+    "newly_passing": [],
+    "baseline_total": 30,
+    "patched_total": 30,
+    "reason": "Valid: Observed fail-to-pass and/or newly passing relevant tests with no regressions."
+  },
+  "patch_complexity": "TRIVIAL",
+  "complexity_reason": "git_apply_check_passes",
+  "complexity_details": {
+    "file_count": 2,
+    "git_apply_check": true
+  }
+}

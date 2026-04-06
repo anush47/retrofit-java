@@ -1,0 +1,33 @@
+patch_id=elasticsearch_45383c87
+project=elasticsearch
+mainline_commit=45383c871c8b83b332c1df873d2f7c7da546655c
+backport_commit=7f18135a9870314ccfdf885c7d280c45e275f642
+mode=full
+started_at=2026-04-06T10:27:54.244422
+----------------------------------------
+Running full workflow graph
+Completed node=phase_0_optimistic
+Workflow completed successfully
+
+[elasticsearch/elasticsearch_45383c87] Setting up repositories for mode=full...
+[elasticsearch/elasticsearch_45383c87] Running full workflow graph...
+Router: Running Phase 0.
+Phase 0 (Optimistic): Checking direct patch applicability...
+Phase 0: Experiment mode — checking out parent of 7f18135a9870314ccfdf885c7d280c45e275f642...
+Phase 0: Building baseline by applying developer backport test hunks only...
+  Validation: x-pack/plugin/inference/src/test/java/org/elasticsearch/xpack/inference/highlight/SemanticTextHighlighterTests.java - applying 7 hunk(s) one by one in bottom-to-top order: [289, 170, 143, 129, 72, 53, 7]
+  Validation: x-pack/plugin/inference/src/test/resources/org/elasticsearch/xpack/inference/highlight/sample-doc-legacy.json.gz - applying 1 hunk(s) one by one in bottom-to-top order: [0]
+  Validation: x-pack/plugin/inference/src/test/resources/org/elasticsearch/xpack/inference/highlight/sample-doc.json.gz - applying 1 hunk(s) one by one in bottom-to-top order: [0]
+  Validation: x-pack/plugin/inference/src/yamlRestTest/resources/rest-api-spec/test/inference/90_semantic_text_highlighter.yml - applying 3 hunk(s) one by one in bottom-to-top order: [51, 39, 2]
+  Validation: x-pack/plugin/inference/src/yamlRestTest/resources/rest-api-spec/test/inference/90_semantic_text_highlighter_bwc.yml - applying 1 hunk(s) one by one in bottom-to-top order: [1]
+  Validation: ADDED operation for x-pack/plugin/inference/src/test/resources/org/elasticsearch/xpack/inference/highlight/sample-doc-legacy.json.gz
+  Validation: ADDED operation for x-pack/plugin/inference/src/yamlRestTest/resources/rest-api-spec/test/inference/90_semantic_text_highlighter_bwc.yml
+    Agent 4: Executing elasticsearch helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/elasticsearch/run_tests.sh
+Phase 0: git apply --check SUCCEEDED. Attempting actual patch application and test run.
+    Agent 4: Executing elasticsearch helper build script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/elasticsearch/run_build.sh
+    Agent 4: Executing elasticsearch helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/elasticsearch/run_tests.sh
+Phase 0: Transition summary -> reason=Valid: Observed fail-to-pass and/or newly passing relevant tests with no regressions.; fail->pass(4): ['org.elasticsearch.xpack.inference.highlight.SemanticTextHighlighterTests#testDenseVector {p0=false}', 'org.elasticsearch.xpack.inference.highlight.SemanticTextHighlighterTests#testDenseVector {p0=true}', 'org.elasticsearch.xpack.inference.highlight.SemanticTextHighlighterTests#testSparseVector {p0=false}', 'org.elasticsearch.xpack.inference.highlight.SemanticTextHighlighterTests#testSparseVector {p0=true}']; newly_passing(0): []; pass->fail(0): []
+Phase 0: Transition-based test validation passed. Fast-path success.
+Router: Phase 0 succeeded - taking fast-path exit.
+  Completed: phase_0_optimistic
+[elasticsearch/elasticsearch_45383c87] Full workflow completed!

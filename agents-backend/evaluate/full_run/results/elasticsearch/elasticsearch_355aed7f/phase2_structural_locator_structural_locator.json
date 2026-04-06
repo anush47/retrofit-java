@@ -1,0 +1,38 @@
+{
+  "consistency_map": {},
+  "mapped_target_context": {
+    "x-pack/plugin/esql/src/main/java/org/elasticsearch/xpack/esql/optimizer/rules/physical/local/PushFiltersToSource.java": [
+      {
+        "hunk_index": 1,
+        "mainline_method": "hunk_1",
+        "target_file": "x-pack/plugin/esql/src/main/java/org/elasticsearch/xpack/esql/optimizer/rules/physical/local/PushFiltersToSource.java",
+        "target_method": null,
+        "start_line": 34,
+        "end_line": 34,
+        "code_snippet": "import org.elasticsearch.xpack.esql.core.expression.Expression;\nimport org.elasticsearch.xpack.esql.core.expression.Expressions;\nimport org.elasticsearch.xpack.esql.core.expression.FieldAttribute;\nimport org.elasticsearch.xpack.esql.core.expression.MetadataAttribute;\nimport org.elasticsearch.xpack.esql.core.expression.ReferenceAttribute;\nimport org.elasticsearch.xpack.esql.core.expression.function.scalar.UnaryScalarFunction;\nimport org.elasticsearch.xpack.esql.core.expression.predicate.Predicates;\nimport org.elasticsearch.xpack.esql.core.expression.predicate.Range;\nimport org.elasticsearch.xpack.esql.core.expression.predicate.logical.BinaryLogic;\nimport org.elasticsearch.xpack.esql.core.expression.predicate.logical.Not;\nimport org.elasticsearch.xpack.esql.core.expression.predicate.nulls.IsNotNull;\nimport org.elasticsearch.xpack.esql.core.expression.predicate.nulls.IsNull;\nimport org.elasticsearch.xpack.esql.core.expression.predicate.operator.comparison.BinaryComparison;\nimport org.elasticsearch.xpack.esql.core.expression.predicate.regex.RegexMatch;\nimport org.elasticsearch.xpack.esql.core.expression.predicate.regex.WildcardLike;\nimport org.elasticsearch.xpack.esql.core.querydsl.query.Query;\nimport org.elasticsearch.xpack.esql.core.type.DataType;\nimport org.elasticsearch.xpack.esql.core.util.CollectionUtils;\nimport org.elasticsearch.xpack.esql.core.util.Queries;\nimport org.elasticsearch.xpack.esql.expression.function.fulltext.FullTextFunction;\nimport org.elasticsearch.xpack.esql.expression.function.fulltext.Term;\nimport org.elasticsearch.xpack.esql.expression.function.scalar.ip.CIDRMatch;\nimport org.elasticsearch.xpack.esql.expression.function.scalar.spatial.BinarySpatialFunction;\nimport org.elasticsearch.xpack.esql.expression.function.scalar.spatial.SpatialRelatesFunction;\nimport org.elasticsearch.xpack.esql.expression.predicate.operator.comparison.Equals;\nimport org.elasticsearch.xpack.esql.expression.predicate.operator.comparison.EsqlBinaryComparison;\nimport org.elasticsearch.xpack.esql.expression.predicate.operator.comparison.GreaterThan;\nimport org.elasticsearch.xpack.esql.expression.predicate.operator.comparison.GreaterThanOrEqual;\nimport org.elasticsearch.xpack.esql.expression.predicate.operator.comparison.In;\nimport org.elasticsearch.xpack.esql.expression.predicate.operator.comparison.InsensitiveBinaryComparison;\nimport org.elasticsearch.xpack.esql.expression.predicate.operator.comparison.LessThan;\nimport org.elasticsearch.xpack.esql.expression.predicate.operator.comparison.LessThanOrEqual;\nimport org.elasticsearch.xpack.esql.expression.predicate.operator.comparison.NotEquals;\nimport org.elasticsearch.xpack.esql.optimizer.LocalPhysicalOptimizerContext;\nimport org.elasticsearch.xpack.esql.optimizer.PhysicalOptimizerRules;\nimport org.elasticsearch.xpack.esql.plan.physical.EsQueryExec;\nimport org.elasticsearch.xpack.esql.plan.physical.EvalExec;\nimport org.elasticsearch.xpack.esql.plan.physical.FilterExec;\nimport org.elasticsearch.xpack.esql.plan.physical.PhysicalPlan;\nimport org.elasticsearch.xpack.esql.planner.PlannerUtils;\n",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 2,
+        "mainline_method": "hunk_2",
+        "target_file": "x-pack/plugin/esql/src/main/java/org/elasticsearch/xpack/esql/optimizer/rules/physical/local/PushFiltersToSource.java",
+        "target_method": null,
+        "start_line": 255,
+        "end_line": 255,
+        "code_snippet": "        } else if (exp instanceof BinaryLogic bl) {\n            return canPushToSource(bl.left(), lucenePushdownPredicates) && canPushToSource(bl.right(), lucenePushdownPredicates);\n        } else if (exp instanceof In in) {\n            return isAttributePushable(in.value(), null, lucenePushdownPredicates) && Expressions.foldable(in.list());\n        } else if (exp instanceof Not not) {\n            return canPushToSource(not.field(), lucenePushdownPredicates);\n        } else if (exp instanceof UnaryScalarFunction usf) {\n            if (usf instanceof RegexMatch<?> || usf instanceof IsNull || usf instanceof IsNotNull) {\n                if (usf instanceof IsNull || usf instanceof IsNotNull) {\n                    if (usf.field() instanceof FieldAttribute fa && fa.dataType().equals(DataType.TEXT)) {\n                        return true;\n                    }\n                }\n                return isAttributePushable(usf.field(), usf, lucenePushdownPredicates);\n            }\n        } else if (exp instanceof CIDRMatch cidrMatch) {\n            return isAttributePushable(cidrMatch.ipField(), cidrMatch, lucenePushdownPredicates)\n                && Expressions.foldable(cidrMatch.matches());\n        } else if (exp instanceof SpatialRelatesFunction spatial) {\n            return canPushSpatialFunctionToSource(spatial, lucenePushdownPredicates);\n        } else if (exp instanceof Term term) {\n            return term.field() instanceof FieldAttribute && DataType.isString(term.field().dataType());\n        } else if (exp instanceof FullTextFunction) {\n            return true;\n        }\n        return false;\n    }\n\n    /**\n     * Push-down to Lucene is only possible if one field is an indexed spatial field, and the other is a constant spatial or string column.\n     */\n    public static boolean canPushSpatialFunctionToSource(BinarySpatialFunction s, LucenePushdownPredicates lucenePushdownPredicates) {\n        // The use of foldable here instead of SpatialEvaluatorFieldKey.isConstant is intentional to match the behavior of the\n        // Lucene pushdown code in EsqlTranslationHandler::SpatialRelatesTranslator\n        // We could enhance both places to support ReferenceAttributes that refer to constants, but that is a larger change\n        return isPushableSpatialAttribute(s.left(), lucenePushdownPredicates) && s.right().foldable()\n            || isPushableSpatialAttribute(s.right(), lucenePushdownPredicates) && s.left().foldable();\n    }\n\n    private static boolean isPushableSpatialAttribute(Expression exp, LucenePushdownPredicates p) {\n        return exp instanceof FieldAttribute fa && DataType.isSpatial(fa.dataType()) && fa.getExactInfo().hasExact() && p.isIndexed(fa);",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      }
+    ]
+  },
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "reason": "llm_usage_not_collected_in_this_node"
+  }
+}
