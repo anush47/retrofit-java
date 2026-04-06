@@ -1,0 +1,289 @@
+# Post-Pipeline Developer Patch Comparison
+
+**Exact Developer Patch (code-only)**: False
+
+**Comparison Method**: file_state
+
+## Commit Pair Consistency
+- Pair mismatch: False
+- Reason: scope_overlap_ok
+- Mainline Java files: ['x-pack/plugin/inference/src/main/java/org/elasticsearch/xpack/inference/external/openai/OpenAiStreamingProcessor.java']
+- Developer Java files: ['x-pack/plugin/inference/src/main/java/org/elasticsearch/xpack/inference/external/openai/OpenAiStreamingProcessor.java']
+- Overlap Java files: ['x-pack/plugin/inference/src/main/java/org/elasticsearch/xpack/inference/external/openai/OpenAiStreamingProcessor.java']
+- Overlap ratio (mainline): 1.0
+- Compare files scope used: ['x-pack/plugin/inference/src/main/java/org/elasticsearch/xpack/inference/external/openai/OpenAiStreamingProcessor.java']
+
+## File State Comparison
+- Compared files: ['x-pack/plugin/inference/src/main/java/org/elasticsearch/xpack/inference/external/openai/OpenAiStreamingProcessor.java']
+- Mismatched files: ['x-pack/plugin/inference/src/main/java/org/elasticsearch/xpack/inference/external/openai/OpenAiStreamingProcessor.java']
+- Error: None
+
+## Comparison Scope
+- Agent-only patch: code hunks produced by Agent 3
+- Final effective patch: agent code hunks + developer auxiliary hunks (still code-only for this report)
+
+## Agent-Only Hunk Comparison (code files)
+
+### x-pack/plugin/inference/src/main/java/org/elasticsearch/xpack/inference/external/openai/OpenAiStreamingProcessor.java
+
+- Developer hunks: 2
+- Generated hunks: 0
+
+#### Hunk 1
+
+Developer
+```diff
+@@ -110,8 +110,6 @@
+     private static final String CHOICES_FIELD = "choices";
+     private static final String DELTA_FIELD = "delta";
+     private static final String CONTENT_FIELD = "content";
+-    private static final String FINISH_REASON_FIELD = "finish_reason";
+-    private static final String STOP_MESSAGE = "stop";
+     private static final String DONE_MESSAGE = "[done]";
+ 
+     @Override
+
+```
+
+Generated
+```diff
+*No hunk*
+```
+
+Developer -> Generated (Unified Diff)
+```diff
+--- developer+++ generated@@ -1,9 +1 @@-@@ -110,8 +110,6 @@
+-     private static final String CHOICES_FIELD = "choices";
+-     private static final String DELTA_FIELD = "delta";
+-     private static final String CONTENT_FIELD = "content";
+--    private static final String FINISH_REASON_FIELD = "finish_reason";
+--    private static final String STOP_MESSAGE = "stop";
+-     private static final String DONE_MESSAGE = "[done]";
+- 
+-     @Override
++*No hunk*
+```
+
+#### Hunk 2
+
+Developer
+```diff
+@@ -162,21 +160,27 @@
+                 ensureExpectedToken(XContentParser.Token.START_OBJECT, currentToken, parser);
+ 
+                 currentToken = parser.nextToken();
+-                if (currentToken == XContentParser.Token.END_OBJECT) {
+-                    consumeUntilObjectEnd(parser); // end choices
+-                    return ""; // stopped
+-                }
+ 
+-                if (currentToken == XContentParser.Token.FIELD_NAME && parser.currentName().equals(CONTENT_FIELD)) {
+-                    parser.nextToken();
+-                } else {
+-                    positionParserAtTokenAfterField(parser, CONTENT_FIELD, FAILED_TO_FIND_FIELD_TEMPLATE);
++                // continue until the end of delta
++                while (currentToken != null && currentToken != XContentParser.Token.END_OBJECT) {
++                    if (currentToken == XContentParser.Token.START_OBJECT || currentToken == XContentParser.Token.START_ARRAY) {
++                        parser.skipChildren();
++                    }
++
++                    if (currentToken == XContentParser.Token.FIELD_NAME && parser.currentName().equals(CONTENT_FIELD)) {
++                        parser.nextToken();
++                        ensureExpectedToken(XContentParser.Token.VALUE_STRING, parser.currentToken(), parser);
++                        var content = parser.text();
++                        consumeUntilObjectEnd(parser); // end delta
++                        consumeUntilObjectEnd(parser); // end choices
++                        return content;
++                    }
++
++                    currentToken = parser.nextToken();
+                 }
+-                ensureExpectedToken(XContentParser.Token.VALUE_STRING, parser.currentToken(), parser);
+-                var content = parser.text();
+-                consumeUntilObjectEnd(parser); // end delta
++
+                 consumeUntilObjectEnd(parser); // end choices
+-                return content;
++                return ""; // stopped
+             }).stream()
+                 .filter(Objects::nonNull)
+                 .filter(Predicate.not(String::isEmpty))
+
+```
+
+Generated
+```diff
+*No hunk*
+```
+
+Developer -> Generated (Unified Diff)
+```diff
+--- developer+++ generated@@ -1,40 +1 @@-@@ -162,21 +160,27 @@
+-                 ensureExpectedToken(XContentParser.Token.START_OBJECT, currentToken, parser);
+- 
+-                 currentToken = parser.nextToken();
+--                if (currentToken == XContentParser.Token.END_OBJECT) {
+--                    consumeUntilObjectEnd(parser); // end choices
+--                    return ""; // stopped
+--                }
+- 
+--                if (currentToken == XContentParser.Token.FIELD_NAME && parser.currentName().equals(CONTENT_FIELD)) {
+--                    parser.nextToken();
+--                } else {
+--                    positionParserAtTokenAfterField(parser, CONTENT_FIELD, FAILED_TO_FIND_FIELD_TEMPLATE);
+-+                // continue until the end of delta
+-+                while (currentToken != null && currentToken != XContentParser.Token.END_OBJECT) {
+-+                    if (currentToken == XContentParser.Token.START_OBJECT || currentToken == XContentParser.Token.START_ARRAY) {
+-+                        parser.skipChildren();
+-+                    }
+-+
+-+                    if (currentToken == XContentParser.Token.FIELD_NAME && parser.currentName().equals(CONTENT_FIELD)) {
+-+                        parser.nextToken();
+-+                        ensureExpectedToken(XContentParser.Token.VALUE_STRING, parser.currentToken(), parser);
+-+                        var content = parser.text();
+-+                        consumeUntilObjectEnd(parser); // end delta
+-+                        consumeUntilObjectEnd(parser); // end choices
+-+                        return content;
+-+                    }
+-+
+-+                    currentToken = parser.nextToken();
+-                 }
+--                ensureExpectedToken(XContentParser.Token.VALUE_STRING, parser.currentToken(), parser);
+--                var content = parser.text();
+--                consumeUntilObjectEnd(parser); // end delta
+-+
+-                 consumeUntilObjectEnd(parser); // end choices
+--                return content;
+-+                return ""; // stopped
+-             }).stream()
+-                 .filter(Objects::nonNull)
+-                 .filter(Predicate.not(String::isEmpty))
++*No hunk*
+```
+
+
+
+## Full Generated Patch (Agent-Only, code-only)
+```diff
+
+```
+
+## Full Generated Patch (Final Effective, code-only)
+```diff
+
+```
+## Full Developer Backport Patch (full commit diff)
+```diff
+diff --git a/docs/changelog/114715.yaml b/docs/changelog/114715.yaml
+new file mode 100644
+index 00000000000..0894cb2fa42
+--- /dev/null
++++ b/docs/changelog/114715.yaml
+@@ -0,0 +1,5 @@
++pr: 114715
++summary: Ignore unrecognized openai sse fields
++area: Machine Learning
++type: bug
++issues: []
+diff --git a/x-pack/plugin/inference/src/main/java/org/elasticsearch/xpack/inference/external/openai/OpenAiStreamingProcessor.java b/x-pack/plugin/inference/src/main/java/org/elasticsearch/xpack/inference/external/openai/OpenAiStreamingProcessor.java
+index 803bae40b33..6e006fe2559 100644
+--- a/x-pack/plugin/inference/src/main/java/org/elasticsearch/xpack/inference/external/openai/OpenAiStreamingProcessor.java
++++ b/x-pack/plugin/inference/src/main/java/org/elasticsearch/xpack/inference/external/openai/OpenAiStreamingProcessor.java
+@@ -110,8 +110,6 @@ public class OpenAiStreamingProcessor extends DelegatingProcessor<Deque<ServerSe
+     private static final String CHOICES_FIELD = "choices";
+     private static final String DELTA_FIELD = "delta";
+     private static final String CONTENT_FIELD = "content";
+-    private static final String FINISH_REASON_FIELD = "finish_reason";
+-    private static final String STOP_MESSAGE = "stop";
+     private static final String DONE_MESSAGE = "[done]";
+ 
+     @Override
+@@ -162,21 +160,27 @@ public class OpenAiStreamingProcessor extends DelegatingProcessor<Deque<ServerSe
+                 ensureExpectedToken(XContentParser.Token.START_OBJECT, currentToken, parser);
+ 
+                 currentToken = parser.nextToken();
+-                if (currentToken == XContentParser.Token.END_OBJECT) {
+-                    consumeUntilObjectEnd(parser); // end choices
+-                    return ""; // stopped
+-                }
+ 
+-                if (currentToken == XContentParser.Token.FIELD_NAME && parser.currentName().equals(CONTENT_FIELD)) {
+-                    parser.nextToken();
+-                } else {
+-                    positionParserAtTokenAfterField(parser, CONTENT_FIELD, FAILED_TO_FIND_FIELD_TEMPLATE);
++                // continue until the end of delta
++                while (currentToken != null && currentToken != XContentParser.Token.END_OBJECT) {
++                    if (currentToken == XContentParser.Token.START_OBJECT || currentToken == XContentParser.Token.START_ARRAY) {
++                        parser.skipChildren();
++                    }
++
++                    if (currentToken == XContentParser.Token.FIELD_NAME && parser.currentName().equals(CONTENT_FIELD)) {
++                        parser.nextToken();
++                        ensureExpectedToken(XContentParser.Token.VALUE_STRING, parser.currentToken(), parser);
++                        var content = parser.text();
++                        consumeUntilObjectEnd(parser); // end delta
++                        consumeUntilObjectEnd(parser); // end choices
++                        return content;
++                    }
++
++                    currentToken = parser.nextToken();
+                 }
+-                ensureExpectedToken(XContentParser.Token.VALUE_STRING, parser.currentToken(), parser);
+-                var content = parser.text();
+-                consumeUntilObjectEnd(parser); // end delta
++
+                 consumeUntilObjectEnd(parser); // end choices
+-                return content;
++                return ""; // stopped
+             }).stream()
+                 .filter(Objects::nonNull)
+                 .filter(Predicate.not(String::isEmpty))
+diff --git a/x-pack/plugin/inference/src/test/java/org/elasticsearch/xpack/inference/external/openai/OpenAiStreamingProcessorTests.java b/x-pack/plugin/inference/src/test/java/org/elasticsearch/xpack/inference/external/openai/OpenAiStreamingProcessorTests.java
+index a57e7c1b64c..90d0e8742f7 100644
+--- a/x-pack/plugin/inference/src/test/java/org/elasticsearch/xpack/inference/external/openai/OpenAiStreamingProcessorTests.java
++++ b/x-pack/plugin/inference/src/test/java/org/elasticsearch/xpack/inference/external/openai/OpenAiStreamingProcessorTests.java
+@@ -149,6 +149,42 @@ public class OpenAiStreamingProcessorTests extends ESTestCase {
+         verify(downstream, times(0)).onNext(any());
+     }
+ 
++    public void testInitialLlamaResponseIsIgnored() throws Exception {
++        var item = new ArrayDeque<ServerSentEvent>();
++        item.offer(new ServerSentEvent(ServerSentEventField.DATA, """
++            {
++                "id":"12345",
++                "object":"chat.completion.chunk",
++                "created":123456789,
++                "model":"Llama-2-7b-chat",
++                "system_fingerprint": "123456789",
++                "choices":[
++                    {
++                        "index":0,
++                        "delta":{
++                            "role":"assistant"
++                        },
++                        "logprobs":null,
++                        "finish_reason":null
++                    }
++                ]
++            }
++            """));
++
++        var processor = new OpenAiStreamingProcessor();
++
++        Flow.Subscriber<ChunkedToXContent> downstream = mock();
++        processor.subscribe(downstream);
++
++        Flow.Subscription upstream = mock();
++        processor.onSubscribe(upstream);
++
++        processor.next(item);
++
++        verify(upstream, times(1)).request(1);
++        verify(downstream, times(0)).onNext(any());
++    }
++
+     private String toJsonString(ChunkedToXContent chunkedToXContent) throws IOException {
+         try (var builder = XContentFactory.jsonBuilder()) {
+             chunkedToXContent.toXContentChunked(EMPTY_PARAMS).forEachRemaining(xContent -> {
+
+```
