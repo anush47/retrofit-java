@@ -16,9 +16,15 @@ echo "CPU detected: ${MAX_CPU}"
 # 1. Determine Gradle test command from TEST_TARGETS.
 # TEST_TARGETS is expected to be a space-separated string of '--tests "ClassName"'.
 if [ "${TEST_TARGETS:-}" == "ALL" ]; then
-    GRADLE_ARGS="test -PskipAndroid=true -x :grpc-compiler:compileJava_pluginExecutableJava_pluginCpp"
+    GRADLE_ARGS="test -PskipAndroid=true"
 elif [ -n "${TEST_TARGETS:-}" ] && [ "${TEST_TARGETS}" != "NONE" ]; then
-    GRADLE_ARGS="test ${TEST_TARGETS} -PskipAndroid=true -x :grpc-compiler:compileJava_pluginExecutableJava_pluginCpp"
+    if [[ "${TEST_TARGETS}" == :* ]]; then
+        # Already module-specific, use as is
+        GRADLE_ARGS="${TEST_TARGETS} -PskipAndroid=true"
+    else
+        # Likely class-only, prepend test task
+        GRADLE_ARGS="test ${TEST_TARGETS} -PskipAndroid=true"
+    fi
 else
     echo "No relevant test targets. Skipping tests."
     exit 0

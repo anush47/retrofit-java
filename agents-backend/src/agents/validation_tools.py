@@ -779,11 +779,13 @@ class ValidationToolkit:
                     class_name = class_path.replace("/", ".").replace(".java", "")
                     
                     if np == "grpc-java" and module_path and not module_path.startswith("grpc-"):
-                        test_gradle_module = f"grpc-{module_path}"
+                        test_gradle_module = f":grpc-{module_path}"
+                    elif module_path and not module_path.startswith(":"):
+                        test_gradle_module = f":{module_path}"
                     else:
                         test_gradle_module = module_path
                     
-                    test_targets.add(f"{test_gradle_module}:{class_name}")
+                    test_targets.add(f"{test_gradle_module}:test --tests \"{class_name}\"")
                 except Exception:
                     continue
 
