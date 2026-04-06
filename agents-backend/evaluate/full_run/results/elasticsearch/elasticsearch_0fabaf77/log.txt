@@ -1,0 +1,29 @@
+patch_id=elasticsearch_0fabaf77
+project=elasticsearch
+mainline_commit=0fabaf7716a700c671355e4069366257524f0f26
+backport_commit=9eccda25ad9ffbcd8ca8d262519b80bdbb675b18
+mode=full
+started_at=2026-04-06T06:18:23.992521
+----------------------------------------
+Running full workflow graph
+Completed node=phase_0_optimistic
+Workflow completed successfully
+
+[elasticsearch/elasticsearch_0fabaf77] Setting up repositories for mode=full...
+[elasticsearch/elasticsearch_0fabaf77] Ignoring stale Phase 0 cache (reason=inconclusive-target-tests-not-observed). Running fresh Phase 0.
+[elasticsearch/elasticsearch_0fabaf77] Running full workflow graph...
+Router: Running Phase 0.
+Phase 0 (Optimistic): Checking direct patch applicability...
+Phase 0: Ignoring stale cache (reason=inconclusive-target-tests-not-observed); recomputing Phase 0.
+Phase 0: Experiment mode — checking out parent of 9eccda25ad9ffbcd8ca8d262519b80bdbb675b18...
+Phase 0: Building baseline by applying developer backport test hunks only...
+  Validation: modules/data-streams/src/test/java/org/elasticsearch/datastreams/DataStreamsStatsTests.java - applying 11 hunk(s) one by one in bottom-to-top order: [300, 233, 212, 168, 149, 126, 107, 89, 69, 58, 11]
+    Agent 4: Executing elasticsearch helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/elasticsearch/run_tests.sh
+Phase 0: git apply --check SUCCEEDED. Attempting actual patch application and test run.
+    Agent 4: Executing elasticsearch helper build script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/elasticsearch/run_build.sh
+    Agent 4: Executing elasticsearch helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/elasticsearch/run_tests.sh
+Phase 0: Transition summary -> reason=Valid: Observed fail-to-pass and/or newly passing relevant tests with no regressions.; fail->pass(1): ['org.elasticsearch.datastreams.DataStreamsStatsTests#testStatsRolledDataStream']; newly_passing(4): ['org.elasticsearch.datastreams.DataStreamsStatsTests#testStatsClosedBackingIndexDataStream', 'org.elasticsearch.datastreams.DataStreamsStatsTests#testStatsExistingDataStream', 'org.elasticsearch.datastreams.DataStreamsStatsTests#testStatsMultipleDataStreams', 'org.elasticsearch.datastreams.DataStreamsStatsTests#testStatsNoDataStream']; pass->fail(0): []
+Phase 0: Transition-based test validation passed. Fast-path success.
+Router: Phase 0 succeeded - taking fast-path exit.
+  Completed: phase_0_optimistic
+[elasticsearch/elasticsearch_0fabaf77] Full workflow completed!

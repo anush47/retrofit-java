@@ -1,0 +1,396 @@
+{
+  "hunk_generation_plan": {
+    "x-pack/plugin/deprecation/src/main/java/org/elasticsearch/xpack/deprecation/DeprecationChecks.java": [
+      {
+        "hunk_index": 0,
+        "target_file": "x-pack/plugin/deprecation/src/main/java/org/elasticsearch/xpack/deprecation/DeprecationChecks.java",
+        "operation_index": 0,
+        "edit_type": "replace",
+        "old_string": "                NodeDeprecationChecks::checkNodeAttrData,\n                NodeDeprecationChecks::checkWatcherBulkConcurrentRequestsSetting,\n                NodeDeprecationChecks::checkTracingApmSettings\n            );",
+        "new_string": "                NodeDeprecationChecks::checkNodeAttrData,\n                NodeDeprecationChecks::checkWatcherBulkConcurrentRequestsSetting,\n                NodeDeprecationChecks::checkTracingApmSettings,\n                NodeDeprecationChecks::checkSourceModeInComponentTemplates\n            );",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_replace",
+        "surround_before_3": [
+          "                NodeDeprecationChecks::checkEnforceDefaultTierPreferenceSetting,",
+          "                NodeDeprecationChecks::checkLifecyleStepMasterTimeoutSetting,",
+          "                NodeDeprecationChecks::checkEqlEnabledSetting,"
+        ],
+        "surround_after_3": [
+          "",
+          "    static List<BiFunction<IndexMetadata, ClusterState, DeprecationIssue>> INDEX_SETTINGS_CHECKS = List.of(",
+          "        IndexDeprecationChecks::oldIndicesCheck,"
+        ],
+        "adaptation_type": "TYPE_I",
+        "base_adaptation_type": "TYPE_I",
+        "execution_type": "TYPE_I",
+        "location_match": true,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "NodeDeprecationChecks::checkTracingApmSettings,",
+          "NodeDeprecationChecks::checkSourceModeInComponentTemplates"
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 0,
+          "target_declared_methods_count": 0,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 1,
+        "target_file": "x-pack/plugin/deprecation/src/main/java/org/elasticsearch/xpack/deprecation/DeprecationChecks.java",
+        "operation_index": 0,
+        "edit_type": "replace",
+        "old_string": "        IndexDeprecationChecks::storeTypeSettingCheck,\n        IndexDeprecationChecks::frozenIndexSettingCheck,\n        IndexDeprecationChecks::deprecatedCamelCasePattern,\n        IndexDeprecationChecks::checkSourceModeInMapping\n    );",
+        "new_string": "        IndexDeprecationChecks::storeTypeSettingCheck,\n        IndexDeprecationChecks::frozenIndexSettingCheck,\n        IndexDeprecationChecks::deprecatedCamelCasePattern\n    );",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_replace",
+        "surround_before_3": [
+          "        IndexDeprecationChecks::oldIndicesCheck,",
+          "        IndexDeprecationChecks::translogRetentionSettingCheck,",
+          "        IndexDeprecationChecks::checkIndexDataPath,"
+        ],
+        "surround_after_3": [
+          "",
+          "    static List<BiFunction<DataStream, ClusterState, DeprecationIssue>> DATA_STREAM_CHECKS = List.of(",
+          "        DataStreamDeprecationChecks::oldIndicesCheck"
+        ],
+        "adaptation_type": "TYPE_I",
+        "base_adaptation_type": "TYPE_I",
+        "execution_type": "TYPE_I",
+        "location_match": true,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "IndexDeprecationChecks::deprecatedCamelCasePattern"
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 0,
+          "target_declared_methods_count": 0,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      }
+    ],
+    "x-pack/plugin/deprecation/src/main/java/org/elasticsearch/xpack/deprecation/IndexDeprecationChecks.java": [
+      {
+        "hunk_index": 0,
+        "target_file": "x-pack/plugin/deprecation/src/main/java/org/elasticsearch/xpack/deprecation/IndexDeprecationChecks.java",
+        "operation_index": 0,
+        "edit_type": "delete",
+        "old_string": "import org.elasticsearch.index.mapper.SourceFieldMapper;",
+        "new_string": "",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_delete",
+        "surround_before_3": [
+          "import org.elasticsearch.index.IndexVersion;",
+          "import org.elasticsearch.index.IndexVersions;",
+          "import org.elasticsearch.index.engine.frozen.FrozenEngine;"
+        ],
+        "surround_after_3": [
+          "import org.elasticsearch.xpack.core.deprecation.DeprecatedIndexPredicate;",
+          "import org.elasticsearch.xpack.core.deprecation.DeprecationIssue;",
+          ""
+        ],
+        "adaptation_type": "TYPE_I",
+        "base_adaptation_type": "TYPE_I",
+        "execution_type": "TYPE_I",
+        "location_match": true,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 4,
+          "target_declared_methods_count": 4,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 1,
+        "target_file": "x-pack/plugin/deprecation/src/main/java/org/elasticsearch/xpack/deprecation/IndexDeprecationChecks.java",
+        "operation_index": 0,
+        "edit_type": "delete",
+        "old_string": "    static DeprecationIssue checkSourceModeInMapping(IndexMetadata indexMetadata, ClusterState clusterState) {\n        if (indexMetadata.getCreationVersion().onOrAfter(IndexVersions.DEPRECATE_SOURCE_MODE_MAPPER)) {\n            boolean[] useSourceMode = { false };\n            fieldLevelMappingIssue(indexMetadata, ((mappingMetadata, sourceAsMap) -> {\n                Object source = sourceAsMap.get(\"_source\");\n                if (source instanceof Map<?, ?> sourceMap) {\n                    if (sourceMap.containsKey(\"mode\")) {\n                        useSourceMode[0] = true;\n                    }\n                }\n            }));\n            if (useSourceMode[0]) {\n                return new DeprecationIssue(\n                    DeprecationIssue.Level.CRITICAL,\n                    SourceFieldMapper.DEPRECATION_WARNING,\n                    \"https://github.com/elastic/elasticsearch/pull/117172\",\n                    SourceFieldMapper.DEPRECATION_WARNING,\n                    false,\n                    null\n                );\n            }\n        }\n        return null;\n    }",
+        "new_string": "",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_delete",
+        "surround_before_3": [
+          "        return issues;",
+          "    }",
+          ""
+        ],
+        "surround_after_3": [
+          "",
+          "    static DeprecationIssue deprecatedCamelCasePattern(IndexMetadata indexMetadata, ClusterState clusterState) {",
+          "        List<String> fields = new ArrayList<>();"
+        ],
+        "adaptation_type": "TYPE_I",
+        "base_adaptation_type": "TYPE_I",
+        "execution_type": "TYPE_I",
+        "location_match": true,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 4,
+          "target_declared_methods_count": 4,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 1,
+        "target_file": "x-pack/plugin/deprecation/src/main/java/org/elasticsearch/xpack/deprecation/IndexDeprecationChecks.java",
+        "operation_index": 0,
+        "edit_type": "delete",
+        "old_string": "    static DeprecationIssue checkSourceModeInMapping(IndexMetadata indexMetadata, ClusterState clusterState) {\n        if (indexMetadata.getCreationVersion().onOrAfter(IndexVersions.DEPRECATE_SOURCE_MODE_MAPPER)) {\n            boolean[] useSourceMode = { false };\n            fieldLevelMappingIssue(indexMetadata, ((mappingMetadata, sourceAsMap) -> {\n                Object source = sourceAsMap.get(\"_source\");\n                if (source instanceof Map<?, ?> sourceMap) {\n                    if (sourceMap.containsKey(\"mode\")) {\n                        useSourceMode[0] = true;\n                    }\n                }\n            }));\n            if (useSourceMode[0]) {\n                return new DeprecationIssue(\n                    DeprecationIssue.Level.CRITICAL,\n                    SourceFieldMapper.DEPRECATION_WARNING,\n                    \"https://github.com/elastic/elasticsearch/pull/117172\",\n                    SourceFieldMapper.DEPRECATION_WARNING,\n                    false,\n                    null\n                );\n            }\n        }\n        return null;\n    }",
+        "new_string": "",
+        "verified": true,
+        "verification_result": "sanitize_resolved:multiline_anchor_reconstructed",
+        "notes": "required_op_delete|coverage_backfill",
+        "surround_before_3": [
+          "        return issues;",
+          "    }",
+          ""
+        ],
+        "surround_after_3": [
+          "",
+          "    static DeprecationIssue deprecatedCamelCasePattern(IndexMetadata indexMetadata, ClusterState clusterState) {",
+          "        List<String> fields = new ArrayList<>();"
+        ],
+        "adaptation_type": "TYPE_I",
+        "base_adaptation_type": "TYPE_I",
+        "execution_type": "TYPE_I",
+        "location_match": true,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 4,
+          "target_declared_methods_count": 4,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      }
+    ],
+    "x-pack/plugin/deprecation/src/main/java/org/elasticsearch/xpack/deprecation/NodeDeprecationChecks.java": [
+      {
+        "hunk_index": 0,
+        "target_file": "x-pack/plugin/deprecation/src/main/java/org/elasticsearch/xpack/deprecation/NodeDeprecationChecks.java",
+        "operation_index": 0,
+        "edit_type": "insert_before",
+        "old_string": "import org.elasticsearch.cluster.routing.allocation.DataTier;",
+        "new_string": "import org.elasticsearch.cluster.metadata.ComponentTemplate;\nimport org.elasticsearch.cluster.routing.allocation.DataTier;",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_insert_before",
+        "surround_before_3": [
+          "",
+          "import org.elasticsearch.action.admin.cluster.node.info.PluginsAndModules;",
+          "import org.elasticsearch.cluster.ClusterState;"
+        ],
+        "surround_after_3": [
+          "import org.elasticsearch.cluster.routing.allocation.decider.DiskThresholdDecider;",
+          "import org.elasticsearch.common.settings.SecureSetting;",
+          "import org.elasticsearch.common.settings.Setting;"
+        ],
+        "adaptation_type": "TYPE_I",
+        "base_adaptation_type": "TYPE_I",
+        "execution_type": "TYPE_I",
+        "location_match": true,
+        "surrounding_match": true,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 3,
+          "target_declared_methods_count": 3,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 0,
+        "target_file": "x-pack/plugin/deprecation/src/main/java/org/elasticsearch/xpack/deprecation/NodeDeprecationChecks.java",
+        "operation_index": 1,
+        "edit_type": "insert_before",
+        "old_string": "import org.elasticsearch.core.TimeValue;",
+        "new_string": "import org.elasticsearch.common.xcontent.XContentHelper;\nimport org.elasticsearch.core.TimeValue;",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_insert_before",
+        "surround_before_3": [
+          "import org.elasticsearch.common.settings.SecureSetting;",
+          "import org.elasticsearch.common.settings.Setting;",
+          "import org.elasticsearch.common.settings.Settings;"
+        ],
+        "surround_after_3": [
+          "import org.elasticsearch.env.Environment;",
+          "import org.elasticsearch.license.XPackLicenseState;",
+          "import org.elasticsearch.script.ScriptService;"
+        ],
+        "adaptation_type": "TYPE_I",
+        "base_adaptation_type": "TYPE_I",
+        "execution_type": "TYPE_I",
+        "location_match": true,
+        "surrounding_match": true,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 3,
+          "target_declared_methods_count": 3,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 0,
+        "target_file": "x-pack/plugin/deprecation/src/main/java/org/elasticsearch/xpack/deprecation/NodeDeprecationChecks.java",
+        "operation_index": 2,
+        "edit_type": "insert_before",
+        "old_string": "import org.elasticsearch.license.XPackLicenseState;",
+        "new_string": "import org.elasticsearch.index.mapper.SourceFieldMapper;\nimport org.elasticsearch.license.XPackLicenseState;",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_insert_before",
+        "surround_before_3": [
+          "import org.elasticsearch.common.settings.Settings;",
+          "import org.elasticsearch.core.TimeValue;",
+          "import org.elasticsearch.env.Environment;"
+        ],
+        "surround_after_3": [
+          "import org.elasticsearch.script.ScriptService;",
+          "import org.elasticsearch.xpack.core.deprecation.DeprecationIssue;",
+          "import org.elasticsearch.xpack.core.ilm.LifecycleSettings;"
+        ],
+        "adaptation_type": "TYPE_I",
+        "base_adaptation_type": "TYPE_I",
+        "execution_type": "TYPE_I",
+        "location_match": true,
+        "surrounding_match": true,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 3,
+          "target_declared_methods_count": 3,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 1,
+        "target_file": "x-pack/plugin/deprecation/src/main/java/org/elasticsearch/xpack/deprecation/NodeDeprecationChecks.java",
+        "operation_index": 0,
+        "edit_type": "insert_after",
+        "old_string": "            DeprecationIssue.Level.CRITICAL",
+        "new_string": "            DeprecationIssue.Level.CRITICAL\n\n    static DeprecationIssue checkSourceModeInComponentTemplates(\n        final Settings settings,\n        final PluginsAndModules pluginsAndModules,\n        final ClusterState clusterState,\n        final XPackLicenseState licenseState\n    ) {\n        List<String> templates = new ArrayList<>();\n        var templateNames = clusterState.metadata().componentTemplates().keySet();\n        for (String templateName : templateNames) {\n            ComponentTemplate template = clusterState.metadata().componentTemplates().get(templateName);\n            if (template.template().mappings() != null) {\n                var sourceAsMap = (Map<?, ?>) XContentHelper.convertToMap(template.template().mappings().uncompressed(), true)\n                    .v2()\n                    .get(\"_doc\");\n                if (sourceAsMap != null) {\n                    Object source = sourceAsMap.get(\"_source\");\n                    if (source instanceof Map<?, ?> sourceMap) {\n                        if (sourceMap.containsKey(\"mode\")) {\n                            templates.add(templateName);\n                        }\n                    }\n                }\n            }\n\n        }\n        if (templates.isEmpty()) {\n            return null;\n        }\n        Collections.sort(templates);\n        return new DeprecationIssue(\n            DeprecationIssue.Level.CRITICAL,\n            SourceFieldMapper.DEPRECATION_WARNING,\n            \"https://github.com/elastic/elasticsearch/pull/117172\",\n            SourceFieldMapper.DEPRECATION_WARNING + \" Affected component templates: [\" + String.join(\", \", templates) + \"]\",\n            false,\n            null\n        );\n    }",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_insert_after",
+        "surround_before_3": [
+          "            return null;",
+          "        } else {",
+          "            return new DeprecationIssue("
+        ],
+        "surround_after_3": [
+          "                \"Realm that start with [\" + RESERVED_REALM_AND_DOMAIN_NAME_PREFIX + \"] will not be permitted in a future major release.\",",
+          "                \"https://www.elastic.co/guide/en/elasticsearch/reference/7.14/deprecated-7.14.html#reserved-prefixed-realm-names\",",
+          "                String.format("
+        ],
+        "adaptation_type": "TYPE_II",
+        "base_adaptation_type": "TYPE_II",
+        "execution_type": "TYPE_II",
+        "location_match": false,
+        "surrounding_match": true,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "static DeprecationIssue checkSourceModeInComponentTemplates(",
+          "final Settings settings,",
+          "final PluginsAndModules pluginsAndModules,",
+          "final ClusterState clusterState,",
+          "final XPackLicenseState licenseState",
+          "List<String> templates = new ArrayList<>();",
+          "var templateNames = clusterState.metadata().componentTemplates().keySet();",
+          "for (String templateName : templateNames) {"
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 3,
+          "target_declared_methods_count": 3,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      }
+    ]
+  },
+  "last_plan_signature": "b23ce48ca96a81e63785152ad9ca317b06d1af559ff6a91dd0988ed7c1e83647",
+  "validation_repeated_plan_detected": false,
+  "force_type_v_until_success": false,
+  "force_type_v_reason": "",
+  "force_type_v_retry_files": [],
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "sources": []
+  }
+}

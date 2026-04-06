@@ -1,0 +1,38 @@
+{
+  "validation_passed": false,
+  "validation_attempts": 3,
+  "validation_error_context": "Build failed: Build failed; deterministic parser could not identify a narrower category.",
+  "validation_results": {
+    "hunk_application": {
+      "success": true,
+      "raw": "All hunks applied successfully."
+    },
+    "build": {
+      "success": false,
+      "raw": "--- Building Elasticsearch for 1a0ff3d ---\n--- Container user: 1000:1000 ---\nCPU detected: 16\n--- Changing directory to /home/cseroot/retrofit-java/temp_repo_storage/elasticsearch ---\ngradle-cache-es\ngradle-wrapper-es\n--- Building Docker image: retrofit-elasticsearch-builder:local ---\nSending build context to Docker daemon  23.04kB\n\nStep 1/8 : FROM eclipse-temurin:21-jdk-jammy\n ---> 6f2cc16588c8\nStep 2/8 : RUN apt-get update && apt-get install -y     git     rsync     && rm -rf /var/lib/apt/lists/*\n ---> Using cache\n ---> e108a380f3fe\nStep 3/8 : RUN groupadd --gid 1000 gradle &&     useradd --uid 1000 --gid 1000 --shell /bin/bash --create-home gradle\n ---> Using cache\n ---> b2ea64ddb2fe\nStep 4/8 : RUN mkdir -p /home/gradle/.gradle &&     chown -R gradle:gradle /home/gradle/.gradle\n ---> Using cache\n ---> 3979f3c8607f\nStep 5/8 : RUN echo \"org.gradle.daemon=false\" >> /home/gradle/.gradle/gradle.properties &&     echo \"org.gradle.parallel=true\"  >> /home/gradle/.gradle/gradle.properties &&     echo \"org.gradle.caching=true\"   >> /home/gradle/.gradle/gradle.properties &&     echo \"org.gradle.jvmargs=-Xmx4g -XX:+UseG1GC\" >> /home/gradle/.gradle/gradle.properties\n ---> Using cache\n ---> 741fedc64da8\nStep 6/8 : RUN mkdir -p /repo && chown gradle:gradle /repo\n ---> Using cache\n ---> d8baa79617b9\nStep 7/8 : WORKDIR /repo\n ---> Using cache\n ---> 532b02e2015f\nStep 8/8 : CMD [\"/bin/bash\"]\n ---> Using cache\n ---> 9152b23aed6b\nSuccessfully built 9152b23aed6b\nSuccessfully tagged retrofit-elasticsearch-builder:local\n--- Setting cache permissions ---\n--- Compiling with Gradle (assemble + testClasses, skip tests) ---\nTo honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.14.2/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.\nDaemon JVM discovery is an incubating feature.\nDaemon will be stopped at the end of the build \n> Task :build-conventions:compileJava UP-TO-DATE\n> Task :build-conventions:pluginDescriptors UP-TO-DATE\n> Task :build-conventions:processResources UP-TO-DATE\n> Task :build-conventions:classes UP-TO-DATE\n> Task :build-conventions:jar UP-TO-DATE\n> Task :build-tools:reaper:compileJava UP-TO-DATE\n> Task :build-tools-internal:extractPluginRequests UP-TO-DATE\n> Task :build-tools:reaper:processResources NO-SOURCE\n> Task :build-tools:reaper:classes UP-TO-DATE\n> Task :build-tools-internal:generatePluginAdapters UP-TO-DATE\n> Task :build-tools:reaper:jar UP-TO-DATE\n> Task :build-tools-internal:pluginDescriptors UP-TO-DATE\n> Task :build-tools-internal:processResources UP-TO-DATE\n> Task :build-tools:compileJava UP-TO-DATE\n> Task :build-tools:compileGroovy NO-SOURCE\n> Task :build-tools:generateVersionProperties UP-TO-DATE\n> Task :build-tools:pluginDescriptors UP-TO-DATE\n> Task :build-tools:processResources UP-TO-DATE\n> Task :build-tools:classes UP-TO-DATE\n> Task :build-tools:jar UP-TO-DATE\n> Task :build-tools-internal:compileJava UP-TO-DATE\n> Task :build-tools-internal:compileGroovy UP-TO-DATE\n> Task :build-tools-internal:compileGroovyPlugins UP-TO-DATE\n> Task :build-tools-internal:classes UP-TO-DATE\n> Task :build-tools-internal:jar UP-TO-DATE\n\nFAILURE: Build failed with an exception.\n\n* What went wrong:\nA problem occurred configuring project ':x-pack:plugin:esql:compute'.\n> Could not load compiled classes for build file '/repo/x-pack/plugin/esql/compute/build.gradle' from cache.\n\n* Try:\n> Run with --stacktrace option to get the stack trace.\n> Run with --info or --debug option to get more log output.\n> Get more help at https://help.gradle.org.\n\nBUILD FAILED in 28s\n19 actionable tasks: 19 up-to-date\n\u274c Build Failed\n\nDEPRECATED: The legacy builder is deprecated and will be removed in a future release.\n            Install the buildx component to build images with BuildKit:\n            https://docs.docker.com/go/buildx/",
+      "agent_evaluation": "Build failed; deterministic parser could not identify a narrower category.",
+      "error_context": "Build failed; deterministic parser could not identify a narrower category.",
+      "diagnostics": {
+        "category": "unknown",
+        "retry_files": [
+          "server/src/main/java/org/elasticsearch/transport/InboundPipeline.java"
+        ],
+        "issues": [
+          {
+            "error_type": "unknown_build_failure",
+            "suggested_action": "inspect_build_log_and_retry"
+          }
+        ]
+      }
+    }
+  },
+  "validation_failure_category": "unknown",
+  "validation_retry_files": [
+    "server/src/main/java/org/elasticsearch/transport/InboundPipeline.java"
+  ],
+  "force_type_v_until_success": true,
+  "force_type_v_reason": "failed_stage_generation_contract",
+  "force_type_v_retry_files": [
+    "server/src/main/java/org/elasticsearch/transport/InboundPipeline.java"
+  ]
+}

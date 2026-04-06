@@ -1,0 +1,5 @@
+# Phase 0 Cache Reuse
+
+- Cache file: /home/cseroot/retrofit-java/agents-backend/evaluate/full_run/phase0_cache/elasticsearch_4b4be70b9197_463dc4a8a5a9.json
+- Reused targets: {'test_targets': ['x-pack/plugin/deprecation:org.elasticsearch.xpack.deprecation.DataStreamDeprecationCheckerTests', 'x-pack/plugin/deprecation:org.elasticsearch.xpack.deprecation.IndexDeprecationCheckerTests'], 'source_modules': ['x-pack/plugin/core', 'x-pack/plugin/deprecation'], 'all_modules': ['x-pack/plugin/core', 'x-pack/plugin/deprecation'], 'raw': {'source': 'changed_files', 'changed_files': ['docs/changelog/122951.yaml', 'x-pack/plugin/core/src/main/java/org/elasticsearch/xpack/core/deprecation/DeprecatedIndexPredicate.java', 'x-pack/plugin/deprecation/src/main/java/org/elasticsearch/xpack/deprecation/DataStreamDeprecationChecker.java', 'x-pack/plugin/deprecation/src/test/java/org/elasticsearch/xpack/deprecation/DataStreamDeprecationCheckerTests.java', 'x-pack/plugin/deprecation/src/test/java/org/elasticsearch/xpack/deprecation/IndexDeprecationCheckerTests.java']}}
+- Reused baseline mode: elasticsearch-helper-script

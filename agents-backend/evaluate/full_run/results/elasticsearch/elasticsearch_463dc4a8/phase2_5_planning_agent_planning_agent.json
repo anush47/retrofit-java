@@ -1,0 +1,167 @@
+{
+  "hunk_generation_plan": {
+    "x-pack/plugin/core/src/main/java/org/elasticsearch/xpack/core/deprecation/DeprecatedIndexPredicate.java": [
+      {
+        "hunk_index": 0,
+        "target_file": "x-pack/plugin/core/src/main/java/org/elasticsearch/xpack/core/deprecation/DeprecatedIndexPredicate.java",
+        "operation_index": 0,
+        "edit_type": "insert_before",
+        "old_string": "            && isNotSearchableSnapshot(indexMetadata)",
+        "new_string": "            && isNotSystem(indexMetadata)\n            && isNotSearchableSnapshot(indexMetadata)",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_insert_before",
+        "surround_before_3": [
+          "     */",
+          "    public static boolean reindexRequired(IndexMetadata indexMetadata, boolean filterToBlockedStatus) {",
+          "        return creationVersionBeforeMinimumWritableVersion(indexMetadata)"
+        ],
+        "surround_after_3": [
+          "            && matchBlockedStatus(indexMetadata, filterToBlockedStatus);",
+          "    }",
+          ""
+        ],
+        "adaptation_type": "TYPE_II",
+        "base_adaptation_type": "TYPE_II",
+        "execution_type": "TYPE_II",
+        "location_match": false,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "&& isNotSystem(indexMetadata)",
+          "private static boolean isNotSystem(IndexMetadata indexMetadata) {",
+          "return indexMetadata.isSystem() == false;"
+        ],
+        "required_symbols": [
+          "isNotSystem"
+        ],
+        "protected_symbols": [
+          "isNotSystem"
+        ],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 5,
+          "target_declared_methods_count": 5,
+          "matched_symbols_before": [],
+          "missing_symbols_before": [
+            "isNotSystem"
+          ]
+        }
+      },
+      {
+        "hunk_index": 0,
+        "target_file": "x-pack/plugin/core/src/main/java/org/elasticsearch/xpack/core/deprecation/DeprecatedIndexPredicate.java",
+        "operation_index": 1,
+        "edit_type": "insert_before",
+        "old_string": "    private static boolean isNotSearchableSnapshot(IndexMetadata indexMetadata) {",
+        "new_string": "    private static boolean isNotSystem(IndexMetadata indexMetadata) {\n        return indexMetadata.isSystem() == false;\n    }\n\n    private static boolean isNotSearchableSnapshot(IndexMetadata indexMetadata) {",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_insert_before",
+        "surround_before_3": [
+          "            && matchBlockedStatus(indexMetadata, filterToBlockedStatus);",
+          "    }",
+          ""
+        ],
+        "surround_after_3": [
+          "        return indexMetadata.isSearchableSnapshot() == false;",
+          "    }",
+          ""
+        ],
+        "adaptation_type": "TYPE_II",
+        "base_adaptation_type": "TYPE_II",
+        "execution_type": "TYPE_II",
+        "location_match": false,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "&& isNotSystem(indexMetadata)",
+          "private static boolean isNotSystem(IndexMetadata indexMetadata) {",
+          "return indexMetadata.isSystem() == false;"
+        ],
+        "required_symbols": [
+          "isNotSystem"
+        ],
+        "protected_symbols": [
+          "isNotSystem"
+        ],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 5,
+          "target_declared_methods_count": 5,
+          "matched_symbols_before": [],
+          "missing_symbols_before": [
+            "isNotSystem"
+          ]
+        }
+      }
+    ],
+    "x-pack/plugin/deprecation/src/main/java/org/elasticsearch/xpack/deprecation/DataStreamDeprecationChecker.java": [
+      {
+        "hunk_index": 0,
+        "target_file": "x-pack/plugin/deprecation/src/main/java/org/elasticsearch/xpack/deprecation/DataStreamDeprecationChecker.java",
+        "operation_index": 0,
+        "edit_type": "replace",
+        "old_string": "        for (String dataStreamName : dataStreamNames) {\n            DataStream dataStream = clusterState.metadata().dataStreams().get(dataStreamName);\n            List<DeprecationIssue> issuesForSingleDataStream = DATA_STREAM_CHECKS.stream()\n                .map(c -> c.apply(dataStream, clusterState))\n                .filter(Objects::nonNull)\n                .toList();\n            if (issuesForSingleDataStream.isEmpty() == false) {\n                dataStreamIssues.put(dataStreamName, issuesForSingleDataStream);\n            }",
+        "new_string": "        for (String dataStreamName : dataStreamNames) {\n            DataStream dataStream = clusterState.metadata().dataStreams().get(dataStreamName);\n            if (dataStream.isSystem() == false) {\n                List<DeprecationIssue> issuesForSingleDataStream = DATA_STREAM_CHECKS.stream()\n                    .map(c -> c.apply(dataStream, clusterState))\n                    .filter(Objects::nonNull)\n                    .toList();\n                if (issuesForSingleDataStream.isEmpty() == false) {\n                    dataStreamIssues.put(dataStreamName, issuesForSingleDataStream);\n                }\n            }",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_replace",
+        "surround_before_3": [
+          "            return Map.of();",
+          "        }",
+          "        Map<String, List<DeprecationIssue>> dataStreamIssues = new HashMap<>();"
+        ],
+        "surround_after_3": [
+          "        }",
+          "        return dataStreamIssues.isEmpty() ? Map.of() : dataStreamIssues;",
+          "    }"
+        ],
+        "adaptation_type": "TYPE_I",
+        "base_adaptation_type": "TYPE_I",
+        "execution_type": "TYPE_I",
+        "location_match": true,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "if (dataStream.isSystem() == false) {",
+          "List<DeprecationIssue> issuesForSingleDataStream = DATA_STREAM_CHECKS.stream()",
+          ".map(c -> c.apply(dataStream, clusterState))",
+          ".filter(Objects::nonNull)",
+          "if (issuesForSingleDataStream.isEmpty() == false) {",
+          "dataStreamIssues.put(dataStreamName, issuesForSingleDataStream);"
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 3,
+          "target_declared_methods_count": 3,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      }
+    ]
+  },
+  "last_plan_signature": "908130e8f6f1b71c579357fc7c4fa9d47b2644c97cadd5a43fe49adcc5a1db4c",
+  "validation_repeated_plan_detected": false,
+  "force_type_v_until_success": false,
+  "force_type_v_reason": "",
+  "force_type_v_retry_files": [],
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "sources": []
+  }
+}

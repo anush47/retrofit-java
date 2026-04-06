@@ -1,0 +1,29 @@
+patch_id=elasticsearch_d6133235
+project=elasticsearch
+mainline_commit=d6133235a339eb99a146a6ff3ad6958fe0d63cf6
+backport_commit=1f572ad4d393cb5dae04467c33f293553ae1dacd
+mode=full
+started_at=2026-04-06T08:20:32.541021
+----------------------------------------
+Running full workflow graph
+Completed node=phase_0_optimistic
+Workflow completed successfully
+
+[elasticsearch/elasticsearch_d6133235] Setting up repositories for mode=full...
+[elasticsearch/elasticsearch_d6133235] Running full workflow graph...
+Router: Running Phase 0.
+Phase 0 (Optimistic): Checking direct patch applicability...
+Phase 0: Experiment mode — checking out parent of 1f572ad4d393cb5dae04467c33f293553ae1dacd...
+Phase 0: Building baseline by applying developer backport test hunks only...
+  Validation: server/src/test/java/org/elasticsearch/cluster/metadata/MetadataCreateIndexServiceTests.java - applying 1 hunk(s) one by one in bottom-to-top order: [560]
+  Validation: x-pack/plugin/esql/src/test/java/org/elasticsearch/xpack/esql/parser/AbstractStatementParserTests.java - applying 1 hunk(s) one by one in bottom-to-top order: [151]
+  Validation: x-pack/plugin/esql/src/test/java/org/elasticsearch/xpack/esql/parser/StatementParserTests.java - applying 1 hunk(s) one by one in bottom-to-top order: [577]
+    Agent 4: Executing elasticsearch helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/elasticsearch/run_tests.sh
+Phase 0: git apply --check SUCCEEDED. Attempting actual patch application and test run.
+    Agent 4: Executing elasticsearch helper build script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/elasticsearch/run_build.sh
+    Agent 4: Executing elasticsearch helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/elasticsearch/run_tests.sh
+Phase 0: Transition summary -> reason=Valid: Observed fail-to-pass and/or newly passing relevant tests with no regressions.; fail->pass(2): ['org.elasticsearch.cluster.metadata.MetadataCreateIndexServiceTests#testValidateIndexName', 'org.elasticsearch.xpack.esql.parser.StatementParserTests#testInvalidCharacterInIndexPattern']; newly_passing(0): []; pass->fail(0): []
+Phase 0: Transition-based test validation passed. Fast-path success.
+Router: Phase 0 succeeded - taking fast-path exit.
+  Completed: phase_0_optimistic
+[elasticsearch/elasticsearch_d6133235] Full workflow completed!

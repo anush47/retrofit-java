@@ -1,0 +1,100 @@
+{
+  "adapted_file_edits": [
+    {
+      "target_file": "x-pack/plugin/security/src/main/java/org/elasticsearch/xpack/security/authc/ApiKeyService.java",
+      "mainline_file": "x-pack/plugin/security/src/main/java/org/elasticsearch/xpack/security/authc/ApiKeyService.java",
+      "old_string": "<developer patch fast path>",
+      "new_string": "diff --git a/x-pack/plugin/security/src/main/java/org/elasticsearch/xpack/security/authc/ApiKeyService.java b/x-pack/plugin/security/src/main/java/org/elasticsearch/xpack/security/authc/ApiKeyService.java\nindex 3c63ec71e74..1e80c01b8e7 100644\n--- a/x-pack/plugin/security/src/main/java/org/elasticsearch/xpack/security/authc/ApiKeyService.java\n+++ b/x-pack/plugin/security/src/main/java/org/elasticsearch/xpack/security/authc/ApiKeyService.java\n@@ -266,7 +266,9 @@ public class ApiKeyService implements Closeable {\n                     if (apiKeyDocCache != null) {\n                         apiKeyDocCache.invalidate(keys);\n                     }\n-                    keys.forEach(apiKeyAuthCache::invalidate);\n+                    if (apiKeyAuthCache != null) {\n+                        keys.forEach(apiKeyAuthCache::invalidate);\n+                    }\n                 }\n \n                 @Override\n@@ -274,7 +276,9 @@ public class ApiKeyService implements Closeable {\n                     if (apiKeyDocCache != null) {\n                         apiKeyDocCache.invalidateAll();\n                     }\n-                    apiKeyAuthCache.invalidateAll();\n+                    if (apiKeyAuthCache != null) {\n+                        apiKeyAuthCache.invalidateAll();\n+                    }\n                 }\n             });\n             cacheInvalidatorRegistry.registerCacheInvalidator(\"api_key_doc\", new CacheInvalidatorRegistry.CacheInvalidator() {\n@@ -589,9 +593,11 @@ public class ApiKeyService implements Closeable {\n                                     + \"])\";\n                             assert indexResponse.getResult() == DocWriteResponse.Result.CREATED\n                                 : \"Index response was [\" + indexResponse.getResult() + \"]\";\n-                            final ListenableFuture<CachedApiKeyHashResult> listenableFuture = new ListenableFuture<>();\n-                            listenableFuture.onResponse(new CachedApiKeyHashResult(true, apiKey));\n-                            apiKeyAuthCache.put(request.getId(), listenableFuture);\n+                            if (apiKeyAuthCache != null) {\n+                                final ListenableFuture<CachedApiKeyHashResult> listenableFuture = new ListenableFuture<>();\n+                                listenableFuture.onResponse(new CachedApiKeyHashResult(true, apiKey));\n+                                apiKeyAuthCache.put(request.getId(), listenableFuture);\n+                            }\n                             listener.onResponse(new CreateApiKeyResponse(request.getName(), request.getId(), apiKey, expiration));\n                         }, listener::onFailure))\n                     )",
+      "edit_type": "replace",
+      "verified": true,
+      "verification_result": "developer_fast_path_ok",
+      "applied": true,
+      "apply_result": "SUCCESS"
+    }
+  ],
+  "all_adapted_file_edits": [
+    [
+      {
+        "target_file": "x-pack/plugin/security/src/main/java/org/elasticsearch/xpack/security/authc/ApiKeyService.java",
+        "mainline_file": "x-pack/plugin/security/src/main/java/org/elasticsearch/xpack/security/authc/ApiKeyService.java",
+        "old_string": "<developer patch fast path>",
+        "new_string": "diff --git a/x-pack/plugin/security/src/main/java/org/elasticsearch/xpack/security/authc/ApiKeyService.java b/x-pack/plugin/security/src/main/java/org/elasticsearch/xpack/security/authc/ApiKeyService.java\nindex 3c63ec71e74..1e80c01b8e7 100644\n--- a/x-pack/plugin/security/src/main/java/org/elasticsearch/xpack/security/authc/ApiKeyService.java\n+++ b/x-pack/plugin/security/src/main/java/org/elasticsearch/xpack/security/authc/ApiKeyService.java\n@@ -266,7 +266,9 @@ public class ApiKeyService implements Closeable {\n                     if (apiKeyDocCache != null) {\n                         apiKeyDocCache.invalidate(keys);\n                     }\n-                    keys.forEach(apiKeyAuthCache::invalidate);\n+                    if (apiKeyAuthCache != null) {\n+                        keys.forEach(apiKeyAuthCache::invalidate);\n+                    }\n                 }\n \n                 @Override\n@@ -274,7 +276,9 @@ public class ApiKeyService implements Closeable {\n                     if (apiKeyDocCache != null) {\n                         apiKeyDocCache.invalidateAll();\n                     }\n-                    apiKeyAuthCache.invalidateAll();\n+                    if (apiKeyAuthCache != null) {\n+                        apiKeyAuthCache.invalidateAll();\n+                    }\n                 }\n             });\n             cacheInvalidatorRegistry.registerCacheInvalidator(\"api_key_doc\", new CacheInvalidatorRegistry.CacheInvalidator() {\n@@ -589,9 +593,11 @@ public class ApiKeyService implements Closeable {\n                                     + \"])\";\n                             assert indexResponse.getResult() == DocWriteResponse.Result.CREATED\n                                 : \"Index response was [\" + indexResponse.getResult() + \"]\";\n-                            final ListenableFuture<CachedApiKeyHashResult> listenableFuture = new ListenableFuture<>();\n-                            listenableFuture.onResponse(new CachedApiKeyHashResult(true, apiKey));\n-                            apiKeyAuthCache.put(request.getId(), listenableFuture);\n+                            if (apiKeyAuthCache != null) {\n+                                final ListenableFuture<CachedApiKeyHashResult> listenableFuture = new ListenableFuture<>();\n+                                listenableFuture.onResponse(new CachedApiKeyHashResult(true, apiKey));\n+                                apiKeyAuthCache.put(request.getId(), listenableFuture);\n+                            }\n                             listener.onResponse(new CreateApiKeyResponse(request.getName(), request.getId(), apiKey, expiration));\n                         }, listener::onFailure))\n                     )",
+        "edit_type": "replace",
+        "verified": true,
+        "verification_result": "developer_fast_path_ok",
+        "applied": true,
+        "apply_result": "SUCCESS"
+      }
+    ]
+  ],
+  "agent_trajectory_edits": [
+    []
+  ],
+  "adapted_code_hunks": [
+    {
+      "target_file": "x-pack/plugin/security/src/main/java/org/elasticsearch/xpack/security/authc/ApiKeyService.java",
+      "mainline_file": "x-pack/plugin/security/src/main/java/org/elasticsearch/xpack/security/authc/ApiKeyService.java",
+      "hunk_text": "diff --git a/x-pack/plugin/security/src/main/java/org/elasticsearch/xpack/security/authc/ApiKeyService.java b/x-pack/plugin/security/src/main/java/org/elasticsearch/xpack/security/authc/ApiKeyService.java\nindex 3c63ec71e74..1e80c01b8e7 100644\n--- a/x-pack/plugin/security/src/main/java/org/elasticsearch/xpack/security/authc/ApiKeyService.java\n+++ b/x-pack/plugin/security/src/main/java/org/elasticsearch/xpack/security/authc/ApiKeyService.java\n@@ -266,7 +266,9 @@ public class ApiKeyService implements Closeable {\n                     if (apiKeyDocCache != null) {\n                         apiKeyDocCache.invalidate(keys);\n                     }\n-                    keys.forEach(apiKeyAuthCache::invalidate);\n+                    if (apiKeyAuthCache != null) {\n+                        keys.forEach(apiKeyAuthCache::invalidate);\n+                    }\n                 }\n \n                 @Override\n@@ -274,7 +276,9 @@ public class ApiKeyService implements Closeable {\n                     if (apiKeyDocCache != null) {\n                         apiKeyDocCache.invalidateAll();\n                     }\n-                    apiKeyAuthCache.invalidateAll();\n+                    if (apiKeyAuthCache != null) {\n+                        apiKeyAuthCache.invalidateAll();\n+                    }\n                 }\n             });\n             cacheInvalidatorRegistry.registerCacheInvalidator(\"api_key_doc\", new CacheInvalidatorRegistry.CacheInvalidator() {\n@@ -589,9 +593,11 @@ public class ApiKeyService implements Closeable {\n                                     + \"])\";\n                             assert indexResponse.getResult() == DocWriteResponse.Result.CREATED\n                                 : \"Index response was [\" + indexResponse.getResult() + \"]\";\n-                            final ListenableFuture<CachedApiKeyHashResult> listenableFuture = new ListenableFuture<>();\n-                            listenableFuture.onResponse(new CachedApiKeyHashResult(true, apiKey));\n-                            apiKeyAuthCache.put(request.getId(), listenableFuture);\n+                            if (apiKeyAuthCache != null) {\n+                                final ListenableFuture<CachedApiKeyHashResult> listenableFuture = new ListenableFuture<>();\n+                                listenableFuture.onResponse(new CachedApiKeyHashResult(true, apiKey));\n+                                apiKeyAuthCache.put(request.getId(), listenableFuture);\n+                            }\n                             listener.onResponse(new CreateApiKeyResponse(request.getName(), request.getId(), apiKey, expiration));\n                         }, listener::onFailure))\n                     )\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    }
+  ],
+  "validation_repeated_patch_detected": false,
+  "validation_repeated_plan_detected": false,
+  "best_effort_adapted_code_hunks": [
+    {
+      "target_file": "x-pack/plugin/security/src/main/java/org/elasticsearch/xpack/security/authc/ApiKeyService.java",
+      "mainline_file": "x-pack/plugin/security/src/main/java/org/elasticsearch/xpack/security/authc/ApiKeyService.java",
+      "hunk_text": "diff --git a/x-pack/plugin/security/src/main/java/org/elasticsearch/xpack/security/authc/ApiKeyService.java b/x-pack/plugin/security/src/main/java/org/elasticsearch/xpack/security/authc/ApiKeyService.java\nindex 3c63ec71e74..1e80c01b8e7 100644\n--- a/x-pack/plugin/security/src/main/java/org/elasticsearch/xpack/security/authc/ApiKeyService.java\n+++ b/x-pack/plugin/security/src/main/java/org/elasticsearch/xpack/security/authc/ApiKeyService.java\n@@ -266,7 +266,9 @@ public class ApiKeyService implements Closeable {\n                     if (apiKeyDocCache != null) {\n                         apiKeyDocCache.invalidate(keys);\n                     }\n-                    keys.forEach(apiKeyAuthCache::invalidate);\n+                    if (apiKeyAuthCache != null) {\n+                        keys.forEach(apiKeyAuthCache::invalidate);\n+                    }\n                 }\n \n                 @Override\n@@ -274,7 +276,9 @@ public class ApiKeyService implements Closeable {\n                     if (apiKeyDocCache != null) {\n                         apiKeyDocCache.invalidateAll();\n                     }\n-                    apiKeyAuthCache.invalidateAll();\n+                    if (apiKeyAuthCache != null) {\n+                        apiKeyAuthCache.invalidateAll();\n+                    }\n                 }\n             });\n             cacheInvalidatorRegistry.registerCacheInvalidator(\"api_key_doc\", new CacheInvalidatorRegistry.CacheInvalidator() {\n@@ -589,9 +593,11 @@ public class ApiKeyService implements Closeable {\n                                     + \"])\";\n                             assert indexResponse.getResult() == DocWriteResponse.Result.CREATED\n                                 : \"Index response was [\" + indexResponse.getResult() + \"]\";\n-                            final ListenableFuture<CachedApiKeyHashResult> listenableFuture = new ListenableFuture<>();\n-                            listenableFuture.onResponse(new CachedApiKeyHashResult(true, apiKey));\n-                            apiKeyAuthCache.put(request.getId(), listenableFuture);\n+                            if (apiKeyAuthCache != null) {\n+                                final ListenableFuture<CachedApiKeyHashResult> listenableFuture = new ListenableFuture<>();\n+                                listenableFuture.onResponse(new CachedApiKeyHashResult(true, apiKey));\n+                                apiKeyAuthCache.put(request.getId(), listenableFuture);\n+                            }\n                             listener.onResponse(new CreateApiKeyResponse(request.getName(), request.getId(), apiKey, expiration));\n                         }, listener::onFailure))\n                     )\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    }
+  ],
+  "adapted_test_hunks": [],
+  "generation_checklist": [
+    {
+      "mainline_file": "x-pack/plugin/security/src/main/java/org/elasticsearch/xpack/security/authc/ApiKeyService.java",
+      "target_file": "x-pack/plugin/security/src/main/java/org/elasticsearch/xpack/security/authc/ApiKeyService.java",
+      "hunk_index": 0,
+      "adaptation_type": "TYPE_I",
+      "execution_types": [
+        "TYPE_I"
+      ],
+      "status": "success",
+      "reason": "developer_fast_path",
+      "todo_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ],
+      "completed_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ]
+    }
+  ],
+  "generated_patch_hash": "27684477c1d89682fa0894ffa2ec54a384e6cf8e32ead79b17922b55c02eb0ab",
+  "force_type_v_until_success": false,
+  "force_type_v_reason": "",
+  "force_type_v_retry_files": [],
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "sources": []
+  }
+}

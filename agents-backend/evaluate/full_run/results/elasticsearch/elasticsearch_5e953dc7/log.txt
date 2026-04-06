@@ -1,0 +1,61 @@
+patch_id=elasticsearch_5e953dc7
+project=elasticsearch
+mainline_commit=5e953dc7c3881690c61ef39bbef0ae88af35647b
+backport_commit=f146691fc3d4db06881c328ee0b6469c0c1b74eb
+mode=full
+started_at=2026-04-06T06:15:16.538830
+----------------------------------------
+Running full workflow graph
+Completed node=context_analyzer
+Completed node=structural_locator
+Completed node=planning_agent
+Completed node=hunk_generator
+Completed node=validation
+Workflow completed successfully
+
+[elasticsearch/elasticsearch_5e953dc7] Setting up repositories for mode=full...
+[elasticsearch/elasticsearch_5e953dc7] Found cached Phase 0 results. Skipping Phase 0 and reusing baseline test state.
+[elasticsearch/elasticsearch_5e953dc7] Running full workflow graph...
+Router: Skipping Phase 0 - entering full 4-agent pipeline directly.
+Agent 1 (Context Analyzer): Deterministic blueprint generation...
+Agent 1: Complete. Files=1 hunks=3 (deterministic).
+Agent 1: Detected 3 hunk(s) with variants.
+  Completed: context_analyzer
+Agent 2 (Structural Locator): Starting target location mapping...
+  Agent 2: 1 code file(s), 0 test file(s)
+LLM Provider: azure, Model: gpt-4.1-mini, Temperature: 0
+  Agent 2: Found 3 hunk(s) in hunk_chain
+  Agent 2: Locating target for x-pack/plugin/security/src/main/java/org/elasticsearch/xpack/security/authc/ApiKeyService.java (3 hunk(s))...
+Phase 1 (Git) Match Found: x-pack/plugin/security/src/main/java/org/elasticsearch/xpack/security/authc/ApiKeyService.java
+  Agent 2: Git resolution found target: x-pack/plugin/security/src/main/java/org/elasticsearch/xpack/security/authc/ApiKeyService.java
+  Agent 2: Mapped hunk 1 (hunk_1) to None at lines 269-269
+  Agent 2: Mapped hunk 2 (hunk_2) to None at lines 277-277
+  Agent 2: Mapped hunk 3 (hunk_3) to None at lines 592-592
+  Agent 2: Trace written to structural_locator_trace.md
+Agent 2: Complete. Mapped 1 file(s). Total hunk mappings: 3. ConsistencyMap has 0 rename(s).
+Router: complexity=REWRITE -> planning_agent.
+  Completed: structural_locator
+Planning Agent: Building per-hunk str_replace edit plans...
+LLM Provider: azure, Model: gpt-4.1-mini, Temperature: 0
+Planning Agent: Complete. Planned 3 adapted edit(s).
+  Completed: planning_agent
+Agent 3 (File Editor): Starting direct file-edit workflow...
+LLM Provider: azure, Model: gpt-4.1-mini, Temperature: 0
+  Agent 3: Processing 3 edit(s) for x-pack/plugin/security/src/main/java/org/elasticsearch/xpack/security/authc/ApiKeyService.java (op=MODIFIED)
+    Agent 3: Classified x-pack/plugin/security/src/main/java/org/elasticsearch/xpack/security/authc/ApiKeyService.java as TYPE_I (deterministic path)
+    Agent 3: base_types=['TYPE_I'] execution_types=['TYPE_I']
+    Agent 3: Developer patch fast path for x-pack/plugin/security/src/main/java/org/elasticsearch/xpack/security/authc/ApiKeyService.java (developer_fast_path_ok)
+  Agent 3 (File Editor): Done. 1 file(s) adapted, 1 edit record(s).
+  Completed: hunk_generator
+Agent 4 (Validation): Starting 'Prove Red, Make Green' loop...
+  Agent 4: Evaluation full-workflow mode (apply -> build -> relevant tests)...
+  Validation: x-pack/plugin/security/src/main/java/org/elasticsearch/xpack/security/authc/ApiKeyService.java - applying 1 hunk(s) one by one in bottom-to-top order: [1]
+  Validation: docs/changelog/120483.yaml - applying 1 hunk(s) one by one in bottom-to-top order: [1]
+  Validation: x-pack/plugin/security/src/test/java/org/elasticsearch/xpack/security/authc/ApiKeyServiceTests.java - applying 1 hunk(s) one by one in bottom-to-top order: [2367]
+  Validation: ADDED operation for docs/changelog/120483.yaml
+    Agent 4: Executing elasticsearch helper build script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/elasticsearch/run_build.sh
+    Agent 4: Executing elasticsearch helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/elasticsearch/run_tests.sh
+Trace saved to validation_trace.md
+Router: Validation PASSED after 1 attempt(s). Done.
+  Completed: validation
+[elasticsearch/elasticsearch_5e953dc7] Full workflow completed!

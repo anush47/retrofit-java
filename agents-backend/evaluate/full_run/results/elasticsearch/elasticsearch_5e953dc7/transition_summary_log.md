@@ -1,0 +1,68 @@
+# Transition Summary
+
+- Source: phase_outputs
+- Valid backport signal: True
+- Reason: Valid: Observed fail-to-pass and/or newly passing relevant tests with no regressions.
+- fail->pass (1): ['org.elasticsearch.xpack.security.authc.ApiKeyServiceTests#testCanCreateApiKeyWithAuthCacheDisabled']
+- newly passing (0): []
+- pass->fail (0): []
+
+## Touched Test States
+- Touched tests (from patch): ['org.elasticsearch.xpack.security.authc.ApiKeyServiceTests']
+  - org.elasticsearch.xpack.security.authc.ApiKeyServiceTests#testApiKeyAuthCacheEvictionMetrics: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.security.authc.ApiKeyServiceTests#testApiKeyAuthCacheHitAndMissMetrics: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.security.authc.ApiKeyServiceTests#testApiKeyAuthCacheWillLogWarningOnPossibleThrashing: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.security.authc.ApiKeyServiceTests#testApiKeyAuthCacheWillTraceLogOnEvictionDueToCacheSize: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.security.authc.ApiKeyServiceTests#testApiKeyCache: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.security.authc.ApiKeyServiceTests#testApiKeyCacheDisabled: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.security.authc.ApiKeyServiceTests#testApiKeyCacheWillNotTraceLogOnEvictionDueToCacheTtl: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.security.authc.ApiKeyServiceTests#testApiKeyDocAndRoleDescriptorsCacheMetrics: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.security.authc.ApiKeyServiceTests#testApiKeyDocCache: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.security.authc.ApiKeyServiceTests#testApiKeyDocCacheCanBeDisabledSeparately: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.security.authc.ApiKeyServiceTests#testApiKeyDocDeserialization: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.security.authc.ApiKeyServiceTests#testApiKeyDocDeserializationWithNullValues: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.security.authc.ApiKeyServiceTests#testApiKeyServiceDisabled: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.security.authc.ApiKeyServiceTests#testApiKeysOwnerRealmIdentifier: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.security.authc.ApiKeyServiceTests#testAuthWillTerminateIfGetThreadPoolIsSaturated: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.security.authc.ApiKeyServiceTests#testAuthWillTerminateIfHashingThreadPoolIsSaturated: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.security.authc.ApiKeyServiceTests#testAuthenticateWhileCacheBeingPopulated: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.security.authc.ApiKeyServiceTests#testAuthenticateWithApiKey: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.security.authc.ApiKeyServiceTests#testAuthenticationFailureWithApiKeyTypeMismatch: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.security.authc.ApiKeyServiceTests#testAuthenticationFailureWithExpiredKey: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.security.authc.ApiKeyServiceTests#testAuthenticationFailureWithInvalidCredentials: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.security.authc.ApiKeyServiceTests#testAuthenticationFailureWithInvalidatedApiKey: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.security.authc.ApiKeyServiceTests#testBuildDelimitedStringWithLimit: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.security.authc.ApiKeyServiceTests#testBulkUpdateWithApiKeyCredentialNotSupported: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.security.authc.ApiKeyServiceTests#testCachedApiKeyValidationWillNotBeBlockedByUnCachedApiKey: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.security.authc.ApiKeyServiceTests#testCanCreateApiKeyWithAuthCacheDisabled: baseline=failed, patched=passed
+  - org.elasticsearch.xpack.security.authc.ApiKeyServiceTests#testCreateApiKeyUsesBulkIndexAction: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.security.authc.ApiKeyServiceTests#testCreateApiKeyWillCacheOnCreation: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.security.authc.ApiKeyServiceTests#testCreateCrossClusterApiKeyMinVersionConstraint: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.security.authc.ApiKeyServiceTests#testCreateOrUpdateApiKeyWithWorkflowsRestrictionForUnsupportedVersion: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.security.authc.ApiKeyServiceTests#testCreationWillFailIfHashingThreadPoolIsSaturated: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.security.authc.ApiKeyServiceTests#testCrossClusterApiKeyUsageFailsWhenIndexNotAvailable: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.security.authc.ApiKeyServiceTests#testCrossClusterApiKeyUsageStats: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.security.authc.ApiKeyServiceTests#testCrossClusterApiKeyUsageStatsAreZerosWhenIndexDoesNotExist: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.security.authc.ApiKeyServiceTests#testCrossClusterApiKeyUsageStatsAreZerosWhenServiceNotEnabled: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.security.authc.ApiKeyServiceTests#testFloodThreadpool: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.security.authc.ApiKeyServiceTests#testGetApiKeyMetadata: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.security.authc.ApiKeyServiceTests#testGetApiKeys: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.security.authc.ApiKeyServiceTests#testGetCreatorRealm: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.security.authc.ApiKeyServiceTests#testGetCredentialsFromHeaderFailsForInvalidCrossClusterApiKeySecretLength: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.security.authc.ApiKeyServiceTests#testGetCredentialsFromThreadContext: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.security.authc.ApiKeyServiceTests#testGetOwnersRealmNames: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.security.authc.ApiKeyServiceTests#testInvalidateApiKeys: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.security.authc.ApiKeyServiceTests#testInvalidateApiKeysWillSetInvalidatedFlagAndRecordTimestamp: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.security.authc.ApiKeyServiceTests#testInvalidateApiKeysWithSkippedCrossClusterKeysAndNullType: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.security.authc.ApiKeyServiceTests#testMaybeBuildUpdatedDocument: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.security.authc.ApiKeyServiceTests#testMaybeRemoveRemoteClusterPrivilegesWithUnsupportedVersion: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.security.authc.ApiKeyServiceTests#testMaybeRemoveRemoteIndicesPrivilegesWithUnsupportedVersion: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.security.authc.ApiKeyServiceTests#testMaybeRemoveRemotePrivilegesWithSupportedVersion: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.security.authc.ApiKeyServiceTests#testMixingValidAndInvalidCredentials: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.security.authc.ApiKeyServiceTests#testParseRoleDescriptors: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.security.authc.ApiKeyServiceTests#testParseRoleDescriptorsMap: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.security.authc.ApiKeyServiceTests#testValidateApiKey: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.security.authc.ApiKeyServiceTests#testValidateApiKeyDocBeforeUpdate: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.security.authc.ApiKeyServiceTests#testValidateApiKeyTypeAndExpiration: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.security.authc.ApiKeyServiceTests#testValidateOwnerUserRoleDescriptorsWithWorkflowsRestriction: baseline=passed, patched=passed
+  - org.elasticsearch.xpack.security.authc.ApiKeyServiceTests#testWillInvalidateAuthCacheWhenDocNotFound: baseline=passed, patched=passed

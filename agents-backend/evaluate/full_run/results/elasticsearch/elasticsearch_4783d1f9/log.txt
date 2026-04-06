@@ -1,0 +1,29 @@
+patch_id=elasticsearch_4783d1f9
+project=elasticsearch
+mainline_commit=4783d1f991633dbc3b7397fe13c63b6b7d70dc37
+backport_commit=a9cb5cd575bf8c30000b5af404a7087294f1a858
+mode=full
+started_at=2026-04-06T07:09:56.230321
+----------------------------------------
+Running full workflow graph
+Completed node=phase_0_optimistic
+Workflow completed successfully
+
+[elasticsearch/elasticsearch_4783d1f9] Setting up repositories for mode=full...
+[elasticsearch/elasticsearch_4783d1f9] Ignoring stale Phase 0 cache (reason=inconclusive-target-tests-not-observed). Running fresh Phase 0.
+[elasticsearch/elasticsearch_4783d1f9] Running full workflow graph...
+Router: Running Phase 0.
+Phase 0 (Optimistic): Checking direct patch applicability...
+Phase 0: Ignoring stale cache (reason=inconclusive-target-tests-not-observed); recomputing Phase 0.
+Phase 0: Experiment mode — checking out parent of a9cb5cd575bf8c30000b5af404a7087294f1a858...
+Phase 0: Building baseline by applying developer backport test hunks only...
+  Validation: x-pack/plugin/ml/src/test/java/org/elasticsearch/xpack/ml/inference/ltr/QueryFeatureExtractorTests.java - applying 3 hunk(s) one by one in bottom-to-top order: [128, 32, 23]
+    Agent 4: Executing elasticsearch helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/elasticsearch/run_tests.sh
+Phase 0: git apply --check SUCCEEDED. Attempting actual patch application and test run.
+    Agent 4: Executing elasticsearch helper build script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/elasticsearch/run_build.sh
+    Agent 4: Executing elasticsearch helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/elasticsearch/run_tests.sh
+Phase 0: Transition summary -> reason=Valid: Observed fail-to-pass and/or newly passing relevant tests with no regressions.; fail->pass(1): ['org.elasticsearch.xpack.ml.inference.ltr.QueryFeatureExtractorTests#testEmptyDisiPriorityQueue']; newly_passing(0): []; pass->fail(0): []
+Phase 0: Transition-based test validation passed. Fast-path success.
+Router: Phase 0 succeeded - taking fast-path exit.
+  Completed: phase_0_optimistic
+[elasticsearch/elasticsearch_4783d1f9] Full workflow completed!

@@ -1,0 +1,88 @@
+{
+  "consistency_map": {},
+  "mapped_target_context": {
+    "x-pack/plugin/migrate/src/main/java/org/elasticsearch/xpack/migrate/MigratePlugin.java": [
+      {
+        "hunk_index": 1,
+        "mainline_method": "<import>",
+        "target_file": "x-pack/plugin/migrate/src/main/java/org/elasticsearch/xpack/migrate/MigratePlugin.java",
+        "target_method": "<import>",
+        "start_line": 59,
+        "end_line": 59,
+        "code_snippet": "import org.elasticsearch.xpack.migrate.action.CreateIndexFromSourceTransportAction;\nimport org.elasticsearch.xpack.migrate.action.GetMigrationReindexStatusAction;\nimport org.elasticsearch.xpack.migrate.action.GetMigrationReindexStatusTransportAction;\nimport org.elasticsearch.xpack.migrate.action.ReindexDataStreamAction;\nimport org.elasticsearch.xpack.migrate.action.ReindexDataStreamIndexAction;\nimport org.elasticsearch.xpack.migrate.action.ReindexDataStreamIndexTransportAction;\nimport org.elasticsearch.xpack.migrate.action.ReindexDataStreamTransportAction;\nimport org.elasticsearch.xpack.migrate.rest.RestCancelReindexDataStreamAction;\nimport org.elasticsearch.xpack.migrate.rest.RestCreateIndexFromSourceAction;\nimport org.elasticsearch.xpack.migrate.rest.RestGetMigrationReindexStatusAction;\nimport org.elasticsearch.xpack.migrate.rest.RestMigrationReindexAction;\nimport org.elasticsearch.xpack.migrate.task.ReindexDataStreamPersistentTaskExecutor;\nimport org.elasticsearch.xpack.migrate.task.ReindexDataStreamPersistentTaskState;\nimport org.elasticsearch.xpack.migrate.task.ReindexDataStreamStatus;\nimport org.elasticsearch.xpack.migrate.task.ReindexDataStreamTask;\nimport org.elasticsearch.xpack.migrate.task.ReindexDataStreamTaskParams;\n\nimport java.util.ArrayList;\nimport java.util.List;\nimport java.util.function.Predicate;\nimport java.util.function.Supplier;\n\nimport static org.elasticsearch.xpack.migrate.action.ReindexDataStreamAction.REINDEX_DATA_STREAM_FEATURE_FLAG;\nimport static org.elasticsearch.xpack.migrate.task.ReindexDataStreamPersistentTaskExecutor.MAX_CONCURRENT_INDICES_REINDEXED_PER_DATA_STREAM_SETTING;\n\npublic class MigratePlugin extends Plugin implements ActionPlugin, PersistentTaskPlugin {\n\n    @Override\n    public List<RestHandler> getRestHandlers(\n        Settings unused,\n        NamedWriteableRegistry namedWriteableRegistry,\n        RestController restController,\n        ClusterSettings clusterSettings,\n        IndexScopedSettings indexScopedSettings,\n        SettingsFilter settingsFilter,\n        IndexNameExpressionResolver indexNameExpressionResolver,\n        Supplier<DiscoveryNodes> nodesInCluster,\n        Predicate<NodeFeature> clusterSupportsFeature\n    ) {\n        List<RestHandler> handlers = new ArrayList<>();\n        if (REINDEX_DATA_STREAM_FEATURE_FLAG.isEnabled()) {",
+        "anchor_confidence": "high",
+        "anchor_reason": "line_and_method_resolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 2,
+        "mainline_method": "getSettings",
+        "target_file": "x-pack/plugin/migrate/src/main/java/org/elasticsearch/xpack/migrate/MigratePlugin.java",
+        "target_method": "getSettings",
+        "start_line": 160,
+        "end_line": 160,
+        "code_snippet": "    }\n\n    @Override\n    public List<PersistentTasksExecutor<?>> getPersistentTasksExecutor(\n        ClusterService clusterService,\n        ThreadPool threadPool,\n        Client client,\n        SettingsModule settingsModule,\n        IndexNameExpressionResolver expressionResolver\n    ) {\n        if (REINDEX_DATA_STREAM_FEATURE_FLAG.isEnabled()) {\n            return List.of(\n                new ReindexDataStreamPersistentTaskExecutor(client, clusterService, ReindexDataStreamTask.TASK_NAME, threadPool)\n            );\n        } else {\n            return List.of();\n        }\n    }\n\n    @Override\n    public List<Setting<?>> getSettings() {\n        List<Setting<?>> pluginSettings = new ArrayList<>();\n        pluginSettings.add(MAX_CONCURRENT_INDICES_REINDEXED_PER_DATA_STREAM_SETTING);\n        return pluginSettings;\n    }\n}",
+        "anchor_confidence": "high",
+        "anchor_reason": "line_and_method_resolved",
+        "anchor_strategy": "deterministic_realign"
+      }
+    ],
+    "x-pack/plugin/migrate/src/main/java/org/elasticsearch/xpack/migrate/action/ReindexDataStreamIndexTransportAction.java": [
+      {
+        "hunk_index": 1,
+        "mainline_method": "<import>",
+        "target_file": "x-pack/plugin/migrate/src/main/java/org/elasticsearch/xpack/migrate/action/ReindexDataStreamIndexTransportAction.java",
+        "target_method": "<import>",
+        "start_line": 24,
+        "end_line": 24,
+        "code_snippet": " * 2.0; you may not use this file except in compliance with the Elastic License\n * 2.0.\n */\npackage org.elasticsearch.xpack.migrate.action;\n\nimport org.apache.logging.log4j.LogManager;\nimport org.apache.logging.log4j.Logger;\nimport org.elasticsearch.ElasticsearchException;\nimport org.elasticsearch.action.ActionListener;\nimport org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;\nimport org.elasticsearch.action.admin.indices.readonly.AddIndexBlockRequest;\nimport org.elasticsearch.action.admin.indices.readonly.AddIndexBlockResponse;\nimport org.elasticsearch.action.admin.indices.readonly.TransportAddIndexBlockAction;\nimport org.elasticsearch.action.admin.indices.settings.put.UpdateSettingsRequest;\nimport org.elasticsearch.action.support.ActionFilters;\nimport org.elasticsearch.action.support.HandledTransportAction;\nimport org.elasticsearch.action.support.IndicesOptions;\nimport org.elasticsearch.action.support.SubscribableListener;\nimport org.elasticsearch.action.support.master.AcknowledgedResponse;\nimport org.elasticsearch.client.internal.Client;\nimport org.elasticsearch.cluster.block.ClusterBlockException;\nimport org.elasticsearch.cluster.metadata.IndexMetadata;\nimport org.elasticsearch.cluster.service.ClusterService;\nimport org.elasticsearch.common.settings.Settings;\nimport org.elasticsearch.core.TimeValue;\nimport org.elasticsearch.index.IndexSettings;\nimport org.elasticsearch.index.reindex.BulkByScrollResponse;\nimport org.elasticsearch.index.reindex.ReindexAction;\nimport org.elasticsearch.index.reindex.ReindexRequest;\nimport org.elasticsearch.injection.guice.Inject;\nimport org.elasticsearch.tasks.Task;\nimport org.elasticsearch.tasks.TaskId;\nimport org.elasticsearch.threadpool.ThreadPool;\nimport org.elasticsearch.transport.TransportService;\nimport org.elasticsearch.xpack.core.deprecation.DeprecatedIndexPredicate;\n\nimport java.util.Locale;\nimport java.util.Map;\n\nimport static org.elasticsearch.cluster.metadata.IndexMetadata.APIBlock.WRITE;\n",
+        "anchor_confidence": "high",
+        "anchor_reason": "line_and_method_resolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 2,
+        "mainline_method": "hunk_2",
+        "target_file": "x-pack/plugin/migrate/src/main/java/org/elasticsearch/xpack/migrate/action/ReindexDataStreamIndexTransportAction.java",
+        "target_method": null,
+        "start_line": 46,
+        "end_line": 46,
+        "code_snippet": "import org.elasticsearch.cluster.service.ClusterService;\nimport org.elasticsearch.common.settings.Settings;\nimport org.elasticsearch.core.TimeValue;\nimport org.elasticsearch.index.IndexSettings;\nimport org.elasticsearch.index.reindex.BulkByScrollResponse;\nimport org.elasticsearch.index.reindex.ReindexAction;\nimport org.elasticsearch.index.reindex.ReindexRequest;\nimport org.elasticsearch.injection.guice.Inject;\nimport org.elasticsearch.tasks.Task;\nimport org.elasticsearch.tasks.TaskId;\nimport org.elasticsearch.threadpool.ThreadPool;\nimport org.elasticsearch.transport.TransportService;\nimport org.elasticsearch.xpack.core.deprecation.DeprecatedIndexPredicate;\n\nimport java.util.Locale;\nimport java.util.Map;\n\nimport static org.elasticsearch.cluster.metadata.IndexMetadata.APIBlock.WRITE;\n\npublic class ReindexDataStreamIndexTransportAction extends HandledTransportAction<\n    ReindexDataStreamIndexAction.Request,\n    ReindexDataStreamIndexAction.Response> {\n\n    private static final Logger logger = LogManager.getLogger(ReindexDataStreamIndexTransportAction.class);\n    private static final IndicesOptions IGNORE_MISSING_OPTIONS = IndicesOptions.fromOptions(true, true, false, false);\n    private final ClusterService clusterService;\n    private final Client client;\n\n    @Inject\n    public ReindexDataStreamIndexTransportAction(\n        TransportService transportService,\n        ClusterService clusterService,\n        ActionFilters actionFilters,\n        Client client\n    ) {\n        super(\n            ReindexDataStreamIndexAction.NAME,\n            false,\n            transportService,\n            actionFilters,\n            ReindexDataStreamIndexAction.Request::new,",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 3,
+        "mainline_method": "reindex",
+        "target_file": "x-pack/plugin/migrate/src/main/java/org/elasticsearch/xpack/migrate/action/ReindexDataStreamIndexTransportAction.java",
+        "target_method": "reindex",
+        "start_line": 179,
+        "end_line": 179,
+        "code_snippet": "            // remove read-only settings if they exist\n            .putNull(IndexMetadata.SETTING_READ_ONLY)\n            .putNull(IndexMetadata.SETTING_READ_ONLY_ALLOW_DELETE)\n            .putNull(IndexMetadata.SETTING_BLOCKS_WRITE)\n            // settings to optimize reindex\n            .put(IndexMetadata.SETTING_NUMBER_OF_REPLICAS, 0)\n            .put(IndexSettings.INDEX_REFRESH_INTERVAL_SETTING.getKey(), -1)\n            .build();\n\n        var request = new CreateIndexFromSourceAction.Request(\n            sourceIndex.getIndex().getName(),\n            destIndexName,\n            removeReadOnlyOverride,\n            Map.of()\n        );\n        request.setParentTask(parentTaskId);\n        var errorMessage = String.format(Locale.ROOT, \"Could not create index [%s]\", request.destIndex());\n        client.execute(CreateIndexFromSourceAction.INSTANCE, request, failIfNotAcknowledged(listener, errorMessage));\n    }\n\n    private void reindex(String sourceIndexName, String destIndexName, ActionListener<BulkByScrollResponse> listener, TaskId parentTaskId) {\n        logger.debug(\"Reindex to destination index [{}] from source index [{}]\", destIndexName, sourceIndexName);\n        var reindexRequest = new ReindexRequest();\n        reindexRequest.setSourceIndices(sourceIndexName);\n        reindexRequest.getSearchRequest().allowPartialSearchResults(false);\n        reindexRequest.getSearchRequest().source().fetchSource(true);\n        reindexRequest.setDestIndex(destIndexName);\n        reindexRequest.setParentTask(parentTaskId);\n        reindexRequest.setSlices(0); // equivalent to slices=auto in rest api\n        client.execute(ReindexAction.INSTANCE, reindexRequest, listener);\n    }\n\n    private void addBlockIfFromSource(\n        IndexMetadata.APIBlock block,\n        Settings settingsBefore,\n        String destIndexName,\n        ActionListener<AddIndexBlockResponse> listener,\n        TaskId parentTaskId\n    ) {\n        if (settingsBefore.getAsBoolean(block.settingName(), false)) {\n            var errorMessage = String.format(Locale.ROOT, \"Add [%s] block to index [%s] was not acknowledged\", block.name(), destIndexName);",
+        "anchor_confidence": "high",
+        "anchor_reason": "line_and_method_resolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 4,
+        "mainline_method": "hunk_4",
+        "target_file": "x-pack/plugin/migrate/src/main/java/org/elasticsearch/xpack/migrate/action/ReindexDataStreamIndexTransportAction.java",
+        "target_method": null,
+        "start_line": 184,
+        "end_line": 184,
+        "code_snippet": "            .put(IndexMetadata.SETTING_NUMBER_OF_REPLICAS, 0)\n            .put(IndexSettings.INDEX_REFRESH_INTERVAL_SETTING.getKey(), -1)\n            .build();\n\n        var request = new CreateIndexFromSourceAction.Request(\n            sourceIndex.getIndex().getName(),\n            destIndexName,\n            removeReadOnlyOverride,\n            Map.of()\n        );\n        request.setParentTask(parentTaskId);\n        var errorMessage = String.format(Locale.ROOT, \"Could not create index [%s]\", request.destIndex());\n        client.execute(CreateIndexFromSourceAction.INSTANCE, request, failIfNotAcknowledged(listener, errorMessage));\n    }\n\n    private void reindex(String sourceIndexName, String destIndexName, ActionListener<BulkByScrollResponse> listener, TaskId parentTaskId) {\n        logger.debug(\"Reindex to destination index [{}] from source index [{}]\", destIndexName, sourceIndexName);\n        var reindexRequest = new ReindexRequest();\n        reindexRequest.setSourceIndices(sourceIndexName);\n        reindexRequest.getSearchRequest().allowPartialSearchResults(false);\n        reindexRequest.getSearchRequest().source().fetchSource(true);\n        reindexRequest.setDestIndex(destIndexName);\n        reindexRequest.setParentTask(parentTaskId);\n        reindexRequest.setSlices(0); // equivalent to slices=auto in rest api\n        client.execute(ReindexAction.INSTANCE, reindexRequest, listener);\n    }\n\n    private void addBlockIfFromSource(\n        IndexMetadata.APIBlock block,\n        Settings settingsBefore,\n        String destIndexName,\n        ActionListener<AddIndexBlockResponse> listener,\n        TaskId parentTaskId\n    ) {\n        if (settingsBefore.getAsBoolean(block.settingName(), false)) {\n            var errorMessage = String.format(Locale.ROOT, \"Add [%s] block to index [%s] was not acknowledged\", block.name(), destIndexName);\n            addBlockToIndex(block, destIndexName, failIfNotAcknowledged(listener, errorMessage), parentTaskId);\n        } else {\n            listener.onResponse(null);\n        }\n    }",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      }
+    ]
+  },
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "reason": "llm_usage_not_collected_in_this_node"
+  }
+}

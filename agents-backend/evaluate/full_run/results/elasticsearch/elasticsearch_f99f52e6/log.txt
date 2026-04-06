@@ -1,0 +1,28 @@
+patch_id=elasticsearch_f99f52e6
+project=elasticsearch
+mainline_commit=f99f52e60deaec8f4211ff36e8bee7c9ca8ac160
+backport_commit=9e8bc7ee931f15bba6afb7864469add893b856e4
+mode=full
+started_at=2026-04-06T07:46:58.193547
+----------------------------------------
+Running full workflow graph
+Completed node=phase_0_optimistic
+Workflow completed successfully
+
+[elasticsearch/elasticsearch_f99f52e6] Setting up repositories for mode=full...
+[elasticsearch/elasticsearch_f99f52e6] Running full workflow graph...
+Router: Running Phase 0.
+Phase 0 (Optimistic): Checking direct patch applicability...
+Phase 0: Experiment mode — checking out parent of 9e8bc7ee931f15bba6afb7864469add893b856e4...
+Phase 0: Building baseline by applying developer backport test hunks only...
+  Validation: x-pack/plugin/esql/qa/testFixtures/src/main/resources/lookup-join.csv-spec - applying 4 hunk(s) one by one in bottom-to-top order: [240, 224, 214, 206]
+  Validation: x-pack/plugin/esql/src/test/java/org/elasticsearch/xpack/esql/optimizer/LogicalPlanOptimizerTests.java - applying 1 hunk(s) one by one in bottom-to-top order: [6223]
+    Agent 4: Executing elasticsearch helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/elasticsearch/run_tests.sh
+Phase 0: git apply --check SUCCEEDED. Attempting actual patch application and test run.
+    Agent 4: Executing elasticsearch helper build script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/elasticsearch/run_build.sh
+    Agent 4: Executing elasticsearch helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/elasticsearch/run_tests.sh
+Phase 0: Transition summary -> reason=Valid: Observed fail-to-pass and/or newly passing relevant tests with no regressions.; fail->pass(2): ['org.elasticsearch.xpack.esql.optimizer.LogicalPlanOptimizerTests#testLookupJoinKeepNoLookupFields', 'org.elasticsearch.xpack.esql.optimizer.LogicalPlanOptimizerTests#testMultipleLookupShadowing']; newly_passing(0): []; pass->fail(0): []
+Phase 0: Transition-based test validation passed. Fast-path success.
+Router: Phase 0 succeeded - taking fast-path exit.
+  Completed: phase_0_optimistic
+[elasticsearch/elasticsearch_f99f52e6] Full workflow completed!

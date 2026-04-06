@@ -1,0 +1,149 @@
+{
+  "hunk_generation_plan": {
+    "x-pack/plugin/security/src/main/java/org/elasticsearch/xpack/security/authc/ApiKeyService.java": [
+      {
+        "hunk_index": 0,
+        "target_file": "x-pack/plugin/security/src/main/java/org/elasticsearch/xpack/security/authc/ApiKeyService.java",
+        "operation_index": 0,
+        "edit_type": "replace",
+        "old_string": "                        apiKeyDocCache.invalidate(keys);\n                    }\n                    keys.forEach(apiKeyAuthCache::invalidate);\n                }",
+        "new_string": "                        apiKeyDocCache.invalidate(keys);\n                    }\n                    if (apiKeyAuthCache != null) {\n                        keys.forEach(apiKeyAuthCache::invalidate);\n                    }\n                }",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_replace",
+        "surround_before_3": [
+          "                @Override",
+          "                public void invalidate(Collection<String> keys) {",
+          "                    if (apiKeyDocCache != null) {"
+        ],
+        "surround_after_3": [
+          "",
+          "                @Override",
+          "                public void invalidateAll() {"
+        ],
+        "adaptation_type": "TYPE_I",
+        "base_adaptation_type": "TYPE_I",
+        "execution_type": "TYPE_I",
+        "location_match": true,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "if (apiKeyAuthCache != null) {",
+          "keys.forEach(apiKeyAuthCache::invalidate);"
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 69,
+          "target_declared_methods_count": 69,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 1,
+        "target_file": "x-pack/plugin/security/src/main/java/org/elasticsearch/xpack/security/authc/ApiKeyService.java",
+        "operation_index": 0,
+        "edit_type": "replace",
+        "old_string": "                        apiKeyDocCache.invalidateAll();\n                    }\n                    apiKeyAuthCache.invalidateAll();\n                }",
+        "new_string": "                        apiKeyDocCache.invalidateAll();\n                    }\n                    if (apiKeyAuthCache != null) {\n                        apiKeyAuthCache.invalidateAll();\n                    }\n                }",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_replace",
+        "surround_before_3": [
+          "                @Override",
+          "                public void invalidateAll() {",
+          "                    if (apiKeyDocCache != null) {"
+        ],
+        "surround_after_3": [
+          "            });",
+          "            cacheInvalidatorRegistry.registerCacheInvalidator(\"api_key_doc\", new CacheInvalidatorRegistry.CacheInvalidator() {",
+          "                @Override"
+        ],
+        "adaptation_type": "TYPE_I",
+        "base_adaptation_type": "TYPE_I",
+        "execution_type": "TYPE_I",
+        "location_match": true,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "if (apiKeyAuthCache != null) {",
+          "apiKeyAuthCache.invalidateAll();"
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 69,
+          "target_declared_methods_count": 69,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 2,
+        "target_file": "x-pack/plugin/security/src/main/java/org/elasticsearch/xpack/security/authc/ApiKeyService.java",
+        "operation_index": 0,
+        "edit_type": "replace",
+        "old_string": "                            assert indexResponse.getResult() == DocWriteResponse.Result.CREATED\n                                : \"Index response was [\" + indexResponse.getResult() + \"]\";\n                            final ListenableFuture<CachedApiKeyHashResult> listenableFuture = new ListenableFuture<>();\n                            listenableFuture.onResponse(new CachedApiKeyHashResult(true, apiKey));\n                            apiKeyAuthCache.put(request.getId(), listenableFuture);\n                            listener.onResponse(new CreateApiKeyResponse(request.getName(), request.getId(), apiKey, expiration));",
+        "new_string": "                            assert indexResponse.getResult() == DocWriteResponse.Result.CREATED\n                                : \"Index response was [\" + indexResponse.getResult() + \"]\";\n                            if (apiKeyAuthCache != null) {\n                                final ListenableFuture<CachedApiKeyHashResult> listenableFuture = new ListenableFuture<>();\n                                listenableFuture.onResponse(new CachedApiKeyHashResult(true, apiKey));\n                                apiKeyAuthCache.put(request.getId(), listenableFuture);\n                            }\n                            listener.onResponse(new CreateApiKeyResponse(request.getName(), request.getId(), apiKey, expiration));",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_replace",
+        "surround_before_3": [
+          "                                    + \"]) index=[\"",
+          "                                    + indexResponse.getId()",
+          "                                    + \"])\";"
+        ],
+        "surround_after_3": [
+          "                        }, listener::onFailure))",
+          "                    )",
+          "                );"
+        ],
+        "adaptation_type": "TYPE_I",
+        "base_adaptation_type": "TYPE_I",
+        "execution_type": "TYPE_I",
+        "location_match": true,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "if (apiKeyAuthCache != null) {",
+          "final ListenableFuture<CachedApiKeyHashResult> listenableFuture = new ListenableFuture<>();",
+          "listenableFuture.onResponse(new CachedApiKeyHashResult(true, apiKey));",
+          "apiKeyAuthCache.put(request.getId(), listenableFuture);"
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 69,
+          "target_declared_methods_count": 69,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      }
+    ]
+  },
+  "last_plan_signature": "f6aff9716c96c1c75e75d351acb4a1e39204fe91a334939a159547810524127d",
+  "validation_repeated_plan_detected": false,
+  "force_type_v_until_success": false,
+  "force_type_v_reason": "",
+  "force_type_v_retry_files": [],
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "sources": []
+  }
+}

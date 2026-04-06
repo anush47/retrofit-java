@@ -1,0 +1,37 @@
+{
+  "semantic_blueprint": {
+    "root_cause_hypothesis": "Deterministic inference: target branch diverges from mainline; adapt hunks with exact target context.",
+    "fix_logic": "Apply each source hunk with target-verified context and symbol consistency while preserving behavior.",
+    "dependent_apis": [
+      "isNotSystem",
+      "if"
+    ],
+    "patch_intent_summary": "Backport patch behavior to target branch with minimal, context-correct edits.",
+    "hunk_chain": [
+      {
+        "hunk_index": 1,
+        "file": "x-pack/plugin/core/src/main/java/org/elasticsearch/xpack/core/deprecation/DeprecatedIndexPredicate.java",
+        "summary": "Adds logic (+5 lines).",
+        "role": "declaration",
+        "connects_to_next": "",
+        "global_index": 1
+      },
+      {
+        "hunk_index": 1,
+        "file": "x-pack/plugin/deprecation/src/main/java/org/elasticsearch/xpack/deprecation/DataStreamDeprecationChecker.java",
+        "summary": "Modifies logic (+8/-6 lines).",
+        "role": "guard",
+        "connects_to_next": "",
+        "global_index": 2
+      }
+    ]
+  },
+  "patch_diff": "diff --git a/a/x-pack/plugin/core/src/main/java/org/elasticsearch/xpack/core/deprecation/DeprecatedIndexPredicate.java b/b/x-pack/plugin/core/src/main/java/org/elasticsearch/xpack/core/deprecation/DeprecatedIndexPredicate.java\nindex 0000000..0000000 100644\n--- a/a/x-pack/plugin/core/src/main/java/org/elasticsearch/xpack/core/deprecation/DeprecatedIndexPredicate.java\n+++ b/b/x-pack/plugin/core/src/main/java/org/elasticsearch/xpack/core/deprecation/DeprecatedIndexPredicate.java\n@@ -49,10 +49,15 @@\n      */\n     public static boolean reindexRequired(IndexMetadata indexMetadata, boolean filterToBlockedStatus) {\n         return creationVersionBeforeMinimumWritableVersion(indexMetadata)\n+            && isNotSystem(indexMetadata)\n             && isNotSearchableSnapshot(indexMetadata)\n             && matchBlockedStatus(indexMetadata, filterToBlockedStatus);\n     }\n \n+    private static boolean isNotSystem(IndexMetadata indexMetadata) {\n+        return indexMetadata.isSystem() == false;\n+    }\n+\n     private static boolean isNotSearchableSnapshot(IndexMetadata indexMetadata) {\n         return indexMetadata.isSearchableSnapshot() == false;\n     }\ndiff --git a/a/x-pack/plugin/deprecation/src/main/java/org/elasticsearch/xpack/deprecation/DataStreamDeprecationChecker.java b/b/x-pack/plugin/deprecation/src/main/java/org/elasticsearch/xpack/deprecation/DataStreamDeprecationChecker.java\nindex 0000000..0000000 100644\n--- a/a/x-pack/plugin/deprecation/src/main/java/org/elasticsearch/xpack/deprecation/DataStreamDeprecationChecker.java\n+++ b/b/x-pack/plugin/deprecation/src/main/java/org/elasticsearch/xpack/deprecation/DataStreamDeprecationChecker.java\n@@ -72,12 +72,14 @@\n         Map<String, List<DeprecationIssue>> dataStreamIssues = new HashMap<>();\n         for (String dataStreamName : dataStreamNames) {\n             DataStream dataStream = clusterState.metadata().dataStreams().get(dataStreamName);\n-            List<DeprecationIssue> issuesForSingleDataStream = DATA_STREAM_CHECKS.stream()\n-                .map(c -> c.apply(dataStream, clusterState))\n-                .filter(Objects::nonNull)\n-                .toList();\n-            if (issuesForSingleDataStream.isEmpty() == false) {\n-                dataStreamIssues.put(dataStreamName, issuesForSingleDataStream);\n+            if (dataStream.isSystem() == false) {\n+                List<DeprecationIssue> issuesForSingleDataStream = DATA_STREAM_CHECKS.stream()\n+                    .map(c -> c.apply(dataStream, clusterState))\n+                    .filter(Objects::nonNull)\n+                    .toList();\n+                if (issuesForSingleDataStream.isEmpty() == false) {\n+                    dataStreamIssues.put(dataStreamName, issuesForSingleDataStream);\n+                }\n             }\n         }\n         return dataStreamIssues.isEmpty() ? Map.of() : dataStreamIssues;\n",
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "reason": "deterministic_no_llm"
+  }
+}

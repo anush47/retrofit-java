@@ -1,0 +1,188 @@
+{
+  "hunk_generation_plan": {
+    "x-pack/plugin/esql/src/main/java/org/elasticsearch/xpack/esql/parser/LogicalPlanBuilder.java": [
+      {
+        "hunk_index": 0,
+        "target_file": "x-pack/plugin/esql/src/main/java/org/elasticsearch/xpack/esql/parser/LogicalPlanBuilder.java",
+        "operation_index": 0,
+        "edit_type": "insert_before",
+        "old_string": "import org.elasticsearch.core.Tuple;",
+        "new_string": "import org.elasticsearch.common.Strings;\nimport org.elasticsearch.core.Tuple;",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_insert_before",
+        "surround_before_3": [
+          "import org.antlr.v4.runtime.Token;",
+          "import org.antlr.v4.runtime.tree.ParseTree;",
+          "import org.elasticsearch.Build;"
+        ],
+        "surround_after_3": [
+          "import org.elasticsearch.dissect.DissectException;",
+          "import org.elasticsearch.dissect.DissectParser;",
+          "import org.elasticsearch.index.IndexMode;"
+        ],
+        "adaptation_type": "TYPE_I",
+        "base_adaptation_type": "TYPE_I",
+        "execution_type": "TYPE_I",
+        "location_match": true,
+        "surrounding_match": true,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 30,
+          "target_declared_methods_count": 30,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 0,
+        "target_file": "x-pack/plugin/esql/src/main/java/org/elasticsearch/xpack/esql/parser/LogicalPlanBuilder.java",
+        "operation_index": 1,
+        "edit_type": "insert_before",
+        "old_string": "import org.elasticsearch.xpack.esql.VerificationException;",
+        "new_string": "import org.elasticsearch.transport.RemoteClusterAware;\nimport org.elasticsearch.xpack.esql.VerificationException;",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_insert_before",
+        "surround_before_3": [
+          "import org.elasticsearch.dissect.DissectException;",
+          "import org.elasticsearch.dissect.DissectParser;",
+          "import org.elasticsearch.index.IndexMode;"
+        ],
+        "surround_after_3": [
+          "import org.elasticsearch.xpack.esql.action.EsqlCapabilities;",
+          "import org.elasticsearch.xpack.esql.common.Failure;",
+          "import org.elasticsearch.xpack.esql.core.expression.Alias;"
+        ],
+        "adaptation_type": "TYPE_I",
+        "base_adaptation_type": "TYPE_I",
+        "execution_type": "TYPE_I",
+        "location_match": true,
+        "surrounding_match": true,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 30,
+          "target_declared_methods_count": 30,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 1,
+        "target_file": "x-pack/plugin/esql/src/main/java/org/elasticsearch/xpack/esql/parser/LogicalPlanBuilder.java",
+        "operation_index": 0,
+        "edit_type": "insert_before",
+        "old_string": "        UnresolvedRelation right = new UnresolvedRelation(",
+        "new_string": "        if (RemoteClusterAware.isRemoteIndexName(rightPattern)) {\n            throw new ParsingException(\n                source(target),\n                \"invalid index pattern [{}], remote clusters are not supported in LOOKUP JOIN\",\n                rightPattern\n            );\n        }\n        UnresolvedRelation right = new UnresolvedRelation(",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_insert_before",
+        "surround_before_3": [
+          "            throw new ParsingException(source(target), \"invalid index pattern [{}], * is not allowed in LOOKUP JOIN\", rightPattern);",
+          "        }",
+          ""
+        ],
+        "surround_after_3": [
+          "            source(target),",
+          "            new IndexPattern(source(target.index), rightPattern),",
+          "            false,"
+        ],
+        "adaptation_type": "TYPE_II",
+        "base_adaptation_type": "TYPE_II",
+        "execution_type": "TYPE_II",
+        "location_match": false,
+        "surrounding_match": true,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "if (RemoteClusterAware.isRemoteIndexName(rightPattern)) {",
+          "throw new ParsingException(",
+          "\"invalid index pattern [{}], remote clusters are not supported in LOOKUP JOIN\","
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 30,
+          "target_declared_methods_count": 30,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 2,
+        "target_file": "x-pack/plugin/esql/src/main/java/org/elasticsearch/xpack/esql/parser/LogicalPlanBuilder.java",
+        "operation_index": 0,
+        "edit_type": "replace",
+        "old_string": "        }\n\n        return p -> new LookupJoin(source, p, right, joinFields);\n    }",
+        "new_string": "        }\n\n        return p -> {\n            p.forEachUp(UnresolvedRelation.class, r -> {\n                for (var leftPattern : Strings.splitStringByCommaToArray(r.indexPattern().indexPattern())) {\n                    if (RemoteClusterAware.isRemoteIndexName(leftPattern)) {\n                        throw new ParsingException(\n                            source(target),\n                            \"invalid index pattern [{}], remote clusters are not supported in LOOKUP JOIN\",\n                            r.indexPattern().indexPattern()\n                        );\n                    }\n                }\n            });\n\n            return new LookupJoin(source, p, right, joinFields);\n        };\n    }",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_replace",
+        "surround_before_3": [
+          "        var matchFieldsCount = joinFields.size();",
+          "        if (matchFieldsCount > 1) {",
+          "            throw new ParsingException(source, \"JOIN ON clause only supports one field at the moment, found [{}]\", matchFieldsCount);"
+        ],
+        "surround_after_3": [
+          "}"
+        ],
+        "adaptation_type": "TYPE_II",
+        "base_adaptation_type": "TYPE_II",
+        "execution_type": "TYPE_II",
+        "location_match": false,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "p.forEachUp(UnresolvedRelation.class, r -> {",
+          "for (var leftPattern : Strings.splitStringByCommaToArray(r.indexPattern().indexPattern())) {",
+          "if (RemoteClusterAware.isRemoteIndexName(leftPattern)) {",
+          "throw new ParsingException(",
+          "\"invalid index pattern [{}], remote clusters are not supported in LOOKUP JOIN\",",
+          "r.indexPattern().indexPattern()",
+          "return new LookupJoin(source, p, right, joinFields);"
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 30,
+          "target_declared_methods_count": 30,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      }
+    ]
+  },
+  "last_plan_signature": "671e7732c6e0485537c82c3742c3adb4446b22650aca4ff06b7dcf0103cc37d3",
+  "validation_repeated_plan_detected": false,
+  "force_type_v_until_success": false,
+  "force_type_v_reason": "",
+  "force_type_v_retry_files": [],
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "sources": []
+  }
+}

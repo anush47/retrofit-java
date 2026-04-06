@@ -1,0 +1,44 @@
+{
+  "semantic_blueprint": {
+    "root_cause_hypothesis": "Deterministic inference: target branch diverges from mainline; adapt hunks with exact target context.",
+    "fix_logic": "Apply each source hunk with target-verified context and symbol consistency while preserving behavior.",
+    "dependent_apis": [
+      "if"
+    ],
+    "patch_intent_summary": "Backport patch behavior to target branch with minimal, context-correct edits.",
+    "hunk_chain": [
+      {
+        "hunk_index": 1,
+        "file": "x-pack/plugin/security/src/main/java/org/elasticsearch/xpack/security/authc/ApiKeyService.java",
+        "summary": "Modifies logic (+3/-1 lines).",
+        "role": "guard",
+        "connects_to_next": "Prepares next hunk in same file with related context.",
+        "global_index": 1
+      },
+      {
+        "hunk_index": 2,
+        "file": "x-pack/plugin/security/src/main/java/org/elasticsearch/xpack/security/authc/ApiKeyService.java",
+        "summary": "Modifies logic (+3/-1 lines).",
+        "role": "guard",
+        "connects_to_next": "Prepares next hunk in same file with related context.",
+        "global_index": 2
+      },
+      {
+        "hunk_index": 3,
+        "file": "x-pack/plugin/security/src/main/java/org/elasticsearch/xpack/security/authc/ApiKeyService.java",
+        "summary": "Modifies logic (+5/-3 lines).",
+        "role": "guard",
+        "connects_to_next": "",
+        "global_index": 3
+      }
+    ]
+  },
+  "patch_diff": "diff --git a/a/x-pack/plugin/security/src/main/java/org/elasticsearch/xpack/security/authc/ApiKeyService.java b/b/x-pack/plugin/security/src/main/java/org/elasticsearch/xpack/security/authc/ApiKeyService.java\nindex 0000000..0000000 100644\n--- a/a/x-pack/plugin/security/src/main/java/org/elasticsearch/xpack/security/authc/ApiKeyService.java\n+++ b/b/x-pack/plugin/security/src/main/java/org/elasticsearch/xpack/security/authc/ApiKeyService.java\n@@ -266,7 +266,9 @@\n                     if (apiKeyDocCache != null) {\n                         apiKeyDocCache.invalidate(keys);\n                     }\n-                    keys.forEach(apiKeyAuthCache::invalidate);\n+                    if (apiKeyAuthCache != null) {\n+                        keys.forEach(apiKeyAuthCache::invalidate);\n+                    }\n                 }\n \n                 @Override\n@@ -274,7 +276,9 @@\n                     if (apiKeyDocCache != null) {\n                         apiKeyDocCache.invalidateAll();\n                     }\n-                    apiKeyAuthCache.invalidateAll();\n+                    if (apiKeyAuthCache != null) {\n+                        apiKeyAuthCache.invalidateAll();\n+                    }\n                 }\n             });\n             cacheInvalidatorRegistry.registerCacheInvalidator(\"api_key_doc\", new CacheInvalidatorRegistry.CacheInvalidator() {\n@@ -589,9 +593,11 @@\n                                     + \"])\";\n                             assert indexResponse.getResult() == DocWriteResponse.Result.CREATED\n                                 : \"Index response was [\" + indexResponse.getResult() + \"]\";\n-                            final ListenableFuture<CachedApiKeyHashResult> listenableFuture = new ListenableFuture<>();\n-                            listenableFuture.onResponse(new CachedApiKeyHashResult(true, apiKey));\n-                            apiKeyAuthCache.put(request.getId(), listenableFuture);\n+                            if (apiKeyAuthCache != null) {\n+                                final ListenableFuture<CachedApiKeyHashResult> listenableFuture = new ListenableFuture<>();\n+                                listenableFuture.onResponse(new CachedApiKeyHashResult(true, apiKey));\n+                                apiKeyAuthCache.put(request.getId(), listenableFuture);\n+                            }\n                             listener.onResponse(new CreateApiKeyResponse(request.getName(), request.getId(), apiKey, expiration));\n                         }, listener::onFailure))\n                     )\n",
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "reason": "deterministic_no_llm"
+  }
+}

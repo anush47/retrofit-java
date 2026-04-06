@@ -1,0 +1,8 @@
+patch_id=elasticsearch_16d8aaf3
+project=elasticsearch
+mainline_commit=16d8aaf3865588a323b04d281985bd8daf569daf
+backport_commit=1c5c3b0a19bf370e06a2d2a13c92fa76203fbaaa
+mode=full
+started_at=2026-04-06T08:48:28.250303
+----------------------------------------
+Running full workflow graph

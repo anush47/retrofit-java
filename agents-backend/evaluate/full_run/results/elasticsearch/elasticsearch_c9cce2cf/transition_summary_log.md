@@ -1,0 +1,99 @@
+# Transition Summary
+
+- Source: phase_outputs
+- Valid backport signal: True
+- Reason: Valid: Observed fail-to-pass and/or newly passing relevant tests with no regressions.
+- fail->pass (1): ['org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testIndexStoredArraySourceSingleLeafElement']
+- newly passing (0): []
+- pass->fail (0): []
+
+## Touched Test States
+- Touched tests (from patch): ['org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests']
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testArrayWithNestedObjects: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testArrayWithinArray: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testConflictingFieldNameAfterArray: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testCopyToLogicInsideObject: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testDeeplyNestedObjectArrayAndValue: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testDisabledObjectContainsArray: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testDisabledObjectManyFields: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testDisabledObjectSingleField: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testDisabledObjectWithFlatFields: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testDisabledObjectWithinHigherLevelArray: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testDisabledRootObjectManyFields: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testDisabledRootObjectSingleField: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testDisabledRootObjectWithFlatFields: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testDisabledSubObject: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testDisabledSubObjectWithNameOverlappingParentName: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testDisabledSubobjectContainsArray: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testDynamicIgnoredObjectWithFlatFields: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testEncodeArrayToMapAndDecode: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testEncodeFieldToMap: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testEncodeObjectToMapAndDecode: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testFallbackFieldWithinHigherLevelArray: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testFieldHasValue: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testFieldHasValueWithEmptyFieldInfos: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testFieldOrdering: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testFieldStoredArraySourceNestedValueArray: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testFieldStoredArraySourceRootValueArray: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testFieldStoredSourceNestedValue: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testFieldStoredSourceRootValue: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testIgnoredArray: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testIgnoredArrayOfObjects: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testIgnoredBigInteger: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testIgnoredBoolean: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testIgnoredBooleanArray: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testIgnoredBytes: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testIgnoredDouble: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testIgnoredDynamicArrayNestedInObject: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testIgnoredDynamicObjectWithFlatFields: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testIgnoredFloat: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testIgnoredInt: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testIgnoredLong: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testIgnoredObjectBoolean: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testIgnoredString: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testIndexStoredArraySourceNestedObjectArray: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testIndexStoredArraySourceNestedValueArray: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testIndexStoredArraySourceNestedValueArrayDisabled: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testIndexStoredArraySourceRootObjectArray: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testIndexStoredArraySourceRootObjectArrayWithBypass: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testIndexStoredArraySourceRootValueArray: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testIndexStoredArraySourceRootValueArrayDisabled: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testIndexStoredArraySourceSingleLeafElement: baseline=failed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testIndexStoredArraySourceSingleLeafElementAndNull: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testIndexStoredArraySourceSingleLeafElementInObjectArray: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testIndexStoredArraySourceSingleObjectElement: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testMixedDisabledEnabledObjects: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testMultipleIgnoredFieldsManyObjects: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testMultipleIgnoredFieldsRootObject: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testMultipleIgnoredFieldsSameObject: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testNestedArray: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testNestedObjectIncludeInRoot: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testNestedObjectWithArray: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testNestedObjectWithField: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testNestedSubobjectWithArray: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testNestedSubobjectWithField: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testNoDynamicObjectManyFields: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testNoDynamicObjectNestedArray: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testNoDynamicObjectSimpleArray: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testNoDynamicObjectSimpleValueArray: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testNoDynamicObjectSingleField: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testNoDynamicRootObject: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testObjectArrayAndValue: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testObjectArrayAndValueDisabledObject: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testObjectArrayAndValueDynamicRuntimeObject: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testObjectArrayAndValueInNestedObject: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testObjectArrayAndValueNonDynamicObject: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testObjectArrayWithinNestedObjects: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testObjectArrayWithinNestedObjectsArray: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testObjectWithKeepAll: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testRegularObjectWithFlatFields: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testRegularObjectWithFlatFieldsInsideAnArray: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testRootArray: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testRuntimeDynamicObjectManyFields: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testRuntimeDynamicObjectNestedArray: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testRuntimeDynamicObjectSimpleArray: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testRuntimeDynamicObjectSimpleValueArray: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testRuntimeDynamicObjectSingleField: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testStoredArrayWithFlatFields: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testStoredArrayWithinHigherLevelArray: baseline=passed, patched=passed
+  - org.elasticsearch.index.mapper.IgnoredSourceFieldMapperTests#testStoredNestedSubObjectWithNameOverlappingParentName: baseline=passed, patched=passed

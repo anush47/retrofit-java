@@ -1,0 +1,190 @@
+# Post-Pipeline Developer Patch Comparison
+
+**Exact Developer Patch (code-only)**: False
+
+**Comparison Method**: file_state
+
+## Commit Pair Consistency
+- Pair mismatch: False
+- Reason: scope_overlap_ok
+- Mainline Java files: ['x-pack/plugin/ml/src/main/java/org/elasticsearch/xpack/ml/inference/ltr/QueryFeatureExtractor.java']
+- Developer Java files: ['x-pack/plugin/ml/src/main/java/org/elasticsearch/xpack/ml/inference/ltr/QueryFeatureExtractor.java']
+- Overlap Java files: ['x-pack/plugin/ml/src/main/java/org/elasticsearch/xpack/ml/inference/ltr/QueryFeatureExtractor.java']
+- Overlap ratio (mainline): 1.0
+- Compare files scope used: ['x-pack/plugin/ml/src/main/java/org/elasticsearch/xpack/ml/inference/ltr/QueryFeatureExtractor.java']
+
+## File State Comparison
+- Compared files: ['x-pack/plugin/ml/src/main/java/org/elasticsearch/xpack/ml/inference/ltr/QueryFeatureExtractor.java']
+- Mismatched files: ['x-pack/plugin/ml/src/main/java/org/elasticsearch/xpack/ml/inference/ltr/QueryFeatureExtractor.java']
+- Error: None
+
+## Comparison Scope
+- Agent-only patch: code hunks produced by Agent 3
+- Final effective patch: agent code hunks + developer auxiliary hunks (still code-only for this report)
+
+## Agent-Only Hunk Comparison (code files)
+
+### x-pack/plugin/ml/src/main/java/org/elasticsearch/xpack/ml/inference/ltr/QueryFeatureExtractor.java
+
+- Developer hunks: 1
+- Generated hunks: 0
+
+#### Hunk 1
+
+Developer
+```diff
+@@ -55,11 +55,16 @@
+             }
+             scorers.add(scorer);
+         }
+-        rankerIterator = new DisjunctionDISIApproximation(disiPriorityQueue);
++
++        rankerIterator = disiPriorityQueue.size() > 0 ? new DisjunctionDISIApproximation(disiPriorityQueue) : null;
+     }
+ 
+     @Override
+     public void addFeatures(Map<String, Object> featureMap, int docId) throws IOException {
++        if (rankerIterator == null) {
++            return;
++        }
++
+         rankerIterator.advance(docId);
+         for (int i = 0; i < featureNames.size(); i++) {
+             Scorer scorer = scorers.get(i);
+
+```
+
+Generated
+```diff
+*No hunk*
+```
+
+Developer -> Generated (Unified Diff)
+```diff
+--- developer+++ generated@@ -1,18 +1 @@-@@ -55,11 +55,16 @@
+-             }
+-             scorers.add(scorer);
+-         }
+--        rankerIterator = new DisjunctionDISIApproximation(disiPriorityQueue);
+-+
+-+        rankerIterator = disiPriorityQueue.size() > 0 ? new DisjunctionDISIApproximation(disiPriorityQueue) : null;
+-     }
+- 
+-     @Override
+-     public void addFeatures(Map<String, Object> featureMap, int docId) throws IOException {
+-+        if (rankerIterator == null) {
+-+            return;
+-+        }
+-+
+-         rankerIterator.advance(docId);
+-         for (int i = 0; i < featureNames.size(); i++) {
+-             Scorer scorer = scorers.get(i);
++*No hunk*
+```
+
+
+
+## Full Generated Patch (Agent-Only, code-only)
+```diff
+
+```
+
+## Full Generated Patch (Final Effective, code-only)
+```diff
+
+```
+## Full Developer Backport Patch (full commit diff)
+```diff
+diff --git a/docs/changelog/120809.yaml b/docs/changelog/120809.yaml
+new file mode 100644
+index 00000000000..30a3736dc93
+--- /dev/null
++++ b/docs/changelog/120809.yaml
+@@ -0,0 +1,6 @@
++pr: 120809
++summary: LTR sometines throw `NullPointerException:` Cannot read field "approximation"
++  because "top" is null
++area: Ranking
++type: bug
++issues: []
+diff --git a/x-pack/plugin/ml/src/main/java/org/elasticsearch/xpack/ml/inference/ltr/QueryFeatureExtractor.java b/x-pack/plugin/ml/src/main/java/org/elasticsearch/xpack/ml/inference/ltr/QueryFeatureExtractor.java
+index bbc377a67ec..08c141c0858 100644
+--- a/x-pack/plugin/ml/src/main/java/org/elasticsearch/xpack/ml/inference/ltr/QueryFeatureExtractor.java
++++ b/x-pack/plugin/ml/src/main/java/org/elasticsearch/xpack/ml/inference/ltr/QueryFeatureExtractor.java
+@@ -55,11 +55,16 @@ public class QueryFeatureExtractor implements FeatureExtractor {
+             }
+             scorers.add(scorer);
+         }
+-        rankerIterator = new DisjunctionDISIApproximation(disiPriorityQueue);
++
++        rankerIterator = disiPriorityQueue.size() > 0 ? new DisjunctionDISIApproximation(disiPriorityQueue) : null;
+     }
+ 
+     @Override
+     public void addFeatures(Map<String, Object> featureMap, int docId) throws IOException {
++        if (rankerIterator == null) {
++            return;
++        }
++
+         rankerIterator.advance(docId);
+         for (int i = 0; i < featureNames.size(); i++) {
+             Scorer scorer = scorers.get(i);
+diff --git a/x-pack/plugin/ml/src/test/java/org/elasticsearch/xpack/ml/inference/ltr/QueryFeatureExtractorTests.java b/x-pack/plugin/ml/src/test/java/org/elasticsearch/xpack/ml/inference/ltr/QueryFeatureExtractorTests.java
+index 3878ce5dab0..3b25a266bf4 100644
+--- a/x-pack/plugin/ml/src/test/java/org/elasticsearch/xpack/ml/inference/ltr/QueryFeatureExtractorTests.java
++++ b/x-pack/plugin/ml/src/test/java/org/elasticsearch/xpack/ml/inference/ltr/QueryFeatureExtractorTests.java
+@@ -23,6 +23,7 @@ import org.elasticsearch.index.query.QueryBuilders;
+ import org.elasticsearch.index.query.QueryRewriteContext;
+ import org.elasticsearch.index.query.SearchExecutionContext;
+ import org.elasticsearch.test.AbstractBuilderTestCase;
++import org.elasticsearch.test.ESTestCase;
+ import org.elasticsearch.xpack.core.ml.inference.trainedmodel.ltr.QueryExtractorBuilder;
+ import org.elasticsearch.xpack.core.ml.utils.QueryProvider;
+ 
+@@ -31,12 +32,14 @@ import java.util.ArrayList;
+ import java.util.HashMap;
+ import java.util.List;
+ import java.util.Map;
++import java.util.stream.Stream;
+ 
+ import static org.hamcrest.Matchers.anEmptyMap;
+ import static org.hamcrest.Matchers.hasEntry;
+ import static org.hamcrest.Matchers.hasKey;
+ import static org.hamcrest.Matchers.hasSize;
+ import static org.hamcrest.Matchers.not;
++import static org.mockito.Mockito.mock;
+ 
+ public class QueryFeatureExtractorTests extends AbstractBuilderTestCase {
+ 
+@@ -125,4 +128,29 @@ public class QueryFeatureExtractorTests extends AbstractBuilderTestCase {
+         dir.close();
+     }
+ 
++    public void testEmptyDisiPriorityQueue() throws IOException {
++        addDocs(
++            new String[] { "the quick brown fox", "the slow brown fox", "the grey dog", "yet another string" },
++            new int[] { 5, 10, 12, 11 }
++        );
++
++        // Scorers returned by weights are null
++        List<String> featureNames = randomList(1, 10, ESTestCase::randomIdentifier);
++        List<Weight> weights = Stream.generate(() -> mock(Weight.class)).limit(featureNames.size()).toList();
++
++        QueryFeatureExtractor featureExtractor = new QueryFeatureExtractor(featureNames, weights);
++
++        for (LeafReaderContext leafReaderContext : searcher.getLeafContexts()) {
++            int maxDoc = leafReaderContext.reader().maxDoc();
++            featureExtractor.setNextReader(leafReaderContext);
++            for (int i = 0; i < maxDoc; i++) {
++                Map<String, Object> featureMap = new HashMap<>();
++                featureExtractor.addFeatures(featureMap, i);
++                assertThat(featureMap, anEmptyMap());
++            }
++        }
++
++        reader.close();
++        dir.close();
++    }
+ }
+
+```

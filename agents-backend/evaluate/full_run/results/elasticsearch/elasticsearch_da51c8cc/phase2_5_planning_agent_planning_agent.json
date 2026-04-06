@@ -1,0 +1,142 @@
+{
+  "hunk_generation_plan": {
+    "server/src/main/java/org/elasticsearch/transport/InboundPipeline.java": [
+      {
+        "hunk_index": 0,
+        "target_file": "server/src/main/java/org/elasticsearch/transport/InboundPipeline.java",
+        "operation_index": 0,
+        "edit_type": "insert_before",
+        "old_string": "import org.elasticsearch.core.Releasable;",
+        "new_string": "import org.elasticsearch.core.CheckedConsumer;\nimport org.elasticsearch.core.Releasable;",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_insert_before|forced_type_v:failed_stage_generation_contract",
+        "surround_before_3": [
+          "",
+          "import org.elasticsearch.common.bytes.CompositeBytesReference;",
+          "import org.elasticsearch.common.bytes.ReleasableBytesReference;"
+        ],
+        "surround_after_3": [
+          "import org.elasticsearch.core.Releasables;",
+          "",
+          "import java.io.IOException;"
+        ],
+        "adaptation_type": "TYPE_V",
+        "base_adaptation_type": "TYPE_II",
+        "execution_type": "TYPE_V",
+        "location_match": false,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": true,
+        "namespace_changes": [],
+        "required_invariants": [],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 8,
+          "target_declared_methods_count": 8,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 0,
+        "target_file": "server/src/main/java/org/elasticsearch/transport/InboundPipeline.java",
+        "operation_index": 1,
+        "edit_type": "delete",
+        "old_string": "import java.util.ArrayList;",
+        "new_string": "",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_delete|forced_type_v:failed_stage_generation_contract",
+        "surround_before_3": [
+          "",
+          "import java.io.IOException;",
+          "import java.util.ArrayDeque;"
+        ],
+        "surround_after_3": [
+          "import java.util.function.BiConsumer;",
+          "import java.util.function.LongSupplier;",
+          ""
+        ],
+        "adaptation_type": "TYPE_V",
+        "base_adaptation_type": "TYPE_II",
+        "execution_type": "TYPE_V",
+        "location_match": false,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": true,
+        "namespace_changes": [],
+        "required_invariants": [],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 8,
+          "target_declared_methods_count": 8,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 0,
+        "target_file": "server/src/main/java/org/elasticsearch/transport/InboundPipeline.java",
+        "operation_index": 2,
+        "edit_type": "delete",
+        "old_string": "    private static final ThreadLocal<ArrayList<Object>> fragmentList = ThreadLocal.withInitial(ArrayList::new);",
+        "new_string": "",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_delete|forced_type_v:failed_stage_generation_contract",
+        "surround_before_3": [
+          "",
+          "public class InboundPipeline implements Releasable {",
+          ""
+        ],
+        "surround_after_3": [
+          "    private static final InboundMessage PING_MESSAGE = new InboundMessage(null, true);",
+          "",
+          "    private final LongSupplier relativeTimeInMillis;"
+        ],
+        "adaptation_type": "TYPE_V",
+        "base_adaptation_type": "TYPE_II",
+        "execution_type": "TYPE_V",
+        "location_match": false,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": true,
+        "namespace_changes": [],
+        "required_invariants": [],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 8,
+          "target_declared_methods_count": 8,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      }
+    ]
+  },
+  "last_plan_signature": "fb48add26e2f494544bb82451679654121d66c0d36f1f5112db5d1c7e2b12846",
+  "validation_repeated_plan_detected": false,
+  "force_type_v_until_success": true,
+  "force_type_v_reason": "failed_stage_generation_contract",
+  "force_type_v_retry_files": [
+    "server/src/main/java/org/elasticsearch/transport/InboundPipeline.java"
+  ],
+  "token_usage": {
+    "input_tokens": 1534,
+    "output_tokens": 523,
+    "total_tokens": 2057,
+    "estimated": false,
+    "sources": [
+      "planning_agent.provider_usage"
+    ]
+  }
+}

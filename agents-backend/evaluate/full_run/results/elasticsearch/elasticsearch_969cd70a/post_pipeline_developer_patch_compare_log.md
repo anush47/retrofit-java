@@ -1,0 +1,356 @@
+# Post-Pipeline Developer Patch Comparison
+
+**Exact Developer Patch (code-only)**: True
+
+**Comparison Method**: file_state
+
+## Commit Pair Consistency
+- Pair mismatch: False
+- Reason: scope_overlap_ok
+- Mainline Java files: ['server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java']
+- Developer Java files: ['server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java']
+- Overlap Java files: ['server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java']
+- Overlap ratio (mainline): 1.0
+- Compare files scope used: ['server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java']
+
+## File State Comparison
+- Compared files: ['server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java']
+- Mismatched files: []
+- Error: None
+
+## Comparison Scope
+- Agent-only patch: code hunks produced by Agent 3
+- Final effective patch: agent code hunks + developer auxiliary hunks (still code-only for this report)
+
+## Agent-Only Hunk Comparison (code files)
+
+### server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java
+
+- Developer hunks: 1
+- Generated hunks: 0
+
+#### Hunk 1
+
+Developer
+```diff
+@@ -729,28 +729,20 @@
+ 
+         XContentParser parser = context.parser();
+         XContentParser.Token token;
+-        int elements = 0;
+         while ((token = parser.nextToken()) != XContentParser.Token.END_ARRAY) {
+             if (token == XContentParser.Token.START_OBJECT) {
+-                elements = Integer.MAX_VALUE;
+                 parseObject(context, lastFieldName);
+             } else if (token == XContentParser.Token.START_ARRAY) {
+-                elements = Integer.MAX_VALUE;
+                 parseArray(context, lastFieldName);
+             } else if (token == XContentParser.Token.VALUE_NULL) {
+-                elements++;
+                 parseNullValue(context, lastFieldName);
+             } else if (token == null) {
+                 throwEOFOnParseArray(arrayFieldName, context);
+             } else {
+                 assert token.isValue();
+-                elements++;
+                 parseValue(context, lastFieldName);
+             }
+         }
+-        if (elements <= 1 && canRemoveSingleLeafElement) {
+-            context.removeLastIgnoredField(fullPath);
+-        }
+         postProcessDynamicArrayMapping(context, lastFieldName);
+     }
+ 
+
+```
+
+Generated
+```diff
+*No hunk*
+```
+
+Developer -> Generated (Unified Diff)
+```diff
+--- developer+++ generated@@ -1,29 +1 @@-@@ -729,28 +729,20 @@
+- 
+-         XContentParser parser = context.parser();
+-         XContentParser.Token token;
+--        int elements = 0;
+-         while ((token = parser.nextToken()) != XContentParser.Token.END_ARRAY) {
+-             if (token == XContentParser.Token.START_OBJECT) {
+--                elements = Integer.MAX_VALUE;
+-                 parseObject(context, lastFieldName);
+-             } else if (token == XContentParser.Token.START_ARRAY) {
+--                elements = Integer.MAX_VALUE;
+-                 parseArray(context, lastFieldName);
+-             } else if (token == XContentParser.Token.VALUE_NULL) {
+--                elements++;
+-                 parseNullValue(context, lastFieldName);
+-             } else if (token == null) {
+-                 throwEOFOnParseArray(arrayFieldName, context);
+-             } else {
+-                 assert token.isValue();
+--                elements++;
+-                 parseValue(context, lastFieldName);
+-             }
+-         }
+--        if (elements <= 1 && canRemoveSingleLeafElement) {
+--            context.removeLastIgnoredField(fullPath);
+--        }
+-         postProcessDynamicArrayMapping(context, lastFieldName);
+-     }
+- 
++*No hunk*
+```
+
+
+## Final Effective Hunk Comparison (agent + developer aux, code files)
+
+### server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java
+
+- Developer hunks: 1
+- Generated hunks: 1
+
+#### Hunk 1
+
+Developer
+```diff
+@@ -729,28 +729,20 @@
+ 
+         XContentParser parser = context.parser();
+         XContentParser.Token token;
+-        int elements = 0;
+         while ((token = parser.nextToken()) != XContentParser.Token.END_ARRAY) {
+             if (token == XContentParser.Token.START_OBJECT) {
+-                elements = Integer.MAX_VALUE;
+                 parseObject(context, lastFieldName);
+             } else if (token == XContentParser.Token.START_ARRAY) {
+-                elements = Integer.MAX_VALUE;
+                 parseArray(context, lastFieldName);
+             } else if (token == XContentParser.Token.VALUE_NULL) {
+-                elements++;
+                 parseNullValue(context, lastFieldName);
+             } else if (token == null) {
+                 throwEOFOnParseArray(arrayFieldName, context);
+             } else {
+                 assert token.isValue();
+-                elements++;
+                 parseValue(context, lastFieldName);
+             }
+         }
+-        if (elements <= 1 && canRemoveSingleLeafElement) {
+-            context.removeLastIgnoredField(fullPath);
+-        }
+         postProcessDynamicArrayMapping(context, lastFieldName);
+     }
+ 
+
+```
+
+Generated
+```diff
+@@ -729,28 +729,20 @@
+ 
+         XContentParser parser = context.parser();
+         XContentParser.Token token;
+-        int elements = 0;
+         while ((token = parser.nextToken()) != XContentParser.Token.END_ARRAY) {
+             if (token == XContentParser.Token.START_OBJECT) {
+-                elements = Integer.MAX_VALUE;
+                 parseObject(context, lastFieldName);
+             } else if (token == XContentParser.Token.START_ARRAY) {
+-                elements = Integer.MAX_VALUE;
+                 parseArray(context, lastFieldName);
+             } else if (token == XContentParser.Token.VALUE_NULL) {
+-                elements++;
+                 parseNullValue(context, lastFieldName);
+             } else if (token == null) {
+                 throwEOFOnParseArray(arrayFieldName, context);
+             } else {
+                 assert token.isValue();
+-                elements++;
+                 parseValue(context, lastFieldName);
+             }
+         }
+-        if (elements <= 1 && canRemoveSingleLeafElement) {
+-            context.removeLastIgnoredField(fullPath);
+-        }
+         postProcessDynamicArrayMapping(context, lastFieldName);
+     }
+ 
+
+```
+
+Developer -> Generated (Unified Diff)
+```diff
+(No textual difference)
+
+```
+
+
+
+## Full Generated Patch (Agent-Only, code-only)
+```diff
+
+```
+
+## Full Generated Patch (Final Effective, code-only)
+```diff
+diff --git a/server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java b/server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java
+--- a/server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java
++++ b/server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java
+@@ -729,28 +729,20 @@
+ 
+         XContentParser parser = context.parser();
+         XContentParser.Token token;
+-        int elements = 0;
+         while ((token = parser.nextToken()) != XContentParser.Token.END_ARRAY) {
+             if (token == XContentParser.Token.START_OBJECT) {
+-                elements = Integer.MAX_VALUE;
+                 parseObject(context, lastFieldName);
+             } else if (token == XContentParser.Token.START_ARRAY) {
+-                elements = Integer.MAX_VALUE;
+                 parseArray(context, lastFieldName);
+             } else if (token == XContentParser.Token.VALUE_NULL) {
+-                elements++;
+                 parseNullValue(context, lastFieldName);
+             } else if (token == null) {
+                 throwEOFOnParseArray(arrayFieldName, context);
+             } else {
+                 assert token.isValue();
+-                elements++;
+                 parseValue(context, lastFieldName);
+             }
+         }
+-        if (elements <= 1 && canRemoveSingleLeafElement) {
+-            context.removeLastIgnoredField(fullPath);
+-        }
+         postProcessDynamicArrayMapping(context, lastFieldName);
+     }
+ 
+
+```
+## Full Developer Backport Patch (full commit diff)
+```diff
+diff --git a/server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java b/server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java
+index fe2c4dc7f2c..e48c116cebf 100644
+--- a/server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java
++++ b/server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java
+@@ -729,28 +729,20 @@ public final class DocumentParser {
+ 
+         XContentParser parser = context.parser();
+         XContentParser.Token token;
+-        int elements = 0;
+         while ((token = parser.nextToken()) != XContentParser.Token.END_ARRAY) {
+             if (token == XContentParser.Token.START_OBJECT) {
+-                elements = Integer.MAX_VALUE;
+                 parseObject(context, lastFieldName);
+             } else if (token == XContentParser.Token.START_ARRAY) {
+-                elements = Integer.MAX_VALUE;
+                 parseArray(context, lastFieldName);
+             } else if (token == XContentParser.Token.VALUE_NULL) {
+-                elements++;
+                 parseNullValue(context, lastFieldName);
+             } else if (token == null) {
+                 throwEOFOnParseArray(arrayFieldName, context);
+             } else {
+                 assert token.isValue();
+-                elements++;
+                 parseValue(context, lastFieldName);
+             }
+         }
+-        if (elements <= 1 && canRemoveSingleLeafElement) {
+-            context.removeLastIgnoredField(fullPath);
+-        }
+         postProcessDynamicArrayMapping(context, lastFieldName);
+     }
+ 
+diff --git a/server/src/test/java/org/elasticsearch/index/mapper/IgnoredSourceFieldMapperTests.java b/server/src/test/java/org/elasticsearch/index/mapper/IgnoredSourceFieldMapperTests.java
+index 14902aa419b..2b36c0ce0b5 100644
+--- a/server/src/test/java/org/elasticsearch/index/mapper/IgnoredSourceFieldMapperTests.java
++++ b/server/src/test/java/org/elasticsearch/index/mapper/IgnoredSourceFieldMapperTests.java
+@@ -743,9 +743,7 @@ public class IgnoredSourceFieldMapperTests extends MapperServiceTestCase {
+             b.startObject("int_value").field("type", "integer").endObject();
+         })).documentMapper();
+         var syntheticSource = syntheticSource(documentMapper, b -> b.array("int_value", new int[] { 10 }));
+-        assertEquals("{\"int_value\":10}", syntheticSource);
+-        ParsedDocument doc = documentMapper.parse(source(syntheticSource));
+-        assertNull(doc.rootDoc().getField("_ignored_source"));
++        assertEquals("{\"int_value\":[10]}", syntheticSource);
+     }
+ 
+     public void testIndexStoredArraySourceSingleLeafElementAndNull() throws IOException {
+diff --git a/test/framework/src/main/java/org/elasticsearch/logsdb/datageneration/FieldType.java b/test/framework/src/main/java/org/elasticsearch/logsdb/datageneration/FieldType.java
+index 96b75f29382..07744851aba 100644
+--- a/test/framework/src/main/java/org/elasticsearch/logsdb/datageneration/FieldType.java
++++ b/test/framework/src/main/java/org/elasticsearch/logsdb/datageneration/FieldType.java
+@@ -13,11 +13,9 @@ import org.elasticsearch.logsdb.datageneration.datasource.DataSource;
+ import org.elasticsearch.logsdb.datageneration.fields.leaf.ByteFieldDataGenerator;
+ import org.elasticsearch.logsdb.datageneration.fields.leaf.DoubleFieldDataGenerator;
+ import org.elasticsearch.logsdb.datageneration.fields.leaf.FloatFieldDataGenerator;
+-import org.elasticsearch.logsdb.datageneration.fields.leaf.HalfFloatFieldDataGenerator;
+ import org.elasticsearch.logsdb.datageneration.fields.leaf.IntegerFieldDataGenerator;
+ import org.elasticsearch.logsdb.datageneration.fields.leaf.KeywordFieldDataGenerator;
+ import org.elasticsearch.logsdb.datageneration.fields.leaf.LongFieldDataGenerator;
+-import org.elasticsearch.logsdb.datageneration.fields.leaf.ScaledFloatFieldDataGenerator;
+ import org.elasticsearch.logsdb.datageneration.fields.leaf.ShortFieldDataGenerator;
+ import org.elasticsearch.logsdb.datageneration.fields.leaf.UnsignedLongFieldDataGenerator;
+ 
+@@ -32,9 +30,7 @@ public enum FieldType {
+     SHORT("short"),
+     BYTE("byte"),
+     DOUBLE("double"),
+-    FLOAT("float"),
+-    HALF_FLOAT("half_float"),
+-    SCALED_FLOAT("scaled_float");
++    FLOAT("float");
+ 
+     private final String name;
+ 
+@@ -52,8 +48,6 @@ public enum FieldType {
+             case BYTE -> new ByteFieldDataGenerator(fieldName, dataSource);
+             case DOUBLE -> new DoubleFieldDataGenerator(fieldName, dataSource);
+             case FLOAT -> new FloatFieldDataGenerator(fieldName, dataSource);
+-            case HALF_FLOAT -> new HalfFloatFieldDataGenerator(fieldName, dataSource);
+-            case SCALED_FLOAT -> new ScaledFloatFieldDataGenerator(fieldName, dataSource);
+         };
+     }
+ 
+diff --git a/test/framework/src/main/java/org/elasticsearch/logsdb/datageneration/datasource/DefaultMappingParametersHandler.java b/test/framework/src/main/java/org/elasticsearch/logsdb/datageneration/datasource/DefaultMappingParametersHandler.java
+index 4b33f3fefcf..0e64284c96f 100644
+--- a/test/framework/src/main/java/org/elasticsearch/logsdb/datageneration/datasource/DefaultMappingParametersHandler.java
++++ b/test/framework/src/main/java/org/elasticsearch/logsdb/datageneration/datasource/DefaultMappingParametersHandler.java
+@@ -32,8 +32,7 @@ public class DefaultMappingParametersHandler implements DataSourceHandler {
+ 
+         return new DataSourceResponse.LeafMappingParametersGenerator(switch (request.fieldType()) {
+             case KEYWORD -> keywordMapping(request, map);
+-            case LONG, INTEGER, SHORT, BYTE, DOUBLE, FLOAT, HALF_FLOAT, UNSIGNED_LONG -> plain(map);
+-            case SCALED_FLOAT -> scaledFloatMapping(map);
++            case LONG, INTEGER, SHORT, BYTE, DOUBLE, FLOAT, UNSIGNED_LONG -> plain(map);
+         });
+     }
+ 
+diff --git a/x-pack/plugin/logsdb/src/javaRestTest/java/org/elasticsearch/xpack/logsdb/qa/matchers/source/SourceMatcher.java b/x-pack/plugin/logsdb/src/javaRestTest/java/org/elasticsearch/xpack/logsdb/qa/matchers/source/SourceMatcher.java
+index cd2bb361d06..d4d53a85c6e 100644
+--- a/x-pack/plugin/logsdb/src/javaRestTest/java/org/elasticsearch/xpack/logsdb/qa/matchers/source/SourceMatcher.java
++++ b/x-pack/plugin/logsdb/src/javaRestTest/java/org/elasticsearch/xpack/logsdb/qa/matchers/source/SourceMatcher.java
+@@ -104,7 +104,7 @@ public class SourceMatcher extends GenericEqualsMatcher<List<Map<String, Object>
+             // See #111916.
+             var genericMatchResult = matchWithGenericMatcher(actualValues, expectedValues);
+             if (genericMatchResult.isMatch()) {
+-                return genericMatchResult;
++                continue;
+             }
+ 
+             var matchIncludingFieldSpecificMatchers = matchWithFieldSpecificMatcher(name, actualValues, expectedValues).orElse(
+@@ -115,7 +115,6 @@ public class SourceMatcher extends GenericEqualsMatcher<List<Map<String, Object>
+                 return MatchResult.noMatch(message);
+             }
+         }
+-
+         return MatchResult.match();
+     }
+ 
+
+```

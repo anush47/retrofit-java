@@ -1,0 +1,378 @@
+{
+  "adapted_file_edits": [
+    {
+      "target_file": "modules/transport-netty4/src/main/java/org/elasticsearch/http/netty4/Netty4HttpServerTransport.java",
+      "mainline_file": "modules/transport-netty4/src/main/java/org/elasticsearch/http/netty4/Netty4HttpServerTransport.java",
+      "old_string": "<deterministic file-editor diff>",
+      "new_string": "diff --git a/modules/transport-netty4/src/main/java/org/elasticsearch/http/netty4/Netty4HttpServerTransport.java b/modules/transport-netty4/src/main/java/org/elasticsearch/http/netty4/Netty4HttpServerTransport.java\nindex 36c860f1fb9..9ffa4b479be 100644\n--- a/modules/transport-netty4/src/main/java/org/elasticsearch/http/netty4/Netty4HttpServerTransport.java\n+++ b/modules/transport-netty4/src/main/java/org/elasticsearch/http/netty4/Netty4HttpServerTransport.java\n@@ -381,7 +381,8 @@ public class Netty4HttpServerTransport extends AbstractHttpServerTransport {\n                 handlingSettings.maxContentLength(),\n                 httpPreRequest -> enabled.get() == false\n                     || ((httpPreRequest.rawPath().endsWith(\"/_bulk\") == false)\n-                        || httpPreRequest.rawPath().startsWith(\"/_xpack/monitoring/_bulk\"))\n+                        || httpPreRequest.rawPath().startsWith(\"/_xpack/monitoring/_bulk\")),\n+                decoder\n             );\n             aggregator.setMaxCumulationBufferComponents(transport.maxCompositeBufferComponents);\n             ch.pipeline()",
+      "edit_type": "replace",
+      "verified": true,
+      "verification_result": "Deterministic file editor applied",
+      "applied": true,
+      "apply_result": "SUCCESS"
+    }
+  ],
+  "all_adapted_file_edits": [
+    [
+      {
+        "target_file": "modules/transport-netty4/src/main/java/org/elasticsearch/http/netty4/Netty4HttpAggregator.java",
+        "mainline_file": "modules/transport-netty4/src/main/java/org/elasticsearch/http/netty4/Netty4HttpAggregator.java",
+        "old_string": "<developer patch fast path>",
+        "new_string": "diff --git a/modules/transport-netty4/src/main/java/org/elasticsearch/http/netty4/Netty4HttpAggregator.java b/modules/transport-netty4/src/main/java/org/elasticsearch/http/netty4/Netty4HttpAggregator.java\nindex 021ce09e0ed..0294b462649 100644\n--- a/modules/transport-netty4/src/main/java/org/elasticsearch/http/netty4/Netty4HttpAggregator.java\n+++ b/modules/transport-netty4/src/main/java/org/elasticsearch/http/netty4/Netty4HttpAggregator.java\n@@ -11,13 +11,10 @@ package org.elasticsearch.http.netty4;\n \n import io.netty.channel.ChannelHandlerContext;\n import io.netty.handler.codec.http.FullHttpRequest;\n-import io.netty.handler.codec.http.FullHttpResponse;\n-import io.netty.handler.codec.http.HttpContent;\n import io.netty.handler.codec.http.HttpObject;\n import io.netty.handler.codec.http.HttpObjectAggregator;\n import io.netty.handler.codec.http.HttpRequest;\n-import io.netty.handler.codec.http.HttpResponseStatus;\n-import io.netty.handler.codec.http.HttpUtil;\n+import io.netty.handler.codec.http.HttpRequestDecoder;\n \n import org.elasticsearch.http.HttpPreRequest;\n import org.elasticsearch.http.netty4.internal.HttpHeadersAuthenticatorUtils;\n@@ -27,18 +24,19 @@ import java.util.function.Predicate;\n /**\n  * A wrapper around {@link HttpObjectAggregator}. Provides optional content aggregation based on\n  * predicate. {@link HttpObjectAggregator} also handles Expect: 100-continue and oversized content.\n- * Unfortunately, Netty does not provide handlers for oversized messages beyond HttpObjectAggregator.\n+ * Provides content size handling for non-aggregated requests too.\n  */\n public class Netty4HttpAggregator extends HttpObjectAggregator {\n     private static final Predicate<HttpPreRequest> IGNORE_TEST = (req) -> req.uri().startsWith(\"/_test/request-stream\") == false;\n \n     private final Predicate<HttpPreRequest> decider;\n+    private final Netty4HttpContentSizeHandler streamContentSizeHandler;\n     private boolean aggregating = true;\n-    private boolean ignoreContentAfterContinueResponse = false;\n \n-    public Netty4HttpAggregator(int maxContentLength, Predicate<HttpPreRequest> decider) {\n+    public Netty4HttpAggregator(int maxContentLength, Predicate<HttpPreRequest> decider, HttpRequestDecoder decoder) {\n         super(maxContentLength);\n         this.decider = decider;\n+        this.streamContentSizeHandler = new Netty4HttpContentSizeHandler(decoder, maxContentLength);\n     }\n \n     @Override\n@@ -51,34 +49,7 @@ public class Netty4HttpAggregator extends HttpObjectAggregator {\n         if (aggregating || msg instanceof FullHttpRequest) {\n             super.channelRead(ctx, msg);\n         } else {\n-            handle(ctx, (HttpObject) msg);\n-        }\n-    }\n-\n-    private void handle(ChannelHandlerContext ctx, HttpObject msg) {\n-        if (msg instanceof HttpRequest request) {\n-            var continueResponse = newContinueResponse(request, maxContentLength(), ctx.pipeline());\n-            if (continueResponse != null) {\n-                // there are 3 responses expected: 100, 413, 417\n-                // on 100 we pass request further and reply to client to continue\n-                // on 413/417 we ignore following content\n-                ctx.writeAndFlush(continueResponse);\n-                var resp = (FullHttpResponse) continueResponse;\n-                if (resp.status() != HttpResponseStatus.CONTINUE) {\n-                    ignoreContentAfterContinueResponse = true;\n-                    return;\n-                }\n-                HttpUtil.set100ContinueExpected(request, false);\n-            }\n-            ignoreContentAfterContinueResponse = false;\n-            ctx.fireChannelRead(msg);\n-        } else {\n-            var httpContent = (HttpContent) msg;\n-            if (ignoreContentAfterContinueResponse) {\n-                httpContent.release();\n-            } else {\n-                ctx.fireChannelRead(msg);\n-            }\n+            streamContentSizeHandler.channelRead(ctx, msg);\n         }\n     }\n }",
+        "edit_type": "replace",
+        "verified": true,
+        "verification_result": "developer_fast_path_ok",
+        "applied": true,
+        "apply_result": "SUCCESS"
+      },
+      {
+        "target_file": "modules/transport-netty4/src/main/java/org/elasticsearch/http/netty4/Netty4HttpServerTransport.java",
+        "mainline_file": "modules/transport-netty4/src/main/java/org/elasticsearch/http/netty4/Netty4HttpServerTransport.java",
+        "old_string": "<developer patch fast path>",
+        "new_string": "diff --git a/modules/transport-netty4/src/main/java/org/elasticsearch/http/netty4/Netty4HttpServerTransport.java b/modules/transport-netty4/src/main/java/org/elasticsearch/http/netty4/Netty4HttpServerTransport.java\nindex 36c860f1fb9..9ffa4b479be 100644\n--- a/modules/transport-netty4/src/main/java/org/elasticsearch/http/netty4/Netty4HttpServerTransport.java\n+++ b/modules/transport-netty4/src/main/java/org/elasticsearch/http/netty4/Netty4HttpServerTransport.java\n@@ -381,7 +381,8 @@ public class Netty4HttpServerTransport extends AbstractHttpServerTransport {\n                 handlingSettings.maxContentLength(),\n                 httpPreRequest -> enabled.get() == false\n                     || ((httpPreRequest.rawPath().endsWith(\"/_bulk\") == false)\n-                        || httpPreRequest.rawPath().startsWith(\"/_xpack/monitoring/_bulk\"))\n+                        || httpPreRequest.rawPath().startsWith(\"/_xpack/monitoring/_bulk\")),\n+                decoder\n             );\n             aggregator.setMaxCumulationBufferComponents(transport.maxCompositeBufferComponents);\n             ch.pipeline()",
+        "edit_type": "replace",
+        "verified": true,
+        "verification_result": "developer_fast_path_ok",
+        "applied": true,
+        "apply_result": "SUCCESS"
+      }
+    ],
+    [],
+    [
+      {
+        "target_file": "modules/transport-netty4/src/main/java/org/elasticsearch/http/netty4/Netty4HttpServerTransport.java",
+        "mainline_file": "modules/transport-netty4/src/main/java/org/elasticsearch/http/netty4/Netty4HttpServerTransport.java",
+        "old_string": "<deterministic file-editor diff>",
+        "new_string": "diff --git a/modules/transport-netty4/src/main/java/org/elasticsearch/http/netty4/Netty4HttpServerTransport.java b/modules/transport-netty4/src/main/java/org/elasticsearch/http/netty4/Netty4HttpServerTransport.java\nindex 36c860f1fb9..9ffa4b479be 100644\n--- a/modules/transport-netty4/src/main/java/org/elasticsearch/http/netty4/Netty4HttpServerTransport.java\n+++ b/modules/transport-netty4/src/main/java/org/elasticsearch/http/netty4/Netty4HttpServerTransport.java\n@@ -381,7 +381,8 @@ public class Netty4HttpServerTransport extends AbstractHttpServerTransport {\n                 handlingSettings.maxContentLength(),\n                 httpPreRequest -> enabled.get() == false\n                     || ((httpPreRequest.rawPath().endsWith(\"/_bulk\") == false)\n-                        || httpPreRequest.rawPath().startsWith(\"/_xpack/monitoring/_bulk\"))\n+                        || httpPreRequest.rawPath().startsWith(\"/_xpack/monitoring/_bulk\")),\n+                decoder\n             );\n             aggregator.setMaxCumulationBufferComponents(transport.maxCompositeBufferComponents);\n             ch.pipeline()",
+        "edit_type": "replace",
+        "verified": true,
+        "verification_result": "Deterministic file editor applied",
+        "applied": true,
+        "apply_result": "SUCCESS"
+      }
+    ]
+  ],
+  "agent_trajectory_edits": [
+    [
+      {
+        "target_file": "modules/transport-netty4/src/main/java/org/elasticsearch/transport/netty4/Netty4MessageInboundHandler.java",
+        "tool": "manage_todo",
+        "args": {
+          "action": "add",
+          "task": "Analyze the target file modules/transport-netty4/src/main/java/org/elasticsearch/transport/netty4/Netty4MessageInboundHandler.java for relevant methods and fields related to HTTP content size handling."
+        }
+      },
+      {
+        "target_file": "modules/transport-netty4/src/main/java/org/elasticsearch/transport/netty4/Netty4MessageInboundHandler.java",
+        "tool": "read_file_window",
+        "args": {
+          "file_path": "modules/transport-netty4/src/main/java/org/elasticsearch/transport/netty4/Netty4MessageInboundHandler.java",
+          "center_line": 20,
+          "radius": 20
+        }
+      },
+      {
+        "target_file": "modules/transport-netty4/src/main/java/org/elasticsearch/transport/netty4/Netty4MessageInboundHandler.java",
+        "tool": "read_file_window",
+        "args": {
+          "file_path": "modules/transport-netty4/src/main/java/org/elasticsearch/transport/netty4/Netty4MessageInboundHandler.java",
+          "center_line": 60,
+          "radius": 20
+        }
+      },
+      {
+        "target_file": "modules/transport-netty4/src/main/java/org/elasticsearch/transport/netty4/Netty4MessageInboundHandler.java",
+        "tool": "grep_in_file",
+        "args": {
+          "file_path": "modules/transport-netty4/src/main/java/org/elasticsearch/transport/netty4/Netty4MessageInboundHandler.java",
+          "search_text": "handleRequest"
+        }
+      },
+      {
+        "target_file": "modules/transport-netty4/src/main/java/org/elasticsearch/transport/netty4/Netty4MessageInboundHandler.java",
+        "tool": "grep_in_file",
+        "args": {
+          "file_path": "modules/transport-netty4/src/main/java/org/elasticsearch/transport/netty4/Netty4MessageInboundHandler.java",
+          "search_text": "handleContent"
+        }
+      },
+      {
+        "target_file": "modules/transport-netty4/src/main/java/org/elasticsearch/transport/netty4/Netty4MessageInboundHandler.java",
+        "tool": "grep_in_file",
+        "args": {
+          "file_path": "modules/transport-netty4/src/main/java/org/elasticsearch/transport/netty4/Netty4MessageInboundHandler.java",
+          "search_text": "channelRead"
+        }
+      },
+      {
+        "target_file": "modules/transport-netty4/src/main/java/org/elasticsearch/transport/netty4/Netty4MessageInboundHandler.java",
+        "tool": "read_file_window",
+        "args": {
+          "file_path": "modules/transport-netty4/src/main/java/org/elasticsearch/transport/netty4/Netty4MessageInboundHandler.java",
+          "center_line": 46,
+          "radius": 10
+        }
+      },
+      {
+        "target_file": "modules/transport-netty4/src/main/java/org/elasticsearch/transport/netty4/Netty4MessageInboundHandler.java",
+        "tool": "read_file_window",
+        "args": {
+          "file_path": "modules/transport-netty4/src/main/java/org/elasticsearch/transport/netty4/Netty4MessageInboundHandler.java",
+          "center_line": 55,
+          "radius": 10
+        }
+      },
+      {
+        "target_file": "modules/transport-netty4/src/main/java/org/elasticsearch/transport/netty4/Netty4MessageInboundHandler.java",
+        "tool": "manage_todo",
+        "args": {
+          "action": "add",
+          "task": "Replace the channelRead method body with the updated logic from the mainline patch adapted to the target file's context."
+        }
+      },
+      {
+        "target_file": "modules/transport-netty4/src/main/java/org/elasticsearch/transport/netty4/Netty4MessageInboundHandler.java",
+        "tool": "replace_method_body",
+        "args": {
+          "file_path": "modules/transport-netty4/src/main/java/org/elasticsearch/transport/netty4/Netty4MessageInboundHandler.java",
+          "method_signature": "public void channelRead(io.netty.channel.ChannelHandlerContext, java.lang.Object) throws java.lang.Exception",
+          "new_body": "        assert Transports.assertDefaultThreadContext(transport.getThreadPool().getThreadContext());\n        assert Transports.assertTransportThread();\n        assert msg instanceof ByteBuf : \"Expected message type ByteBuf, found: \" + msg.getClass();\n\n        final ByteBuf buffer = (ByteBuf) msg;\n        Netty4TcpChannel channel = ctx.channel().attr(Netty4Transport.CHANNEL_KEY).get();\n        activityTracker.startActivity();\n        try (ReleasableBytesReference reference = Netty4Utils.toReleasableBytesReference(buffer)) {\n            pipeline.handleBytes(channel, reference);\n        } finally {\n            activityTracker.stopActivity();\n        }"
+        }
+      },
+      {
+        "target_file": "modules/transport-netty4/src/main/java/org/elasticsearch/transport/netty4/Netty4MessageInboundHandler.java",
+        "tool": "read_file_window",
+        "args": {
+          "file_path": "modules/transport-netty4/src/main/java/org/elasticsearch/transport/netty4/Netty4MessageInboundHandler.java",
+          "center_line": 46,
+          "radius": 15
+        }
+      },
+      {
+        "target_file": "modules/transport-netty4/src/main/java/org/elasticsearch/transport/netty4/Netty4MessageInboundHandler.java",
+        "tool": "edit_file",
+        "args": {
+          "file_path": "modules/transport-netty4/src/main/java/org/elasticsearch/transport/netty4/Netty4MessageInboundHandler.java",
+          "old_string": "    @Override\n    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {\n        assert Transports.assertDefaultThreadContext(transport.getThreadPool().getThreadContext());\n        assert Transports.assertTransportThread();\n        assert msg instanceof ByteBuf : \"Expected message type ByteBuf, found: \" + msg.getClass();\n\n        final ByteBuf buffer = (ByteBuf) msg;\n        Netty4TcpChannel channel = ctx.channel().attr(Netty4Transport.CHANNEL_KEY).get();\n        activityTracker.startActivity();\n        try (ReleasableBytesReference reference = Netty4Utils.toReleasableBytesReference(buffer)) {\n            pipeline.handleBytes(channel, reference);\n        } finally {\n            activityTracker.stopActivity();\n        }\n    }",
+          "new_string": "    @Override\n    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {\n        assert Transports.assertDefaultThreadContext(transport.getThreadPool().getThreadContext());\n        assert Transports.assertTransportThread();\n        assert msg instanceof ByteBuf : \"Expected message type ByteBuf, found: \" + msg.getClass();\n\n        final ByteBuf buffer = (ByteBuf) msg;\n        Netty4TcpChannel channel = ctx.channel().attr(Netty4Transport.CHANNEL_KEY).get();\n        activityTracker.startActivity();\n        try (ReleasableBytesReference reference = Netty4Utils.toReleasableBytesReference(buffer)) {\n            pipeline.handleBytes(channel, reference);\n        } finally {\n            activityTracker.stopActivity();\n        }\n    }"
+        }
+      },
+      {
+        "target_file": "modules/transport-netty4/src/main/java/org/elasticsearch/transport/netty4/Netty4MessageInboundHandler.java",
+        "tool": "read_file_window",
+        "args": {
+          "file_path": "modules/transport-netty4/src/main/java/org/elasticsearch/transport/netty4/Netty4MessageInboundHandler.java",
+          "center_line": 1,
+          "radius": 20
+        }
+      },
+      {
+        "target_file": "modules/transport-netty4/src/main/java/org/elasticsearch/transport/netty4/Netty4MessageInboundHandler.java",
+        "tool": "read_file_window",
+        "args": {
+          "file_path": "modules/transport-netty4/src/main/java/org/elasticsearch/transport/netty4/Netty4MessageInboundHandler.java",
+          "center_line": 70,
+          "radius": 10
+        }
+      },
+      {
+        "target_file": "modules/transport-netty4/src/main/java/org/elasticsearch/transport/netty4/Netty4MessageInboundHandler.java",
+        "tool": "manage_todo",
+        "args": {
+          "action": "list"
+        }
+      },
+      {
+        "target_file": "modules/transport-netty4/src/main/java/org/elasticsearch/transport/netty4/Netty4MessageInboundHandler.java",
+        "tool": "check_java_syntax",
+        "args": {
+          "file_path": "modules/transport-netty4/src/main/java/org/elasticsearch/transport/netty4/Netty4MessageInboundHandler.java"
+        }
+      },
+      {
+        "target_file": "modules/transport-netty4/src/main/java/org/elasticsearch/transport/netty4/Netty4MessageInboundHandler.java",
+        "tool": "git_diff_file",
+        "args": {
+          "file_path": "modules/transport-netty4/src/main/java/org/elasticsearch/transport/netty4/Netty4MessageInboundHandler.java"
+        }
+      },
+      {
+        "target_file": "modules/transport-netty4/src/main/java/org/elasticsearch/transport/netty4/Netty4MessageInboundHandler.java",
+        "tool": "verify_guidelines",
+        "args": {
+          "diff_text": ""
+        }
+      }
+    ],
+    [],
+    [
+      {
+        "target_file": "modules/transport-netty4/src/main/java/org/elasticsearch/http/netty4/Netty4HttpAggregator.java",
+        "tool": "str_replace_in_file",
+        "args": {
+          "file_path": "modules/transport-netty4/src/main/java/org/elasticsearch/http/netty4/Netty4HttpAggregator.java",
+          "edit_type": "delete",
+          "resolution_reason": "exact",
+          "resolved_old_preview": "import io.netty.handler.codec.http.FullHttpResponse;\nimport io.netty.handler.codec.http.HttpContent;",
+          "resolved_new_preview": ""
+        }
+      },
+      {
+        "target_file": "modules/transport-netty4/src/main/java/org/elasticsearch/http/netty4/Netty4HttpAggregator.java",
+        "tool": "str_replace_in_file",
+        "args": {
+          "file_path": "modules/transport-netty4/src/main/java/org/elasticsearch/http/netty4/Netty4HttpAggregator.java",
+          "edit_type": "replace",
+          "resolution_reason": "exact",
+          "resolved_old_preview": "import io.netty.handler.codec.http.HttpObjectAggregator;\nimport io.netty.handler.codec.http.HttpRequest;\nimport io.netty.handler.codec.http.HttpResponseStatus;\nimport io.netty.handler.codec.http.HttpU",
+          "resolved_new_preview": "import io.netty.handler.codec.http.HttpObjectAggregator;\nimport io.netty.handler.codec.http.HttpRequest;\nimport io.netty.handler.codec.http.HttpRequestDecoder;\n"
+        }
+      },
+      {
+        "target_file": "modules/transport-netty4/src/main/java/org/elasticsearch/http/netty4/Netty4HttpAggregator.java",
+        "tool": "str_replace_in_file",
+        "args": {
+          "file_path": "modules/transport-netty4/src/main/java/org/elasticsearch/http/netty4/Netty4HttpAggregator.java",
+          "edit_type": "replace",
+          "resolution_reason": "exact",
+          "resolved_old_preview": " * A wrapper around {@link HttpObjectAggregator}. Provides optional content aggregation based on\n * predicate. {@link HttpObjectAggregator} also handles Expect: 100-continue and oversized content.\n * ",
+          "resolved_new_preview": " * A wrapper around {@link HttpObjectAggregator}. Provides optional content aggregation based on\n * predicate. {@link HttpObjectAggregator} also handles Expect: 100-continue and oversized content.\n * "
+        }
+      },
+      {
+        "target_file": "modules/transport-netty4/src/main/java/org/elasticsearch/http/netty4/Netty4HttpAggregator.java",
+        "tool": "str_replace_in_file",
+        "args": {
+          "file_path": "modules/transport-netty4/src/main/java/org/elasticsearch/http/netty4/Netty4HttpAggregator.java",
+          "edit_type": "insert_before",
+          "resolution_reason": "exact",
+          "resolved_old_preview": "    private boolean aggregating = true;",
+          "resolved_new_preview": "    private final Netty4HttpContentSizeHandler streamContentSizeHandler;\n    private boolean aggregating = true;"
+        }
+      },
+      {
+        "target_file": "modules/transport-netty4/src/main/java/org/elasticsearch/http/netty4/Netty4HttpAggregator.java",
+        "tool": "str_replace_in_file",
+        "args": {
+          "file_path": "modules/transport-netty4/src/main/java/org/elasticsearch/http/netty4/Netty4HttpAggregator.java",
+          "edit_type": "delete",
+          "resolution_reason": "exact",
+          "resolved_old_preview": "    private boolean ignoreContentAfterContinueResponse = false;",
+          "resolved_new_preview": ""
+        }
+      },
+      {
+        "target_file": "modules/transport-netty4/src/main/java/org/elasticsearch/http/netty4/Netty4HttpAggregator.java",
+        "tool": "str_replace_in_file",
+        "args": {
+          "file_path": "modules/transport-netty4/src/main/java/org/elasticsearch/http/netty4/Netty4HttpAggregator.java",
+          "edit_type": "replace",
+          "resolution_reason": "exact",
+          "resolved_old_preview": "\n    public Netty4HttpAggregator(int maxContentLength, Predicate<HttpPreRequest> decider) {\n        super(maxContentLength);",
+          "resolved_new_preview": "\n    public Netty4HttpAggregator(int maxContentLength, Predicate<HttpPreRequest> decider, HttpRequestDecoder decoder) {\n        super(maxContentLength);"
+        }
+      },
+      {
+        "target_file": "modules/transport-netty4/src/main/java/org/elasticsearch/http/netty4/Netty4HttpAggregator.java",
+        "tool": "str_replace_in_file",
+        "args": {
+          "file_path": "modules/transport-netty4/src/main/java/org/elasticsearch/http/netty4/Netty4HttpAggregator.java",
+          "edit_type": "insert_before",
+          "resolution_reason": "exact",
+          "resolved_old_preview": "    @Override",
+          "resolved_new_preview": "        this.streamContentSizeHandler = new Netty4HttpContentSizeHandler(decoder, maxContentLength);\n    @Override"
+        }
+      },
+      {
+        "target_file": "modules/transport-netty4/src/main/java/org/elasticsearch/http/netty4/Netty4HttpServerTransport.java",
+        "tool": "str_replace_in_file",
+        "args": {
+          "file_path": "modules/transport-netty4/src/main/java/org/elasticsearch/http/netty4/Netty4HttpServerTransport.java",
+          "edit_type": "replace",
+          "resolution_reason": "exact",
+          "resolved_old_preview": "                httpPreRequest -> enabled.get() == false\n                    || ((httpPreRequest.rawPath().endsWith(\"/_bulk\") == false)\n                        || httpPreRequest.rawPath().startsWith(\"",
+          "resolved_new_preview": "                httpPreRequest -> enabled.get() == false\n                    || ((httpPreRequest.rawPath().endsWith(\"/_bulk\") == false)\n                        || httpPreRequest.rawPath().startsWith(\""
+        }
+      }
+    ]
+  ],
+  "adapted_code_hunks": [
+    {
+      "target_file": "modules/transport-netty4/src/main/java/org/elasticsearch/http/netty4/Netty4HttpAggregator.java",
+      "mainline_file": "modules/transport-netty4/src/main/java/org/elasticsearch/http/netty4/Netty4HttpAggregator.java",
+      "hunk_text": "diff --git a/modules/transport-netty4/src/main/java/org/elasticsearch/http/netty4/Netty4HttpAggregator.java b/modules/transport-netty4/src/main/java/org/elasticsearch/http/netty4/Netty4HttpAggregator.java\nindex 021ce09e0ed..0294b462649 100644\n--- a/modules/transport-netty4/src/main/java/org/elasticsearch/http/netty4/Netty4HttpAggregator.java\n+++ b/modules/transport-netty4/src/main/java/org/elasticsearch/http/netty4/Netty4HttpAggregator.java\n@@ -11,13 +11,10 @@ package org.elasticsearch.http.netty4;\n \n import io.netty.channel.ChannelHandlerContext;\n import io.netty.handler.codec.http.FullHttpRequest;\n-import io.netty.handler.codec.http.FullHttpResponse;\n-import io.netty.handler.codec.http.HttpContent;\n import io.netty.handler.codec.http.HttpObject;\n import io.netty.handler.codec.http.HttpObjectAggregator;\n import io.netty.handler.codec.http.HttpRequest;\n-import io.netty.handler.codec.http.HttpResponseStatus;\n-import io.netty.handler.codec.http.HttpUtil;\n+import io.netty.handler.codec.http.HttpRequestDecoder;\n \n import org.elasticsearch.http.HttpPreRequest;\n import org.elasticsearch.http.netty4.internal.HttpHeadersAuthenticatorUtils;\n@@ -27,18 +24,19 @@ import java.util.function.Predicate;\n /**\n  * A wrapper around {@link HttpObjectAggregator}. Provides optional content aggregation based on\n  * predicate. {@link HttpObjectAggregator} also handles Expect: 100-continue and oversized content.\n- * Unfortunately, Netty does not provide handlers for oversized messages beyond HttpObjectAggregator.\n+ * Provides content size handling for non-aggregated requests too.\n  */\n public class Netty4HttpAggregator extends HttpObjectAggregator {\n     private static final Predicate<HttpPreRequest> IGNORE_TEST = (req) -> req.uri().startsWith(\"/_test/request-stream\") == false;\n \n     private final Predicate<HttpPreRequest> decider;\n+    private final Netty4HttpContentSizeHandler streamContentSizeHandler;\n     private boolean aggregating = true;\n-    private boolean ignoreContentAfterContinueResponse = false;\n \n-    public Netty4HttpAggregator(int maxContentLength, Predicate<HttpPreRequest> decider) {\n+    public Netty4HttpAggregator(int maxContentLength, Predicate<HttpPreRequest> decider, HttpRequestDecoder decoder) {\n         super(maxContentLength);\n         this.decider = decider;\n+        this.streamContentSizeHandler = new Netty4HttpContentSizeHandler(decoder, maxContentLength);\n     }\n \n     @Override\n@@ -51,34 +49,7 @@ public class Netty4HttpAggregator extends HttpObjectAggregator {\n         if (aggregating || msg instanceof FullHttpRequest) {\n             super.channelRead(ctx, msg);\n         } else {\n-            handle(ctx, (HttpObject) msg);\n-        }\n-    }\n-\n-    private void handle(ChannelHandlerContext ctx, HttpObject msg) {\n-        if (msg instanceof HttpRequest request) {\n-            var continueResponse = newContinueResponse(request, maxContentLength(), ctx.pipeline());\n-            if (continueResponse != null) {\n-                // there are 3 responses expected: 100, 413, 417\n-                // on 100 we pass request further and reply to client to continue\n-                // on 413/417 we ignore following content\n-                ctx.writeAndFlush(continueResponse);\n-                var resp = (FullHttpResponse) continueResponse;\n-                if (resp.status() != HttpResponseStatus.CONTINUE) {\n-                    ignoreContentAfterContinueResponse = true;\n-                    return;\n-                }\n-                HttpUtil.set100ContinueExpected(request, false);\n-            }\n-            ignoreContentAfterContinueResponse = false;\n-            ctx.fireChannelRead(msg);\n-        } else {\n-            var httpContent = (HttpContent) msg;\n-            if (ignoreContentAfterContinueResponse) {\n-                httpContent.release();\n-            } else {\n-                ctx.fireChannelRead(msg);\n-            }\n+            streamContentSizeHandler.channelRead(ctx, msg);\n         }\n     }\n }\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    },
+    {
+      "target_file": "modules/transport-netty4/src/main/java/org/elasticsearch/http/netty4/Netty4HttpServerTransport.java",
+      "mainline_file": "modules/transport-netty4/src/main/java/org/elasticsearch/http/netty4/Netty4HttpServerTransport.java",
+      "hunk_text": "diff --git a/modules/transport-netty4/src/main/java/org/elasticsearch/http/netty4/Netty4HttpServerTransport.java b/modules/transport-netty4/src/main/java/org/elasticsearch/http/netty4/Netty4HttpServerTransport.java\nindex 36c860f1fb9..9ffa4b479be 100644\n--- a/modules/transport-netty4/src/main/java/org/elasticsearch/http/netty4/Netty4HttpServerTransport.java\n+++ b/modules/transport-netty4/src/main/java/org/elasticsearch/http/netty4/Netty4HttpServerTransport.java\n@@ -381,7 +381,8 @@ public class Netty4HttpServerTransport extends AbstractHttpServerTransport {\n                 handlingSettings.maxContentLength(),\n                 httpPreRequest -> enabled.get() == false\n                     || ((httpPreRequest.rawPath().endsWith(\"/_bulk\") == false)\n-                        || httpPreRequest.rawPath().startsWith(\"/_xpack/monitoring/_bulk\"))\n+                        || httpPreRequest.rawPath().startsWith(\"/_xpack/monitoring/_bulk\")),\n+                decoder\n             );\n             aggregator.setMaxCumulationBufferComponents(transport.maxCompositeBufferComponents);\n             ch.pipeline()\n",
+      "insertion_line": 381,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    }
+  ],
+  "best_effort_adapted_code_hunks": [
+    {
+      "target_file": "modules/transport-netty4/src/main/java/org/elasticsearch/http/netty4/Netty4HttpAggregator.java",
+      "mainline_file": "modules/transport-netty4/src/main/java/org/elasticsearch/http/netty4/Netty4HttpAggregator.java",
+      "hunk_text": "diff --git a/modules/transport-netty4/src/main/java/org/elasticsearch/http/netty4/Netty4HttpAggregator.java b/modules/transport-netty4/src/main/java/org/elasticsearch/http/netty4/Netty4HttpAggregator.java\nindex 021ce09e0ed..0294b462649 100644\n--- a/modules/transport-netty4/src/main/java/org/elasticsearch/http/netty4/Netty4HttpAggregator.java\n+++ b/modules/transport-netty4/src/main/java/org/elasticsearch/http/netty4/Netty4HttpAggregator.java\n@@ -11,13 +11,10 @@ package org.elasticsearch.http.netty4;\n \n import io.netty.channel.ChannelHandlerContext;\n import io.netty.handler.codec.http.FullHttpRequest;\n-import io.netty.handler.codec.http.FullHttpResponse;\n-import io.netty.handler.codec.http.HttpContent;\n import io.netty.handler.codec.http.HttpObject;\n import io.netty.handler.codec.http.HttpObjectAggregator;\n import io.netty.handler.codec.http.HttpRequest;\n-import io.netty.handler.codec.http.HttpResponseStatus;\n-import io.netty.handler.codec.http.HttpUtil;\n+import io.netty.handler.codec.http.HttpRequestDecoder;\n \n import org.elasticsearch.http.HttpPreRequest;\n import org.elasticsearch.http.netty4.internal.HttpHeadersAuthenticatorUtils;\n@@ -27,18 +24,19 @@ import java.util.function.Predicate;\n /**\n  * A wrapper around {@link HttpObjectAggregator}. Provides optional content aggregation based on\n  * predicate. {@link HttpObjectAggregator} also handles Expect: 100-continue and oversized content.\n- * Unfortunately, Netty does not provide handlers for oversized messages beyond HttpObjectAggregator.\n+ * Provides content size handling for non-aggregated requests too.\n  */\n public class Netty4HttpAggregator extends HttpObjectAggregator {\n     private static final Predicate<HttpPreRequest> IGNORE_TEST = (req) -> req.uri().startsWith(\"/_test/request-stream\") == false;\n \n     private final Predicate<HttpPreRequest> decider;\n+    private final Netty4HttpContentSizeHandler streamContentSizeHandler;\n     private boolean aggregating = true;\n-    private boolean ignoreContentAfterContinueResponse = false;\n \n-    public Netty4HttpAggregator(int maxContentLength, Predicate<HttpPreRequest> decider) {\n+    public Netty4HttpAggregator(int maxContentLength, Predicate<HttpPreRequest> decider, HttpRequestDecoder decoder) {\n         super(maxContentLength);\n         this.decider = decider;\n+        this.streamContentSizeHandler = new Netty4HttpContentSizeHandler(decoder, maxContentLength);\n     }\n \n     @Override\n@@ -51,34 +49,7 @@ public class Netty4HttpAggregator extends HttpObjectAggregator {\n         if (aggregating || msg instanceof FullHttpRequest) {\n             super.channelRead(ctx, msg);\n         } else {\n-            handle(ctx, (HttpObject) msg);\n-        }\n-    }\n-\n-    private void handle(ChannelHandlerContext ctx, HttpObject msg) {\n-        if (msg instanceof HttpRequest request) {\n-            var continueResponse = newContinueResponse(request, maxContentLength(), ctx.pipeline());\n-            if (continueResponse != null) {\n-                // there are 3 responses expected: 100, 413, 417\n-                // on 100 we pass request further and reply to client to continue\n-                // on 413/417 we ignore following content\n-                ctx.writeAndFlush(continueResponse);\n-                var resp = (FullHttpResponse) continueResponse;\n-                if (resp.status() != HttpResponseStatus.CONTINUE) {\n-                    ignoreContentAfterContinueResponse = true;\n-                    return;\n-                }\n-                HttpUtil.set100ContinueExpected(request, false);\n-            }\n-            ignoreContentAfterContinueResponse = false;\n-            ctx.fireChannelRead(msg);\n-        } else {\n-            var httpContent = (HttpContent) msg;\n-            if (ignoreContentAfterContinueResponse) {\n-                httpContent.release();\n-            } else {\n-                ctx.fireChannelRead(msg);\n-            }\n+            streamContentSizeHandler.channelRead(ctx, msg);\n         }\n     }\n }\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    },
+    {
+      "target_file": "modules/transport-netty4/src/main/java/org/elasticsearch/http/netty4/Netty4HttpServerTransport.java",
+      "mainline_file": "modules/transport-netty4/src/main/java/org/elasticsearch/http/netty4/Netty4HttpServerTransport.java",
+      "hunk_text": "diff --git a/modules/transport-netty4/src/main/java/org/elasticsearch/http/netty4/Netty4HttpServerTransport.java b/modules/transport-netty4/src/main/java/org/elasticsearch/http/netty4/Netty4HttpServerTransport.java\nindex 36c860f1fb9..9ffa4b479be 100644\n--- a/modules/transport-netty4/src/main/java/org/elasticsearch/http/netty4/Netty4HttpServerTransport.java\n+++ b/modules/transport-netty4/src/main/java/org/elasticsearch/http/netty4/Netty4HttpServerTransport.java\n@@ -381,7 +381,8 @@ public class Netty4HttpServerTransport extends AbstractHttpServerTransport {\n                 handlingSettings.maxContentLength(),\n                 httpPreRequest -> enabled.get() == false\n                     || ((httpPreRequest.rawPath().endsWith(\"/_bulk\") == false)\n-                        || httpPreRequest.rawPath().startsWith(\"/_xpack/monitoring/_bulk\"))\n+                        || httpPreRequest.rawPath().startsWith(\"/_xpack/monitoring/_bulk\")),\n+                decoder\n             );\n             aggregator.setMaxCumulationBufferComponents(transport.maxCompositeBufferComponents);\n             ch.pipeline()\n",
+      "insertion_line": 381,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    }
+  ],
+  "adapted_test_hunks": [],
+  "generation_checklist": [
+    {
+      "mainline_file": "<all>",
+      "target_file": "<all>",
+      "hunk_index": 0,
+      "status": "failed",
+      "reason": "generation_contract_failed",
+      "todo_steps": [
+        "replan"
+      ],
+      "completed_steps": []
+    }
+  ],
+  "validation_failed_stage": "generation_contract_failed",
+  "validation_repeated_patch_detected": true,
+  "validation_repeated_plan_detected": false,
+  "generated_patch_hash": "44e44f5ce6c884b6b87d4005cff703d20f26339976eb70fd3a419a463294128d",
+  "force_type_v_until_success": true,
+  "force_type_v_reason": "failed_stage_generation_contract",
+  "force_type_v_retry_files": [
+    "modules/transport-netty4/src/main/java/org/elasticsearch/http/netty4/Netty4HttpContentSizeHandler.java",
+    "modules/transport-netty4/src/main/java/org/elasticsearch/transport/netty4/Netty4MessageInboundHandler.java"
+  ],
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "sources": []
+  }
+}

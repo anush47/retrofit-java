@@ -1,0 +1,169 @@
+{
+  "adapted_file_edits": [
+    {
+      "target_file": "x-pack/plugin/migrate/src/main/java/org/elasticsearch/xpack/migrate/MigratePlugin.java",
+      "mainline_file": "x-pack/plugin/migrate/src/main/java/org/elasticsearch/xpack/migrate/MigratePlugin.java",
+      "old_string": "<developer patch fast path>",
+      "new_string": "diff --git a/x-pack/plugin/migrate/src/main/java/org/elasticsearch/xpack/migrate/MigratePlugin.java b/x-pack/plugin/migrate/src/main/java/org/elasticsearch/xpack/migrate/MigratePlugin.java\nindex 55ec4065be8..93b90e551e7 100644\n--- a/x-pack/plugin/migrate/src/main/java/org/elasticsearch/xpack/migrate/MigratePlugin.java\n+++ b/x-pack/plugin/migrate/src/main/java/org/elasticsearch/xpack/migrate/MigratePlugin.java\n@@ -59,6 +59,7 @@ import java.util.function.Predicate;\n import java.util.function.Supplier;\n \n import static org.elasticsearch.xpack.migrate.action.ReindexDataStreamAction.REINDEX_DATA_STREAM_FEATURE_FLAG;\n+import static org.elasticsearch.xpack.migrate.action.ReindexDataStreamIndexTransportAction.REINDEX_MAX_REQUESTS_PER_SECOND_SETTING;\n import static org.elasticsearch.xpack.migrate.task.ReindexDataStreamPersistentTaskExecutor.MAX_CONCURRENT_INDICES_REINDEXED_PER_DATA_STREAM_SETTING;\n \n public class MigratePlugin extends Plugin implements ActionPlugin, PersistentTaskPlugin {\n@@ -160,6 +161,7 @@ public class MigratePlugin extends Plugin implements ActionPlugin, PersistentTas\n     public List<Setting<?>> getSettings() {\n         List<Setting<?>> pluginSettings = new ArrayList<>();\n         pluginSettings.add(MAX_CONCURRENT_INDICES_REINDEXED_PER_DATA_STREAM_SETTING);\n+        pluginSettings.add(REINDEX_MAX_REQUESTS_PER_SECOND_SETTING);\n         return pluginSettings;\n     }\n }",
+      "edit_type": "replace",
+      "verified": true,
+      "verification_result": "developer_fast_path_ok",
+      "applied": true,
+      "apply_result": "SUCCESS"
+    },
+    {
+      "target_file": "x-pack/plugin/migrate/src/main/java/org/elasticsearch/xpack/migrate/action/ReindexDataStreamIndexTransportAction.java",
+      "mainline_file": "x-pack/plugin/migrate/src/main/java/org/elasticsearch/xpack/migrate/action/ReindexDataStreamIndexTransportAction.java",
+      "old_string": "<developer patch fast path>",
+      "new_string": "diff --git a/x-pack/plugin/migrate/src/main/java/org/elasticsearch/xpack/migrate/action/ReindexDataStreamIndexTransportAction.java b/x-pack/plugin/migrate/src/main/java/org/elasticsearch/xpack/migrate/action/ReindexDataStreamIndexTransportAction.java\nindex 7bb440bc52a..65e4214d808 100644\n--- a/x-pack/plugin/migrate/src/main/java/org/elasticsearch/xpack/migrate/action/ReindexDataStreamIndexTransportAction.java\n+++ b/x-pack/plugin/migrate/src/main/java/org/elasticsearch/xpack/migrate/action/ReindexDataStreamIndexTransportAction.java\n@@ -24,6 +24,7 @@ import org.elasticsearch.client.internal.Client;\n import org.elasticsearch.cluster.block.ClusterBlockException;\n import org.elasticsearch.cluster.metadata.IndexMetadata;\n import org.elasticsearch.cluster.service.ClusterService;\n+import org.elasticsearch.common.settings.Setting;\n import org.elasticsearch.common.settings.Settings;\n import org.elasticsearch.core.TimeValue;\n import org.elasticsearch.index.IndexSettings;\n@@ -46,8 +47,37 @@ public class ReindexDataStreamIndexTransportAction extends HandledTransportActio\n     ReindexDataStreamIndexAction.Request,\n     ReindexDataStreamIndexAction.Response> {\n \n+    public static final String REINDEX_MAX_REQUESTS_PER_SECOND_KEY = \"migrate.data_stream_reindex_max_request_per_second\";\n+\n+    public static final Setting<Float> REINDEX_MAX_REQUESTS_PER_SECOND_SETTING = new Setting<>(\n+        REINDEX_MAX_REQUESTS_PER_SECOND_KEY,\n+        Float.toString(10f),\n+        s -> {\n+            if (s.equals(\"-1\")) {\n+                return Float.POSITIVE_INFINITY;\n+            } else {\n+                return Float.parseFloat(s);\n+            }\n+        },\n+        value -> {\n+            if (value <= 0f) {\n+                throw new IllegalArgumentException(\n+                    \"Failed to parse value [\"\n+                        + value\n+                        + \"] for setting [\"\n+                        + REINDEX_MAX_REQUESTS_PER_SECOND_KEY\n+                        + \"] \"\n+                        + \"must be greater than 0 or -1 for infinite\"\n+                );\n+            }\n+        },\n+        Setting.Property.Dynamic,\n+        Setting.Property.NodeScope\n+    );\n+\n     private static final Logger logger = LogManager.getLogger(ReindexDataStreamIndexTransportAction.class);\n     private static final IndicesOptions IGNORE_MISSING_OPTIONS = IndicesOptions.fromOptions(true, true, false, false);\n+\n     private final ClusterService clusterService;\n     private final Client client;\n \n@@ -176,7 +206,8 @@ public class ReindexDataStreamIndexTransportAction extends HandledTransportActio\n         client.execute(CreateIndexFromSourceAction.INSTANCE, request, failIfNotAcknowledged(listener, errorMessage));\n     }\n \n-    private void reindex(String sourceIndexName, String destIndexName, ActionListener<BulkByScrollResponse> listener, TaskId parentTaskId) {\n+    // Visible for testing\n+    void reindex(String sourceIndexName, String destIndexName, ActionListener<BulkByScrollResponse> listener, TaskId parentTaskId) {\n         logger.debug(\"Reindex to destination index [{}] from source index [{}]\", destIndexName, sourceIndexName);\n         var reindexRequest = new ReindexRequest();\n         reindexRequest.setSourceIndices(sourceIndexName);\n@@ -184,6 +215,7 @@ public class ReindexDataStreamIndexTransportAction extends HandledTransportActio\n         reindexRequest.getSearchRequest().source().fetchSource(true);\n         reindexRequest.setDestIndex(destIndexName);\n         reindexRequest.setParentTask(parentTaskId);\n+        reindexRequest.setRequestsPerSecond(clusterService.getClusterSettings().get(REINDEX_MAX_REQUESTS_PER_SECOND_SETTING));\n         reindexRequest.setSlices(0); // equivalent to slices=auto in rest api\n         client.execute(ReindexAction.INSTANCE, reindexRequest, listener);\n     }",
+      "edit_type": "replace",
+      "verified": true,
+      "verification_result": "developer_fast_path_ok",
+      "applied": true,
+      "apply_result": "SUCCESS"
+    }
+  ],
+  "all_adapted_file_edits": [
+    [
+      {
+        "target_file": "x-pack/plugin/migrate/src/main/java/org/elasticsearch/xpack/migrate/MigratePlugin.java",
+        "mainline_file": "x-pack/plugin/migrate/src/main/java/org/elasticsearch/xpack/migrate/MigratePlugin.java",
+        "old_string": "<developer patch fast path>",
+        "new_string": "diff --git a/x-pack/plugin/migrate/src/main/java/org/elasticsearch/xpack/migrate/MigratePlugin.java b/x-pack/plugin/migrate/src/main/java/org/elasticsearch/xpack/migrate/MigratePlugin.java\nindex 55ec4065be8..93b90e551e7 100644\n--- a/x-pack/plugin/migrate/src/main/java/org/elasticsearch/xpack/migrate/MigratePlugin.java\n+++ b/x-pack/plugin/migrate/src/main/java/org/elasticsearch/xpack/migrate/MigratePlugin.java\n@@ -59,6 +59,7 @@ import java.util.function.Predicate;\n import java.util.function.Supplier;\n \n import static org.elasticsearch.xpack.migrate.action.ReindexDataStreamAction.REINDEX_DATA_STREAM_FEATURE_FLAG;\n+import static org.elasticsearch.xpack.migrate.action.ReindexDataStreamIndexTransportAction.REINDEX_MAX_REQUESTS_PER_SECOND_SETTING;\n import static org.elasticsearch.xpack.migrate.task.ReindexDataStreamPersistentTaskExecutor.MAX_CONCURRENT_INDICES_REINDEXED_PER_DATA_STREAM_SETTING;\n \n public class MigratePlugin extends Plugin implements ActionPlugin, PersistentTaskPlugin {\n@@ -160,6 +161,7 @@ public class MigratePlugin extends Plugin implements ActionPlugin, PersistentTas\n     public List<Setting<?>> getSettings() {\n         List<Setting<?>> pluginSettings = new ArrayList<>();\n         pluginSettings.add(MAX_CONCURRENT_INDICES_REINDEXED_PER_DATA_STREAM_SETTING);\n+        pluginSettings.add(REINDEX_MAX_REQUESTS_PER_SECOND_SETTING);\n         return pluginSettings;\n     }\n }",
+        "edit_type": "replace",
+        "verified": true,
+        "verification_result": "developer_fast_path_ok",
+        "applied": true,
+        "apply_result": "SUCCESS"
+      },
+      {
+        "target_file": "x-pack/plugin/migrate/src/main/java/org/elasticsearch/xpack/migrate/action/ReindexDataStreamIndexTransportAction.java",
+        "mainline_file": "x-pack/plugin/migrate/src/main/java/org/elasticsearch/xpack/migrate/action/ReindexDataStreamIndexTransportAction.java",
+        "old_string": "<developer patch fast path>",
+        "new_string": "diff --git a/x-pack/plugin/migrate/src/main/java/org/elasticsearch/xpack/migrate/action/ReindexDataStreamIndexTransportAction.java b/x-pack/plugin/migrate/src/main/java/org/elasticsearch/xpack/migrate/action/ReindexDataStreamIndexTransportAction.java\nindex 7bb440bc52a..65e4214d808 100644\n--- a/x-pack/plugin/migrate/src/main/java/org/elasticsearch/xpack/migrate/action/ReindexDataStreamIndexTransportAction.java\n+++ b/x-pack/plugin/migrate/src/main/java/org/elasticsearch/xpack/migrate/action/ReindexDataStreamIndexTransportAction.java\n@@ -24,6 +24,7 @@ import org.elasticsearch.client.internal.Client;\n import org.elasticsearch.cluster.block.ClusterBlockException;\n import org.elasticsearch.cluster.metadata.IndexMetadata;\n import org.elasticsearch.cluster.service.ClusterService;\n+import org.elasticsearch.common.settings.Setting;\n import org.elasticsearch.common.settings.Settings;\n import org.elasticsearch.core.TimeValue;\n import org.elasticsearch.index.IndexSettings;\n@@ -46,8 +47,37 @@ public class ReindexDataStreamIndexTransportAction extends HandledTransportActio\n     ReindexDataStreamIndexAction.Request,\n     ReindexDataStreamIndexAction.Response> {\n \n+    public static final String REINDEX_MAX_REQUESTS_PER_SECOND_KEY = \"migrate.data_stream_reindex_max_request_per_second\";\n+\n+    public static final Setting<Float> REINDEX_MAX_REQUESTS_PER_SECOND_SETTING = new Setting<>(\n+        REINDEX_MAX_REQUESTS_PER_SECOND_KEY,\n+        Float.toString(10f),\n+        s -> {\n+            if (s.equals(\"-1\")) {\n+                return Float.POSITIVE_INFINITY;\n+            } else {\n+                return Float.parseFloat(s);\n+            }\n+        },\n+        value -> {\n+            if (value <= 0f) {\n+                throw new IllegalArgumentException(\n+                    \"Failed to parse value [\"\n+                        + value\n+                        + \"] for setting [\"\n+                        + REINDEX_MAX_REQUESTS_PER_SECOND_KEY\n+                        + \"] \"\n+                        + \"must be greater than 0 or -1 for infinite\"\n+                );\n+            }\n+        },\n+        Setting.Property.Dynamic,\n+        Setting.Property.NodeScope\n+    );\n+\n     private static final Logger logger = LogManager.getLogger(ReindexDataStreamIndexTransportAction.class);\n     private static final IndicesOptions IGNORE_MISSING_OPTIONS = IndicesOptions.fromOptions(true, true, false, false);\n+\n     private final ClusterService clusterService;\n     private final Client client;\n \n@@ -176,7 +206,8 @@ public class ReindexDataStreamIndexTransportAction extends HandledTransportActio\n         client.execute(CreateIndexFromSourceAction.INSTANCE, request, failIfNotAcknowledged(listener, errorMessage));\n     }\n \n-    private void reindex(String sourceIndexName, String destIndexName, ActionListener<BulkByScrollResponse> listener, TaskId parentTaskId) {\n+    // Visible for testing\n+    void reindex(String sourceIndexName, String destIndexName, ActionListener<BulkByScrollResponse> listener, TaskId parentTaskId) {\n         logger.debug(\"Reindex to destination index [{}] from source index [{}]\", destIndexName, sourceIndexName);\n         var reindexRequest = new ReindexRequest();\n         reindexRequest.setSourceIndices(sourceIndexName);\n@@ -184,6 +215,7 @@ public class ReindexDataStreamIndexTransportAction extends HandledTransportActio\n         reindexRequest.getSearchRequest().source().fetchSource(true);\n         reindexRequest.setDestIndex(destIndexName);\n         reindexRequest.setParentTask(parentTaskId);\n+        reindexRequest.setRequestsPerSecond(clusterService.getClusterSettings().get(REINDEX_MAX_REQUESTS_PER_SECOND_SETTING));\n         reindexRequest.setSlices(0); // equivalent to slices=auto in rest api\n         client.execute(ReindexAction.INSTANCE, reindexRequest, listener);\n     }",
+        "edit_type": "replace",
+        "verified": true,
+        "verification_result": "developer_fast_path_ok",
+        "applied": true,
+        "apply_result": "SUCCESS"
+      }
+    ]
+  ],
+  "agent_trajectory_edits": [
+    []
+  ],
+  "adapted_code_hunks": [
+    {
+      "target_file": "x-pack/plugin/migrate/src/main/java/org/elasticsearch/xpack/migrate/MigratePlugin.java",
+      "mainline_file": "x-pack/plugin/migrate/src/main/java/org/elasticsearch/xpack/migrate/MigratePlugin.java",
+      "hunk_text": "diff --git a/x-pack/plugin/migrate/src/main/java/org/elasticsearch/xpack/migrate/MigratePlugin.java b/x-pack/plugin/migrate/src/main/java/org/elasticsearch/xpack/migrate/MigratePlugin.java\nindex 55ec4065be8..93b90e551e7 100644\n--- a/x-pack/plugin/migrate/src/main/java/org/elasticsearch/xpack/migrate/MigratePlugin.java\n+++ b/x-pack/plugin/migrate/src/main/java/org/elasticsearch/xpack/migrate/MigratePlugin.java\n@@ -59,6 +59,7 @@ import java.util.function.Predicate;\n import java.util.function.Supplier;\n \n import static org.elasticsearch.xpack.migrate.action.ReindexDataStreamAction.REINDEX_DATA_STREAM_FEATURE_FLAG;\n+import static org.elasticsearch.xpack.migrate.action.ReindexDataStreamIndexTransportAction.REINDEX_MAX_REQUESTS_PER_SECOND_SETTING;\n import static org.elasticsearch.xpack.migrate.task.ReindexDataStreamPersistentTaskExecutor.MAX_CONCURRENT_INDICES_REINDEXED_PER_DATA_STREAM_SETTING;\n \n public class MigratePlugin extends Plugin implements ActionPlugin, PersistentTaskPlugin {\n@@ -160,6 +161,7 @@ public class MigratePlugin extends Plugin implements ActionPlugin, PersistentTas\n     public List<Setting<?>> getSettings() {\n         List<Setting<?>> pluginSettings = new ArrayList<>();\n         pluginSettings.add(MAX_CONCURRENT_INDICES_REINDEXED_PER_DATA_STREAM_SETTING);\n+        pluginSettings.add(REINDEX_MAX_REQUESTS_PER_SECOND_SETTING);\n         return pluginSettings;\n     }\n }\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    },
+    {
+      "target_file": "x-pack/plugin/migrate/src/main/java/org/elasticsearch/xpack/migrate/action/ReindexDataStreamIndexTransportAction.java",
+      "mainline_file": "x-pack/plugin/migrate/src/main/java/org/elasticsearch/xpack/migrate/action/ReindexDataStreamIndexTransportAction.java",
+      "hunk_text": "diff --git a/x-pack/plugin/migrate/src/main/java/org/elasticsearch/xpack/migrate/action/ReindexDataStreamIndexTransportAction.java b/x-pack/plugin/migrate/src/main/java/org/elasticsearch/xpack/migrate/action/ReindexDataStreamIndexTransportAction.java\nindex 7bb440bc52a..65e4214d808 100644\n--- a/x-pack/plugin/migrate/src/main/java/org/elasticsearch/xpack/migrate/action/ReindexDataStreamIndexTransportAction.java\n+++ b/x-pack/plugin/migrate/src/main/java/org/elasticsearch/xpack/migrate/action/ReindexDataStreamIndexTransportAction.java\n@@ -24,6 +24,7 @@ import org.elasticsearch.client.internal.Client;\n import org.elasticsearch.cluster.block.ClusterBlockException;\n import org.elasticsearch.cluster.metadata.IndexMetadata;\n import org.elasticsearch.cluster.service.ClusterService;\n+import org.elasticsearch.common.settings.Setting;\n import org.elasticsearch.common.settings.Settings;\n import org.elasticsearch.core.TimeValue;\n import org.elasticsearch.index.IndexSettings;\n@@ -46,8 +47,37 @@ public class ReindexDataStreamIndexTransportAction extends HandledTransportActio\n     ReindexDataStreamIndexAction.Request,\n     ReindexDataStreamIndexAction.Response> {\n \n+    public static final String REINDEX_MAX_REQUESTS_PER_SECOND_KEY = \"migrate.data_stream_reindex_max_request_per_second\";\n+\n+    public static final Setting<Float> REINDEX_MAX_REQUESTS_PER_SECOND_SETTING = new Setting<>(\n+        REINDEX_MAX_REQUESTS_PER_SECOND_KEY,\n+        Float.toString(10f),\n+        s -> {\n+            if (s.equals(\"-1\")) {\n+                return Float.POSITIVE_INFINITY;\n+            } else {\n+                return Float.parseFloat(s);\n+            }\n+        },\n+        value -> {\n+            if (value <= 0f) {\n+                throw new IllegalArgumentException(\n+                    \"Failed to parse value [\"\n+                        + value\n+                        + \"] for setting [\"\n+                        + REINDEX_MAX_REQUESTS_PER_SECOND_KEY\n+                        + \"] \"\n+                        + \"must be greater than 0 or -1 for infinite\"\n+                );\n+            }\n+        },\n+        Setting.Property.Dynamic,\n+        Setting.Property.NodeScope\n+    );\n+\n     private static final Logger logger = LogManager.getLogger(ReindexDataStreamIndexTransportAction.class);\n     private static final IndicesOptions IGNORE_MISSING_OPTIONS = IndicesOptions.fromOptions(true, true, false, false);\n+\n     private final ClusterService clusterService;\n     private final Client client;\n \n@@ -176,7 +206,8 @@ public class ReindexDataStreamIndexTransportAction extends HandledTransportActio\n         client.execute(CreateIndexFromSourceAction.INSTANCE, request, failIfNotAcknowledged(listener, errorMessage));\n     }\n \n-    private void reindex(String sourceIndexName, String destIndexName, ActionListener<BulkByScrollResponse> listener, TaskId parentTaskId) {\n+    // Visible for testing\n+    void reindex(String sourceIndexName, String destIndexName, ActionListener<BulkByScrollResponse> listener, TaskId parentTaskId) {\n         logger.debug(\"Reindex to destination index [{}] from source index [{}]\", destIndexName, sourceIndexName);\n         var reindexRequest = new ReindexRequest();\n         reindexRequest.setSourceIndices(sourceIndexName);\n@@ -184,6 +215,7 @@ public class ReindexDataStreamIndexTransportAction extends HandledTransportActio\n         reindexRequest.getSearchRequest().source().fetchSource(true);\n         reindexRequest.setDestIndex(destIndexName);\n         reindexRequest.setParentTask(parentTaskId);\n+        reindexRequest.setRequestsPerSecond(clusterService.getClusterSettings().get(REINDEX_MAX_REQUESTS_PER_SECOND_SETTING));\n         reindexRequest.setSlices(0); // equivalent to slices=auto in rest api\n         client.execute(ReindexAction.INSTANCE, reindexRequest, listener);\n     }\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    }
+  ],
+  "validation_repeated_patch_detected": false,
+  "validation_repeated_plan_detected": false,
+  "best_effort_adapted_code_hunks": [
+    {
+      "target_file": "x-pack/plugin/migrate/src/main/java/org/elasticsearch/xpack/migrate/MigratePlugin.java",
+      "mainline_file": "x-pack/plugin/migrate/src/main/java/org/elasticsearch/xpack/migrate/MigratePlugin.java",
+      "hunk_text": "diff --git a/x-pack/plugin/migrate/src/main/java/org/elasticsearch/xpack/migrate/MigratePlugin.java b/x-pack/plugin/migrate/src/main/java/org/elasticsearch/xpack/migrate/MigratePlugin.java\nindex 55ec4065be8..93b90e551e7 100644\n--- a/x-pack/plugin/migrate/src/main/java/org/elasticsearch/xpack/migrate/MigratePlugin.java\n+++ b/x-pack/plugin/migrate/src/main/java/org/elasticsearch/xpack/migrate/MigratePlugin.java\n@@ -59,6 +59,7 @@ import java.util.function.Predicate;\n import java.util.function.Supplier;\n \n import static org.elasticsearch.xpack.migrate.action.ReindexDataStreamAction.REINDEX_DATA_STREAM_FEATURE_FLAG;\n+import static org.elasticsearch.xpack.migrate.action.ReindexDataStreamIndexTransportAction.REINDEX_MAX_REQUESTS_PER_SECOND_SETTING;\n import static org.elasticsearch.xpack.migrate.task.ReindexDataStreamPersistentTaskExecutor.MAX_CONCURRENT_INDICES_REINDEXED_PER_DATA_STREAM_SETTING;\n \n public class MigratePlugin extends Plugin implements ActionPlugin, PersistentTaskPlugin {\n@@ -160,6 +161,7 @@ public class MigratePlugin extends Plugin implements ActionPlugin, PersistentTas\n     public List<Setting<?>> getSettings() {\n         List<Setting<?>> pluginSettings = new ArrayList<>();\n         pluginSettings.add(MAX_CONCURRENT_INDICES_REINDEXED_PER_DATA_STREAM_SETTING);\n+        pluginSettings.add(REINDEX_MAX_REQUESTS_PER_SECOND_SETTING);\n         return pluginSettings;\n     }\n }\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    },
+    {
+      "target_file": "x-pack/plugin/migrate/src/main/java/org/elasticsearch/xpack/migrate/action/ReindexDataStreamIndexTransportAction.java",
+      "mainline_file": "x-pack/plugin/migrate/src/main/java/org/elasticsearch/xpack/migrate/action/ReindexDataStreamIndexTransportAction.java",
+      "hunk_text": "diff --git a/x-pack/plugin/migrate/src/main/java/org/elasticsearch/xpack/migrate/action/ReindexDataStreamIndexTransportAction.java b/x-pack/plugin/migrate/src/main/java/org/elasticsearch/xpack/migrate/action/ReindexDataStreamIndexTransportAction.java\nindex 7bb440bc52a..65e4214d808 100644\n--- a/x-pack/plugin/migrate/src/main/java/org/elasticsearch/xpack/migrate/action/ReindexDataStreamIndexTransportAction.java\n+++ b/x-pack/plugin/migrate/src/main/java/org/elasticsearch/xpack/migrate/action/ReindexDataStreamIndexTransportAction.java\n@@ -24,6 +24,7 @@ import org.elasticsearch.client.internal.Client;\n import org.elasticsearch.cluster.block.ClusterBlockException;\n import org.elasticsearch.cluster.metadata.IndexMetadata;\n import org.elasticsearch.cluster.service.ClusterService;\n+import org.elasticsearch.common.settings.Setting;\n import org.elasticsearch.common.settings.Settings;\n import org.elasticsearch.core.TimeValue;\n import org.elasticsearch.index.IndexSettings;\n@@ -46,8 +47,37 @@ public class ReindexDataStreamIndexTransportAction extends HandledTransportActio\n     ReindexDataStreamIndexAction.Request,\n     ReindexDataStreamIndexAction.Response> {\n \n+    public static final String REINDEX_MAX_REQUESTS_PER_SECOND_KEY = \"migrate.data_stream_reindex_max_request_per_second\";\n+\n+    public static final Setting<Float> REINDEX_MAX_REQUESTS_PER_SECOND_SETTING = new Setting<>(\n+        REINDEX_MAX_REQUESTS_PER_SECOND_KEY,\n+        Float.toString(10f),\n+        s -> {\n+            if (s.equals(\"-1\")) {\n+                return Float.POSITIVE_INFINITY;\n+            } else {\n+                return Float.parseFloat(s);\n+            }\n+        },\n+        value -> {\n+            if (value <= 0f) {\n+                throw new IllegalArgumentException(\n+                    \"Failed to parse value [\"\n+                        + value\n+                        + \"] for setting [\"\n+                        + REINDEX_MAX_REQUESTS_PER_SECOND_KEY\n+                        + \"] \"\n+                        + \"must be greater than 0 or -1 for infinite\"\n+                );\n+            }\n+        },\n+        Setting.Property.Dynamic,\n+        Setting.Property.NodeScope\n+    );\n+\n     private static final Logger logger = LogManager.getLogger(ReindexDataStreamIndexTransportAction.class);\n     private static final IndicesOptions IGNORE_MISSING_OPTIONS = IndicesOptions.fromOptions(true, true, false, false);\n+\n     private final ClusterService clusterService;\n     private final Client client;\n \n@@ -176,7 +206,8 @@ public class ReindexDataStreamIndexTransportAction extends HandledTransportActio\n         client.execute(CreateIndexFromSourceAction.INSTANCE, request, failIfNotAcknowledged(listener, errorMessage));\n     }\n \n-    private void reindex(String sourceIndexName, String destIndexName, ActionListener<BulkByScrollResponse> listener, TaskId parentTaskId) {\n+    // Visible for testing\n+    void reindex(String sourceIndexName, String destIndexName, ActionListener<BulkByScrollResponse> listener, TaskId parentTaskId) {\n         logger.debug(\"Reindex to destination index [{}] from source index [{}]\", destIndexName, sourceIndexName);\n         var reindexRequest = new ReindexRequest();\n         reindexRequest.setSourceIndices(sourceIndexName);\n@@ -184,6 +215,7 @@ public class ReindexDataStreamIndexTransportAction extends HandledTransportActio\n         reindexRequest.getSearchRequest().source().fetchSource(true);\n         reindexRequest.setDestIndex(destIndexName);\n         reindexRequest.setParentTask(parentTaskId);\n+        reindexRequest.setRequestsPerSecond(clusterService.getClusterSettings().get(REINDEX_MAX_REQUESTS_PER_SECOND_SETTING));\n         reindexRequest.setSlices(0); // equivalent to slices=auto in rest api\n         client.execute(ReindexAction.INSTANCE, reindexRequest, listener);\n     }\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    }
+  ],
+  "adapted_test_hunks": [],
+  "generation_checklist": [
+    {
+      "mainline_file": "x-pack/plugin/migrate/src/main/java/org/elasticsearch/xpack/migrate/MigratePlugin.java",
+      "target_file": "x-pack/plugin/migrate/src/main/java/org/elasticsearch/xpack/migrate/MigratePlugin.java",
+      "hunk_index": 0,
+      "adaptation_type": "TYPE_II",
+      "execution_types": [
+        "TYPE_II"
+      ],
+      "status": "success",
+      "reason": "developer_fast_path",
+      "todo_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ],
+      "completed_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ]
+    },
+    {
+      "mainline_file": "x-pack/plugin/migrate/src/main/java/org/elasticsearch/xpack/migrate/action/ReindexDataStreamIndexTransportAction.java",
+      "target_file": "x-pack/plugin/migrate/src/main/java/org/elasticsearch/xpack/migrate/action/ReindexDataStreamIndexTransportAction.java",
+      "hunk_index": 0,
+      "adaptation_type": "TYPE_II",
+      "execution_types": [
+        "TYPE_II"
+      ],
+      "status": "success",
+      "reason": "developer_fast_path",
+      "todo_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ],
+      "completed_steps": [
+        "reset_file",
+        "apply_edits",
+        "capture_diff",
+        "intent_check",
+        "restore_file"
+      ]
+    }
+  ],
+  "generated_patch_hash": "b9a79705d643596915a85e480643d821ab753c2e91b6b5430c792de6b319b626",
+  "force_type_v_until_success": false,
+  "force_type_v_reason": "",
+  "force_type_v_retry_files": [],
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "sources": []
+  }
+}
