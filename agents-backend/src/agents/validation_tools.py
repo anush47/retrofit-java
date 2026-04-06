@@ -294,18 +294,9 @@ class ValidationToolkit:
             return None
 
         info = target_info or {}
-        target_classes = []
-        for t in (info.get("test_targets") or []):
-            if "--tests" in t:
-                # Format is :module:test --tests "ClassName"
-                import re
-                match = re.search(r'--tests\s+"?([^"]+)"?', t)
-                if match:
-                    target_classes.append(match.group(1))
-            elif ":" in t:
-                # Support both :module:ClassName and module:ClassName
-                parts = t.split(":")
-                target_classes.append(parts[-1])
+        target_classes = [
+            t.split(":", 1)[1] for t in (info.get("test_targets") or []) if ":" in t
+        ]
         target_classes_arg = ",".join(sorted(set(target_classes)))
 
         console_file = os.path.join(self.target_repo_path, "build", "test-console.log")
@@ -755,7 +746,6 @@ class ValidationToolkit:
         )
         test_suffixes = ("Test.java", "Tests.java", "IT.java", "TestCase.java")
 
-        np = (project or "").strip().lower()
         for rel_path in changed_files or []:
             p = (rel_path or "").replace("\\", "/")
             if not p:
@@ -786,15 +776,7 @@ class ValidationToolkit:
                 try:
                     class_path = p.split(matched_test_dir, 1)[1]
                     class_name = class_path.replace("/", ".").replace(".java", "")
-                    
-                    if np == "grpc-java" and module_path and not module_path.startswith("grpc-"):
-                        test_gradle_module = f":grpc-{module_path}"
-                    elif module_path and not module_path.startswith(":"):
-                        test_gradle_module = f":{module_path}"
-                    else:
-                        test_gradle_module = module_path
-                    
-                    test_targets.add(f"{test_gradle_module}:test --tests \"{class_name}\"")
+                    test_targets.add(f"{module_path}:{class_name}")
                 except Exception:
                     continue
 

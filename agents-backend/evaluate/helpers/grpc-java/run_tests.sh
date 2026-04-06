@@ -18,12 +18,24 @@ echo "CPU detected: ${MAX_CPU}"
 if [ "${TEST_TARGETS:-}" == "ALL" ]; then
     GRADLE_ARGS="test -PskipAndroid=true"
 elif [ -n "${TEST_TARGETS:-}" ] && [ "${TEST_TARGETS}" != "NONE" ]; then
-    if [[ "${TEST_TARGETS}" == :* ]]; then
-        # Already module-specific, use as is
-        GRADLE_ARGS="${TEST_TARGETS} -PskipAndroid=true"
+    # Helper to transform generic "module:ClassName" -> ":grpc-module:test --tests ClassName"
+    # This keeps ValidationToolkit generic for all projects.
+    NEW_TARGETS=""
+    for ONE_TARGET in ${TEST_TARGETS}; do
+        if [[ "${ONE_TARGET}" == *":"* ]] && [[ "${ONE_TARGET}" != :* ]] && [[ "${ONE_TARGET}" != *"--tests"* ]]; then
+            MOD=$(echo "${ONE_TARGET}" | cut -d: -f1)
+            CLS=$(echo "${ONE_TARGET}" | cut -d: -f2)
+            NEW_TARGETS="${NEW_TARGETS} :grpc-${MOD}:test --tests \"${CLS}\""
+        else
+            NEW_TARGETS="${NEW_TARGETS} ${ONE_TARGET}"
+        fi
+    done
+    
+    # Prepend 'test' if no test task is explicitly mentioned in any target
+    if [[ "${NEW_TARGETS}" == *"test"* ]]; then
+        GRADLE_ARGS="${NEW_TARGETS} -PskipAndroid=true"
     else
-        # Likely class-only, prepend test task
-        GRADLE_ARGS="test ${TEST_TARGETS} -PskipAndroid=true"
+        GRADLE_ARGS="test ${NEW_TARGETS} -PskipAndroid=true"
     fi
 else
     echo "No relevant test targets. Skipping tests."
