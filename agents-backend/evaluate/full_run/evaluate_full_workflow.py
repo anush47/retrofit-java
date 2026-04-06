@@ -63,7 +63,7 @@ REPOS_DIR = os.path.join(BASE_DIR, "temp_repo_storage")
 RESULTS_DIR = os.path.join(os.path.dirname(__file__), "results")
 PHASE0_CACHE_DIR = os.path.join(os.path.dirname(__file__), "phase0_cache")
 
-TARGET_PROJECTS = ["elasticsearch", "crate", "graylog2-server", "druid"]
+TARGET_PROJECTS = ["elasticsearch", "crate", "graylog2-server", "druid", "grpc-java"]
 MAX_PATCHES_PER_PROJECT = None
 
 RUN_MODE_FULL = "full"
@@ -1339,7 +1339,11 @@ def _extract_touched_test_classes(
         if ":" in item:
             classes.append(item.split(":", 1)[1].strip())
         elif item:
-            classes.append(str(item).strip())
+            val = str(item).strip()
+            # Handle Gradle --tests "ClassName" format
+            if val.startswith("--tests "):
+                val = val[8:].strip().strip('"').strip("'")
+            classes.append(val)
 
     return sorted({c for c in classes if c})
 
