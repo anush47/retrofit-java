@@ -1,0 +1,688 @@
+{
+  "hunk_generation_plan": {
+    "server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java": [
+      {
+        "hunk_index": 0,
+        "target_file": "server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java",
+        "operation_index": 0,
+        "edit_type": "replace",
+        "old_string": "                            MapperService.SINGLE_MAPPING_NAME,\n                            0,\n                            XContentDataHelper.encodeToken(context.parser()),\n                            context.doc()",
+        "new_string": "                            MapperService.SINGLE_MAPPING_NAME,\n                            0,\n                            context.encodeFlattenedToken(),\n                            context.doc()",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_replace|forced_type_v:failed_stage_generation_contract",
+        "surround_before_3": [
+          "                if (context.canAddIgnoredField()) {",
+          "                    context.addIgnoredField(",
+          "                        new IgnoredSourceFieldMapper.NameValue("
+        ],
+        "surround_after_3": [
+          "                        )",
+          "                    );",
+          "                } else {"
+        ],
+        "adaptation_type": "TYPE_V",
+        "base_adaptation_type": "TYPE_II",
+        "execution_type": "TYPE_V",
+        "location_match": true,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": true,
+        "namespace_changes": [],
+        "required_invariants": [
+          "context.encodeFlattenedToken(),"
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 67,
+          "target_declared_methods_count": 67,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 1,
+        "target_file": "server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java",
+        "operation_index": 0,
+        "edit_type": "replace",
+        "old_string": "            if (leaf != null) {\n                parser.nextToken();  // Advance the parser to the value to be read.\n                result.add(leaf.cloneWithValue(XContentDataHelper.encodeToken(parser)));\n                parser.nextToken();  // Skip the token ending the value.",
+        "new_string": "            if (leaf != null) {\n                parser.nextToken();  // Advance the parser to the value to be read.\n                result.add(leaf.cloneWithValue(context.encodeFlattenedToken()));\n                parser.nextToken();  // Skip the token ending the value.",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_replace|forced_type_v:failed_stage_generation_contract",
+        "surround_before_3": [
+          "            fieldName = parser.currentName();",
+          "            String fullName = getCurrentPath(path, fieldName);",
+          "            var leaf = fields.get(fullName);  // There may be multiple matches for array elements, don't use #remove."
+        ],
+        "surround_after_3": [
+          "                fieldName = null;",
+          "            }",
+          "            currentToken = parser.nextToken();"
+        ],
+        "adaptation_type": "TYPE_V",
+        "base_adaptation_type": "TYPE_II",
+        "execution_type": "TYPE_V",
+        "location_match": true,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": true,
+        "namespace_changes": [],
+        "required_invariants": [
+          "result.add(leaf.cloneWithValue(context.encodeFlattenedToken()));"
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 67,
+          "target_declared_methods_count": 67,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 2,
+        "target_file": "server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java",
+        "operation_index": 0,
+        "edit_type": "replace",
+        "old_string": "                        context.parent().fullPath(),\n                        context.parent().fullPath().lastIndexOf(context.parent().leafName()),\n                        XContentDataHelper.encodeToken(parser),\n                        context.doc()",
+        "new_string": "                        context.parent().fullPath(),\n                        context.parent().fullPath().lastIndexOf(context.parent().leafName()),\n                        context.encodeFlattenedToken(),\n                        context.doc()",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_replace|forced_type_v:failed_stage_generation_contract",
+        "surround_before_3": [
+          "            if (context.canAddIgnoredField()) {",
+          "                context.addIgnoredField(",
+          "                    new IgnoredSourceFieldMapper.NameValue("
+        ],
+        "surround_after_3": [
+          "                    )",
+          "                );",
+          "            } else {"
+        ],
+        "adaptation_type": "TYPE_V",
+        "base_adaptation_type": "TYPE_II",
+        "execution_type": "TYPE_V",
+        "location_match": true,
+        "surrounding_match": false,
+        "blockers": [
+          "Detected target surrounding context does not match mainline pre-patch surrounding context"
+        ],
+        "namespace_only_possible": true,
+        "namespace_changes": [],
+        "required_invariants": [
+          "context.encodeFlattenedToken(),"
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 67,
+          "target_declared_methods_count": 67,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 3,
+        "target_file": "server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java",
+        "operation_index": 0,
+        "edit_type": "delete",
+        "old_string": "                // read everything up to end object and store it",
+        "new_string": "",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_delete|forced_type_v:failed_stage_generation_contract",
+        "surround_before_3": [
+          "        if (context.dynamic() == ObjectMapper.Dynamic.FALSE) {",
+          "            failIfMatchesRoutingPath(context, currentFieldName);",
+          "            if (context.canAddIgnoredField()) {"
+        ],
+        "surround_after_3": [
+          "                context.addIgnoredField(",
+          "                    IgnoredSourceFieldMapper.NameValue.fromContext(",
+          "                        context,"
+        ],
+        "adaptation_type": "TYPE_V",
+        "base_adaptation_type": "TYPE_II",
+        "execution_type": "TYPE_V",
+        "location_match": true,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": true,
+        "namespace_changes": [],
+        "required_invariants": [
+          "context.encodeFlattenedToken()"
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 67,
+          "target_declared_methods_count": 67,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 3,
+        "target_file": "server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java",
+        "operation_index": 1,
+        "edit_type": "replace",
+        "old_string": "                        context,\n                        context.path().pathAsText(currentFieldName),\n                        XContentDataHelper.encodeToken(context.parser())\n                    )",
+        "new_string": "                        context,\n                        context.path().pathAsText(currentFieldName),\n                        context.encodeFlattenedToken()\n                    )",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_replace|forced_type_v:failed_stage_generation_contract",
+        "surround_before_3": [
+          "                // read everything up to end object and store it",
+          "                context.addIgnoredField(",
+          "                    IgnoredSourceFieldMapper.NameValue.fromContext("
+        ],
+        "surround_after_3": [
+          "                );",
+          "            } else {",
+          "                // not dynamic, read everything up to end object"
+        ],
+        "adaptation_type": "TYPE_V",
+        "base_adaptation_type": "TYPE_II",
+        "execution_type": "TYPE_V",
+        "location_match": true,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": true,
+        "namespace_changes": [],
+        "required_invariants": [
+          "context.encodeFlattenedToken()"
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 67,
+          "target_declared_methods_count": 67,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 4,
+        "target_file": "server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java",
+        "operation_index": 0,
+        "edit_type": "replace",
+        "old_string": "                        context,\n                        context.path().pathAsText(currentFieldName),\n                        XContentDataHelper.encodeToken(context.parser())\n                    )",
+        "new_string": "                        context,\n                        context.path().pathAsText(currentFieldName),\n                        context.encodeFlattenedToken()\n                    )",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_replace|forced_type_v:failed_stage_generation_contract",
+        "surround_before_3": [
+          "                // read everything up to end object and store it",
+          "                context.addIgnoredField(",
+          "                    IgnoredSourceFieldMapper.NameValue.fromContext("
+        ],
+        "surround_after_3": [
+          "                );",
+          "            } else {",
+          "                // not dynamic, read everything up to end object"
+        ],
+        "adaptation_type": "TYPE_V",
+        "base_adaptation_type": "TYPE_II",
+        "execution_type": "TYPE_V",
+        "location_match": false,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": true,
+        "namespace_changes": [],
+        "required_invariants": [
+          "context.encodeFlattenedToken()"
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 67,
+          "target_declared_methods_count": 67,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 5,
+        "target_file": "server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java",
+        "operation_index": 0,
+        "edit_type": "replace",
+        "old_string": "                                context,\n                                context.path().pathAsText(currentFieldName),\n                                XContentDataHelper.encodeToken(context.parser())\n                            )",
+        "new_string": "                                context,\n                                context.path().pathAsText(currentFieldName),\n                                context.encodeFlattenedToken()\n                            )",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_replace|forced_type_v:failed_stage_generation_contract",
+        "surround_before_3": [
+          "                    try {",
+          "                        context.addIgnoredField(",
+          "                            IgnoredSourceFieldMapper.NameValue.fromContext("
+        ],
+        "surround_after_3": [
+          "                        );",
+          "                    } catch (IOException e) {",
+          "                        throw new IllegalArgumentException(\"failed to parse field [\" + currentFieldName + \" ]\", e);"
+        ],
+        "adaptation_type": "TYPE_V",
+        "base_adaptation_type": "TYPE_II",
+        "execution_type": "TYPE_V",
+        "location_match": false,
+        "surrounding_match": false,
+        "blockers": [
+          "Pre-patch surrounding context in target does not match mainline pre-patch context",
+          "Target context lines before patch are different and do not align with mainline context"
+        ],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "context.encodeFlattenedToken()"
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 67,
+          "target_declared_methods_count": 67,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 6,
+        "target_file": "server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java",
+        "operation_index": 0,
+        "edit_type": "replace",
+        "old_string": "                // No need to call #addIgnoredFieldFromContext as both singleton and array instances of this object\n                // get tracked through ignored source.\n                context.addIgnoredField(\n                    IgnoredSourceFieldMapper.NameValue.fromContext(context, fullPath, XContentDataHelper.encodeToken(context.parser()))\n                );\n                return;",
+        "new_string": "                // No need to call #addIgnoredFieldFromContext as both singleton and array instances of this object\n                // get tracked through ignored source.\n                context.addIgnoredField(IgnoredSourceFieldMapper.NameValue.fromContext(context, fullPath, context.encodeFlattenedToken()));\n                return;",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "Applied same edit logic at different location due to location mismatch|forced_type_v:failed_stage_generation_contract",
+        "surround_before_3": [
+          "                || copyToFieldHasValuesInDocument) {",
+          "                context = context.addIgnoredFieldFromContext(IgnoredSourceFieldMapper.NameValue.fromContext(context, fullPath, null));",
+          "            } else if (mapper instanceof ObjectMapper objectMapper && (objectMapper.isEnabled() == false)) {"
+        ],
+        "surround_after_3": [
+          "            }",
+          "        }",
+          ""
+        ],
+        "adaptation_type": "TYPE_V",
+        "base_adaptation_type": "TYPE_II",
+        "execution_type": "TYPE_V",
+        "location_match": false,
+        "surrounding_match": false,
+        "blockers": [
+          "Mainline pre-patch surrounding context lines do not match detected target surrounding lines",
+          "Target context is in a different code block and different lines"
+        ],
+        "namespace_only_possible": false,
+        "namespace_changes": [],
+        "required_invariants": [
+          "context.addIgnoredField(IgnoredSourceFieldMapper.NameValue.fromContext(context, fullPath, context.encodeFlattenedToken()));"
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 67,
+          "target_declared_methods_count": 67,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 7,
+        "target_file": "server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java",
+        "operation_index": 0,
+        "edit_type": "replace",
+        "old_string": "                        context,\n                        context.path().pathAsText(currentFieldName),\n                        XContentDataHelper.encodeToken(context.parser())\n                    )",
+        "new_string": "                        context,\n                        context.path().pathAsText(currentFieldName),\n                        context.encodeFlattenedToken()\n                    )",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_replace|forced_type_v:failed_stage_generation_contract",
+        "surround_before_3": [
+          "                // read everything up to end object and store it",
+          "                context.addIgnoredField(",
+          "                    IgnoredSourceFieldMapper.NameValue.fromContext("
+        ],
+        "surround_after_3": [
+          "                );",
+          "            } else {",
+          "                // not dynamic, read everything up to end object"
+        ],
+        "adaptation_type": "TYPE_V",
+        "base_adaptation_type": "TYPE_II",
+        "execution_type": "TYPE_V",
+        "location_match": false,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": true,
+        "namespace_changes": [],
+        "required_invariants": [
+          "context.encodeFlattenedToken()"
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 67,
+          "target_declared_methods_count": 67,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 8,
+        "target_file": "server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java",
+        "operation_index": 0,
+        "edit_type": "replace",
+        "old_string": "                    context,\n                    context.path().pathAsText(currentFieldName),\n                    XContentDataHelper.encodeToken(context.parser())\n                )",
+        "new_string": "                    context,\n                    context.path().pathAsText(currentFieldName),\n                    context.encodeFlattenedToken()\n                )",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_replace|forced_type_v:failed_stage_generation_contract",
+        "surround_before_3": [
+          "        if (context.dynamic() == ObjectMapper.Dynamic.RUNTIME && context.canAddIgnoredField()) {",
+          "            context.addIgnoredField(",
+          "                IgnoredSourceFieldMapper.NameValue.fromContext("
+        ],
+        "surround_after_3": [
+          "            );",
+          "        }",
+          "        if (context.dynamic().getDynamicFieldsBuilder().createDynamicFieldFromValue(context, currentFieldName) == false) {"
+        ],
+        "adaptation_type": "TYPE_V",
+        "base_adaptation_type": "TYPE_II",
+        "execution_type": "TYPE_V",
+        "location_match": false,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": true,
+        "namespace_changes": [],
+        "required_invariants": [
+          "context.encodeFlattenedToken()"
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 67,
+          "target_declared_methods_count": 67,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 9,
+        "target_file": "server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java",
+        "operation_index": 0,
+        "edit_type": "replace",
+        "old_string": "                    try {\n                        context.addIgnoredField(\n                            IgnoredSourceFieldMapper.NameValue.fromContext(context, path, XContentDataHelper.encodeToken(context.parser()))\n                        );",
+        "new_string": "                    try {\n                        context.addIgnoredField(\n                            IgnoredSourceFieldMapper.NameValue.fromContext(context, path, context.encodeFlattenedToken())\n                        );",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_replace|forced_type_v:failed_stage_generation_contract",
+        "surround_before_3": [
+          "                // Run-time fields are mapped to this mapper, so it needs to handle storing values for use in synthetic source.",
+          "                // #parseValue calls this method once the run-time field is created.",
+          "                if (context.dynamic() == ObjectMapper.Dynamic.RUNTIME && context.canAddIgnoredField()) {"
+        ],
+        "surround_after_3": [
+          "                    } catch (IOException e) {",
+          "                        throw new IllegalArgumentException(",
+          "                            \"failed to parse run-time field under [\" + context.path().pathAsText(\"\") + \" ]\","
+        ],
+        "adaptation_type": "TYPE_V",
+        "base_adaptation_type": "TYPE_II",
+        "execution_type": "TYPE_V",
+        "location_match": true,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": true,
+        "namespace_changes": [
+          {
+            "from": "XContentDataHelper.encodeToken(context.parser())",
+            "to": "context.encodeFlattenedToken()",
+            "reason": "API method changed, replaced with equivalent method in target context"
+          }
+        ],
+        "required_invariants": [
+          "IgnoredSourceFieldMapper.NameValue.fromContext(context, path, context.encodeFlattenedToken())"
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 67,
+          "target_declared_methods_count": 67,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      }
+    ],
+    "server/src/main/java/org/elasticsearch/index/mapper/DocumentParserContext.java": [
+      {
+        "hunk_index": 0,
+        "target_file": "server/src/main/java/org/elasticsearch/index/mapper/DocumentParserContext.java",
+        "operation_index": 0,
+        "edit_type": "insert_before",
+        "old_string": "import org.elasticsearch.common.time.DateFormatter;",
+        "new_string": "import org.apache.lucene.util.BytesRef;\nimport org.elasticsearch.common.time.DateFormatter;",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_insert_before|forced_type_v:failed_stage_generation_contract",
+        "surround_before_3": [
+          "import org.apache.lucene.document.Field;",
+          "import org.apache.lucene.document.StringField;",
+          "import org.apache.lucene.index.IndexableField;"
+        ],
+        "surround_after_3": [
+          "import org.elasticsearch.core.Tuple;",
+          "import org.elasticsearch.index.IndexMode;",
+          "import org.elasticsearch.index.IndexSettings;"
+        ],
+        "adaptation_type": "TYPE_V",
+        "base_adaptation_type": "TYPE_I",
+        "execution_type": "TYPE_V",
+        "location_match": true,
+        "surrounding_match": true,
+        "blockers": [],
+        "namespace_only_possible": true,
+        "namespace_changes": [],
+        "required_invariants": [],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 53,
+          "target_declared_methods_count": 53,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      },
+      {
+        "hunk_index": 1,
+        "target_file": "server/src/main/java/org/elasticsearch/index/mapper/DocumentParserContext.java",
+        "operation_index": 0,
+        "edit_type": "insert_before",
+        "old_string": "     * Return the collection of fields that are missing their source values.",
+        "new_string": "    /**\n     * Wraps {@link XContentDataHelper#encodeToken}, disabling dot expansion from {@link DotExpandingXContentParser}.\n     * This helps avoid producing duplicate names in the same scope, due to expanding dots to objects.\n     * For instance: { \"a.b\": \"b\", \"a.c\": \"c\" } => { \"a\": { \"b\": \"b\" }, \"a\": { \"c\": \"c\" } }\n     * This can happen when storing parts of document source that are not indexed (e.g. disabled objects).\n     */\n    BytesRef encodeFlattenedToken() throws IOException {\n        boolean old = path().isWithinLeafObject();\n        path().setWithinLeafObject(true);\n        BytesRef encoded = XContentDataHelper.encodeToken(parser());\n        path().setWithinLeafObject(old);\n        return encoded;\n    }\n\n     * Return the collection of fields that are missing their source values.",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_insert_before|forced_type_v:failed_stage_generation_contract",
+        "surround_before_3": [
+          "    }",
+          "",
+          "    /**"
+        ],
+        "surround_after_3": [
+          "     */",
+          "    public final Collection<IgnoredSourceFieldMapper.NameValue> getIgnoredFieldsMissingValues() {",
+          "        return Collections.unmodifiableCollection(ignoredFieldsMissingValues);"
+        ],
+        "adaptation_type": "TYPE_V",
+        "base_adaptation_type": "TYPE_II",
+        "execution_type": "TYPE_V",
+        "location_match": true,
+        "surrounding_match": true,
+        "blockers": [],
+        "namespace_only_possible": true,
+        "namespace_changes": [],
+        "required_invariants": [
+          "BytesRef encodeFlattenedToken() throws IOException {",
+          "boolean old = path().isWithinLeafObject();",
+          "path().setWithinLeafObject(true);",
+          "BytesRef encoded = XContentDataHelper.encodeToken(parser());",
+          "path().setWithinLeafObject(old);"
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 53,
+          "target_declared_methods_count": 53,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      }
+    ],
+    "server/src/main/java/org/elasticsearch/index/mapper/IgnoredSourceFieldMapper.java": [
+      {
+        "hunk_index": 0,
+        "target_file": "server/src/main/java/org/elasticsearch/index/mapper/IgnoredSourceFieldMapper.java",
+        "operation_index": 0,
+        "edit_type": "insert_before",
+        "old_string": "        Setting to disable encoding and writing values for this field.",
+        "new_string": "    static final NodeFeature DONT_EXPAND_DOTS_IN_IGNORED_SOURCE = new NodeFeature(\"mapper.ignored_source.dont_expand_dots\");\n        Setting to disable encoding and writing values for this field.",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_insert_before|forced_type_v:failed_stage_generation_contract",
+        "surround_before_3": [
+          "    static final NodeFeature TRACK_IGNORED_SOURCE = new NodeFeature(\"mapper.track_ignored_source\");",
+          "",
+          "    /*"
+        ],
+        "surround_after_3": [
+          "        This is needed to unblock index functionality in case there is a bug on this code path.",
+          "     */",
+          "    public static final Setting<Boolean> SKIP_IGNORED_SOURCE_WRITE_SETTING = Setting.boolSetting("
+        ],
+        "adaptation_type": "TYPE_V",
+        "base_adaptation_type": "TYPE_I",
+        "execution_type": "TYPE_V",
+        "location_match": true,
+        "surrounding_match": true,
+        "blockers": [],
+        "namespace_only_possible": true,
+        "namespace_changes": [],
+        "required_invariants": [
+          "static final NodeFeature DONT_EXPAND_DOTS_IN_IGNORED_SOURCE = new NodeFeature(\"mapper.ignored_source.dont_expand_dots\");"
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 16,
+          "target_declared_methods_count": 16,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      }
+    ],
+    "server/src/main/java/org/elasticsearch/index/mapper/MapperFeatures.java": [
+      {
+        "hunk_index": 0,
+        "target_file": "server/src/main/java/org/elasticsearch/index/mapper/MapperFeatures.java",
+        "operation_index": 0,
+        "edit_type": "replace",
+        "old_string": "    @Override\n    public Set<NodeFeature> getTestFeatures() {\n        return Set.of(RangeFieldMapper.DATE_RANGE_INDEXING_FIX);\n    }",
+        "new_string": "    @Override\n    public Set<NodeFeature> getTestFeatures() {\n        return Set.of(RangeFieldMapper.DATE_RANGE_INDEXING_FIX, IgnoredSourceFieldMapper.DONT_EXPAND_DOTS_IN_IGNORED_SOURCE);\n    }",
+        "verified": true,
+        "verification_result": "sanitize_resolved:exact",
+        "notes": "required_op_replace|forced_type_v:failed_stage_generation_contract",
+        "surround_before_3": [
+          "        );",
+          "    }",
+          ""
+        ],
+        "surround_after_3": [
+          "}"
+        ],
+        "adaptation_type": "TYPE_V",
+        "base_adaptation_type": "TYPE_II",
+        "execution_type": "TYPE_V",
+        "location_match": true,
+        "surrounding_match": false,
+        "blockers": [],
+        "namespace_only_possible": true,
+        "namespace_changes": [],
+        "required_invariants": [
+          "return Set.of(RangeFieldMapper.DATE_RANGE_INDEXING_FIX, IgnoredSourceFieldMapper.DONT_EXPAND_DOTS_IN_IGNORED_SOURCE);"
+        ],
+        "required_symbols": [],
+        "protected_symbols": [],
+        "must_preserve_symbols": [],
+        "chain_constraints": [],
+        "api_inventory": {
+          "mainline_declared_methods_count": 2,
+          "target_declared_methods_count": 2,
+          "matched_symbols_before": [],
+          "missing_symbols_before": []
+        }
+      }
+    ]
+  },
+  "last_plan_signature": "cb516436da8ee897876036df5c1c3d47913ce8eee2957c80ed2f1ba10acbc1b9",
+  "validation_repeated_plan_detected": false,
+  "force_type_v_until_success": true,
+  "force_type_v_reason": "failed_stage_generation_contract",
+  "force_type_v_retry_files": [
+    "server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java",
+    "server/src/main/java/org/elasticsearch/index/mapper/DocumentParserContext.java",
+    "server/src/main/java/org/elasticsearch/index/mapper/IgnoredSourceFieldMapper.java",
+    "server/src/main/java/org/elasticsearch/index/mapper/MapperFeatures.java"
+  ],
+  "token_usage": {
+    "input_tokens": 18049,
+    "output_tokens": 4213,
+    "total_tokens": 22262,
+    "estimated": false,
+    "sources": [
+      "planning_agent.provider_usage",
+      "planning_agent.provider_usage",
+      "planning_agent.provider_usage",
+      "planning_agent.provider_usage",
+      "planning_agent.provider_usage",
+      "planning_agent.provider_usage",
+      "planning_agent.provider_usage",
+      "planning_agent.provider_usage",
+      "planning_agent.provider_usage",
+      "planning_agent.provider_usage",
+      "planning_agent.provider_usage",
+      "planning_agent.provider_usage",
+      "planning_agent.provider_usage",
+      "planning_agent.provider_usage"
+    ]
+  }
+}

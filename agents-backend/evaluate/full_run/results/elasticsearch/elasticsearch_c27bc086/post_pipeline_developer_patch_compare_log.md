@@ -1,0 +1,168 @@
+# Post-Pipeline Developer Patch Comparison
+
+**Exact Developer Patch (code-only)**: False
+
+**Comparison Method**: file_state
+
+## Commit Pair Consistency
+- Pair mismatch: False
+- Reason: scope_overlap_ok
+- Mainline Java files: ['server/src/main/java/org/elasticsearch/transport/TransportService.java']
+- Developer Java files: ['server/src/main/java/org/elasticsearch/transport/TransportService.java']
+- Overlap Java files: ['server/src/main/java/org/elasticsearch/transport/TransportService.java']
+- Overlap ratio (mainline): 1.0
+- Compare files scope used: ['server/src/main/java/org/elasticsearch/transport/TransportService.java']
+
+## File State Comparison
+- Compared files: ['server/src/main/java/org/elasticsearch/transport/TransportService.java']
+- Mismatched files: ['server/src/main/java/org/elasticsearch/transport/TransportService.java']
+- Error: None
+
+## Comparison Scope
+- Agent-only patch: code hunks produced by Agent 3
+- Final effective patch: agent code hunks + developer auxiliary hunks (still code-only for this report)
+
+## Agent-Only Hunk Comparison (code files)
+
+### server/src/main/java/org/elasticsearch/transport/TransportService.java
+
+- Developer hunks: 1
+- Generated hunks: 0
+
+#### Hunk 1
+
+Developer
+```diff
+@@ -1060,8 +1060,9 @@
+         if (lifecycle.stoppedOrClosed()) {
+             // too late to try and dispatch anywhere else, let's just use the calling thread
+             return EsExecutors.DIRECT_EXECUTOR_SERVICE;
+-        } else if (handlerExecutor == EsExecutors.DIRECT_EXECUTOR_SERVICE) {
+-            // if the handler is non-forking then dispatch to GENERIC to avoid a possible stack overflow
++        } else if (handlerExecutor == EsExecutors.DIRECT_EXECUTOR_SERVICE && enableStackOverflowAvoidance) {
++            // If the handler is non-forking and stack overflow protection is enabled then dispatch to GENERIC
++            // Otherwise we let the handler deal with any potential stack overflow (this is the default)
+             return threadPool.generic();
+         } else {
+             return handlerExecutor;
+
+```
+
+Generated
+```diff
+*No hunk*
+```
+
+Developer -> Generated (Unified Diff)
+```diff
+--- developer+++ generated@@ -1,12 +1 @@-@@ -1060,8 +1060,9 @@
+-         if (lifecycle.stoppedOrClosed()) {
+-             // too late to try and dispatch anywhere else, let's just use the calling thread
+-             return EsExecutors.DIRECT_EXECUTOR_SERVICE;
+--        } else if (handlerExecutor == EsExecutors.DIRECT_EXECUTOR_SERVICE) {
+--            // if the handler is non-forking then dispatch to GENERIC to avoid a possible stack overflow
+-+        } else if (handlerExecutor == EsExecutors.DIRECT_EXECUTOR_SERVICE && enableStackOverflowAvoidance) {
+-+            // If the handler is non-forking and stack overflow protection is enabled then dispatch to GENERIC
+-+            // Otherwise we let the handler deal with any potential stack overflow (this is the default)
+-             return threadPool.generic();
+-         } else {
+-             return handlerExecutor;
++*No hunk*
+```
+
+
+
+## Full Generated Patch (Agent-Only, code-only)
+```diff
+
+```
+
+## Full Generated Patch (Final Effective, code-only)
+```diff
+
+```
+## Full Developer Backport Patch (full commit diff)
+```diff
+diff --git a/docs/changelog/114375.yaml b/docs/changelog/114375.yaml
+new file mode 100644
+index 00000000000..7ff7cc60b34
+--- /dev/null
++++ b/docs/changelog/114375.yaml
+@@ -0,0 +1,5 @@
++pr: 114375
++summary: Handle `InternalSendException` inline for non-forking handlers
++area: Distributed
++type: bug
++issues: []
+diff --git a/server/src/main/java/org/elasticsearch/transport/TransportService.java b/server/src/main/java/org/elasticsearch/transport/TransportService.java
+index 5269f02c7d8..af9887d8a16 100644
+--- a/server/src/main/java/org/elasticsearch/transport/TransportService.java
++++ b/server/src/main/java/org/elasticsearch/transport/TransportService.java
+@@ -1060,8 +1060,9 @@ public class TransportService extends AbstractLifecycleComponent
+         if (lifecycle.stoppedOrClosed()) {
+             // too late to try and dispatch anywhere else, let's just use the calling thread
+             return EsExecutors.DIRECT_EXECUTOR_SERVICE;
+-        } else if (handlerExecutor == EsExecutors.DIRECT_EXECUTOR_SERVICE) {
+-            // if the handler is non-forking then dispatch to GENERIC to avoid a possible stack overflow
++        } else if (handlerExecutor == EsExecutors.DIRECT_EXECUTOR_SERVICE && enableStackOverflowAvoidance) {
++            // If the handler is non-forking and stack overflow protection is enabled then dispatch to GENERIC
++            // Otherwise we let the handler deal with any potential stack overflow (this is the default)
+             return threadPool.generic();
+         } else {
+             return handlerExecutor;
+diff --git a/server/src/test/java/org/elasticsearch/transport/TransportServiceLifecycleTests.java b/server/src/test/java/org/elasticsearch/transport/TransportServiceLifecycleTests.java
+index a4a6ef6c5c5..b631eddc517 100644
+--- a/server/src/test/java/org/elasticsearch/transport/TransportServiceLifecycleTests.java
++++ b/server/src/test/java/org/elasticsearch/transport/TransportServiceLifecycleTests.java
+@@ -149,8 +149,13 @@ public class TransportServiceLifecycleTests extends ESTestCase {
+         }
+     }
+ 
+-    public void testInternalSendExceptionForksToGenericIfHandlerDoesNotFork() {
+-        try (var nodeA = new TestNode("node-A")) {
++    public void testInternalSendExceptionForksToGenericIfHandlerDoesNotForkAndStackOverflowProtectionEnabled() {
++        try (
++            var nodeA = new TestNode(
++                "node-A",
++                Settings.builder().put(TransportService.ENABLE_STACK_OVERFLOW_AVOIDANCE.getKey(), true).build()
++            )
++        ) {
+             final var future = new PlainActionFuture<TransportResponse.Empty>();
+             nodeA.transportService.sendRequest(
+                 nodeA.getThrowingConnection(),
+@@ -165,6 +170,33 @@ public class TransportServiceLifecycleTests extends ESTestCase {
+ 
+             assertEquals("simulated exception in sendRequest", getSendRequestException(future, IOException.class).getMessage());
+         }
++        assertWarnings(
++            "[transport.enable_stack_protection] setting was deprecated in Elasticsearch and will be removed in a future release."
++        );
++    }
++
++    public void testInternalSendExceptionWithNonForkingResponseHandlerCompletesListenerInline() {
++        try (var nodeA = new TestNode("node-A")) {
++            final Thread callingThread = Thread.currentThread();
++            assertEquals(
++                "simulated exception in sendRequest",
++                safeAwaitAndUnwrapFailure(
++                    IOException.class,
++                    TransportResponse.Empty.class,
++                    l -> nodeA.transportService.sendRequest(
++                        nodeA.getThrowingConnection(),
++                        TestNode.randomActionName(random()),
++                        new EmptyRequest(),
++                        TransportRequestOptions.EMPTY,
++                        new ActionListenerResponseHandler<>(
++                            ActionListener.runBefore(l, () -> assertSame(callingThread, Thread.currentThread())),
++                            unusedReader(),
++                            EsExecutors.DIRECT_EXECUTOR_SERVICE
++                        )
++                    )
++                ).getMessage()
++            );
++        }
+     }
+ 
+     public void testInternalSendExceptionForcesExecutionOnHandlerExecutor() {
+
+```

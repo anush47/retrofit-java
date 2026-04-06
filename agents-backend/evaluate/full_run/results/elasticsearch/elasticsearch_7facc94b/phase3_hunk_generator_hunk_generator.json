@@ -1,0 +1,183 @@
+{
+  "adapted_file_edits": [],
+  "all_adapted_file_edits": [
+    [
+      {
+        "target_file": "server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java",
+        "mainline_file": "server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java",
+        "old_string": "<developer patch fast path>",
+        "new_string": "diff --git a/server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java b/server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java\nindex 8aea8d53552..0f957baccf8 100644\n--- a/server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java\n+++ b/server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java\n@@ -135,7 +135,7 @@ public final class DocumentParser {\n                         new IgnoredSourceFieldMapper.NameValue(\n                             MapperService.SINGLE_MAPPING_NAME,\n                             0,\n-                            XContentDataHelper.encodeToken(context.parser()),\n+                            context.encodeFlattenedToken(),\n                             context.doc()\n                         )\n                     );\n@@ -236,7 +236,7 @@ public final class DocumentParser {\n             var leaf = fields.get(fullName);  // There may be multiple matches for array elements, don't use #remove.\n             if (leaf != null) {\n                 parser.nextToken();  // Advance the parser to the value to be read.\n-                result.add(leaf.cloneWithValue(XContentDataHelper.encodeToken(parser)));\n+                result.add(leaf.cloneWithValue(context.encodeFlattenedToken()));\n                 parser.nextToken();  // Skip the token ending the value.\n                 fieldName = null;\n             }\n@@ -402,7 +402,7 @@ public final class DocumentParser {\n                     new IgnoredSourceFieldMapper.NameValue(\n                         context.parent().fullPath(),\n                         context.parent().fullPath().lastIndexOf(context.parent().leafName()),\n-                        XContentDataHelper.encodeToken(parser),\n+                        context.encodeFlattenedToken(),\n                         context.doc()\n                     )\n                 );\n@@ -652,12 +652,11 @@ public final class DocumentParser {\n         if (context.dynamic() == ObjectMapper.Dynamic.FALSE) {\n             failIfMatchesRoutingPath(context, currentFieldName);\n             if (context.canAddIgnoredField()) {\n-                // read everything up to end object and store it\n                 context.addIgnoredField(\n                     IgnoredSourceFieldMapper.NameValue.fromContext(\n                         context,\n                         context.path().pathAsText(currentFieldName),\n-                        XContentDataHelper.encodeToken(context.parser())\n+                        context.encodeFlattenedToken()\n                     )\n                 );\n             } else {\n@@ -743,7 +742,7 @@ public final class DocumentParser {\n                     IgnoredSourceFieldMapper.NameValue.fromContext(\n                         context,\n                         context.path().pathAsText(currentFieldName),\n-                        XContentDataHelper.encodeToken(context.parser())\n+                        context.encodeFlattenedToken()\n                     )\n                 );\n             } else {\n@@ -761,7 +760,7 @@ public final class DocumentParser {\n                             IgnoredSourceFieldMapper.NameValue.fromContext(\n                                 context,\n                                 context.path().pathAsText(currentFieldName),\n-                                XContentDataHelper.encodeToken(context.parser())\n+                                context.encodeFlattenedToken()\n                             )\n                         );\n                     } catch (IOException e) {\n@@ -818,9 +817,7 @@ public final class DocumentParser {\n             } else if (mapper instanceof ObjectMapper objectMapper && (objectMapper.isEnabled() == false)) {\n                 // No need to call #addIgnoredFieldFromContext as both singleton and array instances of this object\n                 // get tracked through ignored source.\n-                context.addIgnoredField(\n-                    IgnoredSourceFieldMapper.NameValue.fromContext(context, fullPath, XContentDataHelper.encodeToken(context.parser()))\n-                );\n+                context.addIgnoredField(IgnoredSourceFieldMapper.NameValue.fromContext(context, fullPath, context.encodeFlattenedToken()));\n                 return;\n             }\n         }\n@@ -934,7 +931,7 @@ public final class DocumentParser {\n                     IgnoredSourceFieldMapper.NameValue.fromContext(\n                         context,\n                         context.path().pathAsText(currentFieldName),\n-                        XContentDataHelper.encodeToken(context.parser())\n+                        context.encodeFlattenedToken()\n                     )\n                 );\n             }\n@@ -945,7 +942,7 @@ public final class DocumentParser {\n                 IgnoredSourceFieldMapper.NameValue.fromContext(\n                     context,\n                     context.path().pathAsText(currentFieldName),\n-                    XContentDataHelper.encodeToken(context.parser())\n+                    context.encodeFlattenedToken()\n                 )\n             );\n         }\n@@ -1044,7 +1041,7 @@ public final class DocumentParser {\n                 if (context.dynamic() == ObjectMapper.Dynamic.RUNTIME && context.canAddIgnoredField()) {\n                     try {\n                         context.addIgnoredField(\n-                            IgnoredSourceFieldMapper.NameValue.fromContext(context, path, XContentDataHelper.encodeToken(context.parser()))\n+                            IgnoredSourceFieldMapper.NameValue.fromContext(context, path, context.encodeFlattenedToken())\n                         );\n                     } catch (IOException e) {\n                         throw new IllegalArgumentException(",
+        "edit_type": "replace",
+        "verified": true,
+        "verification_result": "developer_fast_path_ok",
+        "applied": true,
+        "apply_result": "SUCCESS"
+      },
+      {
+        "target_file": "server/src/main/java/org/elasticsearch/index/mapper/DocumentParserContext.java",
+        "mainline_file": "server/src/main/java/org/elasticsearch/index/mapper/DocumentParserContext.java",
+        "old_string": "<developer patch fast path>",
+        "new_string": "diff --git a/server/src/main/java/org/elasticsearch/index/mapper/DocumentParserContext.java b/server/src/main/java/org/elasticsearch/index/mapper/DocumentParserContext.java\nindex c2970d87161..ac6999f3d79 100644\n--- a/server/src/main/java/org/elasticsearch/index/mapper/DocumentParserContext.java\n+++ b/server/src/main/java/org/elasticsearch/index/mapper/DocumentParserContext.java\n@@ -12,6 +12,7 @@ package org.elasticsearch.index.mapper;\n import org.apache.lucene.document.Field;\n import org.apache.lucene.document.StringField;\n import org.apache.lucene.index.IndexableField;\n+import org.apache.lucene.util.BytesRef;\n import org.elasticsearch.common.time.DateFormatter;\n import org.elasticsearch.core.Tuple;\n import org.elasticsearch.index.IndexMode;\n@@ -341,6 +342,20 @@ public abstract class DocumentParserContext {\n         return this;\n     }\n \n+    /**\n+     * Wraps {@link XContentDataHelper#encodeToken}, disabling dot expansion from {@link DotExpandingXContentParser}.\n+     * This helps avoid producing duplicate names in the same scope, due to expanding dots to objects.\n+     * For instance: { \"a.b\": \"b\", \"a.c\": \"c\" } => { \"a\": { \"b\": \"b\" }, \"a\": { \"c\": \"c\" } }\n+     * This can happen when storing parts of document source that are not indexed (e.g. disabled objects).\n+     */\n+    BytesRef encodeFlattenedToken() throws IOException {\n+        boolean old = path().isWithinLeafObject();\n+        path().setWithinLeafObject(true);\n+        BytesRef encoded = XContentDataHelper.encodeToken(parser());\n+        path().setWithinLeafObject(old);\n+        return encoded;\n+    }\n+\n     /**\n      * Return the collection of fields that are missing their source values.\n      */",
+        "edit_type": "replace",
+        "verified": true,
+        "verification_result": "developer_fast_path_ok",
+        "applied": true,
+        "apply_result": "SUCCESS"
+      },
+      {
+        "target_file": "server/src/main/java/org/elasticsearch/index/mapper/IgnoredSourceFieldMapper.java",
+        "mainline_file": "server/src/main/java/org/elasticsearch/index/mapper/IgnoredSourceFieldMapper.java",
+        "old_string": "<developer patch fast path>",
+        "new_string": "diff --git a/server/src/main/java/org/elasticsearch/index/mapper/IgnoredSourceFieldMapper.java b/server/src/main/java/org/elasticsearch/index/mapper/IgnoredSourceFieldMapper.java\nindex d57edb757ba..296c2c5311d 100644\n--- a/server/src/main/java/org/elasticsearch/index/mapper/IgnoredSourceFieldMapper.java\n+++ b/server/src/main/java/org/elasticsearch/index/mapper/IgnoredSourceFieldMapper.java\n@@ -57,6 +57,7 @@ public class IgnoredSourceFieldMapper extends MetadataFieldMapper {\n     public static final TypeParser PARSER = new FixedTypeParser(context -> new IgnoredSourceFieldMapper(context.getIndexSettings()));\n \n     static final NodeFeature TRACK_IGNORED_SOURCE = new NodeFeature(\"mapper.track_ignored_source\");\n+    static final NodeFeature DONT_EXPAND_DOTS_IN_IGNORED_SOURCE = new NodeFeature(\"mapper.ignored_source.dont_expand_dots\");\n \n     /*\n         Setting to disable encoding and writing values for this field.",
+        "edit_type": "replace",
+        "verified": true,
+        "verification_result": "developer_fast_path_ok",
+        "applied": true,
+        "apply_result": "SUCCESS"
+      },
+      {
+        "target_file": "server/src/main/java/org/elasticsearch/index/mapper/MapperFeatures.java",
+        "mainline_file": "server/src/main/java/org/elasticsearch/index/mapper/MapperFeatures.java",
+        "old_string": "<developer patch fast path>",
+        "new_string": "diff --git a/server/src/main/java/org/elasticsearch/index/mapper/MapperFeatures.java b/server/src/main/java/org/elasticsearch/index/mapper/MapperFeatures.java\nindex cf8f391813c..7d17079c20d 100644\n--- a/server/src/main/java/org/elasticsearch/index/mapper/MapperFeatures.java\n+++ b/server/src/main/java/org/elasticsearch/index/mapper/MapperFeatures.java\n@@ -52,6 +52,6 @@ public class MapperFeatures implements FeatureSpecification {\n \n     @Override\n     public Set<NodeFeature> getTestFeatures() {\n-        return Set.of(RangeFieldMapper.DATE_RANGE_INDEXING_FIX);\n+        return Set.of(RangeFieldMapper.DATE_RANGE_INDEXING_FIX, IgnoredSourceFieldMapper.DONT_EXPAND_DOTS_IN_IGNORED_SOURCE);\n     }\n }",
+        "edit_type": "replace",
+        "verified": true,
+        "verification_result": "developer_fast_path_ok",
+        "applied": true,
+        "apply_result": "SUCCESS"
+      }
+    ],
+    [],
+    []
+  ],
+  "agent_trajectory_edits": [
+    [],
+    [],
+    []
+  ],
+  "adapted_code_hunks": [
+    {
+      "target_file": "server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java",
+      "mainline_file": "server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java",
+      "hunk_text": "diff --git a/server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java b/server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java\nindex 8aea8d53552..0f957baccf8 100644\n--- a/server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java\n+++ b/server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java\n@@ -135,7 +135,7 @@ public final class DocumentParser {\n                         new IgnoredSourceFieldMapper.NameValue(\n                             MapperService.SINGLE_MAPPING_NAME,\n                             0,\n-                            XContentDataHelper.encodeToken(context.parser()),\n+                            context.encodeFlattenedToken(),\n                             context.doc()\n                         )\n                     );\n@@ -236,7 +236,7 @@ public final class DocumentParser {\n             var leaf = fields.get(fullName);  // There may be multiple matches for array elements, don't use #remove.\n             if (leaf != null) {\n                 parser.nextToken();  // Advance the parser to the value to be read.\n-                result.add(leaf.cloneWithValue(XContentDataHelper.encodeToken(parser)));\n+                result.add(leaf.cloneWithValue(context.encodeFlattenedToken()));\n                 parser.nextToken();  // Skip the token ending the value.\n                 fieldName = null;\n             }\n@@ -402,7 +402,7 @@ public final class DocumentParser {\n                     new IgnoredSourceFieldMapper.NameValue(\n                         context.parent().fullPath(),\n                         context.parent().fullPath().lastIndexOf(context.parent().leafName()),\n-                        XContentDataHelper.encodeToken(parser),\n+                        context.encodeFlattenedToken(),\n                         context.doc()\n                     )\n                 );\n@@ -652,12 +652,11 @@ public final class DocumentParser {\n         if (context.dynamic() == ObjectMapper.Dynamic.FALSE) {\n             failIfMatchesRoutingPath(context, currentFieldName);\n             if (context.canAddIgnoredField()) {\n-                // read everything up to end object and store it\n                 context.addIgnoredField(\n                     IgnoredSourceFieldMapper.NameValue.fromContext(\n                         context,\n                         context.path().pathAsText(currentFieldName),\n-                        XContentDataHelper.encodeToken(context.parser())\n+                        context.encodeFlattenedToken()\n                     )\n                 );\n             } else {\n@@ -743,7 +742,7 @@ public final class DocumentParser {\n                     IgnoredSourceFieldMapper.NameValue.fromContext(\n                         context,\n                         context.path().pathAsText(currentFieldName),\n-                        XContentDataHelper.encodeToken(context.parser())\n+                        context.encodeFlattenedToken()\n                     )\n                 );\n             } else {\n@@ -761,7 +760,7 @@ public final class DocumentParser {\n                             IgnoredSourceFieldMapper.NameValue.fromContext(\n                                 context,\n                                 context.path().pathAsText(currentFieldName),\n-                                XContentDataHelper.encodeToken(context.parser())\n+                                context.encodeFlattenedToken()\n                             )\n                         );\n                     } catch (IOException e) {\n@@ -818,9 +817,7 @@ public final class DocumentParser {\n             } else if (mapper instanceof ObjectMapper objectMapper && (objectMapper.isEnabled() == false)) {\n                 // No need to call #addIgnoredFieldFromContext as both singleton and array instances of this object\n                 // get tracked through ignored source.\n-                context.addIgnoredField(\n-                    IgnoredSourceFieldMapper.NameValue.fromContext(context, fullPath, XContentDataHelper.encodeToken(context.parser()))\n-                );\n+                context.addIgnoredField(IgnoredSourceFieldMapper.NameValue.fromContext(context, fullPath, context.encodeFlattenedToken()));\n                 return;\n             }\n         }\n@@ -934,7 +931,7 @@ public final class DocumentParser {\n                     IgnoredSourceFieldMapper.NameValue.fromContext(\n                         context,\n                         context.path().pathAsText(currentFieldName),\n-                        XContentDataHelper.encodeToken(context.parser())\n+                        context.encodeFlattenedToken()\n                     )\n                 );\n             }\n@@ -945,7 +942,7 @@ public final class DocumentParser {\n                 IgnoredSourceFieldMapper.NameValue.fromContext(\n                     context,\n                     context.path().pathAsText(currentFieldName),\n-                    XContentDataHelper.encodeToken(context.parser())\n+                    context.encodeFlattenedToken()\n                 )\n             );\n         }\n@@ -1044,7 +1041,7 @@ public final class DocumentParser {\n                 if (context.dynamic() == ObjectMapper.Dynamic.RUNTIME && context.canAddIgnoredField()) {\n                     try {\n                         context.addIgnoredField(\n-                            IgnoredSourceFieldMapper.NameValue.fromContext(context, path, XContentDataHelper.encodeToken(context.parser()))\n+                            IgnoredSourceFieldMapper.NameValue.fromContext(context, path, context.encodeFlattenedToken())\n                         );\n                     } catch (IOException e) {\n                         throw new IllegalArgumentException(\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    },
+    {
+      "target_file": "server/src/main/java/org/elasticsearch/index/mapper/DocumentParserContext.java",
+      "mainline_file": "server/src/main/java/org/elasticsearch/index/mapper/DocumentParserContext.java",
+      "hunk_text": "diff --git a/server/src/main/java/org/elasticsearch/index/mapper/DocumentParserContext.java b/server/src/main/java/org/elasticsearch/index/mapper/DocumentParserContext.java\nindex c2970d87161..ac6999f3d79 100644\n--- a/server/src/main/java/org/elasticsearch/index/mapper/DocumentParserContext.java\n+++ b/server/src/main/java/org/elasticsearch/index/mapper/DocumentParserContext.java\n@@ -12,6 +12,7 @@ package org.elasticsearch.index.mapper;\n import org.apache.lucene.document.Field;\n import org.apache.lucene.document.StringField;\n import org.apache.lucene.index.IndexableField;\n+import org.apache.lucene.util.BytesRef;\n import org.elasticsearch.common.time.DateFormatter;\n import org.elasticsearch.core.Tuple;\n import org.elasticsearch.index.IndexMode;\n@@ -341,6 +342,20 @@ public abstract class DocumentParserContext {\n         return this;\n     }\n \n+    /**\n+     * Wraps {@link XContentDataHelper#encodeToken}, disabling dot expansion from {@link DotExpandingXContentParser}.\n+     * This helps avoid producing duplicate names in the same scope, due to expanding dots to objects.\n+     * For instance: { \"a.b\": \"b\", \"a.c\": \"c\" } => { \"a\": { \"b\": \"b\" }, \"a\": { \"c\": \"c\" } }\n+     * This can happen when storing parts of document source that are not indexed (e.g. disabled objects).\n+     */\n+    BytesRef encodeFlattenedToken() throws IOException {\n+        boolean old = path().isWithinLeafObject();\n+        path().setWithinLeafObject(true);\n+        BytesRef encoded = XContentDataHelper.encodeToken(parser());\n+        path().setWithinLeafObject(old);\n+        return encoded;\n+    }\n+\n     /**\n      * Return the collection of fields that are missing their source values.\n      */\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    },
+    {
+      "target_file": "server/src/main/java/org/elasticsearch/index/mapper/IgnoredSourceFieldMapper.java",
+      "mainline_file": "server/src/main/java/org/elasticsearch/index/mapper/IgnoredSourceFieldMapper.java",
+      "hunk_text": "diff --git a/server/src/main/java/org/elasticsearch/index/mapper/IgnoredSourceFieldMapper.java b/server/src/main/java/org/elasticsearch/index/mapper/IgnoredSourceFieldMapper.java\nindex d57edb757ba..296c2c5311d 100644\n--- a/server/src/main/java/org/elasticsearch/index/mapper/IgnoredSourceFieldMapper.java\n+++ b/server/src/main/java/org/elasticsearch/index/mapper/IgnoredSourceFieldMapper.java\n@@ -57,6 +57,7 @@ public class IgnoredSourceFieldMapper extends MetadataFieldMapper {\n     public static final TypeParser PARSER = new FixedTypeParser(context -> new IgnoredSourceFieldMapper(context.getIndexSettings()));\n \n     static final NodeFeature TRACK_IGNORED_SOURCE = new NodeFeature(\"mapper.track_ignored_source\");\n+    static final NodeFeature DONT_EXPAND_DOTS_IN_IGNORED_SOURCE = new NodeFeature(\"mapper.ignored_source.dont_expand_dots\");\n \n     /*\n         Setting to disable encoding and writing values for this field.\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    },
+    {
+      "target_file": "server/src/main/java/org/elasticsearch/index/mapper/MapperFeatures.java",
+      "mainline_file": "server/src/main/java/org/elasticsearch/index/mapper/MapperFeatures.java",
+      "hunk_text": "diff --git a/server/src/main/java/org/elasticsearch/index/mapper/MapperFeatures.java b/server/src/main/java/org/elasticsearch/index/mapper/MapperFeatures.java\nindex cf8f391813c..7d17079c20d 100644\n--- a/server/src/main/java/org/elasticsearch/index/mapper/MapperFeatures.java\n+++ b/server/src/main/java/org/elasticsearch/index/mapper/MapperFeatures.java\n@@ -52,6 +52,6 @@ public class MapperFeatures implements FeatureSpecification {\n \n     @Override\n     public Set<NodeFeature> getTestFeatures() {\n-        return Set.of(RangeFieldMapper.DATE_RANGE_INDEXING_FIX);\n+        return Set.of(RangeFieldMapper.DATE_RANGE_INDEXING_FIX, IgnoredSourceFieldMapper.DONT_EXPAND_DOTS_IN_IGNORED_SOURCE);\n     }\n }\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    }
+  ],
+  "best_effort_adapted_code_hunks": [
+    {
+      "target_file": "server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java",
+      "mainline_file": "server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java",
+      "hunk_text": "diff --git a/server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java b/server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java\nindex 8aea8d53552..0f957baccf8 100644\n--- a/server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java\n+++ b/server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java\n@@ -135,7 +135,7 @@ public final class DocumentParser {\n                         new IgnoredSourceFieldMapper.NameValue(\n                             MapperService.SINGLE_MAPPING_NAME,\n                             0,\n-                            XContentDataHelper.encodeToken(context.parser()),\n+                            context.encodeFlattenedToken(),\n                             context.doc()\n                         )\n                     );\n@@ -236,7 +236,7 @@ public final class DocumentParser {\n             var leaf = fields.get(fullName);  // There may be multiple matches for array elements, don't use #remove.\n             if (leaf != null) {\n                 parser.nextToken();  // Advance the parser to the value to be read.\n-                result.add(leaf.cloneWithValue(XContentDataHelper.encodeToken(parser)));\n+                result.add(leaf.cloneWithValue(context.encodeFlattenedToken()));\n                 parser.nextToken();  // Skip the token ending the value.\n                 fieldName = null;\n             }\n@@ -402,7 +402,7 @@ public final class DocumentParser {\n                     new IgnoredSourceFieldMapper.NameValue(\n                         context.parent().fullPath(),\n                         context.parent().fullPath().lastIndexOf(context.parent().leafName()),\n-                        XContentDataHelper.encodeToken(parser),\n+                        context.encodeFlattenedToken(),\n                         context.doc()\n                     )\n                 );\n@@ -652,12 +652,11 @@ public final class DocumentParser {\n         if (context.dynamic() == ObjectMapper.Dynamic.FALSE) {\n             failIfMatchesRoutingPath(context, currentFieldName);\n             if (context.canAddIgnoredField()) {\n-                // read everything up to end object and store it\n                 context.addIgnoredField(\n                     IgnoredSourceFieldMapper.NameValue.fromContext(\n                         context,\n                         context.path().pathAsText(currentFieldName),\n-                        XContentDataHelper.encodeToken(context.parser())\n+                        context.encodeFlattenedToken()\n                     )\n                 );\n             } else {\n@@ -743,7 +742,7 @@ public final class DocumentParser {\n                     IgnoredSourceFieldMapper.NameValue.fromContext(\n                         context,\n                         context.path().pathAsText(currentFieldName),\n-                        XContentDataHelper.encodeToken(context.parser())\n+                        context.encodeFlattenedToken()\n                     )\n                 );\n             } else {\n@@ -761,7 +760,7 @@ public final class DocumentParser {\n                             IgnoredSourceFieldMapper.NameValue.fromContext(\n                                 context,\n                                 context.path().pathAsText(currentFieldName),\n-                                XContentDataHelper.encodeToken(context.parser())\n+                                context.encodeFlattenedToken()\n                             )\n                         );\n                     } catch (IOException e) {\n@@ -818,9 +817,7 @@ public final class DocumentParser {\n             } else if (mapper instanceof ObjectMapper objectMapper && (objectMapper.isEnabled() == false)) {\n                 // No need to call #addIgnoredFieldFromContext as both singleton and array instances of this object\n                 // get tracked through ignored source.\n-                context.addIgnoredField(\n-                    IgnoredSourceFieldMapper.NameValue.fromContext(context, fullPath, XContentDataHelper.encodeToken(context.parser()))\n-                );\n+                context.addIgnoredField(IgnoredSourceFieldMapper.NameValue.fromContext(context, fullPath, context.encodeFlattenedToken()));\n                 return;\n             }\n         }\n@@ -934,7 +931,7 @@ public final class DocumentParser {\n                     IgnoredSourceFieldMapper.NameValue.fromContext(\n                         context,\n                         context.path().pathAsText(currentFieldName),\n-                        XContentDataHelper.encodeToken(context.parser())\n+                        context.encodeFlattenedToken()\n                     )\n                 );\n             }\n@@ -945,7 +942,7 @@ public final class DocumentParser {\n                 IgnoredSourceFieldMapper.NameValue.fromContext(\n                     context,\n                     context.path().pathAsText(currentFieldName),\n-                    XContentDataHelper.encodeToken(context.parser())\n+                    context.encodeFlattenedToken()\n                 )\n             );\n         }\n@@ -1044,7 +1041,7 @@ public final class DocumentParser {\n                 if (context.dynamic() == ObjectMapper.Dynamic.RUNTIME && context.canAddIgnoredField()) {\n                     try {\n                         context.addIgnoredField(\n-                            IgnoredSourceFieldMapper.NameValue.fromContext(context, path, XContentDataHelper.encodeToken(context.parser()))\n+                            IgnoredSourceFieldMapper.NameValue.fromContext(context, path, context.encodeFlattenedToken())\n                         );\n                     } catch (IOException e) {\n                         throw new IllegalArgumentException(\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    },
+    {
+      "target_file": "server/src/main/java/org/elasticsearch/index/mapper/DocumentParserContext.java",
+      "mainline_file": "server/src/main/java/org/elasticsearch/index/mapper/DocumentParserContext.java",
+      "hunk_text": "diff --git a/server/src/main/java/org/elasticsearch/index/mapper/DocumentParserContext.java b/server/src/main/java/org/elasticsearch/index/mapper/DocumentParserContext.java\nindex c2970d87161..ac6999f3d79 100644\n--- a/server/src/main/java/org/elasticsearch/index/mapper/DocumentParserContext.java\n+++ b/server/src/main/java/org/elasticsearch/index/mapper/DocumentParserContext.java\n@@ -12,6 +12,7 @@ package org.elasticsearch.index.mapper;\n import org.apache.lucene.document.Field;\n import org.apache.lucene.document.StringField;\n import org.apache.lucene.index.IndexableField;\n+import org.apache.lucene.util.BytesRef;\n import org.elasticsearch.common.time.DateFormatter;\n import org.elasticsearch.core.Tuple;\n import org.elasticsearch.index.IndexMode;\n@@ -341,6 +342,20 @@ public abstract class DocumentParserContext {\n         return this;\n     }\n \n+    /**\n+     * Wraps {@link XContentDataHelper#encodeToken}, disabling dot expansion from {@link DotExpandingXContentParser}.\n+     * This helps avoid producing duplicate names in the same scope, due to expanding dots to objects.\n+     * For instance: { \"a.b\": \"b\", \"a.c\": \"c\" } => { \"a\": { \"b\": \"b\" }, \"a\": { \"c\": \"c\" } }\n+     * This can happen when storing parts of document source that are not indexed (e.g. disabled objects).\n+     */\n+    BytesRef encodeFlattenedToken() throws IOException {\n+        boolean old = path().isWithinLeafObject();\n+        path().setWithinLeafObject(true);\n+        BytesRef encoded = XContentDataHelper.encodeToken(parser());\n+        path().setWithinLeafObject(old);\n+        return encoded;\n+    }\n+\n     /**\n      * Return the collection of fields that are missing their source values.\n      */\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    },
+    {
+      "target_file": "server/src/main/java/org/elasticsearch/index/mapper/IgnoredSourceFieldMapper.java",
+      "mainline_file": "server/src/main/java/org/elasticsearch/index/mapper/IgnoredSourceFieldMapper.java",
+      "hunk_text": "diff --git a/server/src/main/java/org/elasticsearch/index/mapper/IgnoredSourceFieldMapper.java b/server/src/main/java/org/elasticsearch/index/mapper/IgnoredSourceFieldMapper.java\nindex d57edb757ba..296c2c5311d 100644\n--- a/server/src/main/java/org/elasticsearch/index/mapper/IgnoredSourceFieldMapper.java\n+++ b/server/src/main/java/org/elasticsearch/index/mapper/IgnoredSourceFieldMapper.java\n@@ -57,6 +57,7 @@ public class IgnoredSourceFieldMapper extends MetadataFieldMapper {\n     public static final TypeParser PARSER = new FixedTypeParser(context -> new IgnoredSourceFieldMapper(context.getIndexSettings()));\n \n     static final NodeFeature TRACK_IGNORED_SOURCE = new NodeFeature(\"mapper.track_ignored_source\");\n+    static final NodeFeature DONT_EXPAND_DOTS_IN_IGNORED_SOURCE = new NodeFeature(\"mapper.ignored_source.dont_expand_dots\");\n \n     /*\n         Setting to disable encoding and writing values for this field.\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    },
+    {
+      "target_file": "server/src/main/java/org/elasticsearch/index/mapper/MapperFeatures.java",
+      "mainline_file": "server/src/main/java/org/elasticsearch/index/mapper/MapperFeatures.java",
+      "hunk_text": "diff --git a/server/src/main/java/org/elasticsearch/index/mapper/MapperFeatures.java b/server/src/main/java/org/elasticsearch/index/mapper/MapperFeatures.java\nindex cf8f391813c..7d17079c20d 100644\n--- a/server/src/main/java/org/elasticsearch/index/mapper/MapperFeatures.java\n+++ b/server/src/main/java/org/elasticsearch/index/mapper/MapperFeatures.java\n@@ -52,6 +52,6 @@ public class MapperFeatures implements FeatureSpecification {\n \n     @Override\n     public Set<NodeFeature> getTestFeatures() {\n-        return Set.of(RangeFieldMapper.DATE_RANGE_INDEXING_FIX);\n+        return Set.of(RangeFieldMapper.DATE_RANGE_INDEXING_FIX, IgnoredSourceFieldMapper.DONT_EXPAND_DOTS_IN_IGNORED_SOURCE);\n     }\n }\n",
+      "insertion_line": 1,
+      "intent_verified": true,
+      "file_operation": "MODIFIED",
+      "old_target_file": null,
+      "file_operation_required": true,
+      "path_resolution_reason": "modified_target_mapped"
+    }
+  ],
+  "adapted_test_hunks": [],
+  "generation_checklist": [
+    {
+      "mainline_file": "<all>",
+      "target_file": "<all>",
+      "hunk_index": 0,
+      "status": "failed",
+      "reason": "generation_contract_failed",
+      "todo_steps": [
+        "replan"
+      ],
+      "completed_steps": []
+    }
+  ],
+  "validation_failed_stage": "generation_contract_failed",
+  "validation_repeated_patch_detected": true,
+  "validation_repeated_plan_detected": false,
+  "generated_patch_hash": "95524e4fdcef660ba2836fb80afcd7bcb3b32e6ece815ad113297bcf686fc986",
+  "force_type_v_until_success": true,
+  "force_type_v_reason": "failed_stage_generation_contract",
+  "force_type_v_retry_files": [
+    "server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java",
+    "server/src/main/java/org/elasticsearch/index/mapper/DocumentParserContext.java",
+    "server/src/main/java/org/elasticsearch/index/mapper/IgnoredSourceFieldMapper.java",
+    "server/src/main/java/org/elasticsearch/index/mapper/MapperFeatures.java"
+  ],
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "sources": []
+  }
+}

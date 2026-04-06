@@ -1,0 +1,173 @@
+patch_id=elasticsearch_7facc94b
+project=elasticsearch
+mainline_commit=7facc94be6871804322a00a8e5b232cac958d788
+backport_commit=4da7a0f3382770d860524ef0be52f0e4fb2e1559
+mode=full
+started_at=2026-04-06T18:07:47.470409
+----------------------------------------
+Running full workflow graph
+Completed node=phase_0_optimistic
+Completed node=context_analyzer
+Completed node=structural_locator
+Completed node=hunk_generator
+
+[elasticsearch/elasticsearch_7facc94b] Setting up repositories for mode=full...
+[elasticsearch/elasticsearch_7facc94b] Running full workflow graph...
+Router: Running Phase 0.
+Phase 0 (Optimistic): Checking direct patch applicability...
+Phase 0: Experiment mode — checking out parent of 4da7a0f3382770d860524ef0be52f0e4fb2e1559...
+Phase 0: Building baseline by applying developer backport test hunks only...
+  Validation: rest-api-spec/src/yamlRestTest/resources/rest-api-spec/test/indices.create/20_synthetic_source.yml - applying 6 hunk(s) one by one in bottom-to-top order: [472, 434, 300, 263, 222, 197]
+  Validation: server/src/test/java/org/elasticsearch/index/mapper/IgnoredSourceFieldMapperTests.java - applying 1 hunk(s) one by one in bottom-to-top order: [1720]
+    Agent 4: Executing elasticsearch helper test script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/elasticsearch/run_tests.sh
+Phase 0: git apply --check FAILED. Escalating to full pipeline.
+  Hint: error: patch failed: rest-api-spec/build.gradle:58
+error: rest-api-spec/build.gradle: patch does not apply
+
+Router: Phase 0 failed - entering full 4-agent pipeline.
+  Completed: phase_0_optimistic
+Agent 1 (Context Analyzer): Deterministic blueprint generation...
+Agent 1: Complete. Files=4 hunks=14 (deterministic).
+Agent 1: Detected 11 hunk(s) with variants.
+  Completed: context_analyzer
+Agent 2 (Structural Locator): Starting target location mapping...
+  Agent 2: 4 code file(s), 0 test file(s)
+LLM Provider: azure, Model: gpt-4.1-mini, Temperature: 0
+  Agent 2: Found 14 hunk(s) in hunk_chain
+  Agent 2: Locating target for server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java (10 hunk(s))...
+Phase 1 (Git) Match Found: server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java
+  Agent 2: Git resolution found target: server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java
+  Agent 2: Mapped hunk 1 (hunk_1) to None at lines 138-138
+  Agent 2: Mapped hunk 2 (hunk_2) to None at lines 239-239
+  Agent 2: Mapped hunk 3 (hunk_3) to None at lines 405-405
+  Agent 2: Mapped hunk 4 (hunk_4) to None at lines 655-655
+  Agent 2: Mapped hunk 5 (hunk_5) to None at lines 660-660
+  Agent 2: Mapped hunk 6 (hunk_6) to None at lines 660-660
+  Agent 2: Mapped hunk 7 (hunk_7) to None at lines 134-134
+  Agent 2: Mapped hunk 8 (hunk_8) to None at lines 660-660
+  Agent 2: Mapped hunk 9 (hunk_9) to None at lines 660-660
+  Agent 2: Mapped hunk 10 (hunk_10) to None at lines 1047-1047
+  Agent 2: Locating target for server/src/main/java/org/elasticsearch/index/mapper/DocumentParserContext.java (2 hunk(s))...
+Phase 1 (Git) Match Found: server/src/main/java/org/elasticsearch/index/mapper/DocumentParserContext.java
+  Agent 2: Git resolution found target: server/src/main/java/org/elasticsearch/index/mapper/DocumentParserContext.java
+  Agent 2: Mapped hunk 1 (<import>) to <import> at lines 12-12
+  Agent 2: Mapped hunk 2 (hunk_2) to None at lines 341-341
+  Agent 2: Locating target for server/src/main/java/org/elasticsearch/index/mapper/IgnoredSourceFieldMapper.java (1 hunk(s))...
+Phase 1 (Git) Match Found: server/src/main/java/org/elasticsearch/index/mapper/IgnoredSourceFieldMapper.java
+  Agent 2: Git resolution found target: server/src/main/java/org/elasticsearch/index/mapper/IgnoredSourceFieldMapper.java
+  Agent 2: Mapped hunk 1 (hunk_1) to None at lines 57-57
+  Agent 2: Locating target for server/src/main/java/org/elasticsearch/index/mapper/MapperFeatures.java (1 hunk(s))...
+Phase 1 (Git) Match Found: server/src/main/java/org/elasticsearch/index/mapper/MapperFeatures.java
+  Agent 2: Git resolution found target: server/src/main/java/org/elasticsearch/index/mapper/MapperFeatures.java
+  Agent 2: Mapped hunk 1 (getTestFeatures) to getTestFeatures at lines 55-55
+  Agent 2: Trace written to structural_locator_trace.md
+Agent 2: Complete. Mapped 4 file(s). Total hunk mappings: 14. ConsistencyMap has 0 rename(s).
+Router: complexity=STRUCTURAL -> skip planning, go hunk_generator.
+  Completed: structural_locator
+Agent 3 (File Editor): Starting direct file-edit workflow...
+LLM Provider: azure, Model: gpt-4.1-mini, Temperature: 0
+  Agent 3: Built 10 deterministic fallback edit(s) for server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java.
+  Agent 3: Processing 10 edit(s) for server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java (op=MODIFIED)
+    Agent 3: Classified server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java as TYPE_II (deterministic path)
+    Agent 3: base_types=['TYPE_II'] execution_types=['TYPE_II']
+    Agent 3: Developer patch fast path for server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java (developer_fast_path_ok)
+  Agent 3: Built 2 deterministic fallback edit(s) for server/src/main/java/org/elasticsearch/index/mapper/DocumentParserContext.java.
+  Agent 3: Processing 2 edit(s) for server/src/main/java/org/elasticsearch/index/mapper/DocumentParserContext.java (op=MODIFIED)
+    Agent 3: Classified server/src/main/java/org/elasticsearch/index/mapper/DocumentParserContext.java as TYPE_II (deterministic path)
+    Agent 3: base_types=['TYPE_II'] execution_types=['TYPE_II']
+    Agent 3: Developer patch fast path for server/src/main/java/org/elasticsearch/index/mapper/DocumentParserContext.java (developer_fast_path_ok)
+  Agent 3: Built 1 deterministic fallback edit(s) for server/src/main/java/org/elasticsearch/index/mapper/IgnoredSourceFieldMapper.java.
+  Agent 3: Processing 1 edit(s) for server/src/main/java/org/elasticsearch/index/mapper/IgnoredSourceFieldMapper.java (op=MODIFIED)
+    Agent 3: Classified server/src/main/java/org/elasticsearch/index/mapper/IgnoredSourceFieldMapper.java as TYPE_II (deterministic path)
+    Agent 3: base_types=['TYPE_II'] execution_types=['TYPE_II']
+    Agent 3: Developer patch fast path for server/src/main/java/org/elasticsearch/index/mapper/IgnoredSourceFieldMapper.java (developer_fast_path_ok)
+  Agent 3: Built 1 deterministic fallback edit(s) for server/src/main/java/org/elasticsearch/index/mapper/MapperFeatures.java.
+  Agent 3: Processing 1 edit(s) for server/src/main/java/org/elasticsearch/index/mapper/MapperFeatures.java (op=MODIFIED)
+    Agent 3: Classified server/src/main/java/org/elasticsearch/index/mapper/MapperFeatures.java as TYPE_II (deterministic path)
+    Agent 3: base_types=['TYPE_II'] execution_types=['TYPE_II']
+    Agent 3: Developer patch fast path for server/src/main/java/org/elasticsearch/index/mapper/MapperFeatures.java (developer_fast_path_ok)
+  Agent 3 (File Editor): Done. 4 file(s) adapted, 4 edit record(s).
+  Completed: hunk_generator
+Agent 4 (Validation): Starting 'Prove Red, Make Green' loop...
+  Agent 4: Evaluation full-workflow mode (apply -> build -> relevant tests)...
+  Validation: server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java - applying 11 hunk(s) one by one in bottom-to-top order: [1041, 942, 931, 817, 760, 742, 652, 402, 236, 135, 1]
+  Validation: server/src/main/java/org/elasticsearch/index/mapper/DocumentParserContext.java - applying 2 hunk(s) one by one in bottom-to-top order: [342, 1]
+  Validation: server/src/main/java/org/elasticsearch/index/mapper/IgnoredSourceFieldMapper.java - applying 1 hunk(s) one by one in bottom-to-top order: [1]
+  Validation: server/src/main/java/org/elasticsearch/index/mapper/MapperFeatures.java - applying 1 hunk(s) one by one in bottom-to-top order: [1]
+  Validation: docs/changelog/113910.yaml - applying 1 hunk(s) one by one in bottom-to-top order: [1]
+  Validation: rest-api-spec/src/yamlRestTest/resources/rest-api-spec/test/indices.create/20_synthetic_source.yml - applying 6 hunk(s) one by one in bottom-to-top order: [472, 434, 300, 263, 222, 197]
+  Validation: server/src/test/java/org/elasticsearch/index/mapper/IgnoredSourceFieldMapperTests.java - applying 1 hunk(s) one by one in bottom-to-top order: [1720]
+  Validation: ADDED operation for docs/changelog/113910.yaml
+    Agent 4: Executing elasticsearch helper build script: /home/cseroot/retrofit-java/agents-backend/evaluate/helpers/elasticsearch/run_build.sh
+Trace saved to validation_trace.md
+Completed node=validation
+Completed node=hunk_generator
+Completed node=validation
+Completed node=planning_agent
+Completed node=hunk_generator
+Completed node=validation
+Workflow completed successfully
+Router: Validation FAILED (attempt 1/3) with build diagnostics ['api_or_signature_mismatch'] on non-REWRITE patch. Routing to hunk_generator.
+  Completed: validation
+Agent 3 (File Editor): Starting direct file-edit workflow...
+  Agent 3: Retry #1 - deterministic re-application with failure context.
+LLM Provider: azure, Model: gpt-4.1-mini, Temperature: 0
+  Agent 3: Built 2 deterministic fallback edit(s) for server/src/main/java/org/elasticsearch/index/mapper/DocumentParserContext.java.
+  Agent 3: Processing 2 edit(s) for server/src/main/java/org/elasticsearch/index/mapper/DocumentParserContext.java (op=MODIFIED)
+    Agent 3: Classified server/src/main/java/org/elasticsearch/index/mapper/DocumentParserContext.java as TYPE_II (deterministic path)
+    Agent 3: base_types=['TYPE_II'] execution_types=['TYPE_II']
+    Agent 3: Skipping developer fast path (validation retry #1; use deterministic/ReAct path).
+    Agent 3: PLAN_PREFLIGHT_FAILED server/src/main/java/org/elasticsearch/index/mapper/DocumentParserContext.java: PLAN_DRY_APPLY_FAILED:dry_apply_failed[1]:ambiguous_old_string — falling back to ReAct (stale anchors after build failure or eval mode).
+    Agent 3: Invoking ReAct agent for server/src/main/java/org/elasticsearch/index/mapper/DocumentParserContext.java
+    Agent 3: Agent failed: tool_budget_exceeded:13>10
+  Agent 3 (File Editor): Done. 4 file(s) adapted, 0 edit record(s).
+  Agent 3: Identical patch hash detected on retry; flagging for replanning.
+  Completed: hunk_generator
+Agent 4 (Validation): Starting 'Prove Red, Make Green' loop...
+  Agent 4: Validation deferred: generator checklist has incomplete hunk tasks. Route back to planning/generation before running build/tests. Incomplete hunks: [{"mainline_file": "<all>", "target_file": "<all>", "hunk_index": 0, "status": "failed", "reason": "generation_contract_failed", "todo_steps": ["replan"], "completed_steps": []}]
+Router: Stagnation (repeated plan/patch) on non-REWRITE after a failed build; escalating to planning_agent for adaptation (API/signature fixes, alternate str_replace plans).
+  Completed: validation
+Planning Agent: Building per-hunk str_replace edit plans...
+Planning Agent: Promoting execution mode to TYPE_V due to failed_stage_generation_contract.
+LLM Provider: azure, Model: gpt-4.1-mini, Temperature: 0
+Planning Agent: Complete. Planned 15 adapted edit(s).
+  Completed: planning_agent
+Agent 3 (File Editor): Starting direct file-edit workflow...
+  Agent 3: Retry #2 - deterministic re-application with failure context.
+LLM Provider: azure, Model: gpt-4.1-mini, Temperature: 0
+  Agent 3: Processing 11 edit(s) for server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java (op=MODIFIED)
+    Agent 3: Classified server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java as TYPE_V (reactive path)
+    Agent 3: base_types=['TYPE_II'] execution_types=['TYPE_V']
+    Agent 3: TYPE_V latch active for this attempt (reason=failed_stage_generation_contract).
+    Agent 3: Skipping developer fast path (validation retry #2; use deterministic/ReAct path).
+    Agent 3: Invoking ReAct agent for server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java
+    Agent 3: Agent failed: tool_budget_exceeded:28>10
+  Agent 3: Processing 2 edit(s) for server/src/main/java/org/elasticsearch/index/mapper/DocumentParserContext.java (op=MODIFIED)
+    Agent 3: Classified server/src/main/java/org/elasticsearch/index/mapper/DocumentParserContext.java as TYPE_V (reactive path)
+    Agent 3: base_types=['TYPE_I', 'TYPE_II'] execution_types=['TYPE_V']
+    Agent 3: TYPE_V latch active for this attempt (reason=failed_stage_generation_contract).
+    Agent 3: Skipping developer fast path (validation retry #2; use deterministic/ReAct path).
+    Agent 3: Invoking ReAct agent for server/src/main/java/org/elasticsearch/index/mapper/DocumentParserContext.java
+    Agent 3: Agent failed: tool_budget_exceeded:19>10
+  Agent 3: Processing 1 edit(s) for server/src/main/java/org/elasticsearch/index/mapper/IgnoredSourceFieldMapper.java (op=MODIFIED)
+    Agent 3: Classified server/src/main/java/org/elasticsearch/index/mapper/IgnoredSourceFieldMapper.java as TYPE_V (reactive path)
+    Agent 3: base_types=['TYPE_I'] execution_types=['TYPE_V']
+    Agent 3: TYPE_V latch active for this attempt (reason=failed_stage_generation_contract).
+    Agent 3: Skipping developer fast path (validation retry #2; use deterministic/ReAct path).
+    Agent 3: Invoking ReAct agent for server/src/main/java/org/elasticsearch/index/mapper/IgnoredSourceFieldMapper.java
+    Agent 3: Agent failed: tool_budget_exceeded:16>10
+  Agent 3: Processing 1 edit(s) for server/src/main/java/org/elasticsearch/index/mapper/MapperFeatures.java (op=MODIFIED)
+    Agent 3: Classified server/src/main/java/org/elasticsearch/index/mapper/MapperFeatures.java as TYPE_V (reactive path)
+    Agent 3: base_types=['TYPE_II'] execution_types=['TYPE_V']
+    Agent 3: TYPE_V latch active for this attempt (reason=failed_stage_generation_contract).
+    Agent 3: Skipping developer fast path (validation retry #2; use deterministic/ReAct path).
+    Agent 3: Invoking ReAct agent for server/src/main/java/org/elasticsearch/index/mapper/MapperFeatures.java
+    Agent 3: Agent failed: tool_budget_exceeded:11>10
+  Agent 3 (File Editor): Done. 4 file(s) adapted, 0 edit record(s).
+  Agent 3: Identical patch hash detected on retry; flagging for replanning.
+  Completed: hunk_generator
+Agent 4 (Validation): Starting 'Prove Red, Make Green' loop...
+  Agent 4: Validation deferred: generator checklist has incomplete hunk tasks. Route back to planning/generation before running build/tests. Incomplete hunks: [{"mainline_file": "<all>", "target_file": "<all>", "hunk_index": 0, "status": "failed", "reason": "generation_contract_failed", "todo_steps": ["replan"], "completed_steps": []}]
+Router: Validation FAILED after 3 attempt(s). Max retries reached. Exiting.
+  Completed: validation
+[elasticsearch/elasticsearch_7facc94b] Full workflow completed!

@@ -1,0 +1,9 @@
+patch_id=elasticsearch_a91a9a59
+project=elasticsearch
+mainline_commit=a91a9a59685057eeb2f2ad5f264cc23525255e09
+backport_commit=2b01c3b95f3df9d416c415d3313ca516bf85adb9
+mode=full
+started_at=2026-04-06T17:44:44.929905
+----------------------------------------
+
+[elasticsearch/elasticsearch_a91a9a59] Setting up repositories for mode=full...

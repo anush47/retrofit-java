@@ -1,0 +1,188 @@
+{
+  "consistency_map": {},
+  "mapped_target_context": {
+    "server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java": [
+      {
+        "hunk_index": 1,
+        "mainline_method": "hunk_1",
+        "target_file": "server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java",
+        "target_method": null,
+        "start_line": 138,
+        "end_line": 138,
+        "code_snippet": "                return idMapper.documentDescription(this);\n            }\n        };\n    }\n\n    private void internalParseDocument(MetadataFieldMapper[] metadataFieldsMappers, DocumentParserContext context) {\n        try {\n            final boolean emptyDoc = isEmptyDoc(context.root(), context.parser());\n\n            for (MetadataFieldMapper metadataMapper : metadataFieldsMappers) {\n                metadataMapper.preParse(context);\n            }\n\n            if (context.root().isEnabled() == false) {\n                // entire type is disabled\n                if (context.canAddIgnoredField()) {\n                    context.addIgnoredField(\n                        new IgnoredSourceFieldMapper.NameValue(\n                            MapperService.SINGLE_MAPPING_NAME,\n                            0,\n                            XContentDataHelper.encodeToken(context.parser()),\n                            context.doc()\n                        )\n                    );\n                } else {\n                    context.parser().skipChildren();\n                }\n            } else if (emptyDoc == false) {\n                parseObjectOrNested(context);\n            }\n\n            executeIndexTimeScripts(context);\n\n            // Record additional entries for {@link IgnoredSourceFieldMapper} before calling #postParse, so that they get stored.\n            addIgnoredSourceMissingValues(context);\n\n            for (MetadataFieldMapper metadataMapper : metadataFieldsMappers) {\n                metadataMapper.postParse(context);\n            }\n        } catch (Exception e) {\n            throw wrapInDocumentParsingException(context, e);",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 2,
+        "mainline_method": "hunk_2",
+        "target_file": "server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java",
+        "target_method": null,
+        "start_line": 239,
+        "end_line": 239,
+        "code_snippet": "                    } else {\n                        path.add(fieldName);\n                    }\n                    fieldName = null;\n                } else if (currentToken == XContentParser.Token.END_OBJECT || currentToken == XContentParser.Token.END_ARRAY) {\n                    if (currentToken == XContentParser.Token.END_OBJECT && path.isEmpty() == false) {\n                        path.remove(path.size() - 1);\n                    }\n                    fieldName = null;\n                }\n                currentToken = parser.nextToken();\n                if (currentToken == null) {\n                    return result;\n                }\n            }\n            fieldName = parser.currentName();\n            String fullName = getCurrentPath(path, fieldName);\n            var leaf = fields.get(fullName);  // There may be multiple matches for array elements, don't use #remove.\n            if (leaf != null) {\n                parser.nextToken();  // Advance the parser to the value to be read.\n                result.add(leaf.cloneWithValue(XContentDataHelper.encodeToken(parser)));\n                parser.nextToken();  // Skip the token ending the value.\n                fieldName = null;\n            }\n            currentToken = parser.nextToken();\n        }\n        return result;\n    }\n\n    private static String getCurrentPath(List<String> path, String fieldName) {\n        assert fieldName != null;\n        return path.isEmpty() ? fieldName : String.join(\".\", path) + \".\" + fieldName;\n    }\n\n    /**\n     * Generates all possible parent object names for the given full names.\n     * For instance, for input ['path.to.foo', 'another.path.to.bar'], it returns:\n     * [ 'path', 'path.to', 'another', 'another.path', 'another.path.to' ]\n     */\n    private static Set<String> getPossibleParentNames(Set<String> fullPaths) {\n        if (fullPaths.isEmpty()) {",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 3,
+        "mainline_method": "hunk_3",
+        "target_file": "server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java",
+        "target_method": null,
+        "start_line": 405,
+        "end_line": 405,
+        "code_snippet": "        RootObjectMapper.Builder rootBuilder = context.updateRoot();\n        context.getDynamicMappers().forEach(mapper -> rootBuilder.addDynamic(mapper.fullPath(), null, mapper, context));\n\n        for (RuntimeField runtimeField : context.getDynamicRuntimeFields()) {\n            rootBuilder.addRuntimeField(runtimeField);\n        }\n        RootObjectMapper root = rootBuilder.build(MapperBuilderContext.root(context.mappingLookup().isSourceSynthetic(), false));\n        return context.mappingLookup().getMapping().mappingUpdate(root);\n    }\n\n    static void parseObjectOrNested(DocumentParserContext context) throws IOException {\n        XContentParser parser = context.parser();\n        String currentFieldName = parser.currentName();\n        if (context.parent().isEnabled() == false) {\n            // entire type is disabled\n            if (context.canAddIgnoredField()) {\n                context.addIgnoredField(\n                    new IgnoredSourceFieldMapper.NameValue(\n                        context.parent().fullPath(),\n                        context.parent().fullPath().lastIndexOf(context.parent().leafName()),\n                        XContentDataHelper.encodeToken(parser),\n                        context.doc()\n                    )\n                );\n            } else {\n                parser.skipChildren();\n            }\n            return;\n        }\n        XContentParser.Token token = parser.currentToken();\n        if (token == XContentParser.Token.VALUE_NULL) {\n            // the object is null (\"obj1\" : null), simply bail\n            return;\n        }\n\n        if (token.isValue()) {\n            throwOnConcreteValue(context.parent(), currentFieldName, context);\n        }\n\n        if (context.canAddIgnoredField() && getSourceKeepMode(context, context.parent().sourceKeepMode()) == Mapper.SourceKeepMode.ALL) {\n            context = context.addIgnoredFieldFromContext(",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 4,
+        "mainline_method": "hunk_4",
+        "target_file": "server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java",
+        "target_method": null,
+        "start_line": 655,
+        "end_line": 655,
+        "code_snippet": "            parseObjectDynamic(context, currentFieldName);\n        }\n    }\n\n    private static void doParseObject(DocumentParserContext context, String currentFieldName, Mapper objectMapper) throws IOException {\n        context.path().add(currentFieldName);\n        boolean withinLeafObject = context.path().isWithinLeafObject();\n        if (objectMapper instanceof ObjectMapper objMapper && objMapper.subobjects() != ObjectMapper.Subobjects.ENABLED) {\n            context.path().setWithinLeafObject(true);\n        }\n        parseObjectOrField(context, objectMapper);\n        context.path().setWithinLeafObject(withinLeafObject);\n        context.path().remove();\n    }\n\n    private static void parseObjectDynamic(DocumentParserContext context, String currentFieldName) throws IOException {\n        ensureNotStrict(context, currentFieldName);\n        if (context.dynamic() == ObjectMapper.Dynamic.FALSE) {\n            failIfMatchesRoutingPath(context, currentFieldName);\n            if (context.canAddIgnoredField()) {\n                // read everything up to end object and store it\n                context.addIgnoredField(\n                    IgnoredSourceFieldMapper.NameValue.fromContext(\n                        context,\n                        context.path().pathAsText(currentFieldName),\n                        XContentDataHelper.encodeToken(context.parser())\n                    )\n                );\n            } else {\n                // not dynamic, read everything up to end object\n                context.parser().skipChildren();\n            }\n        } else {\n            Mapper dynamicObjectMapper;\n            if (context.dynamic() == ObjectMapper.Dynamic.RUNTIME) {\n                // with dynamic:runtime all leaf fields will be runtime fields unless explicitly mapped,\n                // hence we don't dynamically create empty objects under properties, but rather carry around an artificial object mapper\n                dynamicObjectMapper = new NoOpObjectMapper(currentFieldName, context.path().pathAsText(currentFieldName));\n                if (context.canAddIgnoredField()) {\n                    context = context.addIgnoredFieldFromContext(\n                        IgnoredSourceFieldMapper.NameValue.fromContext(context, context.path().pathAsText(currentFieldName), null)",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 5,
+        "mainline_method": "hunk_5",
+        "target_file": "server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java",
+        "target_method": null,
+        "start_line": 660,
+        "end_line": 660,
+        "code_snippet": "        context.path().add(currentFieldName);\n        boolean withinLeafObject = context.path().isWithinLeafObject();\n        if (objectMapper instanceof ObjectMapper objMapper && objMapper.subobjects() != ObjectMapper.Subobjects.ENABLED) {\n            context.path().setWithinLeafObject(true);\n        }\n        parseObjectOrField(context, objectMapper);\n        context.path().setWithinLeafObject(withinLeafObject);\n        context.path().remove();\n    }\n\n    private static void parseObjectDynamic(DocumentParserContext context, String currentFieldName) throws IOException {\n        ensureNotStrict(context, currentFieldName);\n        if (context.dynamic() == ObjectMapper.Dynamic.FALSE) {\n            failIfMatchesRoutingPath(context, currentFieldName);\n            if (context.canAddIgnoredField()) {\n                // read everything up to end object and store it\n                context.addIgnoredField(\n                    IgnoredSourceFieldMapper.NameValue.fromContext(\n                        context,\n                        context.path().pathAsText(currentFieldName),\n                        XContentDataHelper.encodeToken(context.parser())\n                    )\n                );\n            } else {\n                // not dynamic, read everything up to end object\n                context.parser().skipChildren();\n            }\n        } else {\n            Mapper dynamicObjectMapper;\n            if (context.dynamic() == ObjectMapper.Dynamic.RUNTIME) {\n                // with dynamic:runtime all leaf fields will be runtime fields unless explicitly mapped,\n                // hence we don't dynamically create empty objects under properties, but rather carry around an artificial object mapper\n                dynamicObjectMapper = new NoOpObjectMapper(currentFieldName, context.path().pathAsText(currentFieldName));\n                if (context.canAddIgnoredField()) {\n                    context = context.addIgnoredFieldFromContext(\n                        IgnoredSourceFieldMapper.NameValue.fromContext(context, context.path().pathAsText(currentFieldName), null)\n                    );\n                }\n            } else {\n                dynamicObjectMapper = DynamicFieldsBuilder.createDynamicObjectMapper(context, currentFieldName);\n            }",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 6,
+        "mainline_method": "hunk_6",
+        "target_file": "server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java",
+        "target_method": null,
+        "start_line": 660,
+        "end_line": 660,
+        "code_snippet": "        context.path().add(currentFieldName);\n        boolean withinLeafObject = context.path().isWithinLeafObject();\n        if (objectMapper instanceof ObjectMapper objMapper && objMapper.subobjects() != ObjectMapper.Subobjects.ENABLED) {\n            context.path().setWithinLeafObject(true);\n        }\n        parseObjectOrField(context, objectMapper);\n        context.path().setWithinLeafObject(withinLeafObject);\n        context.path().remove();\n    }\n\n    private static void parseObjectDynamic(DocumentParserContext context, String currentFieldName) throws IOException {\n        ensureNotStrict(context, currentFieldName);\n        if (context.dynamic() == ObjectMapper.Dynamic.FALSE) {\n            failIfMatchesRoutingPath(context, currentFieldName);\n            if (context.canAddIgnoredField()) {\n                // read everything up to end object and store it\n                context.addIgnoredField(\n                    IgnoredSourceFieldMapper.NameValue.fromContext(\n                        context,\n                        context.path().pathAsText(currentFieldName),\n                        XContentDataHelper.encodeToken(context.parser())\n                    )\n                );\n            } else {\n                // not dynamic, read everything up to end object\n                context.parser().skipChildren();\n            }\n        } else {\n            Mapper dynamicObjectMapper;\n            if (context.dynamic() == ObjectMapper.Dynamic.RUNTIME) {\n                // with dynamic:runtime all leaf fields will be runtime fields unless explicitly mapped,\n                // hence we don't dynamically create empty objects under properties, but rather carry around an artificial object mapper\n                dynamicObjectMapper = new NoOpObjectMapper(currentFieldName, context.path().pathAsText(currentFieldName));\n                if (context.canAddIgnoredField()) {\n                    context = context.addIgnoredFieldFromContext(\n                        IgnoredSourceFieldMapper.NameValue.fromContext(context, context.path().pathAsText(currentFieldName), null)\n                    );\n                }\n            } else {\n                dynamicObjectMapper = DynamicFieldsBuilder.createDynamicObjectMapper(context, currentFieldName);\n            }",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 7,
+        "mainline_method": "hunk_7",
+        "target_file": "server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java",
+        "target_method": null,
+        "start_line": 134,
+        "end_line": 134,
+        "code_snippet": "        ) {\n            @Override\n            public String documentDescription() {\n                IdFieldMapper idMapper = (IdFieldMapper) mappingLookup.getMapping().getMetadataMapperByName(IdFieldMapper.NAME);\n                return idMapper.documentDescription(this);\n            }\n        };\n    }\n\n    private void internalParseDocument(MetadataFieldMapper[] metadataFieldsMappers, DocumentParserContext context) {\n        try {\n            final boolean emptyDoc = isEmptyDoc(context.root(), context.parser());\n\n            for (MetadataFieldMapper metadataMapper : metadataFieldsMappers) {\n                metadataMapper.preParse(context);\n            }\n\n            if (context.root().isEnabled() == false) {\n                // entire type is disabled\n                if (context.canAddIgnoredField()) {\n                    context.addIgnoredField(\n                        new IgnoredSourceFieldMapper.NameValue(\n                            MapperService.SINGLE_MAPPING_NAME,\n                            0,\n                            XContentDataHelper.encodeToken(context.parser()),\n                            context.doc()\n                        )\n                    );\n                } else {\n                    context.parser().skipChildren();\n                }\n            } else if (emptyDoc == false) {\n                parseObjectOrNested(context);\n            }\n\n            executeIndexTimeScripts(context);\n\n            // Record additional entries for {@link IgnoredSourceFieldMapper} before calling #postParse, so that they get stored.\n            addIgnoredSourceMissingValues(context);\n\n            for (MetadataFieldMapper metadataMapper : metadataFieldsMappers) {",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 8,
+        "mainline_method": "hunk_8",
+        "target_file": "server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java",
+        "target_method": null,
+        "start_line": 660,
+        "end_line": 660,
+        "code_snippet": "        context.path().add(currentFieldName);\n        boolean withinLeafObject = context.path().isWithinLeafObject();\n        if (objectMapper instanceof ObjectMapper objMapper && objMapper.subobjects() != ObjectMapper.Subobjects.ENABLED) {\n            context.path().setWithinLeafObject(true);\n        }\n        parseObjectOrField(context, objectMapper);\n        context.path().setWithinLeafObject(withinLeafObject);\n        context.path().remove();\n    }\n\n    private static void parseObjectDynamic(DocumentParserContext context, String currentFieldName) throws IOException {\n        ensureNotStrict(context, currentFieldName);\n        if (context.dynamic() == ObjectMapper.Dynamic.FALSE) {\n            failIfMatchesRoutingPath(context, currentFieldName);\n            if (context.canAddIgnoredField()) {\n                // read everything up to end object and store it\n                context.addIgnoredField(\n                    IgnoredSourceFieldMapper.NameValue.fromContext(\n                        context,\n                        context.path().pathAsText(currentFieldName),\n                        XContentDataHelper.encodeToken(context.parser())\n                    )\n                );\n            } else {\n                // not dynamic, read everything up to end object\n                context.parser().skipChildren();\n            }\n        } else {\n            Mapper dynamicObjectMapper;\n            if (context.dynamic() == ObjectMapper.Dynamic.RUNTIME) {\n                // with dynamic:runtime all leaf fields will be runtime fields unless explicitly mapped,\n                // hence we don't dynamically create empty objects under properties, but rather carry around an artificial object mapper\n                dynamicObjectMapper = new NoOpObjectMapper(currentFieldName, context.path().pathAsText(currentFieldName));\n                if (context.canAddIgnoredField()) {\n                    context = context.addIgnoredFieldFromContext(\n                        IgnoredSourceFieldMapper.NameValue.fromContext(context, context.path().pathAsText(currentFieldName), null)\n                    );\n                }\n            } else {\n                dynamicObjectMapper = DynamicFieldsBuilder.createDynamicObjectMapper(context, currentFieldName);\n            }",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 9,
+        "mainline_method": "hunk_9",
+        "target_file": "server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java",
+        "target_method": null,
+        "start_line": 660,
+        "end_line": 660,
+        "code_snippet": "        context.path().add(currentFieldName);\n        boolean withinLeafObject = context.path().isWithinLeafObject();\n        if (objectMapper instanceof ObjectMapper objMapper && objMapper.subobjects() != ObjectMapper.Subobjects.ENABLED) {\n            context.path().setWithinLeafObject(true);\n        }\n        parseObjectOrField(context, objectMapper);\n        context.path().setWithinLeafObject(withinLeafObject);\n        context.path().remove();\n    }\n\n    private static void parseObjectDynamic(DocumentParserContext context, String currentFieldName) throws IOException {\n        ensureNotStrict(context, currentFieldName);\n        if (context.dynamic() == ObjectMapper.Dynamic.FALSE) {\n            failIfMatchesRoutingPath(context, currentFieldName);\n            if (context.canAddIgnoredField()) {\n                // read everything up to end object and store it\n                context.addIgnoredField(\n                    IgnoredSourceFieldMapper.NameValue.fromContext(\n                        context,\n                        context.path().pathAsText(currentFieldName),\n                        XContentDataHelper.encodeToken(context.parser())\n                    )\n                );\n            } else {\n                // not dynamic, read everything up to end object\n                context.parser().skipChildren();\n            }\n        } else {\n            Mapper dynamicObjectMapper;\n            if (context.dynamic() == ObjectMapper.Dynamic.RUNTIME) {\n                // with dynamic:runtime all leaf fields will be runtime fields unless explicitly mapped,\n                // hence we don't dynamically create empty objects under properties, but rather carry around an artificial object mapper\n                dynamicObjectMapper = new NoOpObjectMapper(currentFieldName, context.path().pathAsText(currentFieldName));\n                if (context.canAddIgnoredField()) {\n                    context = context.addIgnoredFieldFromContext(\n                        IgnoredSourceFieldMapper.NameValue.fromContext(context, context.path().pathAsText(currentFieldName), null)\n                    );\n                }\n            } else {\n                dynamicObjectMapper = DynamicFieldsBuilder.createDynamicObjectMapper(context, currentFieldName);\n            }",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 10,
+        "mainline_method": "hunk_10",
+        "target_file": "server/src/main/java/org/elasticsearch/index/mapper/DocumentParser.java",
+        "target_method": null,
+        "start_line": 1047,
+        "end_line": 1047,
+        "code_snippet": "            }\n\n            @Override\n            public String typeName() {\n                throw new UnsupportedOperationException();\n            }\n\n            @Override\n            public Query termQuery(Object value, SearchExecutionContext context) {\n                throw new UnsupportedOperationException();\n            }\n        }, FieldMapper.BuilderParams.empty()) {\n\n            @Override\n            protected void parseCreateField(DocumentParserContext context) {\n                // Run-time fields are mapped to this mapper, so it needs to handle storing values for use in synthetic source.\n                // #parseValue calls this method once the run-time field is created.\n                if (context.dynamic() == ObjectMapper.Dynamic.RUNTIME && context.canAddIgnoredField()) {\n                    try {\n                        context.addIgnoredField(\n                            IgnoredSourceFieldMapper.NameValue.fromContext(context, path, XContentDataHelper.encodeToken(context.parser()))\n                        );\n                    } catch (IOException e) {\n                        throw new IllegalArgumentException(\n                            \"failed to parse run-time field under [\" + context.path().pathAsText(\"\") + \" ]\",\n                            e\n                        );\n                    }\n                }\n            }\n\n            @Override\n            public String fullPath() {\n                return path;\n            }\n\n            @Override\n            public String typeName() {\n                throw new UnsupportedOperationException();\n            }\n",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      }
+    ],
+    "server/src/main/java/org/elasticsearch/index/mapper/DocumentParserContext.java": [
+      {
+        "hunk_index": 1,
+        "mainline_method": "<import>",
+        "target_file": "server/src/main/java/org/elasticsearch/index/mapper/DocumentParserContext.java",
+        "target_method": "<import>",
+        "start_line": 12,
+        "end_line": 12,
+        "code_snippet": "/*\n * Copyright Elasticsearch B.V. and/or licensed to Elasticsearch B.V. under one\n * or more contributor license agreements. Licensed under the \"Elastic License\n * 2.0\", the \"GNU Affero General Public License v3.0 only\", and the \"Server Side\n * Public License v 1\"; you may not use this file except in compliance with, at\n * your election, the \"Elastic License 2.0\", the \"GNU Affero General Public\n * License v3.0 only\", or the \"Server Side Public License, v 1\".\n */\n\npackage org.elasticsearch.index.mapper;\n\nimport org.apache.lucene.document.Field;\nimport org.apache.lucene.document.StringField;\nimport org.apache.lucene.index.IndexableField;\nimport org.elasticsearch.common.time.DateFormatter;\nimport org.elasticsearch.core.Tuple;\nimport org.elasticsearch.index.IndexMode;\nimport org.elasticsearch.index.IndexSettings;\nimport org.elasticsearch.index.analysis.IndexAnalyzers;\nimport org.elasticsearch.index.mapper.MapperService.MergeReason;\nimport org.elasticsearch.xcontent.FilterXContentParserWrapper;\nimport org.elasticsearch.xcontent.FlatteningXContentParser;\nimport org.elasticsearch.xcontent.XContentBuilder;\nimport org.elasticsearch.xcontent.XContentParser;\n\nimport java.io.IOException;\nimport java.util.ArrayList;\nimport java.util.Collection;\nimport java.util.Collections;\nimport java.util.HashMap;\nimport java.util.HashSet;\nimport java.util.List;",
+        "anchor_confidence": "high",
+        "anchor_reason": "line_and_method_resolved",
+        "anchor_strategy": "deterministic_realign"
+      },
+      {
+        "hunk_index": 2,
+        "mainline_method": "hunk_2",
+        "target_file": "server/src/main/java/org/elasticsearch/index/mapper/DocumentParserContext.java",
+        "target_method": null,
+        "start_line": 341,
+        "end_line": 341,
+        "code_snippet": "     * that the source for the sub-context has been captured, to avoid double-storing parts of its contents to ignored source.\n     */\n    public final DocumentParserContext addIgnoredFieldFromContext(IgnoredSourceFieldMapper.NameValue ignoredFieldWithNoSource)\n        throws IOException {\n        if (canAddIgnoredField()) {\n            if (parentArrayField != null\n                && parent != null\n                && parentArrayField.equals(parent.fullPath())\n                && parent instanceof NestedObjectMapper == false) {\n                // The field is an array within an array, store all sub-array elements.\n                ignoredFieldsMissingValues.add(ignoredFieldWithNoSource);\n                return cloneWithRecordedSource();\n            } else {\n                assert ignoredFieldWithNoSource != null;\n                assert ignoredFieldWithNoSource.value() == null;\n                Tuple<DocumentParserContext, XContentBuilder> tuple = XContentDataHelper.cloneSubContext(this);\n                addIgnoredField(ignoredFieldWithNoSource.cloneWithValue(XContentDataHelper.encodeXContentBuilder(tuple.v2())));\n                return tuple.v1();\n            }\n        }\n        return this;\n    }\n\n    /**\n     * Return the collection of fields that are missing their source values.\n     */\n    public final Collection<IgnoredSourceFieldMapper.NameValue> getIgnoredFieldsMissingValues() {\n        return Collections.unmodifiableCollection(ignoredFieldsMissingValues);\n    }\n\n    /**\n     * Clones the current context to mark it as an array. Records the full name of the array field, to check for sub-arrays.\n     * Applies to synthetic source only.\n     */\n    public final DocumentParserContext cloneForArray(String fullName) throws IOException {\n        if (canAddIgnoredField()) {\n            DocumentParserContext subcontext = switchParser(parser());\n            subcontext.parentArrayField = fullName;\n            return subcontext;\n        }\n        return this;",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      }
+    ],
+    "server/src/main/java/org/elasticsearch/index/mapper/IgnoredSourceFieldMapper.java": [
+      {
+        "hunk_index": 1,
+        "mainline_method": "hunk_1",
+        "target_file": "server/src/main/java/org/elasticsearch/index/mapper/IgnoredSourceFieldMapper.java",
+        "target_method": null,
+        "start_line": 57,
+        "end_line": 57,
+        "code_snippet": " * Mapper for the {@code _ignored_source} field.\n *\n * A field mapper that records fields that have been ignored or otherwise need storing their source, along with their values.\n * It's intended for use in indexes with synthetic source to reconstruct the latter, taking into account fields that got ignored or\n * transformed during indexing. Entries get stored in lexicographical order by field name.\n *\n * This overlaps with {@link IgnoredFieldMapper} that tracks just the ignored field names. It's worth evaluating\n * if we can replace it for all use cases to avoid duplication, assuming that the storage tradeoff is favorable.\n */\npublic class IgnoredSourceFieldMapper extends MetadataFieldMapper {\n    private final IndexSettings indexSettings;\n\n    // This factor is used to combine two offsets within the same integer:\n    // - the offset of the end of the parent field within the field name (N / PARENT_OFFSET_IN_NAME_OFFSET)\n    // - the offset of the field value within the encoding string containing the offset (first 4 bytes), the field name and value\n    // (N % PARENT_OFFSET_IN_NAME_OFFSET)\n    private static final int PARENT_OFFSET_IN_NAME_OFFSET = 1 << 16;\n\n    public static final String NAME = \"_ignored_source\";\n\n    public static final TypeParser PARSER = new FixedTypeParser(context -> new IgnoredSourceFieldMapper(context.getIndexSettings()));\n\n    static final NodeFeature TRACK_IGNORED_SOURCE = new NodeFeature(\"mapper.track_ignored_source\");\n\n    /*\n        Setting to disable encoding and writing values for this field.\n        This is needed to unblock index functionality in case there is a bug on this code path.\n     */\n    public static final Setting<Boolean> SKIP_IGNORED_SOURCE_WRITE_SETTING = Setting.boolSetting(\n        \"index.mapping.synthetic_source.skip_ignored_source_write\",\n        false,\n        Setting.Property.Dynamic,\n        Setting.Property.IndexScope\n    );\n\n    /*\n        Setting to disable reading and decoding values stored in this field.\n        This is needed to unblock search functionality in case there is a bug on this code path.\n     */\n    public static final Setting<Boolean> SKIP_IGNORED_SOURCE_READ_SETTING = Setting.boolSetting(\n        \"index.mapping.synthetic_source.skip_ignored_source_read\",",
+        "anchor_confidence": "medium",
+        "anchor_reason": "line_resolved_method_unresolved",
+        "anchor_strategy": "deterministic_realign"
+      }
+    ],
+    "server/src/main/java/org/elasticsearch/index/mapper/MapperFeatures.java": [
+      {
+        "hunk_index": 1,
+        "mainline_method": "getTestFeatures",
+        "target_file": "server/src/main/java/org/elasticsearch/index/mapper/MapperFeatures.java",
+        "target_method": "getTestFeatures",
+        "start_line": 55,
+        "end_line": 55,
+        "code_snippet": "            IndexModeFieldMapper.QUERYING_INDEX_MODE,\n            NodeMappingStats.SEGMENT_LEVEL_FIELDS_STATS,\n            BooleanFieldMapper.BOOLEAN_DIMENSION,\n            ObjectMapper.SUBOBJECTS_AUTO,\n            ObjectMapper.SUBOBJECTS_AUTO_FIXES,\n            KeywordFieldMapper.KEYWORD_NORMALIZER_SYNTHETIC_SOURCE,\n            SourceFieldMapper.SYNTHETIC_SOURCE_STORED_FIELDS_ADVANCE_FIX,\n            Mapper.SYNTHETIC_SOURCE_KEEP_FEATURE,\n            SourceFieldMapper.SYNTHETIC_SOURCE_WITH_COPY_TO_AND_DOC_VALUES_FALSE_SUPPORT,\n            SourceFieldMapper.SYNTHETIC_SOURCE_COPY_TO_FIX,\n            FlattenedFieldMapper.IGNORE_ABOVE_SUPPORT,\n            IndexSettings.IGNORE_ABOVE_INDEX_LEVEL_SETTING,\n            SourceFieldMapper.SYNTHETIC_SOURCE_COPY_TO_INSIDE_OBJECTS_FIX,\n            TimeSeriesRoutingHashFieldMapper.TS_ROUTING_HASH_FIELD_PARSES_BYTES_REF,\n            FlattenedFieldMapper.IGNORE_ABOVE_WITH_ARRAYS_SUPPORT\n        );\n    }\n\n    @Override\n    public Set<NodeFeature> getTestFeatures() {\n        return Set.of(RangeFieldMapper.DATE_RANGE_INDEXING_FIX);\n    }\n}",
+        "anchor_confidence": "high",
+        "anchor_reason": "line_and_method_resolved",
+        "anchor_strategy": "deterministic_realign"
+      }
+    ]
+  },
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated": false,
+    "reason": "llm_usage_not_collected_in_this_node"
+  }
+}
